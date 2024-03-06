@@ -6,7 +6,22 @@ import validators
 import sys
 import generate_uris
 import validator_utils
+import requests
+import base64
 
+def read_file_from_github(owner, repo, path_to_file, token):
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path_to_file}"
+    headers = {"Authorization": f"token {token}"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Raise an exception for HTTP errors
+
+    # Parse the response JSON
+    file_info = response.json()
+
+    # Decode the Base64-encoded content
+    content = base64.b64decode(file_info['content']).decode('utf-8')
+
+    return content
 
 def is_valid_uri(uri):
     return validators.url(uri)
@@ -193,8 +208,18 @@ def add_id_to_mineral_system(json_data):
 
 changed_files = sys.argv[1]
 temp_file = sys.argv[2]
-
 file_path = changed_files
+
+# Example usage
+owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
+repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
+token = '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'  # Replace 'your_personal_access_token' with your actual PAT
+
+
+file_content = read_file_from_github(owner, repo, file_path, token)
+
+print(file_content)
+
 if is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
