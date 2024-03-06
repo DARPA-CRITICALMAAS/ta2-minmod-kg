@@ -10,7 +10,7 @@ import requests
 import base64
 
 def read_file_from_github(owner, repo, path_to_file, token):
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path_to_file}"
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()  # Raise an exception for HTTP errors
@@ -213,7 +213,7 @@ file_path = changed_files
 # Example usage
 owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
 repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
-token = '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'  # Replace 'your_personal_access_token' with your actual PAT
+token = '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'  # Replace 'your_personal_access_token' with your actual PAT
 
 
 file_content = read_file_from_github(owner, repo, file_path, token)
