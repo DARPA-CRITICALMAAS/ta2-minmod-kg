@@ -223,8 +223,7 @@ if is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
     try:
-        with open(file_path) as file:
-            json_data = json.load(file)
+        json_data = json.loads(file_content)
         if 'MineralSite' in json_data:
             print('Mineral Site validation ...')
             json_data = validate_json_schema(json_data)
@@ -240,8 +239,7 @@ if is_json_file_under_data(file_path):
         print(f"An error occurred: {e}")
         raise
 
-    json_string = json.dumps(json_data)
-    json_string = remove_non_printable_chars(json_string)
+    json_string = remove_non_printable_chars(file_content)
 
     json_data = json.loads(json_string)
     print('Json validated ...')
