@@ -658,6 +658,8 @@ def validate_using_shacl_mineral_site(data_graph):
     """
     shapes_g = Graph().parse(data=shapes_graph, format="turtle")
 
+    print(data_graph)
+
     result = validate(data_graph, shacl_graph=shapes_g, inference='rdfs', serialize_report_graph=True)
 
     conforms, a, b = result
