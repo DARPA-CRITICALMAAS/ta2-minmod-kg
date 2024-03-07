@@ -10,16 +10,10 @@ import requests
 import base64
 
 def read_file_from_github(owner, repo, path_to_file, token, branch):
-    # curl -L -H "Authorization: Bearer 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" https://raw.githubusercontent.com/
-    # DARPA-CRITICALMAAS/ta2-minmod-data/main/data/inferlink/extractions/
-    # 777_Cu_Zn_Ag_Au_10-2012_OM_summary_20240116_143617.json
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
-    # print(response)
     response.raise_for_status()  # Raise an exception for HTTP errors
-
-    print(response)
 
     # Parse the response JSON
     file_info = ''
@@ -28,9 +22,6 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
         file_info = response.text
     else:
         print(f"Failed to read file. Status code: {response.status_code}")
-
-    # Decode the Base64-encoded content
-    # content = base64.b64decode(file_info).decode('utf-8')
 
     return file_info
 
@@ -223,9 +214,8 @@ token = sys.argv[3]
 branch = sys.argv[4]
 file_path = changed_files
 
-# Example usage
-owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
-repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
+owner = 'DARPA-CRITICALMAAS'
+repo = 'ta2-minmod-data' 
 
 if is_json_file_under_data(file_path):
     file_content = read_file_from_github(owner, repo, file_path, token, branch)
