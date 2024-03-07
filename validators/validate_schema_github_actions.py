@@ -31,7 +31,7 @@ def read_file_from_github(owner, repo, path_to_file, token):
 
     # print(file_info)
     # Decode the Base64-encoded content
-    content = base64.b64decode(file_info['content']).decode('utf-8')
+    content = base64.b64decode(file_info).decode('utf-8')
 
     return content
 
