@@ -14,7 +14,7 @@ def read_file_from_github(owner, repo, path_to_file, token):
     # DARPA-CRITICALMAAS/ta2-minmod-data/main/data/inferlink/extractions/
     # 777_Cu_Zn_Ag_Au_10-2012_OM_summary_20240116_143617.json
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{path_to_file}"
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
     # print(response)
     # response.raise_for_status()  # Raise an exception for HTTP errors
