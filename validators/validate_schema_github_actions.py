@@ -10,7 +10,7 @@ import requests
 import base64
 
 def read_file_from_github(owner, repo, path_to_file, token):
-    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{path_to_file}"
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/github-actions-for-validation/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()  # Raise an exception for HTTP errors
