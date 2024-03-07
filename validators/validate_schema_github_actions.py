@@ -10,10 +10,14 @@ import requests
 import base64
 
 def read_file_from_github(owner, repo, path_to_file, token):
+    # curl -L -H "Authorization: Bearer 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" https://raw.githubusercontent.com/
+    # DARPA-CRITICALMAAS/ta2-minmod-data/main/data/inferlink/extractions/
+    # 777_Cu_Zn_Ag_Au_10-2012_OM_summary_20240116_143617.json
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/github-actions-for-validation/{path_to_file}"
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(url, headers=headers)
-    response.raise_for_status()  # Raise an exception for HTTP errors
+    # response.raise_for_status()  # Raise an exception for HTTP errors
+    print(response)
 
     # Parse the response JSON
     file_info = response.json()
