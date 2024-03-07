@@ -29,7 +29,7 @@ def read_file_from_github(owner, repo, path_to_file, token):
     else:
         print(f"Failed to read file. Status code: {response.status_code}")
 
-    print(file_info)
+    # print(file_info)
     # Decode the Base64-encoded content
     content = base64.b64decode(file_info['content']).decode('utf-8')
 
@@ -227,12 +227,10 @@ file_path = changed_files
 owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
 repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
 
-
-file_content = read_file_from_github(owner, repo, file_path, token)
-
-print(file_content)
-
 if is_json_file_under_data(file_path):
+    file_content = read_file_from_github(owner, repo, file_path, token)
+
+    print(file_content)
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
     try:
