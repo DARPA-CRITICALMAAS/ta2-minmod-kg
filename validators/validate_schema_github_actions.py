@@ -226,9 +226,13 @@ if is_json_file_under_data(file_path):
         with open(file_path) as file:
             json_data = json.load(file)
         if 'MineralSite' in json_data:
+            print('Mineral Site validation ...')
             json_data = validate_json_schema(json_data)
         elif 'MineralSystem' in json_data:
+            print('Mineral System validation ...')
             json_data = validate_json_schema_mineral_system(json_data)
+        else:
+            print('No validation', json_data)
     except FileNotFoundError:
         print(f"File '{file_path}' was deleted, skipping.")
         sys.exit(0)
