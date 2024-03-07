@@ -22,13 +22,14 @@ def read_file_from_github(owner, repo, path_to_file, token):
     print(response)
 
     # Parse the response JSON
-    # file_info = response.json()
+    file_info = ''
 
     if response.status_code == 200:
         file_info = response.text
     else:
         print(f"Failed to read file. Status code: {response.status_code}")
 
+    print(file_info)
     # Decode the Base64-encoded content
     content = base64.b64decode(file_info['content']).decode('utf-8')
 
