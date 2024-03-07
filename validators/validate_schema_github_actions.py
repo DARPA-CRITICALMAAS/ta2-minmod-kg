@@ -212,12 +212,12 @@ def add_id_to_mineral_system(json_data):
 
 changed_files = sys.argv[1]
 temp_file = sys.argv[2]
+token = sys.argv[3]
 file_path = changed_files
 
 # Example usage
 owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
 repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
-token = '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'  # Replace 'your_personal_access_token' with your actual PAT
 
 
 file_content = read_file_from_github(owner, repo, file_path, token)
