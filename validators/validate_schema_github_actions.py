@@ -16,7 +16,7 @@ def read_file_from_github(owner, repo, path_to_file, token):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{path_to_file}"
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(url, headers=headers)
-    print(response)
+    # print(response)
     # response.raise_for_status()  # Raise an exception for HTTP errors
 
     # Parse the response JSON
