@@ -148,8 +148,7 @@ def mineral_site_schema():
                                                                 "x_max": {"type": ["string", "number"]},
                                                                 "y_min": {"type": ["string", "number"]},
                                                                 "y_max": {"type": ["string", "number"]}
-                                                            },
-                                                            "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                            }
                                                         }
                                                     },
                                                     "required": ["page"]
@@ -260,8 +259,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
@@ -328,8 +326,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
@@ -396,8 +393,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
@@ -464,8 +460,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
@@ -532,8 +527,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
@@ -600,8 +594,7 @@ def mineral_system_schema():
                                                                     "x_max": {"type": ["string", "number"]},
                                                                     "y_min": {"type": ["string", "number"]},
                                                                     "y_max": {"type": ["string", "number"]}
-                                                                },
-                                                                "required": ["x_min", "x_max", "y_min", "y_max"]
+                                                                }
                                                             }
                                                         },
                                                         "required": ["page"]
