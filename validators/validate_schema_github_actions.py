@@ -215,7 +215,7 @@ branch = sys.argv[4]
 file_path = changed_files
 
 owner = 'DARPA-CRITICALMAAS'
-repo = 'ta2-minmod-data' 
+repo = 'ta2-minmod-data'
 
 if is_json_file_under_data(file_path):
     file_content = read_file_from_github(owner, repo, file_path, token, branch)

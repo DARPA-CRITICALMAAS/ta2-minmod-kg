@@ -40,6 +40,8 @@ def create_drepr_file_mineral_site(file_path, filename):
     if not validated_drepr:
         print('Pyshacl Validation failed for Mineral Site')
         raise
+    else:
+        print('Pyshacl Validation succeeded Mineral Site')
 
 
 def create_drepr_file_mineral_system(file_path, filename):
@@ -49,6 +51,8 @@ def create_drepr_file_mineral_system(file_path, filename):
     if not validated_drepr:
         print('Pyshacl Validation failed for pyshacl Mineral System')
         raise
+    else:
+        print('Pyshacl Validation succeeded Mineral System')
 
 
 def create_drepr_from_mineral_site(file_path, filename):

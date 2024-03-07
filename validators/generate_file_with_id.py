@@ -2,22 +2,7 @@ import json
 import sys
 import os
 import validator_utils
-import requests
-import base64
 
-def read_file_from_github(owner, repo, path_to_file, token):
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path_to_file}"
-    headers = {"Authorization": f"token {token}"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()  # Raise an exception for HTTP errors
-
-    # Parse the response JSON
-    file_info = response.json()
-
-    # Decode the Base64-encoded content
-    content = base64.b64decode(file_info['content']).decode('utf-8')
-
-    return content
 
 def add_id_to_mineral_site(json_data, new_json_folder, file_name_without_path):
     ms_list = json_data['MineralSite']
@@ -129,15 +114,6 @@ def add_id_to_mineral_system(json_data, new_json_folder, file_name_without_path)
 filename = sys.argv[1]
 new_json_folder = sys.argv[2]
 file_name_without_path = os.path.basename(filename)
-
-# Example usage
-owner = 'DARPA-CRITICALMAAS'  # Replace 'username' with the GitHub username of the repository owner
-repo = 'ta2-minmod-data'  # Replace 'repository-name' with the name of the repository
-token = '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'  # Replace 'your_personal_access_token' with your actual PAT
-
-print(file_content)
-
-file_content = read_file_from_github(owner, repo, filename, token)
 
 file_path = filename
 
