@@ -19,12 +19,12 @@ def run_drepr_on_file(datasource, model_file):
 
 
 def run_drepr_on_mineral_site(datasource):
-    model_file = 'data/generator/model.yml'
+    model_file = 'generator/model.yml'
     return run_drepr_on_file(datasource, model_file)
 
 
 def run_drepr_on_mineral_system(datasource):
-    model_file = 'data/generator/model_mineral_system.yml'
+    model_file = 'generator/model_mineral_system.yml'
     return run_drepr_on_file(datasource, model_file)
 
 def remove_non_printable_chars(text):
