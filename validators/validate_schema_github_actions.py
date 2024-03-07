@@ -29,11 +29,11 @@ def read_file_from_github(owner, repo, path_to_file, token):
     else:
         print(f"Failed to read file. Status code: {response.status_code}")
 
-    # print(file_info)
+    print(file_info)
     # Decode the Base64-encoded content
-    content = base64.b64decode(file_info).decode('utf-8')
+    # content = base64.b64decode(file_info).decode('utf-8')
 
-    return content
+    return file_info
 
 def is_valid_uri(uri):
     return validators.url(uri)
