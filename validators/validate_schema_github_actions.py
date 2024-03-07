@@ -107,7 +107,7 @@ def validate_json_schema_mineral_system(json_data):
     return json_data
 
 
-def add_id_to_mineral_site(json_data):
+def add_id_to_mineral_site(json_data, file_path):
     ms_list = json_data['MineralSite']
     mndr_url = 'https://minmod.isi.edu/resource/'
 
