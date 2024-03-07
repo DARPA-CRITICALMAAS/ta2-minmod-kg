@@ -33,7 +33,7 @@ def remove_non_printable_chars(text):
     return clean_text
 
 
-def create_drepr_file_mineral_site(file_path, filename):
+def create_drepr_file_mineral_site(file_path):
     file_content = run_drepr_on_mineral_site(file_path)
     validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
@@ -44,7 +44,7 @@ def create_drepr_file_mineral_site(file_path, filename):
         print('Pyshacl Validation succeeded Mineral Site')
 
 
-def create_drepr_file_mineral_system(file_path, filename):
+def create_drepr_file_mineral_system(file_path):
     file_content = run_drepr_on_mineral_system(file_path)
     validated_drepr = validate_pyshacl.validate_mineral_system_using_shacl(file_content)
 
@@ -55,17 +55,17 @@ def create_drepr_file_mineral_system(file_path, filename):
         print('Pyshacl Validation succeeded Mineral System')
 
 
-def create_drepr_from_mineral_site(file_path, filename):
-    generated_json_path = f'generated_files/json_files/{filename}.json'
+def create_drepr_from_mineral_site(file_path):
+    # generated_json_path = f'generated_files/json_files/{filename}.json'
 
     with open(file_path, 'r') as file:
         file_contents = file.read()
-    create_drepr_file_mineral_site(file_path, filename)
+    create_drepr_file_mineral_site(file_path)
 
 
-def create_drepr_from_mineral_system(file_path, filename):
-    generated_json_path = f'generated_files/json_files/{filename}.json'
+def create_drepr_from_mineral_system(file_path):
+    # generated_json_path = f'generated_files/json_files/{filename}.json'
 
     with open(file_path, 'r') as file:
         file_contents = file.read()
-    create_drepr_file_mineral_system(file_path, filename)
+    create_drepr_file_mineral_system(file_path)

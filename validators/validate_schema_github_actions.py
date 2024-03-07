@@ -167,15 +167,15 @@ def add_id_to_mineral_site(json_data):
                         document['id'] = mndr_url + document_uri(doc_data)
 
 
-    filename = get_filename(file_path)
+    # filename = get_filename(file_path)
     with open(file_path, 'w') as file:
         # Write the new data to the file
         file.write(json.dumps(json_data, indent=2) + '\n')
-    create_ttl_files.create_drepr_from_mineral_site(file_path, filename)
+    create_ttl_files.create_drepr_from_mineral_site(file_path)
 
 
 
-def add_id_to_mineral_system(json_data):
+def add_id_to_mineral_system(json_data, file_path):
     ms_list = json_data['MineralSystem']
     mndr_url = 'https://minmod.isi.edu/resource/'
 
@@ -201,11 +201,11 @@ def add_id_to_mineral_system(json_data):
                                 document['id'] = mndr_url + document_uri(doc_data)
 
 
-    filename = get_filename(file_path)
+    # filename = get_filename(file_path)
     with open(file_path, 'w') as file:
         # Write the new data to the file
         file.write(json.dumps(json_data, indent=2) + '\n')
-    create_ttl_files.create_drepr_from_mineral_system(file_path, filename)
+    create_ttl_files.create_drepr_from_mineral_system(file_path)
 
 
 changed_files = sys.argv[1]
@@ -245,9 +245,9 @@ if is_json_file_under_data(file_path):
     print('Json validated ...')
 
     if 'MineralSite' in json_data:
-        json_data = add_id_to_mineral_site(json_data)
+        json_data = add_id_to_mineral_site(json_data, temp_file)
     elif 'MineralSystem' in json_data:
-        json_data = add_id_to_mineral_system(json_data)
+        json_data = add_id_to_mineral_system(json_data, temp_file)
 else:
     print(f'{file_path} is not a JSON file')
 
