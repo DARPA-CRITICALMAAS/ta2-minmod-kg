@@ -13,15 +13,18 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
-    response.raise_for_status()  # Raise an exception for HTTP errors
 
     # Parse the response JSON
     file_info = ''
 
     if response.status_code == 200:
         file_info = response.text
+    elif response.status_code == 404:
+        print(f"File '{file_path}' was deleted, skipping.")
+        sys.exit(0)
     else:
         print(f"Failed to read file. Status code: {response.status_code}")
+        sys.exit(1)
 
     return file_info
 
