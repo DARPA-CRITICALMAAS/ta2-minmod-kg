@@ -19,6 +19,8 @@ def read_file_from_github(owner, repo, path_to_file, token):
     # print(response)
     response.raise_for_status()  # Raise an exception for HTTP errors
 
+    print(response, token)
+
     # Parse the response JSON
     file_info = response.json()
 
