@@ -229,6 +229,19 @@ def custom_slugify(s):
     slugify("[Some] _ Article's Title--"): some-articles-title. '''
 
     s = s.lower()
+    s = s.strip()
     s = remove_http(s) if s.startswith("http") else s
-    slug = slugify(s)
+
+    replacements = {
+        " ": "",
+        "-": "",
+        ".": "",
+        "\W": "",
+        "_": "",
+        "\s+": "",
+        ",": "",
+        "/": ""
+    }
+
+    slug = slugify(s, replacements=replacements)
     return s
