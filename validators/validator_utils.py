@@ -7,31 +7,26 @@ def is_valid_uri(uri):
 
 def mineral_site_uri(data):
     response = generate_uris.mineral_site_uri(data)
-    print('mineral_site_uri ' , response)
     uri = response['result']
     return uri
 
 def deposit_uri(data):
     response = generate_uris.deposit_type_uri(data)
-    print('deposit_uri ' , response)
     uri = response['result']
     return uri
 def document_uri(data):
     response = generate_uris.document_uri(data)
-    print('document_uri ' , response)
     uri = response['result']
     return uri
 
 
 def mineral_system_uri(data):
     response = generate_uris.mineral_system_uri(data)
-    print('mineral_system_uri ' , response)
     uri = response['result']
     return uri
 
 def mineral_inventory_uri(param1):
     response = generate_uris.mineral_inventory_uri(param1)
-    print('mineral_inventory_uri ' , response)
     uri = response['result']
     return uri
 

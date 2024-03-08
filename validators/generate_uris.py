@@ -12,7 +12,6 @@ def mineral_site_uri(site):
         processed_data = process_mineral_site(site)
         return ({"result": processed_data})
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 def deposit_type_uri(data):
@@ -22,7 +21,6 @@ def deposit_type_uri(data):
         processed_data = process_deposit_type(data)
         return ({"result": processed_data})
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 
@@ -33,7 +31,6 @@ def mineral_system_uri(data):
         processed_data = process_mineral_system(data)
         return ({"result": processed_data})
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 
@@ -48,7 +45,6 @@ def document_uri(data):
         return ({"result": processed_data})
 
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 def mineral_inventory_uri(data):
@@ -64,7 +60,6 @@ def mineral_inventory_uri(data):
         return ({"result": processed_data})
 
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 def process_mineral_site(ms):
@@ -212,26 +207,14 @@ def trim_and_append_hash(string):
 def remove_http(url):
     parsed_url = urlparse(url)
     prefix = 'https://minmod.isi.edu'
-    # print('netloc ', parsed_url.netloc, parsed_url.scheme)
-    # print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
     if parsed_url.scheme + "://" + parsed_url.netloc == prefix:
-        # print('path ', parsed_url.path)
-        # print('parsed url ', parsed_url)
         return parsed_url.path
     else:
         return url
 
-    # if url.startswith("https://"):
-    #     return url[len("https://"):]
-    # elif url.startswith("http://"):
-    #     return url[len("http://"):]
-    # else:
-    #     return url
-
 def custom_slugify(s):
     ''' Simplifies ugly strings into something URL-friendly.
     slugify("[Some] _ Article's Title--"): some-articles-title. '''
-    # print(s)
     s = s.lower()
     s = s.strip()
     s = remove_http(s) if s.startswith("http") else s
