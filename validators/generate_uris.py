@@ -212,6 +212,8 @@ def trim_and_append_hash(string):
 def remove_http(url):
     parsed_url = urlparse(url)
     prefix = 'https://minmod.isi.edu/resource'
+    print('netloc ', parsed_url.netloc, parsed_url.scheme)
+    print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
     if parsed_url.scheme + "://" + parsed_url.netloc == prefix:
         return parsed_url.path
     else:
@@ -227,7 +229,7 @@ def remove_http(url):
 def custom_slugify(s):
     ''' Simplifies ugly strings into something URL-friendly.
     slugify("[Some] _ Article's Title--"): some-articles-title. '''
-
+    print(s)
     s = s.lower()
     s = s.strip()
     s = remove_http(s) if s.startswith("http") else s
