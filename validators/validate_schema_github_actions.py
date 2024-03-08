@@ -193,7 +193,7 @@ if validator_utils.is_json_file_under_data(file_path):
         print(f"An error occurred: {e}")
         raise
 
-    json_string = validator_utils.mineral_system_uri(file_content)
+    json_string = remove_non_printable_chars(file_content)
 
     json_data = json.loads(json_string)
     print('Json validated ...')
