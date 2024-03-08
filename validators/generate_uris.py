@@ -6,11 +6,11 @@ import hashlib
 from urllib.parse import urlparse
 
 def mineral_site_uri(site):
-    try:
-        if site is None:
-            raise
-        processed_data = process_mineral_site(site)
-        return ({"result": processed_data})
+    # try:
+    if site is None:
+        raise
+    processed_data = process_mineral_site(site)
+    return ({"result": processed_data})
     # except Exception as e:
     #     print(e)
     #     return ({"error": str(e)})
