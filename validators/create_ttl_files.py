@@ -56,16 +56,12 @@ def create_drepr_file_mineral_system(file_path):
 
 
 def create_drepr_from_mineral_site(file_path):
-    # generated_json_path = f'generated_files/json_files/{filename}.json'
-
     with open(file_path, 'r') as file:
         file_contents = file.read()
     create_drepr_file_mineral_site(file_path)
 
 
 def create_drepr_from_mineral_system(file_path):
-    # generated_json_path = f'generated_files/json_files/{filename}.json'
-
     with open(file_path, 'r') as file:
         file_contents = file.read()
     create_drepr_file_mineral_system(file_path)

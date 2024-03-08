@@ -5,3 +5,4 @@ pyshacl==0.25.0
 jsonschema==4.17.3
 drepr==2.11.2
 validators==0.22.0
+python-slugify==8.0.4
