@@ -6,14 +6,14 @@ import hashlib
 from urllib.parse import urlparse
 
 def mineral_site_uri(site):
-    # try:
-    if site is None:
-        raise
-    processed_data = process_mineral_site(site)
-    return ({"result": processed_data})
-    # except Exception as e:
-    #     print(e)
-    #     return ({"error": str(e)})
+    try:
+        if site is None:
+            raise
+        processed_data = process_mineral_site(site)
+        return ({"result": processed_data})
+    except Exception as e:
+        print(e)
+        return ({"error": str(e)})
 
 def deposit_type_uri(data):
     try:
@@ -212,11 +212,11 @@ def trim_and_append_hash(string):
 def remove_http(url):
     parsed_url = urlparse(url)
     prefix = 'https://minmod.isi.edu'
-    print('netloc ', parsed_url.netloc, parsed_url.scheme)
-    print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
+    # print('netloc ', parsed_url.netloc, parsed_url.scheme)
+    # print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
     if parsed_url.scheme + "://" + parsed_url.netloc == prefix:
-        print('path ', parsed_url.path)
-        print('parsed url ', parsed_url)
+        # print('path ', parsed_url.path)
+        # print('parsed url ', parsed_url)
         return parsed_url.path
     else:
         return url
@@ -231,7 +231,7 @@ def remove_http(url):
 def custom_slugify(s):
     ''' Simplifies ugly strings into something URL-friendly.
     slugify("[Some] _ Article's Title--"): some-articles-title. '''
-    print(s)
+    # print(s)
     s = s.lower()
     s = s.strip()
     s = remove_http(s) if s.startswith("http") else s
