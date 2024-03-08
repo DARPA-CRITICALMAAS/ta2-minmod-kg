@@ -232,16 +232,16 @@ def custom_slugify(s):
     s = s.strip()
     s = remove_http(s) if s.startswith("http") else s
 
-    replacements = {
-        " ": "-",
-        "-": "-",
-        ".": "-",
-        "\W": "-",
-        "_": "-",
-        "\s+": "-",
-        ",": "-",
-        "/": "-"
-    }
+    replacements = [
+        (" ", ""),
+        ("-", ""),
+        (".", ""),
+        ("_", ""),
+        (",", ""),
+        ("/", ""),
+        ("\W", ""),
+        ("\s+", "")
+       ]
 
     slug = slugify(s, replacements=replacements)
     return slug
