@@ -12,6 +12,7 @@ def mineral_site_uri(site):
         processed_data = process_mineral_site(site)
         return ({"result": processed_data})
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
 
 def deposit_type_uri(data):
@@ -21,6 +22,7 @@ def deposit_type_uri(data):
         processed_data = process_deposit_type(data)
         return ({"result": processed_data})
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
 
 
@@ -31,6 +33,7 @@ def mineral_system_uri(data):
         processed_data = process_mineral_system(data)
         return ({"result": processed_data})
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
 
 
@@ -45,6 +48,7 @@ def document_uri(data):
         return ({"result": processed_data})
 
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
 
 def mineral_inventory_uri(data):
@@ -60,6 +64,7 @@ def mineral_inventory_uri(data):
         return ({"result": processed_data})
 
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
 
 def process_mineral_site(ms):
