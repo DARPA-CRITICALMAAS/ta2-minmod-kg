@@ -215,6 +215,8 @@ def remove_http(url):
     print('netloc ', parsed_url.netloc, parsed_url.scheme)
     print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
     if parsed_url.scheme + "://" + parsed_url.netloc == prefix:
+        print('path ', parsed_url.path)
+        print('parsed url ', parsed_url)
         return parsed_url.path
     else:
         return url
