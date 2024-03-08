@@ -211,7 +211,7 @@ def trim_and_append_hash(string):
 
 def remove_http(url):
     parsed_url = urlparse(url)
-    prefix = 'https://minmod.isi.edu/resource'
+    prefix = 'https://minmod.isi.edu'
     print('netloc ', parsed_url.netloc, parsed_url.scheme)
     print('jgj ', parsed_url.scheme + "://" + parsed_url.netloc)
     if parsed_url.scheme + "://" + parsed_url.netloc == prefix:
