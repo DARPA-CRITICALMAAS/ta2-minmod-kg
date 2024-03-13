@@ -19,12 +19,12 @@ def run_drepr_on_file(datasource, model_file):
 
 
 def run_drepr_on_mineral_site(datasource):
-    model_file = 'data/generator/model.yml'
+    model_file = 'generator/model.yml'
     return run_drepr_on_file(datasource, model_file)
 
 
 def run_drepr_on_mineral_system(datasource):
-    model_file = 'data/generator/model_mineral_system.yml'
+    model_file = 'generator/model_mineral_system.yml'
     return run_drepr_on_file(datasource, model_file)
 
 def remove_non_printable_chars(text):
@@ -33,35 +33,35 @@ def remove_non_printable_chars(text):
     return clean_text
 
 
-def create_drepr_file_mineral_site(file_path, filename):
+def create_drepr_file_mineral_site(file_path):
     file_content = run_drepr_on_mineral_site(file_path)
     validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
     if not validated_drepr:
         print('Pyshacl Validation failed for Mineral Site')
         raise
+    else:
+        print('Pyshacl Validation succeeded Mineral Site')
 
 
-def create_drepr_file_mineral_system(file_path, filename):
+def create_drepr_file_mineral_system(file_path):
     file_content = run_drepr_on_mineral_system(file_path)
     validated_drepr = validate_pyshacl.validate_mineral_system_using_shacl(file_content)
 
     if not validated_drepr:
         print('Pyshacl Validation failed for pyshacl Mineral System')
         raise
+    else:
+        print('Pyshacl Validation succeeded Mineral System')
 
 
-def create_drepr_from_mineral_site(file_path, filename):
-    generated_json_path = f'generated_files/json_files/{filename}.json'
-
+def create_drepr_from_mineral_site(file_path):
     with open(file_path, 'r') as file:
         file_contents = file.read()
-    create_drepr_file_mineral_site(file_path, filename)
+    create_drepr_file_mineral_site(file_path)
 
 
-def create_drepr_from_mineral_system(file_path, filename):
-    generated_json_path = f'generated_files/json_files/{filename}.json'
-
+def create_drepr_from_mineral_system(file_path):
     with open(file_path, 'r') as file:
         file_contents = file.read()
-    create_drepr_file_mineral_system(file_path, filename)
+    create_drepr_file_mineral_system(file_path)
