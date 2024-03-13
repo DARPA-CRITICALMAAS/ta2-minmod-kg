@@ -19,6 +19,10 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
 
     if response.status_code == 200:
         file_info = response.text
+        if not is_valid_json(file_info):
+            file_info = get_lfs_objects(file_info , branch)
+
+
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
         sys.exit(0)
