@@ -53,10 +53,15 @@ def download_file_with_git_lfs(oid, size, branch):
     print(response_json)
 
     download_url = response_json['objects'][0]['actions']['download']['href']
-    response = requests.get(download_url)
+
+    print(download_url)
+    response_data = requests.get(download_url)
     # file_content = response.text
 
-    return ''
+    if response_data.status_code == 200:
+        return response_data.text
+    else:
+        return ''
 
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
