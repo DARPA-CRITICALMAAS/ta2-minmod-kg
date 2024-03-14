@@ -16,6 +16,7 @@ def is_valid_json(s):
         return True
     except ValueError:
         return False
+
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
