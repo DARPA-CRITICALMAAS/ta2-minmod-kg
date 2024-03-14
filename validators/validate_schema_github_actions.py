@@ -187,7 +187,7 @@ if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
     # file_content = validator_utils.remove_non_printable_chars(file_content)
-    print(file_content)
+    # print(file_content)
     try:
         json_data = json.loads(file_content)
         if 'MineralSite' in json_data:
@@ -207,10 +207,10 @@ if validator_utils.is_json_file_under_data(file_path):
 
     json_string = (file_content)
     print('------------')
-    print(json_string)
+    # print(json_string)
 
     json_data = json.loads(json_string)
-    print('Json validated ...', json_data)
+    # print('Json validated ...', json_data)
 
     if 'MineralSite' in json_data:
         json_data = add_id_to_mineral_site(json_data, temp_file)
