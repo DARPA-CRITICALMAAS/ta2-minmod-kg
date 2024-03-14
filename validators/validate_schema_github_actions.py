@@ -185,6 +185,7 @@ if validator_utils.is_json_file_under_data(file_path):
 
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
+    file_content = validator_utils.remove_non_printable_chars(file_content)
     print(file_content)
     try:
         json_data = json.loads(file_content)
@@ -203,7 +204,7 @@ if validator_utils.is_json_file_under_data(file_path):
         print(f"An error occurred: {e}")
         raise
 
-    json_string = validator_utils.remove_non_printable_chars(file_content)
+    json_string = file_content
 
     json_data = json.loads(json_string)
     print('Json validated ...')
