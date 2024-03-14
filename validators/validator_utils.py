@@ -3,10 +3,6 @@ import generate_uris
 import validators
 
 def is_valid_uri(uri):
-    if my_string is None:
-        return True
-    elif my_string == "":
-        return True
     return validators.url(uri)
 
 def mineral_site_uri(data):
