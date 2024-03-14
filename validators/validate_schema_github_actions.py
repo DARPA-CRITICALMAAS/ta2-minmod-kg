@@ -8,7 +8,7 @@ import generate_uris
 import validator_utils
 import requests
 import base64
-import get_file_from_lfs
+import lfs_file_download
 
 def is_valid_json(s):
     try:
@@ -22,15 +22,12 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     response = requests.get(url, headers=headers)
 
     print('Getting info of file ', path_to_file)
-
-    # Parse the response JSON
     file_info = ''
 
     if response.status_code == 200:
         file_info = response.text
         if not is_valid_json(file_info):
-            file_info = get_file_from_lfs.get_lfs_objects(file_info , branch)
-
+            file_info = lfs_file_download.get_lfs_objects(file_info , branch)
 
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
