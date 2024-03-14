@@ -42,7 +42,7 @@ def get_lfs_objects(file_path, branch):
     # Clean up: delete the temporary repository directory
     os.chdir('..')
     os.system(f'rm -rf {repo_dir}')
-    return ''
+    return content
 
 # def download_file_with_git_lfs(oid, size, branch):
 #     url = "https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git/info/lfs/objects/batch"
