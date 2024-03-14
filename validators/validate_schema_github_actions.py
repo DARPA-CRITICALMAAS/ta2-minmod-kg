@@ -8,8 +8,7 @@ import generate_uris
 import validator_utils
 import requests
 import base64
-# import lfs_file_download
-
+from lfs_file_download import get_lfs_objects
 def is_valid_json(s):
     try:
         json.loads(s)
@@ -29,7 +28,7 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     if response.status_code == 200:
         file_info = response.text
         if not is_valid_json(file_info):
-            file_info = lfs_file_download.get_lfs_objects(file_info , branch)
+            file_info = get_lfs_objects(file_info , branch)
 
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
