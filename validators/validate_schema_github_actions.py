@@ -21,6 +21,8 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
 
+    print('Getting info of file ', path_to_file)
+
     # Parse the response JSON
     file_info = ''
 
