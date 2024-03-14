@@ -16,6 +16,19 @@ def is_valid_json(s):
     except ValueError:
         return False
 
+def get_lfs_objects(file_content, branch):
+    metadata = file_content.split('\n')
+    oid_line = next((line for line in metadata if line.startswith("oid")), None)
+    size_line = next((line for line in metadata if line.startswith("size")), None)
+    if oid_line:
+        oid = oid_line.split(" ")[-1][7:]
+        size = size_line.split(" ")[-1]
+        file_content = download_file_with_git_lfs(oid, int(size), branch)
+        return file_content
+    else:
+        print('Invalid response ', file_content)
+        raise
+
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
@@ -28,7 +41,7 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     if response.status_code == 200:
         file_info = response.text
         if not is_valid_json(file_info):
-            file_info = validator_utils.get_lfs_objects(file_info , branch)
+            file_info = get_lfs_objects(file_info , branch)
 
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
