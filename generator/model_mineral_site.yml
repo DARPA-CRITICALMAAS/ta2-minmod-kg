@@ -1,0 +1,293 @@
+version: "2"
+resources: json
+attributes:
+  id_mineral_site:
+    path: [ "MineralSite", .. , "id" ]
+  name_mineral_site:
+    path: [ "MineralSite", .. , ["name"]]
+  source_mineral_site:
+    path: [ "MineralSite", .. , "source_id" ]
+  record_mineral_site:
+    path: [ "MineralSite", .. , "record_id" ]
+  mineral_inven:
+    path: [ "MineralSite", .. , ["MineralInventory"]]
+  id_deposit_type_candidate:
+    path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["id"]]
+  deposit_type_name:
+    path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["observed_name"]]
+  deposit_type_source:
+    path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["source"]]
+  deposit_type_confidence:
+    path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
+  deposit_type_normalized_uri:
+    path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
+  geology_info:
+    path: [ "MineralSite", .. , ["geology_info"]]
+  location_info_location:
+    path: ["MineralSite", .. , ["location_info"], ["location"]
+  location_info_country:
+    path: ["MineralSite", .. , ["location_info"], ["country"]]
+  location_info_state:
+    path: [ "MineralSite", .. , ["location_info"], ["state_or_province"]]
+  location_info_location_source_record_id:
+    path: ["MineralSite", .. , ["location_info"], ["location_source_record_id"]]
+  location_info_location_source:
+    path: ["MineralSite", .. , ["location_info"], ["location_source"]]
+  location_info_crs:
+    path: ["MineralSite", .. , ["location_info"], ["crs"]]
+  geology_info_age:
+    path: [ "MineralSite", .. , ["geology_info"], ["age"]]
+  geology_info_unit_name:
+    path: [ "MineralSite", .. , ["geology_info"], ["unit_name"]]
+  geology_info_description:
+    path: [ "MineralSite", .. , ["geology_info"], ["description"]]
+  geology_info_lithology:
+    path: [ "MineralSite", .. , ["geology_info"], ["lithology"]]
+  geology_info_process:
+    path: [ "MineralSite", .. , ["geology_info"], ["process"]]
+  geology_info_environment:
+    path: [ "MineralSite", .. , ["geology_info"], ["environment"]]
+  geology_info_comments:
+    path: [ "MineralSite", .. , ["geology_info"], ["comments"]]
+  commodity:
+    path: ["MineralSite", .. ,["MineralInventory"], .. , ["commodity"]]
+  ore:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["ore"]]
+  ore_value:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["ore"], "ore_value"]
+  grade_value:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["grade"], "grade_value"]
+  cutoff_grade_value:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["cutoff_grade"], "grade_value"]
+  cutoff_grade_unit:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["cutoff_grade"], "grade_unit" ]
+  ore_unit:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["ore"], "ore_unit" ]
+  grade_unit:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["grade"], "grade_unit" ]
+  id:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , "id"]
+  category:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["category", .. ]
+  contained_metal:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["contained_metal"]]
+  date:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["date"]]
+  zone:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["zone"]]
+  id_reference:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["id"]]
+  issue_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["issue"]]
+  id_document:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["id"]
+  uri_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["uri"]]
+  doi:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["doi"]]
+  volume:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["volume"]]
+  year_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["year"]]
+  month_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["month"]]
+  authors:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["authors"]]
+  journal:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["journal"]]
+  description_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["description"]]
+  title_document:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["title"]]
+  page_info_array:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. ]
+  page_info:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"]], ["page_info"]]
+  bounding_box:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"]]
+  x_min:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_min" ]
+  x_max:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_max" ]
+  y_min:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_min" ]
+  y_max:
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_max" ]
+  page:
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .., "page"]
+
+alignments:
+  - type: auto
+
+semantic_model:
+  mndr:DepositTypeCandidate:1:
+    properties:
+      - [ drepr:uri, id_deposit_type_candidate ]
+      - [ mndr:id, id_deposit_type_candidate ]
+      - [ mndr:observed_name, deposit_type_name ]
+      - [ mndr:source, deposit_type_source ]
+      - - mndr:normalized_uri
+        - deposit_type_normalized_uri
+        - xsd:anyURI
+      - [ mndr:confidence, deposit_type_confidence ]
+    subject: deposit_type_name
+
+  mndr:MineralSite:1:
+    properties:
+      - [ drepr:uri, id_mineral_site ]
+      - [ mndr:id, id_mineral_site ]
+      - [ mndr:name, name_mineral_site ]
+      - [ mndr:source_id, source_mineral_site ]
+      - [ mndr:record_id, record_mineral_site ]
+    links:
+      - - mndr:deposit_type_candidate
+        - mndr:DepositTypeCandidate:1
+      - - mndr:location_info
+        - mndr:LocationInfo:1
+      - - mndr:mineral_inventory
+        - mndr:MineralInventory:1
+    subject: id_mineral_site
+
+  mndr:LocationInfo:1:
+    properties:
+      - [ mndr:country, location_info_country ]
+      - [ mndr:location_source_record_id, location_info_location_source_record_id ]
+      - [ mndr:location_source, location_info_location_source ]
+      - [ mndr:crs, location_info_crs ]
+      - [ mndr:state_or_province, location_info_state ]
+      - - mndr:location
+        - location_info_location
+        - geo:wktLiteral
+    links: [ ]
+    subject: location_info_country
+
+  mndr:GeologyInfo:1:
+    properties:
+      - [ mndr:unit_name, geology_info_unit_name ]
+      - [ mndr:age, geology_info_age ]
+      - [ mndr:lithology, geology_info_lithology ]
+      - [ mndr:comments, geology_info_comments ]
+      - [ mndr:description, geology_info_description ]
+      - [ mndr:process, geology_info_process ]
+    links: [ ]
+
+  mndr:MineralInventory:1:
+    properties:
+      - [ drepr:uri, id ]
+      - - mndr:id
+        - id
+      - - mndr:contained_metal
+        - contained_metal
+      - - mndr:date
+        - date
+        - xsd:date
+      - - mndr:zone
+        - zone
+      - - mndr:commodity
+        - commodity
+        - xsd:anyURI
+    links:
+      - - mndr:ore
+        - mndr:Ore:1
+      - - mndr:grade
+        - mndr:Grade:1
+      - - mndr:cutoff_grade
+        - mndr:Grade:2
+      - - mndr:reference
+        - mndr:Reference:1
+      - [mndr:category, mndr:Category:1]
+    subject: id
+
+  mndr:Category:1:
+    properties:
+      - [drepr:uri, category]
+
+  mndr:Reference:1:
+    properties:
+      - [mndr:date, id_reference]
+    links:
+      - - mndr:document
+        - mndr:Document:1
+      - - mndr:page_info
+        - mndr:PageInfo:1
+
+  mndr:PageInfo:1:
+    properties:
+      - [ mndr:page, page ]
+    links:
+      - [ mndr:bounding_box,  mndr:BoundingBox:1 ]
+
+  mndr:BoundingBox:1:
+    properties:
+      - [ mndr:x_min, x_min ]
+      - [ mndr:x_max, x_max ]
+      - [ mndr:y_min, y_min ]
+      - [ mndr:y_max, y_max ]
+    links: [ ]
+    subject: x_min
+
+  mndr:Document:1:
+    properties:
+      - - mndr:id
+        - id_document
+      - - mndr:uri
+        - uri_document
+      - - mndr:doi
+        - doi
+      - - mndr:journal
+        - journal
+      - - mndr:authors
+        - authors
+      - - mndr:description
+        - description_document
+      - - mndr:title
+        - title_document
+      - - mndr:volume
+        - volume
+      - - mndr:issue
+        - issue_document
+      - - mndr:month
+        - month_document
+      - - mndr:year
+        - year_document
+    inverse_static_properties: [ ]
+    links: [ ]
+    subject: id_document
+
+  mndr:Ore:1:
+    properties:
+      - - mndr:ore_value
+        - ore_value
+      - - mndr:ore_unit
+        - ore_unit
+        - xsd:anyURI
+    links: [ ]
+  mndr:Grade:1:
+    properties:
+      - - mndr:grade_value
+        - grade_value
+      - - mndr:grade_unit
+        - grade_unit
+        - xsd:anyURI
+    links: [ ]
+  mndr:Grade:2:
+    properties:
+      - - mndr:grade_value
+        - cutoff_grade_value
+      - - mndr:grade_unit
+        - cutoff_grade_unit
+        - xsd:anyURI
+    static_properties: [ ]
+    inverse_static_properties: [ ]
+    links: [ ]
+  prefixes:
+    mndr: https://minmod.isi.edu/resource/
+    geokb: https://geokb.wikibase.cloud/entity/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    xsd: http://www.w3.org/2001/XMLSchema#
+    owl: http://www.w3.org/2002/07/owl#
+    drepr: https://purl.org/drepr/1.0/
+    geo: http://www.opengis.net/ont/geosparql#
+    gkbi: https://geokb.wikibase.cloud/entity/
+    gkbp: https://geokb.wikibase.cloud/wiki/Property/
