@@ -16,18 +16,30 @@ def is_valid_json(s):
     except ValueError:
         return False
 
-def get_lfs_objects(file_content, branch):
-    metadata = file_content.split('\n')
-    oid_line = next((line for line in metadata if line.startswith("oid")), None)
-    size_line = next((line for line in metadata if line.startswith("size")), None)
-    if oid_line:
-        oid = oid_line.split(" ")[-1][7:]
-        size = size_line.split(" ")[-1]
-        file_content = download_file_with_git_lfs(oid, int(size), branch)
-        return file_content
-    else:
-        print('Invalid response ', file_content)
-        raise
+def get_lfs_objects(file_path, branch):
+    repo_url = 'https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git'
+
+    # Clone the repository to a temporary directory
+    repo_dir = 'temp_repo'
+    repo = git.Repo.clone_from(repo_url, repo_dir)
+
+    # Navigate to the repository directory
+    os.chdir(repo_dir)
+
+    # Download the file using git-lfs
+    repo.git.checkout(branch)
+
+    # Read the content of the file
+    with open(file_path, 'r') as file:
+        content = file.read()
+
+    # Print or process the content as needed
+    print('\n'.join(content.split('\n')[:10]))
+
+    # Clean up: delete the temporary repository directory
+    os.chdir('..')
+    os.system(f'rm -rf {repo_dir}')
+    return content
 
 def download_file_with_git_lfs(oid, size, branch):
     url = "https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git/info/lfs/objects/batch"
@@ -76,7 +88,7 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     if response.status_code == 200:
         file_info = response.text
         if not is_valid_json(file_info):
-            file_info = get_lfs_objects(file_info , branch)
+            file_info = get_lfs_objects(path_to_file , branch)
 
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
