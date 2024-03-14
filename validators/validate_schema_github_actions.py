@@ -204,12 +204,12 @@ if validator_utils.is_json_file_under_data(file_path):
         print(f"An error occurred: {e}")
         raise
 
-    json_string = validator_utils.remove_non_printable_chars(file_content)
+    json_string = (file_content)
     print('------------')
     print(json_string)
 
     json_data = json.loads(json_string)
-    print('Json validated ...')
+    print('Json validated ...,' json_data)
 
     if 'MineralSite' in json_data:
         json_data = add_id_to_mineral_site(json_data, temp_file)
