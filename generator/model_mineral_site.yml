@@ -24,7 +24,7 @@ attributes:
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
   location_info_location:
-    path: ["MineralSite", .. , ["location_info"], ["location"]
+    path: ["MineralSite", .. , ["location_info"], ["location"]]
   location_info_country:
     path: ["MineralSite", .. , ["location_info"], ["country"]]
   location_info_state:
@@ -68,7 +68,7 @@ attributes:
   id:
     path: ["MineralSite", .. , ["MineralInventory"], .. , "id"]
   category:
-    path: ["MineralSite", .. , ["MineralInventory"], .. , ["category", .. ]
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["category"], .. ]
   contained_metal:
     path: ["MineralSite", .. , ["MineralInventory"], .. , ["contained_metal"]]
   date:
@@ -80,7 +80,7 @@ attributes:
   issue_document:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["issue"]]
   id_document:
-    path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["id"]
+    path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["id"]]
   uri_document:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["document"], ["uri"]]
   doi:
@@ -102,7 +102,7 @@ attributes:
   page_info_array:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. ]
   page_info:
-    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"]], ["page_info"]]
+    path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"]]
   bounding_box:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"]]
   x_min:
