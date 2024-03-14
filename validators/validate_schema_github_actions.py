@@ -77,7 +77,8 @@ def add_id_to_mineral_site(json_data, file_path):
     for ms in ms_list:
         if "deposit_type_candidate" in ms:
             for dp in ms['deposit_type_candidate']:
-                validator_utils.is_valid_uri(dp['normalized_uri'])
+                if 'normalized_uri' in dp:
+                    validator_utils.is_valid_uri(dp['normalized_uri'])
                 dp['id'] = mndr_url + validator_utils.deposit_uri(dp)
 
         ms['id'] = mndr_url + validator_utils.mineral_site_uri(ms)
