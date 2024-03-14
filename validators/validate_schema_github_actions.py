@@ -185,6 +185,7 @@ if validator_utils.is_json_file_under_data(file_path):
 
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
+    print(file_content)
     try:
         json_data = json.loads(file_content)
         if 'MineralSite' in json_data:
