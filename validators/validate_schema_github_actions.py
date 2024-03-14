@@ -74,7 +74,7 @@ def get_lfs_objects(file_path, branch):
 #     # file_content = response.text
 #
 #     if response_data.status_code == 200:
-#         return ''
+#         return content
 #     else:
 #         print('Not 200 ')
 #         return ''
@@ -250,40 +250,43 @@ print(changed_files, branch)
 
 if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
-    file_content = read_file_from_github(owner, repo, file_path, token, branch)
-
-    # print(f'{file_path} is a JSON file, running validation on it')
-    json_data = {}
-    # file_content = validator_utils.remove_non_printable_chars(file_content)
-    print('*************')
-    try:
-        json_data = json.loads(file_content)
-        if 'MineralSite' in json_data:
-            print('Mineral Site validation ...')
-            json_data = validate_json_schema(json_data)
-        elif 'MineralSystem' in json_data:
-            print('Mineral System validation ...')
-            json_data = validate_json_schema_mineral_system(json_data)
-        else:
-            print('No validation', json_data)
-    except FileNotFoundError:
-        print(f"File '{file_path}' was deleted, skipping.")
-        sys.exit(0)
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
-
-    json_string = (file_content)
-    print('------------')
-    # print(json_string)
-
-    json_data = json.loads(json_string)
-    print('Json validated ...')
-
-    if 'MineralSite' in json_data:
-        json_data = add_id_to_mineral_site(json_data, temp_file)
-    elif 'MineralSystem' in json_data:
-        json_data = add_id_to_mineral_system(json_data, temp_file)
+    with open(file_path, 'r') as file:
+        content = file.read()
+    print(content)
+    # file_content = read_file_from_github(owner, repo, file_path, token, branch)
+    #
+    # # print(f'{file_path} is a JSON file, running validation on it')
+    # json_data = {}
+    # # file_content = validator_utils.remove_non_printable_chars(file_content)
+    # print('*************')
+    # try:
+    #     json_data = json.loads(file_content)
+    #     if 'MineralSite' in json_data:
+    #         print('Mineral Site validation ...')
+    #         json_data = validate_json_schema(json_data)
+    #     elif 'MineralSystem' in json_data:
+    #         print('Mineral System validation ...')
+    #         json_data = validate_json_schema_mineral_system(json_data)
+    #     else:
+    #         print('No validation', json_data)
+    # except FileNotFoundError:
+    #     print(f"File '{file_path}' was deleted, skipping.")
+    #     sys.exit(0)
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")
+    #     raise
+    #
+    # json_string = (file_content)
+    # print('------------')
+    # # print(json_string)
+    #
+    # json_data = json.loads(json_string)
+    # print('Json validated ...')
+    # 
+    # if 'MineralSite' in json_data:
+    #     json_data = add_id_to_mineral_site(json_data, temp_file)
+    # elif 'MineralSystem' in json_data:
+    #     json_data = add_id_to_mineral_system(json_data, temp_file)
 else:
     print(f'{file_path} is not a JSON file')
 
