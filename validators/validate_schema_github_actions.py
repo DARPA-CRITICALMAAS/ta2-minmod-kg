@@ -21,7 +21,6 @@ def read_file_from_github(owner, repo, path_to_file, token, branch):
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
 
-    print('Getting info of file ', path_to_file)
     file_info = ''
 
     if response.status_code == 200:

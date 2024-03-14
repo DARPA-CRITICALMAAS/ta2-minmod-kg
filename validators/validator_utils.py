@@ -32,7 +32,7 @@ def mineral_inventory_uri(param1):
 
 
 def remove_non_printable_chars(text):
-    clean_text = text.replace('\n', ' ').replace('\\u000b', '').replace('\\n', ' ')
+    clean_text = text.replace('\n', ' ').replace('\\u000b', '').replace('\\n', ' ').replace('\\"', ' ').replace('\"', ' ')
     return clean_text
 
 

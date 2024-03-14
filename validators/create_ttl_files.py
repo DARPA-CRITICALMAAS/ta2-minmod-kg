@@ -29,7 +29,7 @@ def run_drepr_on_mineral_system(datasource):
 
 def remove_non_printable_chars(text):
     # Remove vertical tabs and newlines
-    clean_text = text.replace('\n', '').replace('\\u000b', '')
+    clean_text = text.replace('\n', ' ').replace('\\u000b', '').replace('\\n', ' ').replace('\\"', ' ').replace('\"', ' ')
     return clean_text
 
 
