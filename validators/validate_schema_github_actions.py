@@ -19,9 +19,11 @@ def is_valid_json(s):
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
+    print('Making a call to github')
     response = requests.get(url, headers=headers)
 
     file_info = ''
+    print('Made a call to github')
 
     if response.status_code == 200:
         file_info = response.text
@@ -182,9 +184,10 @@ owner = 'DARPA-CRITICALMAAS'
 repo = 'ta2-minmod-data'
 
 if validator_utils.is_json_file_under_data(file_path):
+    print(f'{file_path} is a JSON file, running validation on it')
     file_content = read_file_from_github(owner, repo, file_path, token, branch)
 
-    print(f'{file_path} is a JSON file, running validation on it')
+    # print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
     # file_content = validator_utils.remove_non_printable_chars(file_content)
     print('*************')
