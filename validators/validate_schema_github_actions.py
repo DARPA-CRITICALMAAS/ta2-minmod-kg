@@ -8,7 +8,7 @@ import generate_uris
 import validator_utils
 import requests
 import base64
-import lfs_file_download
+# import lfs_file_download
 
 def is_valid_json(s):
     try:
