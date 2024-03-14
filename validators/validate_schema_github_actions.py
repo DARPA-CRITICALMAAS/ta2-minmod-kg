@@ -59,8 +59,9 @@ def download_file_with_git_lfs(oid, size, branch):
     # file_content = response.text
 
     if response_data.status_code == 200:
-        return response_data.text
+        return ''
     else:
+        print('Not 200 ')
         return ''
 
 def read_file_from_github(owner, repo, path_to_file, token, branch):
