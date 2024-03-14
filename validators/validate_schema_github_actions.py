@@ -183,6 +183,8 @@ file_path = changed_files
 owner = 'DARPA-CRITICALMAAS'
 repo = 'ta2-minmod-data'
 
+print(changed_files, branch)
+
 if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     file_content = read_file_from_github(owner, repo, file_path, token, branch)
