@@ -50,6 +50,7 @@ def download_file_with_git_lfs(oid, size, branch):
     response = requests.post(url, json=data, headers=headers)
     print('Pulled data from batch API')
     response_json = response.json()
+    print(response_json)
 
     download_url = response_json['objects'][0]['actions']['download']['href']
     response = requests.get(download_url)
