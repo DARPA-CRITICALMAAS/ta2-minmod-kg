@@ -1,6 +1,7 @@
 import os
 import generate_uris
 import validators
+import requests
 
 def is_valid_uri(uri):
     return validators.url(uri)
