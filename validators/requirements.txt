@@ -7,3 +7,4 @@ drepr==2.11.2
 validators==0.22.0
 python-slugify==8.0.4
 git-lfs==1.6
+GitPython==0.3.2
