@@ -18,6 +18,8 @@ def is_valid_json(s):
         return False
 
 def get_lfs_objects(file_path, branch):
+
+    print('Get lfs objects ')
     repo_url = 'https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git'
 
     # Clone the repository to a temporary directory
@@ -42,40 +44,40 @@ def get_lfs_objects(file_path, branch):
     os.system(f'rm -rf {repo_dir}')
     return content
 
-def download_file_with_git_lfs(oid, size, branch):
-    url = "https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git/info/lfs/objects/batch"
-    headers = {
-        "Accept": "application/vnd.git-lfs+json",
-        "Content-Type": "application/vnd.git-lfs+json",
-    }
-    data = {
-        "operation": "download",
-        "ref": {"name": f"refs/heads/{branch}"},
-        "objects": [
-            {
-                "oid": f"{oid}",
-                "size": size
-            }
-        ],
-        "hash_algo": "sha256"
-    }
-    print('Pulling data from batch API')
-    response = requests.post(url, json=data, headers=headers)
-    print('Pulled data from batch API')
-    response_json = response.json()
-    print(response_json)
-
-    download_url = response_json['objects'][0]['actions']['download']['href']
-
-    print(download_url)
-    response_data = requests.get(download_url)
-    # file_content = response.text
-
-    if response_data.status_code == 200:
-        return ''
-    else:
-        print('Not 200 ')
-        return ''
+# def download_file_with_git_lfs(oid, size, branch):
+#     url = "https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data.git/info/lfs/objects/batch"
+#     headers = {
+#         "Accept": "application/vnd.git-lfs+json",
+#         "Content-Type": "application/vnd.git-lfs+json",
+#     }
+#     data = {
+#         "operation": "download",
+#         "ref": {"name": f"refs/heads/{branch}"},
+#         "objects": [
+#             {
+#                 "oid": f"{oid}",
+#                 "size": size
+#             }
+#         ],
+#         "hash_algo": "sha256"
+#     }
+#     print('Pulling data from batch API')
+#     response = requests.post(url, json=data, headers=headers)
+#     print('Pulled data from batch API')
+#     response_json = response.json()
+#     print(response_json)
+#
+#     download_url = response_json['objects'][0]['actions']['download']['href']
+#
+#     print(download_url)
+#     response_data = requests.get(download_url)
+#     # file_content = response.text
+#
+#     if response_data.status_code == 200:
+#         return ''
+#     else:
+#         print('Not 200 ')
+#         return ''
 
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
