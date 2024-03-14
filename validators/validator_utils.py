@@ -647,15 +647,15 @@ def download_file_with_git_lfs(oid, size, branch):
     return file_content
 
 
-def get_lfs_objects(file_content, branch):
-    metadata = file_content.split('\n')
-    oid_line = next((line for line in metadata if line.startswith("oid")), None)
-    size_line = next((line for line in metadata if line.startswith("size")), None)
-    if oid_line:
-        oid = oid_line.split(" ")[-1][7:]
-        size = size_line.split(" ")[-1]
-        file_content = download_file_with_git_lfs(oid, int(size), branch)
-        return file_content
-    else:
-        print('Invalid response ', file_content)
-        raise
+# def get_lfs_objects(file_content, branch):
+#     metadata = file_content.split('\n')
+#     oid_line = next((line for line in metadata if line.startswith("oid")), None)
+#     size_line = next((line for line in metadata if line.startswith("size")), None)
+#     if oid_line:
+#         oid = oid_line.split(" ")[-1][7:]
+#         size = size_line.split(" ")[-1]
+#         file_content = download_file_with_git_lfs(oid, int(size), branch)
+#         return file_content
+#     else:
+#         print('Invalid response ', file_content)
+#         raise
