@@ -22,22 +22,11 @@ def download_file_with_git_lfs(oid, size, branch):
     }
 
     response = requests.post(url, json=data, headers=headers)
-
-    print(response.status_code)
-    print(response.json())
-
     response_json = response.json()
 
     download_url = response_json['objects'][0]['actions']['download']['href']
-
-    # Making the API call to fetch the file content
     response = requests.get(download_url)
-
-    # Assigning the response text to the variable 'file_content'
     file_content = response.text
-
-    # Printing the first 10 lines of the output text
-    print('\n'.join(file_content.split('\n')[:10]))
 
     return file_content
 
@@ -46,7 +35,6 @@ def get_lfs_objects(file_content, branch):
     metadata = file_content.split('\n')
     oid_line = next((line for line in metadata if line.startswith("oid")), None)
     size_line = next((line for line in metadata if line.startswith("size")), None)
-    print(size_line)
     if oid_line:
         oid = oid_line.split(" ")[-1][7:]
         size = size_line.split(" ")[-1]
