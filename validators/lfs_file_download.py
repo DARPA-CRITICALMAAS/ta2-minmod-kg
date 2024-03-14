@@ -41,4 +41,4 @@ def get_lfs_objects(file_content, branch):
         return file_content
     else:
         print('Invalid response ', file_content)
-        sys.exit(1)
+        raise
