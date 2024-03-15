@@ -13,7 +13,7 @@ def run_drepr_on_file(datasource, model_file, base_path):
         output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
         output_data = '\n'.join(output_lines)
         # clean_content = validator_utils.remove_non_printable_chars(output_data)
-        print(output_data)
+        # print(output_data)
         return output_data
     except subprocess.CalledProcessError as e:
         print("Error executing command:", e)
