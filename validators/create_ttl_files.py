@@ -23,12 +23,12 @@ def run_drepr_on_file(datasource, model_file, base_path):
 def run_drepr_on_mineral_site(datasource, base_path):
     model_file = base_path + 'generator/model.yml'
     print(model_file)
-    return run_drepr_on_file(datasource, model_file)
+    return run_drepr_on_file(datasource, model_file, base_path)
 
 
 def run_drepr_on_mineral_system(datasource, base_path):
     model_file = base_path + 'generator/model_mineral_system.yml'
-    return run_drepr_on_file(datasource, model_file)
+    return run_drepr_on_file(datasource, model_file, base_path)
 
 def remove_non_printable_chars(text):
     # Remove vertical tabs and newlines
