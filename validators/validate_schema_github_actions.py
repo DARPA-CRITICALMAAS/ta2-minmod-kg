@@ -148,6 +148,11 @@ temp_file = sys.argv[2]
 base_path = sys.argv[3]
 
 file_path = changed_files
+
+with open(file_path, 'r') as file:
+    # Write the new data to the file
+    print(file.read())
+
 if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
