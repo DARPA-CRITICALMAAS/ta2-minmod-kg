@@ -172,11 +172,12 @@ if validator_utils.is_json_file_under_data(file_path):
 
     json_string = json.dumps(json_data)
     json_string = validator_utils.remove_non_printable_chars(json_string)
+    print('\n'.join(json_string.split('\n')[:3]))
 
     json_data = json.loads(json_string)
     print('Json validated ...')
     # print(json_string)
-    print('\n'.join(json_string.split('\n')[:3]))
+
 
     if 'MineralSite' in json_data:
         json_data = add_id_to_mineral_site(json_data, base_path)
