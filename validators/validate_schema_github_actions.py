@@ -153,6 +153,7 @@ file_path = changed_files
 #     # Write the new data to the file
 #     print(file.read())
 
+print(file_path)
 if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
