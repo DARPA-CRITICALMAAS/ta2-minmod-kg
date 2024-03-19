@@ -173,7 +173,7 @@ if validator_utils.is_json_file_under_data(file_path):
     json_string = json.dumps(json_data)
     json_string = validator_utils.remove_non_printable_chars(json_string)
     # print('\n'.join(json_string.split('\n')[:3]))
-    print(json_string)
+    # print(json_string)
 
     json_data = json.loads(json_string)
     print('Json validated ...')
