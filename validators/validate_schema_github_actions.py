@@ -178,7 +178,7 @@ if validator_utils.is_json_file_under_data(file_path):
     # # print('\n'.join(json_string.split('\n')[:3]))
     # # print(json_string)
     # 
-    # json_data = json.loads(json_string)
+    json_data = json.loads(json_string)
     # 
     # # print(json_string)
     # 
