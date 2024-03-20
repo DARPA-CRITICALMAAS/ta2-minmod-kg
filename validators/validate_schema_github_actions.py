@@ -103,9 +103,9 @@ def add_id_to_mineral_site(json_data, base_path):
 
 
     # filename = get_filename(file_path)
-    with open(file_path, 'w') as file:
-        # Write the new data to the file
-        file.write(json.dumps(json_data, indent=2) + '\n')
+    # with open(file_path, 'w') as file:
+    #     # Write the new data to the file
+    #     file.write(json.dumps(json_data, indent=2) + '\n')
     create_ttl_files.create_drepr_from_mineral_site(file_path, base_path)
 
 
