@@ -182,8 +182,8 @@ if validator_utils.is_json_file_under_data(file_path):
     # # print(json_string)
     # 
     # 
-    # if 'MineralSite' in json_data:
-    #     json_data = add_id_to_mineral_site(json_data, base_path)
+    if 'MineralSite' in json_data:
+        json_data = add_id_to_mineral_site(json_data, base_path)
     # elif 'MineralSystem' in json_data:
     #     json_data = add_id_to_mineral_system(json_data, base_path)
 else:
