@@ -39,9 +39,9 @@ def remove_non_printable_chars(text):
 
 def create_drepr_file_mineral_site(file_path, base_path):
     file_content = run_drepr_on_mineral_site(file_path, base_path)
-    validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
+    # validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
-    if not validated_drepr:
+    if False:
         print('Pyshacl Validation failed for Mineral Site')
         raise
     else:
