@@ -63,7 +63,7 @@ def create_drepr_file_mineral_system(file_path, base_path):
 
 
 def create_drepr_from_mineral_site(file_path, base_path, temp_file):
-    create_drepr_file_mineral_site(file_path, base_path)
+    create_drepr_file_mineral_site(file_path, base_path, temp_file)
 
 
 def create_drepr_from_mineral_system(file_path, base_path):
