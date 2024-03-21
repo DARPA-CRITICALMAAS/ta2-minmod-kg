@@ -130,7 +130,7 @@ semantic_model:
         - deposit_type_normalized_uri
         - xsd:anyURI
       - [ mndr:confidence, deposit_type_confidence ]
-    subject: deposit_type_name
+    subject: deposit_type_normalized_uri
 
   mndr:MineralSite:1:
     properties:
@@ -170,6 +170,7 @@ semantic_model:
       - [ mndr:description, geology_info_description ]
       - [ mndr:process, geology_info_process ]
     links: [ ]
+    subject: geology_info_unit_name
 
   mndr:MineralInventory:1:
     properties:

@@ -203,6 +203,7 @@ def validate_using_shacl_mineral_site(data_graph):
     sh:class mndr:MineralSite;
             sh:property [   
             sh:path mndr:deposit_type_candidate ;
+            sh:minCount 1 ;
             sh:or ( [ sh:nodeKind sh:IRI ; ] [ sh:class mndr:DepositTypeCandidate ] ) ;
         ];
         sh:property [   
@@ -362,9 +363,11 @@ def validate_using_shacl_mineral_site(data_graph):
     sh:class  mndr:Grade ;
            sh:property [
                             sh:path mndr:grade_unit ;
-                            sh:nodeKind sh:IRI ; ;
+                            sh:nodeKind sh:IRI ; 
+                            sh:minCount 1 ;
                         ] ;
             sh:property [
+                            sh:minCount 1 ;
                             sh:path mndr:grade_value ;
                             sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
                         ] .
