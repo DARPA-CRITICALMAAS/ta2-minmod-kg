@@ -140,7 +140,7 @@ def add_id_to_mineral_system(json_data, base_path):
     with open(file_path, 'w') as file:
         # Write the new data to the file
         file.write(json.dumps(json_data, indent=2) + '\n')
-    create_ttl_files.create_drepr_from_mineral_system(file_path, base_path)
+    create_ttl_files.create_drepr_from_mineral_system(file_path, base_path, temp_file)
 
 
 changed_files = sys.argv[1]
@@ -183,7 +183,7 @@ if validator_utils.is_json_file_under_data(file_path):
     # 
     # 
     if 'MineralSite' in json_data:
-        json_data = add_id_to_mineral_site(json_data, base_path)
+        json_data = add_id_to_mineral_site(json_data, base_path, temp_file)
     # elif 'MineralSystem' in json_data:
     #     json_data = add_id_to_mineral_system(json_data, base_path)
 else:
