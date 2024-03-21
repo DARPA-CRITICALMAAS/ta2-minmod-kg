@@ -41,7 +41,7 @@ def validate_json_schema_mineral_system(json_data):
     return json_data
 
 
-def add_id_to_mineral_site(json_data, base_path):
+def add_id_to_mineral_site(json_data, base_path, temp_file):
     ms_list = json_data['MineralSite']
     mndr_url = 'https://minmod.isi.edu/resource/'
 
@@ -106,7 +106,7 @@ def add_id_to_mineral_site(json_data, base_path):
     # with open(file_path, 'w') as file:
     #     # Write the new data to the file
     #     file.write(json.dumps(json_data, indent=2) + '\n')
-    create_ttl_files.create_drepr_from_mineral_site(file_path, base_path)
+    create_ttl_files.create_drepr_from_mineral_site(file_path, base_path, temp_file)
 
 
 
