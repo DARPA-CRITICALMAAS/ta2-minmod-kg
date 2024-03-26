@@ -8,17 +8,28 @@ import generate_uris
 import validator_utils
 import requests
 import base64
+import lfs_file_download
 
+def is_valid_json(s):
+    try:
+        json.loads(s)
+        return True
+    except ValueError:
+        return False
 def read_file_from_github(owner, repo, path_to_file, token, branch):
     url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path_to_file}"
     headers = {"Authorization": f"token {token}"}
+    print('Making a call to github')
     response = requests.get(url, headers=headers)
 
-    # Parse the response JSON
     file_info = ''
+    print('Made a call to github')
 
     if response.status_code == 200:
         file_info = response.text
+        if not is_valid_json(file_info):
+            file_info = lfs_file_download.get_lfs_objects(file_info , branch)
+
     elif response.status_code == 404:
         print(f"File '{file_path}' was deleted, skipping.")
         sys.exit(0)
@@ -68,7 +79,8 @@ def add_id_to_mineral_site(json_data, file_path):
     for ms in ms_list:
         if "deposit_type_candidate" in ms:
             for dp in ms['deposit_type_candidate']:
-                validator_utils.is_valid_uri(dp['normalized_uri'])
+                if 'normalized_uri' in dp:
+                    validator_utils.is_valid_uri(dp['normalized_uri'])
                 dp['id'] = mndr_url + validator_utils.deposit_uri(dp)
 
         ms['id'] = mndr_url + validator_utils.mineral_site_uri(ms)
@@ -171,11 +183,16 @@ file_path = changed_files
 owner = 'DARPA-CRITICALMAAS'
 repo = 'ta2-minmod-data'
 
+print(changed_files, branch)
+
 if validator_utils.is_json_file_under_data(file_path):
+    print(f'{file_path} is a JSON file, running validation on it')
     file_content = read_file_from_github(owner, repo, file_path, token, branch)
 
-    print(f'{file_path} is a JSON file, running validation on it')
+    # print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
+    # file_content = validator_utils.remove_non_printable_chars(file_content)
+    print('*************')
     try:
         json_data = json.loads(file_content)
         if 'MineralSite' in json_data:
@@ -193,7 +210,9 @@ if validator_utils.is_json_file_under_data(file_path):
         print(f"An error occurred: {e}")
         raise
 
-    json_string = validator_utils.remove_non_printable_chars(file_content)
+    json_string = (file_content)
+    print('------------')
+    # print(json_string)
 
     json_data = json.loads(json_string)
     print('Json validated ...')
