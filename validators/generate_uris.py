@@ -180,9 +180,12 @@ def process_mineral_inventory(ms, id):
         document = reference['document']
         uri_doc = process_document(document)
         commodity = process_mi['commodity']
+        grade_unit = str(process_mi.get('grade', {'grade_value':''}).get('grade_value', ''))
+        
+        ore_unit = str(process_mi.get('ore', {'ore_value':''}).get('ore_value', ''))
         category_str = ','.join(process_mi.get('category', []))
 
-        merged_string += (uri_ms + '-' + uri_doc + '-' + custom_slugify(commodity) + '-' + custom_slugify(category_str))
+        merged_string += (uri_ms + '-' + uri_doc + '-' + custom_slugify(commodity) + '-' + custom_slugify(category_str) + '-' + grade_unit + '-' + ore_unit)
 
 
     if merged_string == '':
@@ -195,8 +198,8 @@ def process_mineral_inventory(ms, id):
 
 
 def trim_and_append_hash(string):
-    if len(string) > 50:
-        trimmed_string = string[:50]
+    if len(string) > 100:
+        trimmed_string = string[:100]
     else:
         trimmed_string = string
 
