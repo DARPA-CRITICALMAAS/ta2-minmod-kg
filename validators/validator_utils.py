@@ -159,6 +159,7 @@ def mineral_site_schema():
                                     },
                                     "date": {"type": "string", "format": "date"},
                                     "commodity": {"type": "string"},
+                                    "observed_commodity": {"type": "string"},
                                     "ore": {
                                         "type": "object",
                                         "properties": {

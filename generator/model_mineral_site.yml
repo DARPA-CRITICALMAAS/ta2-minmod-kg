@@ -51,6 +51,8 @@ attributes:
     path: [ "MineralSite", .. , ["geology_info"], ["comments"]]
   commodity:
     path: ["MineralSite", .. ,["MineralInventory"], .. , ["commodity"]]
+  observed_commodity:
+    path: [ "MineralSite", .. ,[ "MineralInventory" ], .. , [ "observed_commodity" ] ]
   ore:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["ore"]]
   ore_value:
@@ -234,6 +236,12 @@ alignments:
   - type: dimension
     source: id
     target: commodity
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: observed_commodity
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
@@ -429,7 +437,6 @@ semantic_model:
   mndr:DepositTypeCandidate:1:
     properties:
       - [ drepr:uri, id_deposit_type_candidate ]
-      - [ mndr:id, id_deposit_type_candidate ]
       - [ mndr:observed_name, deposit_type_name ]
       - [ mndr:source, deposit_type_source ]
       - - mndr:normalized_uri
@@ -493,6 +500,9 @@ semantic_model:
       - - mndr:commodity
         - commodity
         - xsd:anyURI
+      - - mndr:observed_commodity
+        - observed_commodity
+        - xsd:anyURI
     links:
       - - mndr:ore
         - mndr:Ore:1
@@ -535,8 +545,7 @@ semantic_model:
 
   mndr:Document:1:
     properties:
-      - - mndr:id
-        - id_document
+      - [drepr:uri, id_document]
       - - mndr:uri
         - uri_document
       - - mndr:doi
