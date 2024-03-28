@@ -181,6 +181,11 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:nodeKind sh:IRI ;
         ] ;
         sh:property [   
+            sh:path mndr:observed_commodity ;
+            sh:minCount 0 ;
+            sh:nodeKind sh:IRI ;
+        ] ;
+        sh:property [   
             sh:path mndr:date ;
             sh:minCount 0 ;
             sh:datatype xsd:date ;
@@ -765,23 +770,19 @@ def validate_mineral_system_using_shacl(data_graph):
     sh:class mndr:BoundingBox;
         sh:property [   
             sh:path mndr:x_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string] ) ;
         ];
         sh:property [   
             sh:path mndr:x_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string]) ;
         ];
         sh:property [   
             sh:path mndr:y_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string]) ;
         ];
         sh:property [   
             sh:path mndr:y_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string]) ;
         ];
         .
                           

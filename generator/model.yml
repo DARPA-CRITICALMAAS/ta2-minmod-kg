@@ -105,6 +105,8 @@ preprocessing:
             v['id'] = -1
           if 'commodity' not in v:
             v['commodity'] = -1
+          if 'observed_commodity' not in v:
+            v['observed_commodity'] = -1
           if 'date' not in v:
             v['date'] = -1
           if 'zone' not in v:
@@ -134,6 +136,8 @@ preprocessing:
         value['category'] = ["http://minmod.isi.edu/resource/MISSING"]
       if 'commodity' not in value:
         value['commodity'] = -1
+      if 'observed_commodity' not in value:
+        value['observed_commodity'] = -1
       if 'reference' not in value:
         value['reference'] = {}
       if 'contained_metal' not in value:
@@ -370,6 +374,9 @@ attributes:
   commodity:
     path: ["MineralSite", .. ,"MineralInventory", .. , "commodity"]
     missing_values: [ -1 ]
+  observed_commodity:
+    path: [ "MineralSite", .. ,"MineralInventory", .. , "observed_commodity" ]
+    missing_values: [ -1 ]
   ore:
     path: [ "MineralSite", .. , "MineralInventory", .. , "ore"]
     missing_values: [ -1 ]
@@ -590,6 +597,12 @@ alignments:
       - { source: 3, target: 3 }
   - type: dimension
     source: id
+    target: observed_commodity
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
     target: category
     aligned_dims:
       - { source: 1, target: 1 }
@@ -780,7 +793,6 @@ semantic_model:
   mndr:DepositTypeCandidate:1:
     properties:
       - [ drepr:uri, id_deposit_type_candidate ]
-      - [ mndr:id, id_deposit_type_candidate ]
       - [ mndr:observed_name, deposit_type_name ]
       - [ mndr:source, deposit_type_source ]
       - - mndr:normalized_uri
@@ -839,6 +851,9 @@ semantic_model:
         - zone
       - - mndr:commodity
         - commodity
+        - xsd:anyURI
+      - - mndr:observed_commodity
+        - observed_commodity
         - xsd:anyURI
     links:
       - - mndr:ore

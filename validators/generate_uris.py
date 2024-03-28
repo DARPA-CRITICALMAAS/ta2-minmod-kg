@@ -225,9 +225,7 @@ def custom_slugify(s):
         (".", ""),
         ("_", ""),
         (",", ""),
-        ("/", ""),
-        ("\W", ""),
-        ("\s+", "")
+        ("/", "")
        ]
 
     slug = slugify(s, replacements=replacements)
