@@ -6,7 +6,6 @@ def validate_using_shacl_mineral_site(data_graph):
 
     resources = """
     
-    
     mndr:Measured a mndr:ResourceReserveCategory .
     
     mndr:Indicated a mndr:ResourceReserveCategory .
