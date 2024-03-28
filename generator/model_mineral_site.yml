@@ -51,6 +51,8 @@ attributes:
     path: [ "MineralSite", .. , ["geology_info"], ["comments"]]
   commodity:
     path: ["MineralSite", .. ,["MineralInventory"], .. , ["commodity"]]
+  observed_commodity:
+    path: [ "MineralSite", .. ,[ "MineralInventory" ], .. , [ "observed_commodity" ] ]
   ore:
     path: [ "MineralSite", .. , ["MineralInventory"], .. , ["ore"]]
   ore_value:
@@ -117,13 +119,324 @@ attributes:
     path: ["MineralSite", .. , ["MineralInventory"], .. , ["reference"], ["page_info"], .., "page"]
 
 alignments:
-  - type: auto
+  - type: dimension
+    source: id_mineral_site
+    target: name_mineral_site
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: source_mineral_site
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: record_mineral_site
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_location
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_country
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_state
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_location_source_record_id
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_location_source
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: location_info_crs
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_age
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_unit_name
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_process
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_description
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_comments
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_lithology
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: geology_info_environment
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: id
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: id_mineral_site
+    target: deposit_type_name
+    aligned_dims:
+      - { source: 1, target: 1 }
+  - type: dimension
+    source: deposit_type_name
+    target: deposit_type_source
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: deposit_type_name
+    target: id_deposit_type_candidate
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: deposit_type_name
+    target: deposit_type_normalized_uri
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: deposit_type_name
+    target: deposit_type_confidence
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: commodity
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: observed_commodity
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: category
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: contained_metal
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: ore
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: date
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: zone
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: ore_value
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: grade_value
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: cutoff_grade_value
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: cutoff_grade_unit
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: ore_unit
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: grade_unit
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: id_reference
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_reference
+    target: id_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_reference
+    target: page_info
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: doi
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: page
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+  - type: dimension
+    source: id_document
+    target: bounding_box
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+
+  - type: dimension
+    source: page
+    target: x_min
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+  - type: dimension
+    source: page
+    target: x_max
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+  - type: dimension
+    source: page
+    target: y_min
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+  - type: dimension
+    source: page
+    target: y_max
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+      - { source: 6, target: 6 }
+  - type: dimension
+    source: id_document
+    target: title_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: uri_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: journal
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: authors
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: year_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: month_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: issue_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: volume
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id_document
+    target: description_document
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
 
 semantic_model:
   mndr:DepositTypeCandidate:1:
     properties:
       - [ drepr:uri, id_deposit_type_candidate ]
-      - [ mndr:id, id_deposit_type_candidate ]
       - [ mndr:observed_name, deposit_type_name ]
       - [ mndr:source, deposit_type_source ]
       - - mndr:normalized_uri
@@ -187,6 +500,9 @@ semantic_model:
       - - mndr:commodity
         - commodity
         - xsd:anyURI
+      - - mndr:observed_commodity
+        - observed_commodity
+        - xsd:anyURI
     links:
       - - mndr:ore
         - mndr:Ore:1
@@ -229,12 +545,13 @@ semantic_model:
 
   mndr:Document:1:
     properties:
-      - - mndr:id
-        - id_document
+      - [drepr:uri, id_document]
       - - mndr:uri
         - uri_document
+        - xsd:anyURI
       - - mndr:doi
         - doi
+        - xsd:anyURI
       - - mndr:journal
         - journal
       - - mndr:authors

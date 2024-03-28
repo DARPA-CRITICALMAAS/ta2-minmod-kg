@@ -4,7 +4,6 @@ import validator_utils
 
 def run_drepr_on_file(datasource, model_file, base_path, temp_file):
     destination = base_path + 'generated_files/ttl_files/'
-    print(destination)
     command = f' python -m drepr -r {model_file} -d default="{datasource}"'
     print('Running ... ', command)
 
@@ -13,11 +12,10 @@ def run_drepr_on_file(datasource, model_file, base_path, temp_file):
         output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
         output_data = '\n'.join(output_lines)
         with open(temp_file, 'w') as file:
-    # Write the new data to the file
             file.write(output_data)
-        # clean_content = validator_utils.remove_non_printable_chars(output_data)
+        clean_content = validator_utils.remove_non_printable_chars(output_data)
         # print(output_data)
-        # return output_data
+        return output_data
     except subprocess.CalledProcessError as e:
         print("Error executing command:", e)
         print("Command output (if any):", e.output)

@@ -184,6 +184,11 @@ def validate_using_shacl_mineral_site(file_path):
             sh:nodeKind sh:IRI ;
         ] ;
         sh:property [   
+            sh:path mndr:observed_commodity ;
+            sh:minCount 0 ;
+            sh:nodeKind sh:IRI ;
+        ] ;
+        sh:property [   
             sh:path mndr:date ;
             sh:minCount 0 ;
             sh:datatype xsd:date ;
