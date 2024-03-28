@@ -108,6 +108,10 @@ def add_id_to_mineral_site(json_data, base_path, temp_file):
     with open(file_path, 'w') as file:
         # Write the new data to the file
         file.write(json.dumps(json_data, indent=2) + '\n')
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for line in lines[:20]:
+            print(line.rstrip())
     create_ttl_files.create_drepr_from_mineral_site(file_path, base_path, temp_file)
 
 
@@ -174,8 +178,17 @@ if validator_utils.is_json_file_under_data(file_path):
         raise
 
     json_string = json.dumps(json_data)
+
+    # lines = json_string.split('\n')
+    # for line in lines[:20]:
+    #     print(line)
     json_string = validator_utils.remove_non_printable_chars(json_string)
     json_data = json.loads(json_string)
+    print('Json validated ....')
+
+    # lines = json_string.split('\n')
+    # for line in lines[:20]:
+    #     print(line)
 
     if 'MineralSite' in json_data:
         json_data = add_id_to_mineral_site(json_data, base_path, temp_file)
