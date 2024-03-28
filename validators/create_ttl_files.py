@@ -1,11 +1,14 @@
 import subprocess
 import validate_pyshacl
 import validator_utils
+import time
+
 
 def run_drepr_on_file(datasource, model_file, base_path, temp_file):
     destination = base_path + 'generated_files/ttl_files/'
     command = f' python -m drepr -r {model_file} -d default="{datasource}"'
     print('Running ... ', command)
+    start_time = time.time()
 
     try:
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
@@ -16,6 +19,12 @@ def run_drepr_on_file(datasource, model_file, base_path, temp_file):
         lines = output_data.split('\n')
         for line in lines[:20]:
             print(line)
+        end_time = time.time()
+        # Calculate time taken
+        time_taken = end_time - start_time
+    
+        # Print time taken
+        print(f"Time Taken: {time_taken} seconds to generate ttl")
         # clean_content = validator_utils.remove_non_printable_chars(output_data)
         print('Generated ttl ...')
         return output_data
@@ -26,7 +35,7 @@ def run_drepr_on_file(datasource, model_file, base_path, temp_file):
 
 
 def run_drepr_on_mineral_site(datasource, base_path, temp_file):
-    model_file = base_path + 'generator/model.yml'
+    model_file = '/Users/namratasharma/Documents/USC/OnCampus/DARPA/ta2-minmod-kg/generator/model.yml'
     print(model_file)
     return run_drepr_on_file(datasource, model_file, base_path, temp_file)
 
@@ -44,7 +53,14 @@ def remove_non_printable_chars(text):
 def create_drepr_file_mineral_site(file_path, base_path, temp_file):
     print(base_path)
     file_content = run_drepr_on_mineral_site(file_path, base_path, temp_file)
+    start_time = time.time()
     validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(temp_file)
+    end_time = time.time()
+    # Calculate time taken
+    time_taken = end_time - start_time
+    
+    # Print time taken
+    print(f"Time Taken: {time_taken} seconds to validate ttl")
 
     if not validated_drepr:
         print('Pyshacl Validation failed for Mineral Site')

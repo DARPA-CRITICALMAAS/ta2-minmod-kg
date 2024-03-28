@@ -909,3 +909,6 @@ def validate_mineral_system_using_shacl(data_graph):
         print('This is fine')
 
     return True
+
+
+# https://minmod.isi.edu/resource/httpsw3idorgusgsz4530692cgwu8xbq14496679b3def93d6f3de2e08c11a762470c5da3bf33995a06f2e29c161805dfd8c26b05f92729db60
