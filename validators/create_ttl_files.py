@@ -13,6 +13,9 @@ def run_drepr_on_file(datasource, model_file, base_path, temp_file):
         output_data = '\n'.join(output_lines)
         with open(temp_file, 'w') as file:
             file.write(output_data)
+        lines = output_data.split('\n')
+        for line in lines[:20]:
+            print(line)
         # clean_content = validator_utils.remove_non_printable_chars(output_data)
         print('Generated ttl ...')
         return output_data
