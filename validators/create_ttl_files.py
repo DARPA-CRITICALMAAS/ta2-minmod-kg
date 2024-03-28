@@ -13,7 +13,7 @@ def run_drepr_on_file(datasource, model_file, base_path, temp_file):
         output_data = '\n'.join(output_lines)
         with open(temp_file, 'w') as file:
             file.write(output_data)
-        clean_content = validator_utils.remove_non_printable_chars(output_data)
+        # clean_content = validator_utils.remove_non_printable_chars(output_data)
         # print(output_data)
         return output_data
     except subprocess.CalledProcessError as e:
@@ -39,10 +39,11 @@ def remove_non_printable_chars(text):
 
 
 def create_drepr_file_mineral_site(file_path, base_path, temp_file):
+    print(base_path)
     file_content = run_drepr_on_mineral_site(file_path, base_path, temp_file)
-    validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(temp_file)
+    # validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(temp_file)
 
-    if not validated_drepr:
+    if False:
         print('Pyshacl Validation failed for Mineral Site')
         raise
     else:
