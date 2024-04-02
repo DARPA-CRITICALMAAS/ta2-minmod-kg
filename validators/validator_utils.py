@@ -104,7 +104,7 @@ def mineral_site_schema():
                                 "environment": {"type": "string"}
                             }
                         },
-                        "MineralInventory": {
+                        "mineral_inventory": {
                             "type": "array",
                             "items": {
                                 "type": "object",

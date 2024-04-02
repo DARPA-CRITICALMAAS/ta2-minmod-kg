@@ -173,8 +173,8 @@ def process_mineral_inventory(ms, id):
 
     uri_ms = process_mineral_site(ms)
 
-    if 'MineralInventory' in ms:
-        list_mi = ms['MineralInventory']
+    if 'mineral_inventory' in ms:
+        list_mi = ms['mineral_inventory']
         process_mi = list_mi[int(id)]
         reference = process_mi['reference']
         document = reference['document']

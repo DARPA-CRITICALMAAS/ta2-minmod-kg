@@ -78,8 +78,8 @@ def add_id_to_mineral_site(json_data, file_path):
             if "state_or_province" in ll and ll["state_or_province"] is None:
                 ll["state_or_province"] = ""
 
-        if "MineralInventory" in ms:
-            mi_list = ms['MineralInventory']
+        if "mineral_inventory" in ms:
+            mi_list = ms['mineral_inventory']
             counter = 0
 
             for mi in mi_list:
