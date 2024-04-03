@@ -10,7 +10,6 @@ def run_drepr_on_file(datasource, model_file):
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
         output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
         output_data = '\n'.join(output_lines)
-        clean_content = remove_non_printable_chars(output_data)
         return output_data
     except subprocess.CalledProcessError as e:
         print("Error executing command:", e)
@@ -26,11 +25,6 @@ def run_drepr_on_mineral_site(datasource):
 def run_drepr_on_mineral_system(datasource):
     model_file = 'generator/model_mineral_system.yml'
     return run_drepr_on_file(datasource, model_file)
-
-def remove_non_printable_chars(text):
-    # Remove vertical tabs and newlines
-    clean_text = text.replace('\n', '').replace('\\u000b', '')
-    return clean_text
 
 
 def create_drepr_file_mineral_site(file_path):

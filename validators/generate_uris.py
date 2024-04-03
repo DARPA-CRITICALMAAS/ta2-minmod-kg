@@ -75,13 +75,13 @@ def process_mineral_site(ms):
         merged_string = (f"{ms['record_id']}")
         merged_string = custom_slugify(merged_string)
     else:
-        return str(uuid.uuid4())
+        return 'mineral_site' + str(uuid.uuid4())
 
     if merged_string == '':
-        return str(uuid.uuid4())
+        return 'mineral_site' + str(uuid.uuid4())
 
     hashed_string = trim_and_append_hash(merged_string)
-    return hashed_string
+    return 'mineral_site' + hashed_string
 
 
 
@@ -105,10 +105,10 @@ def process_mineral_system(ms):
 
 
     if merged_string == '':
-        return str(uuid.uuid4())
+        return 'mineral_system' + str(uuid.uuid4())
 
     hashed_string = trim_and_append_hash(merged_string)
-    return hashed_string
+    return 'mineral_system' + hashed_string
 
 
 def process_deposit_type(data):
@@ -130,10 +130,10 @@ def process_deposit_type(data):
     merged_string += '-'
 
     if merged_string == '':
-        return str(uuid.uuid4())
+        return 'deposit_type' + str(uuid.uuid4())
 
     hashed_string = trim_and_append_hash(merged_string)
-    return hashed_string
+    return 'deposit_type' + hashed_string
 
 def process_document(data):
     merged_string = ''
@@ -162,47 +162,44 @@ def process_document(data):
     merged_string += '-'
 
     if merged_string == '':
-        return str(uuid.uuid4())
+        return 'document' + str(uuid.uuid4())
 
     hashed_string = trim_and_append_hash(merged_string)
 
-    return hashed_string
+    return 'document' + hashed_string
 
 def process_mineral_inventory(ms, id):
     merged_string = ''
 
     uri_ms = process_mineral_site(ms)
 
-    if 'MineralInventory' in ms:
-        list_mi = ms['MineralInventory']
+    if 'mineral_inventory' in ms:
+        list_mi = ms['mineral_inventory']
         process_mi = list_mi[int(id)]
         reference = process_mi['reference']
         document = reference['document']
         uri_doc = process_document(document)
         commodity = process_mi['commodity']
+        grade_unit = str(process_mi.get('grade', {'grade_value':''}).get('grade_value', ''))
+        
+        ore_unit = str(process_mi.get('ore', {'ore_value':''}).get('ore_value', ''))
         category_str = ','.join(process_mi.get('category', []))
 
-        merged_string += (uri_ms + '-' + uri_doc + '-' + custom_slugify(commodity) + '-' + custom_slugify(category_str))
+        merged_string += (uri_ms + '-' + uri_doc + '-' + custom_slugify(commodity) + '-' + custom_slugify(category_str) + '-' + grade_unit + '-' + ore_unit)
 
 
     if merged_string == '':
-        return str(uuid.uuid4())
+        return 'mineral_inventory' + str(uuid.uuid4())
 
     hashed_string = trim_and_append_hash(merged_string)
 
-    return hashed_string
+    return 'mineral_inventory' + hashed_string
 
 
 
 def trim_and_append_hash(string):
-    if len(string) > 50:
-        trimmed_string = string[:50]
-    else:
-        trimmed_string = string
-
     string_hash = hashlib.sha256(string.encode()).hexdigest()
-
-    return trimmed_string + string_hash
+    return string_hash
 
 def remove_http(url):
     parsed_url = urlparse(url)

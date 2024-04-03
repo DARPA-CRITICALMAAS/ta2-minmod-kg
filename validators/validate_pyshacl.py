@@ -6,7 +6,6 @@ def validate_using_shacl_mineral_site(data_graph):
 
     resources = """
     
-    
     mndr:Measured a mndr:ResourceReserveCategory .
     
     mndr:Indicated a mndr:ResourceReserveCategory .
@@ -43,10 +42,6 @@ def validate_using_shacl_mineral_site(data_graph):
     @prefix mndr:  <https://minmod.isi.edu/resource/> .
     @prefix prov:  <http://www.w3.org/ns/prov#> .
     @prefix ex:  <http://www.w3.org/ns/prov#> .
-    
-    mndr:MappableCriteria-https___minmod.isi.edu_resource_criteria
-            a        sh:PropertyShape ;
-            sh:path  mndr:criteria .
       
     mndr:Document  a     sh:NodeShape  ;
     sh:targetClass mndr:Document;
@@ -246,109 +241,7 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:datatype xsd:string ;
         ];
         .
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_name
-            a        sh:PropertyShape ;
-            sh:datatype  xsd:string ;
-            sh:path  mndr:name .
-            
-            
-    mndr:MineralSite-https___minmod.isi.edu_resource_source_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:source_id .
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_record_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:record_id .
-    
-    mndr:Document-https___minmod.isi.edu_resource_month
-            a        sh:PropertyShape ;
-            sh:path  mndr:month .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_description
-            a        sh:PropertyShape ;
-            sh:path  mndr:description .
-    
-    mndr:Document-https___minmod.isi.edu_resource_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:id .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_exhumation
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:exhumation .
-    
-    mndr:LocationInfo-https___minmod.isi.edu_resource_location_source
-            a        sh:PropertyShape ;
-            sh:path  mndr:location_source .
-    
-    mndr:Document-https___minmod.isi.edu_resource_journal
-            a        sh:PropertyShape ;
-            sh:path  mndr:journal .
-    
-    mndr:MineralInventory-https___minmod.isi.edu_resource_commodity
-            a            sh:PropertyShape ;
-            sh:datatype  xsd:anyURI ;
-            sh:path      mndr:commodity .
-    
-    
-    mndr:MineralInventory-https___minmod.isi.edu_resource_date
-            a            sh:PropertyShape ;
-            sh:datatype  xsd:date ;
-            sh:path      mndr:date .
-    
-    
-    mndr:DepositType-https___minmod.isi.edu_resource_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:id .
-    
-    mndr:ResourceReserveCategory  a sh:NodeShape ;
-        sh:class mndr:ResourceReserveCategory . 
-         
-    mndr:Measured  a sh:NodeShape ;
-         sh:subClassOf mndr:ResourceReserveCategory .
-         
-    
-    mndr:category
-            a         sh:PropertyShape ;
-            sh:class  mndr:ResourceReserveCategory ;
-            sh:path   mndr:category .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_comments
-            a        sh:PropertyShape ;
-            sh:path  mndr:comments .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_dispersion
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:dispersion .
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_location_info
-            a         sh:PropertyShape ;
-            sh:class  mndr:LocationInfo ;
-            sh:path   mndr:location_info .
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_deposit_type
-            a         sh:PropertyShape ;
-            sh:class  mndr:DepositType ;
-            sh:targetClass  mndr:DepositType ;
-            sh:minCount 0 ;  
-            sh:maxCount 1 ;
-            sh:path   mndr:deposit_type .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_conduit
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:conduit .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_environment
-            a        sh:PropertyShape ;
-            sh:path  mndr:environment .
-    
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_age
-            a        sh:PropertyShape ;
-            sh:path  mndr:age .
+        
     
     mndr:Ore  a          sh:NodeShape;
     sh:targetClass mndr:Ore;
@@ -489,12 +382,6 @@ def validate_using_shacl_mineral_site(data_graph):
                             sh:maxCount 1 ;
                         ].
                         
-    mndr:MineralSystem  a sh:NodeShape ;
-            sh:property  mndr:MineralSystem-https___minmod.isi.edu_resource_throttle , mndr:MineralSystem-https___minmod.isi.edu_resource_trigger , mndr:MineralSystem-https___minmod.isi.edu_resource_conduit , mndr:MineralSystem-https___minmod.isi.edu_resource_source_metal , mndr:MineralSystem-https___minmod.isi.edu_resource_direct_detection , mndr:MineralSystem-https___minmod.isi.edu_resource_source_other , mndr:MineralSystem-https___minmod.isi.edu_resource_dispersion , mndr:MineralSystem-https___minmod.isi.edu_resource_exhumation , mndr:MineralSystem-https___minmod.isi.edu_resource_driver , mndr:MineralSystem-https___minmod.isi.edu_resource_source_fluid , mndr:MineralSystem-https___minmod.isi.edu_resource_deposit_type , mndr:MineralSystem-https___minmod.isi.edu_resource_trap , mndr:MineralSystem-https___minmod.isi.edu_resource_source_ligand .
-    
-    mndr:Document-https___minmod.isi.edu_resource_authors
-            a        sh:PropertyShape ;
-            sh:path  mndr:authors .
     
     
     mndr:PageInfo a   sh:NodeShape ;
@@ -509,156 +396,6 @@ def validate_using_shacl_mineral_site(data_graph):
                             sh:class mndr:BoundingBox ;
                         ].
     
-    
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_trap
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:trap .
-    
-    mndr:LocationInfo-https___minmod.isi.edu_resource_location
-            a         sh:PropertyShape ;
-            sh:datatype  geo:wktLiteral ;
-            sh:path   mndr:location .
-    
-    mndr:MineralInventory-https___minmod.isi.edu_resource_zone
-            a        sh:PropertyShape ;
-            sh:path  mndr:zone .
-    
-    mndr:Document-https___minmod.isi.edu_resource_issue
-            a        sh:PropertyShape ;
-            sh:path  mndr:issue .
-    
-    mndr:Document-https___minmod.isi.edu_resource_title
-            a        sh:PropertyShape ;
-            sh:path  mndr:title .
-    
-    mndr:Commodity-https___minmod.isi.edu_resource_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:id .
-    
-    mndr:Document-https___minmod.isi.edu_resource_year
-            a        sh:PropertyShape ;
-            sh:path  mndr:year .
-    
-    mndr:MineralInventory-https___minmod.isi.edu_resource_contained_metal
-            a         sh:PropertyShape ;
-            sh:datatype  xsd:decimal ;
-            sh:path   mndr:contained_metal .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_unit_name
-            a        sh:PropertyShape ;
-            sh:path  mndr:unit_name .
-    
-    mndr:Document-https___minmod.isi.edu_resource_doi
-            a        sh:PropertyShape ;
-            sh:path  mndr:doi .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_process
-            a        sh:PropertyShape ;
-            sh:path  mndr:process .
-    
-    mndr:LocationInfo-https___minmod.isi.edu_resource_crs
-            a        sh:PropertyShape ;
-            sh:path  mndr:crs .
-    
-    mndr:Document-https___minmod.isi.edu_resource_volume
-            a        sh:PropertyShape ;
-            sh:path  mndr:volume .
-    
-    
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_mineral_inventory
-            a         sh:PropertyShape ;
-            sh:class  mndr:MineralInventory ;
-            sh:path   mndr:mineral_inventory .
-    
-    mndr:Document-https___minmod.isi.edu_resource_uri
-            a        sh:PropertyShape ;
-            sh:path  mndr:uri .
-    
-    mndr:MineralInventory-https___minmod.isi.edu_resource_id
-            a        sh:PropertyShape ;
-            sh:path  mndr:id .
-    
-    mndr:GeologyInfo-https___minmod.isi.edu_resource_lithology
-            a        sh:PropertyShape ;
-            sh:path  mndr:lithology .
-    
-    mndr:LocationInfo-https___minmod.isi.edu_resource_country
-            a        sh:PropertyShape ;
-            sh:path  mndr:country .
-    
-    mndr:LocationInfo-https___minmod.isi.edu_resource_state_or_province
-            a        sh:PropertyShape ;
-            sh:path  mndr:state_or_province .
-    
-    mndr:Commodity-https___minmod.isi.edu_resource_name
-            a        sh:PropertyShape ;
-            sh:path  mndr:name .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_driver
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:driver .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_throttle
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:throttle .
-    
-    mndr:MappableCriteria-https___minmod.isi.edu_resource_potential_dataset
-            a        sh:PropertyShape ;
-            sh:path  mndr:potential_dataset .
-    
-    mndr:MappableCriteria-https___minmod.isi.edu_resource_supporting_references
-            a        sh:PropertyShape ;
-            sh:path  mndr:supporting_references .
-    
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_source_fluid
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:source_fluid .
-    
-    
-    mndr:MappableCriteria-https___minmod.isi.edu_resource_theoretical
-            a        sh:PropertyShape ;
-            sh:path  mndr:theoretical .
-    
-    
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_source_metal
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:source_metal .
-    
-    
-    mndr:MappableCriteria
-            a            sh:NodeShape ;
-            sh:property  mndr:MappableCriteria-https___minmod.isi.edu_resource_supporting_references , mndr:MappableCriteria-https___minmod.isi.edu_resource_theoretical , mndr:MappableCriteria-https___minmod.isi.edu_resource_criteria , mndr:MappableCriteria-https___minmod.isi.edu_resource_potential_dataset .
-    
-    mndr:MineralSite-https___minmod.isi.edu_resource_geology_info
-            a         sh:PropertyShape ;
-            sh:class  mndr:GeologyInfo ;
-            sh:path   mndr:geology_info .
-    
-    
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_source_other
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:source_other .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_direct_detection
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:direct_detection .
-    
-    mndr:MineralSystem-https___minmod.isi.edu_resource_trigger
-            a         sh:PropertyShape ;
-            sh:class  mndr:MappableCriteria ;
-            sh:path   mndr:trigger .
     
     """
     shapes_g = Graph().parse(data=shapes_graph, format="turtle")

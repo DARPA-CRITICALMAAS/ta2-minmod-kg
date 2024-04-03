@@ -78,8 +78,8 @@ def add_id_to_mineral_site(json_data, file_path):
             if "state_or_province" in ll and ll["state_or_province"] is None:
                 ll["state_or_province"] = ""
 
-        if "MineralInventory" in ms:
-            mi_list = ms['MineralInventory']
+        if "mineral_inventory" in ms:
+            mi_list = ms['mineral_inventory']
             counter = 0
 
             for mi in mi_list:
@@ -180,7 +180,9 @@ if validator_utils.is_json_file_under_data(file_path):
     print(f'{file_path} is a JSON file, running validation on it')
     json_data = {}
     try:
-        json_data = json.loads(file_content)
+        json_string = validator_utils.remove_non_printable_chars(file_content)
+        json_data = json.loads(json_string)
+
         if 'MineralSite' in json_data:
             print('Mineral Site validation ...')
             json_data = validate_json_schema(json_data)
@@ -195,8 +197,6 @@ if validator_utils.is_json_file_under_data(file_path):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise
-
-    json_string = validator_utils.remove_non_printable_chars(file_content)
 
     json_data = json.loads(json_string)
     print('Json validated ...')

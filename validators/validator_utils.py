@@ -32,7 +32,9 @@ def mineral_inventory_uri(param1):
 
 
 def remove_non_printable_chars(text):
-    clean_text = text.replace('\n', ' ').replace('\\u000b', '').replace('\\n', ' ')
+    clean_text = text.replace('\\u000b', '')
+    clean_text = clean_text.replace('\\"', '').replace('\\n', ' ')
+    clean_text = clean_text.replace('\\', '')
     return clean_text
 
 
@@ -102,7 +104,7 @@ def mineral_site_schema():
                                 "environment": {"type": "string"}
                             }
                         },
-                        "MineralInventory": {
+                        "mineral_inventory": {
                             "type": "array",
                             "items": {
                                 "type": "object",
