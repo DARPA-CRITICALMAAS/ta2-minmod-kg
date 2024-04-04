@@ -178,7 +178,6 @@ def validate_using_shacl_mineral_site(data_graph):
         sh:property [   
             sh:path mndr:observed_commodity ;
             sh:minCount 0 ;
-            sh:nodeKind sh:IRI ;
         ] ;
         sh:property [   
             sh:path mndr:date ;

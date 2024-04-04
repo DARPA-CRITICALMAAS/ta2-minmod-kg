@@ -89,8 +89,6 @@ def add_id_to_mineral_site(json_data, file_path):
 
                 if "commodity" in mi:
                     validator_utils.is_valid_uri(mi['commodity'])
-                if "observed_commodity" in mi:
-                    validator_utils.is_valid_uri(mi['observed_commodity'])
 
                 if "ore" in mi:
                     if "ore_unit" in mi['ore']:
