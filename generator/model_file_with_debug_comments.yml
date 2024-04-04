@@ -18,7 +18,7 @@ preprocessing:
         value['record_id'] = -1
       if 'id' not in value:
         value['id'] = -1
-      if 'MineralInventory' not in value:
+      if 'mineral_inventory' not in value:
         value['MineralInventory'] = [{}]
       if 'geology_info' not in value:
         value['geology_info'] = {}
@@ -99,7 +99,7 @@ preprocessing:
         value['location_source'] = -1
       return value
   - type: pmap
-    path: ["MineralSite", .., "MineralInventory"]
+    path: ["MineralSite", .., "mineral_inventory"]
     code: |
       value = value.copy()
       print('^^^^^^^^^^^^^')
@@ -136,7 +136,7 @@ preprocessing:
       print(value)
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", ..  ]
+    path: [ "MineralSite", .. , "mineral_inventory", ..  ]
     code: |
       value = value.copy()
       print('--------')
@@ -200,7 +200,7 @@ preprocessing:
         v['id'] = -1
       return v
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference" ]
     change_structure: false
     code: |
       print('^^^^^')
@@ -214,7 +214,7 @@ preprocessing:
       print(value)
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document" ]
     change_structure: false
     code: |
       print('------^^^^^-------')
@@ -246,7 +246,7 @@ preprocessing:
         value['authors'] = -1
       return value
   - type: pmap
-    path: [ "MineralSite", .., "MineralInventory", .., "reference", "document", "authors", ]
+    path: [ "MineralSite", .., "mineral_inventory", .., "reference", "document", "authors", ]
     change_structure: false
     code: |
       print('------aaaaaaaaaa-------')
@@ -264,7 +264,7 @@ preprocessing:
       
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info" ]
     change_structure: false
     code: |
       if value == -1:
@@ -301,7 +301,7 @@ preprocessing:
       value = [{"bounding_box": {}, "page": -1}]
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .., "bounding_box"]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .., "bounding_box"]
     change_structure: false
     code: |
       print('(((((((((((((')
@@ -388,7 +388,7 @@ preprocessing:
         value['location_source'] = -1
       return value
   - type: pmap
-    path: ["MineralSite", .., "MineralInventory"]
+    path: ["MineralSite", .., "mineral_inventory"]
     code: |
       value = value.copy()
       print('^^^^^^^^^^^^^')
@@ -425,7 +425,7 @@ preprocessing:
       print(value)
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", ..  ]
+    path: [ "MineralSite", .. , "mineral_inventory", ..  ]
     code: |
       value = value.copy()
       print('--------')
@@ -489,7 +489,7 @@ preprocessing:
         v['id'] = -1
       return v
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference" ]
     change_structure: false
     code: |
       print('^^^^^')
@@ -503,7 +503,7 @@ preprocessing:
       print(value)
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document" ]
     change_structure: false
     code: |
       print('------^^^^^-------')
@@ -535,7 +535,7 @@ preprocessing:
         value['authors'] = -1
       return value
   - type: pmap
-    path: [ "MineralSite", .., "MineralInventory", .., "reference", "document", "authors", ]
+    path: [ "MineralSite", .., "mineral_inventory", .., "reference", "document", "authors", ]
     change_structure: false
     code: |
       print('------aaaaaaaaaa-------')
@@ -553,7 +553,7 @@ preprocessing:
       
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info" ]
     change_structure: false
     code: |
       if value == -1:
@@ -590,7 +590,7 @@ preprocessing:
       value = [{"bounding_box": {}, "page": -1}]
       return value
   - type: pmap
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .., "bounding_box"]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .., "bounding_box"]
     change_structure: false
     code: |
       print('(((((((((((((')
@@ -629,7 +629,7 @@ attributes:
     path: [ "MineralSite", .. , "record_id" ]
     missing_values: [ -1 ]
   mineral_inven:
-    path: [ "MineralSite", .. , "MineralInventory" ]
+    path: [ "MineralSite", .. , "mineral_inventory" ]
     missing_values: [ -1 ]
   deposit_type_main:
     path: ["MineralSite", .., "deposit_type", ..]
@@ -677,103 +677,103 @@ attributes:
     path: [ "MineralSite", .. , "geology_info", "comments" ]
     missing_values: [ -1 ]
   commodity:
-    path: ["MineralSite", .. ,"MineralInventory", .. , "commodity"]
+    path: ["MineralSite", .. ,"mineral_inventory", .. , "commodity"]
     missing_values: [ -1 ]
   ore:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "ore"]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "ore"]
     missing_values: [ -1 ]
   ore_value:
-    path: ["MineralSite", .. , "MineralInventory", .. , "ore", "ore_value"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "ore", "ore_value"]
     missing_values: [ -1 ]
   grade_value:
-    path: ["MineralSite", .. , "MineralInventory", .. , "grade", "grade_value"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "grade", "grade_value"]
     missing_values: [ -1 ]
   cutoff_grade_value:
-    path: ["MineralSite", .. , "MineralInventory", .. , "cutoff_grade", "grade_value"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "cutoff_grade", "grade_value"]
     missing_values: [ -1 ]
   cutoff_grade_unit:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "cutoff_grade", "grade_unit" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "cutoff_grade", "grade_unit" ]
     missing_values: [ -1 ]
   ore_unit:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "ore", "ore_unit" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "ore", "ore_unit" ]
     missing_values: [ -1 ]
   grade_unit:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "grade", "grade_unit" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "grade", "grade_unit" ]
     missing_values: [ -1 ]
   id:
-    path: ["MineralSite", .. , "MineralInventory", .. , "id"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "id"]
     missing_values: [ -1 ]
   category:
-    path: ["MineralSite", .. , "MineralInventory", .. , "category", .. ]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "category", .. ]
     missing_values: [ -1 ]
   contained_metal:
-    path: ["MineralSite", .. , "MineralInventory", .. , "contained_metal"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "contained_metal"]
     missing_values: [ -1 ]
   date:
-    path: ["MineralSite", .. , "MineralInventory", .. , "date"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "date"]
     missing_values: [ -1 ]
   zone:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "zone" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "zone" ]
     missing_values: [ -1 ]
   id_reference:
-    path: ["MineralSite", .. , "MineralInventory", .. , "reference", "id"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "reference", "id"]
     missing_values: [ -1 ]
   issue_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "issue" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "issue" ]
     missing_values: [ -1 ]
   id_document:
-    path: ["MineralSite", .. , "MineralInventory", .. , "reference", "document", "id"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "reference", "document", "id"]
     missing_values: [ -1 ]
   uri_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "uri" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "uri" ]
     missing_values: [ -1 ]
   doi:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "doi" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "doi" ]
     missing_values: [ -1 ]
   volume:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "volume" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "volume" ]
     missing_values: [ -1 ]
   year_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "year" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "year" ]
     missing_values: [ -1 ]
   month_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "month" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "month" ]
     missing_values: [ -1 ]
   authors:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "authors" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "authors" ]
     missing_values: [ -1 ]
   journal:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "journal" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "journal" ]
     missing_values: [ -1 ]
   description_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "description" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "description" ]
     missing_values: [ -1 ]
   title_document:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "document", "title" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "document", "title" ]
     missing_values: [ -1 ]
   page_info_array:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. ]
     missing_values: [ -1 ]
   page_info:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info"]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info"]
     missing_values: [ -1 ]
   bounding_box:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. , "bounding_box" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. , "bounding_box" ]
     missing_values: [ -1 ]
   x_min:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. , "bounding_box", "x_min" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. , "bounding_box", "x_min" ]
     missing_values: [ -1 ]
   x_max:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. , "bounding_box", "x_max" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. , "bounding_box", "x_max" ]
     missing_values: [ -1 ]
   y_min:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. , "bounding_box", "y_min" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. , "bounding_box", "y_min" ]
     missing_values: [ -1 ]
   y_max:
-    path: [ "MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .. , "bounding_box", "y_max" ]
+    path: [ "MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .. , "bounding_box", "y_max" ]
     missing_values: [ -1 ]
   page:
-    path: ["MineralSite", .. , "MineralInventory", .. , "reference", "page_info", .., "page"]
+    path: ["MineralSite", .. , "mineral_inventory", .. , "reference", "page_info", .., "page"]
     missing_values: [ -1 ]
   id_deposit_type_candidate:
     path: [ "MineralSite", .., "deposit_type_candidate", .., "id" ]

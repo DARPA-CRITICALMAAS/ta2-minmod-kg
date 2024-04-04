@@ -1,0 +1,27 @@
+version: "2"
+resources: csv
+preprocessing:
+  - type: pmap
+    path: [1.., 0]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+attributes:
+  minmod_id: [1.., 0]
+  name: [1.., 1]
+alignments:
+  - type: dimension
+    value: minmod_id:0 <-> name:0
+semantic_model:
+  mndr:ResourceReserveCategory:1:
+    properties:
+      - [drepr:uri, minmod_id]
+      - [rdfs:label, name, xsd:string]
+    static_properties: []
+    inverse_static_properties: []
+    links: []
+
+  prefixes:
+    mndr: https://minmod.isi.edu/resource/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    owl: http://www.w3.org/2002/07/owl#

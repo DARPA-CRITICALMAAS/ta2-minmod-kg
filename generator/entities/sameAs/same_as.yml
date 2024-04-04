@@ -1,0 +1,22 @@
+version: "2"
+resources: csv
+attributes:
+  minmod_id: [1.., 0]
+  same_as_id: [1.., 1]
+alignments:
+  - type: dimension
+    value: minmod_id:0 <-> same_as_id:0
+semantic_model:
+  mndr:MineralSite:1:
+    properties:
+      - [drepr:uri, minmod_id]
+      - [owl:sameAs, same_as_id, xsd:anyURI]
+    static_properties: []
+    inverse_static_properties: []
+    links: []
+
+  prefixes:
+    mndr: https://minmod.isi.edu/resource/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    owl: http://www.w3.org/2002/07/owl#

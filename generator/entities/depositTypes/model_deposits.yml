@@ -1,0 +1,47 @@
+version: "2"
+resources:
+  default:
+    type: csv
+    delimiter: ":"
+preprocessing:
+  - type: pmap
+    path: [1.., 1]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+attributes:
+  deposit_types: [1.., 0]
+  name: [1.., 0]
+  id: [1.., 1]
+  depid: [1.., 1]
+  env: [1.., 2]
+  group: [1.., 3]
+alignments:
+  - type: dimension
+    value: name:0 <-> deposit_types:0
+  - type: dimension
+    value: env:0 <-> deposit_types:0
+  - type: dimension
+    value: group:0 <-> deposit_types:0
+  - type: dimension
+    value: id:0 <-> deposit_types:0
+  - type: dimension
+    value: depid:0 <-> deposit_types:0
+semantic_model:
+  mndr:DepositType:1:
+    properties:
+      - [drepr:uri, id]
+      - [rdfs:label, name, xsd:string]
+      - [mndr:name, name, xsd:string]
+      - [mndr:environment, env, xsd:string]
+      - [mndr:deposit_group, group, xsd:string]
+      - [mndr:id, depid, xsd:anyURI]
+    static_properties: []
+    inverse_static_properties: []
+    links: []
+
+  prefixes:
+    mndr: https://minmod.isi.edu/resource/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    owl: http://www.w3.org/2002/07/owl#
+    gkbi: https://geokb.wikibase.cloud/entity/
