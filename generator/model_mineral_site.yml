@@ -502,7 +502,6 @@ semantic_model:
         - xsd:anyURI
       - - mndr:observed_commodity
         - observed_commodity
-        - xsd:anyURI
     links:
       - - mndr:ore
         - mndr:Ore:1
