@@ -894,6 +894,7 @@ semantic_model:
 
   mndr:Document:1:
     properties:
+      - [ drepr:uri, id_document ]
       - - mndr:id
         - id_document
       - - mndr:uri
