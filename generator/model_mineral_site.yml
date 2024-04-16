@@ -35,7 +35,7 @@ attributes:
     missing_values: ['']
   location_info_country:
     path: ["MineralSite", .. , ["location_info"], ["country"]]
-    missing_values: ['']
+    missing_values: [None]
   location_info_state:
     path: [ "MineralSite", .. , ["location_info"], ["state_or_province"]]
     missing_values: ['']
