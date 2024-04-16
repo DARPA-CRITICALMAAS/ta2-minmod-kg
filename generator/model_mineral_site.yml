@@ -14,67 +14,67 @@ attributes:
     path: [ "MineralSite", .. , ["mineral_inventory"]]
   id_deposit_type_candidate:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["id"]]
-    missing_values: [-1]
+    missing_values: ['']
   deposit_type_name:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["observed_name"]]
-    missing_values: [-1]
+    missing_values: ['']
   deposit_type_source:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["source"]]
-    missing_values: [-1]
+    missing_values: ['']
   deposit_type_confidence:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
-    missing_values: [-1]
+    missing_values: ['']
   deposit_type_normalized_uri:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
     missing_values: [-1]
   location_info_location:
     path: ["MineralSite", .. , ["location_info"], ["location"]]
-    missing_values: [-1]
+    missing_values: ['']
   location_info_country:
     path: ["MineralSite", .. , ["location_info"], ["country"]]
-    missing_values: [-1]
+    missing_values: ['']
   location_info_state:
     path: [ "MineralSite", .. , ["location_info"], ["state_or_province"]]
-    missing_values: [-1]
+    missing_values: ['']
   location_info_location_source_record_id:
     path: ["MineralSite", .. , ["location_info"], ["location_source_record_id"]]
-    missing_values: [-1]
+    missing_values: ['']
   location_info_location_source:
     path: ["MineralSite", .. , ["location_info"], ["location_source"]]
-    missing_values: [-1]
+    missing_values: ['']
   location_info_crs:
     path: ["MineralSite", .. , ["location_info"], ["crs"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_age:
     path: [ "MineralSite", .. , ["geology_info"], ["age"]]
     missing_values: [-1]
   geology_info_unit_name:
     path: [ "MineralSite", .. , ["geology_info"], ["unit_name"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_description:
     path: [ "MineralSite", .. , ["geology_info"], ["description"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_lithology:
     path: [ "MineralSite", .. , ["geology_info"], ["lithology"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_process:
     path: [ "MineralSite", .. , ["geology_info"], ["process"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_environment:
     path: [ "MineralSite", .. , ["geology_info"], ["environment"]]
-    missing_values: [-1]
+    missing_values: ['']
   geology_info_comments:
     path: [ "MineralSite", .. , ["geology_info"], ["comments"]]
-    missing_values: [-1]
+    missing_values: ['']
   commodity:
     path: ["MineralSite", .. ,["mineral_inventory"], .. , ["commodity"]]
     missing_values: [-1]
   observed_commodity:
     path: [ "MineralSite", .. ,[ "mineral_inventory" ], .. , [ "observed_commodity" ] ]
-    missing_values: [-1]
+    missing_values: ['']
   ore:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"]]
     missing_values: [-1]
@@ -89,13 +89,13 @@ attributes:
     missing_values: [-1]
   cutoff_grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_unit" ]
-    missing_values: [-1]
+    missing_values: ['']
   ore_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_unit" ]
-    missing_values: [-1]
+    missing_values: ['']
   grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_unit" ]
-    missing_values: [-1]
+    missing_values: ['']
   id:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , "id"]
     missing_values: [-1]
@@ -110,25 +110,25 @@ attributes:
     missing_values: [-1]
   zone:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["zone"]]
-    missing_values: [-1]
+    missing_values: ['']
   id_reference:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["id"]]
-    missing_values: [-1]
+    missing_values: ['']
   issue_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["issue"]]
-    missing_values: [-1]
+    missing_values: ['']
   id_document:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["id"]]
-    missing_values: [-1]
+    missing_values: ['']
   uri_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["uri"]]
-    missing_values: [-1]
+    missing_values: ['']
   doi:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["doi"]]
-    missing_values: [-1]
+    missing_values: ['']
   volume:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["volume"]]
-    missing_values: [-1]
+    missing_values: ['']
   year_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["year"]]
     missing_values: [-1]
@@ -140,13 +140,13 @@ attributes:
     missing_values: [-1]
   journal:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["journal"]]
-    missing_values: [-1]
+    missing_values: ['']
   description_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["description"]]
-    missing_values: [-1]
+    missing_values: ['']
   title_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["title"]]
-    missing_values: [-1]
+    missing_values: ['']
   page_info_array:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. ]
     missing_values: [-1]
