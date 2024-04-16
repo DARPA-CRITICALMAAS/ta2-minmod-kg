@@ -14,28 +14,27 @@ attributes:
     path: [ "MineralSite", .. , ["mineral_inventory"]]
   id_deposit_type_candidate:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["id"]]
-    missing_values: ['']
   deposit_type_name:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["observed_name"]]
-    missing_values: [None]
   deposit_type_source:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["source"]]
-    missing_values: ['']
   deposit_type_confidence:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
-    missing_values: ['']
   deposit_type_normalized_uri:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
     missing_values: ['']
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
     missing_values: ['']
+  location_info:
+    path: [ "MineralSite", .. , [ "location_info" ]]
+    missing_values: [ null ]
   location_info_location:
     path: ["MineralSite", .. , ["location_info"], ["location"]]
     missing_values: ['']
   location_info_country:
     path: ["MineralSite", .. , ["location_info"], ["country"]]
-    missing_values: [None]
+    missing_values: ['']
   location_info_state:
     path: [ "MineralSite", .. , ["location_info"], ["state_or_province"]]
     missing_values: ['']
