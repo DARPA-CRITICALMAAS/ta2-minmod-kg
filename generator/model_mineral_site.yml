@@ -22,7 +22,7 @@ attributes:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
   deposit_type_normalized_uri:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
-    missing_values: [null]
+    missing_values: [-1]
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
   location_info_location:
