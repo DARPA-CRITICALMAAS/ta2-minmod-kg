@@ -26,27 +26,18 @@ attributes:
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
     missing_values: ['']
-  location_info:
-    path: [ "MineralSite", .. , [ "location_info" ]]
-    missing_values: [ null ]
   location_info_location:
     path: ["MineralSite", .. , ["location_info"], ["location"]]
-    missing_values: ['']
   location_info_country:
     path: ["MineralSite", .. , ["location_info"], ["country"]]
-    missing_values: ['']
   location_info_state:
     path: [ "MineralSite", .. , ["location_info"], ["state_or_province"]]
-    missing_values: ['']
   location_info_location_source_record_id:
     path: ["MineralSite", .. , ["location_info"], ["location_source_record_id"]]
-    missing_values: ['']
   location_info_location_source:
     path: ["MineralSite", .. , ["location_info"], ["location_source"]]
-    missing_values: ['']
   location_info_crs:
     path: ["MineralSite", .. , ["location_info"], ["crs"]]
-    missing_values: ['']
   geology_info_age:
     path: [ "MineralSite", .. , ["geology_info"], ["age"]]
     missing_values: ['']
