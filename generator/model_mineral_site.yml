@@ -5,7 +5,7 @@ attributes:
     path: [ "MineralSite", .. , "id" ]
   name_mineral_site:
     path: [ "MineralSite", .. , ["name"]]
-    missing_values: ['']
+    missing_values: [-1]
   source_mineral_site:
     path: [ "MineralSite", .. , "source_id" ]
   record_mineral_site:
@@ -39,7 +39,6 @@ attributes:
     path: ["MineralSite", .. , ["location_info"], ["crs"]]
   geology_info_age:
     path: [ "MineralSite", .. , ["geology_info"], ["age"]]
-    missing_values: ['']
   geology_info_unit_name:
     path: [ "MineralSite", .. , ["geology_info"], ["unit_name"]]
   geology_info_description:
@@ -66,13 +65,13 @@ attributes:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_value"]
   cutoff_grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_unit" ]
-    missing_values: ['']
+    missing_values: [-1]
   ore_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_unit" ]
-    missing_values: ['']
+    missing_values: [-1]
   grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_unit" ]
-    missing_values: ['']
+    missing_values: [-1]
   id:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , "id"]
   category:
