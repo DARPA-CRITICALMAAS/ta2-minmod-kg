@@ -22,7 +22,7 @@ attributes:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
   deposit_type_normalized_uri:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
-    missing_values: ['']
+    missing_values: [-1]
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
   location_info_location:
@@ -449,7 +449,7 @@ semantic_model:
         - deposit_type_normalized_uri
         - xsd:anyURI
       - [ mndr:confidence, deposit_type_confidence ]
-    subject: id_deposit_type_candidate
+    subject: deposit_type_name
 
   mndr:MineralSite:1:
     properties:
