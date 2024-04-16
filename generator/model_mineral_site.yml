@@ -453,7 +453,8 @@ semantic_model:
       - [ mndr:source_id, source_mineral_site ]
       - [ mndr:record_id, record_mineral_site ]
     links:
-      - [ mndr:deposit_type_candidate, mndr:DepositTypeCandidate:1 ]
+      - - mndr:deposit_type_candidate
+        - mndr:DepositTypeCandidate:1
       - - mndr:location_info
         - mndr:LocationInfo:1
       - - mndr:mineral_inventory
