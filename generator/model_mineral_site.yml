@@ -443,7 +443,7 @@ semantic_model:
         - deposit_type_normalized_uri
         - xsd:anyURI
       - [ mndr:confidence, deposit_type_confidence ]
-    subject: deposit_type_normalized_uri
+    subject: id_deposit_type_candidate
 
   mndr:MineralSite:1:
     properties:
