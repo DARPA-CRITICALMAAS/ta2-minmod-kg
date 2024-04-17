@@ -552,7 +552,7 @@ semantic_model:
         - zone
       - - mndr:commodity
         - commodity
-        - xsd:anyURI
+        - drepr:uri
       - - mndr:observed_commodity
         - observed_commodity
     links:
@@ -628,7 +628,7 @@ semantic_model:
         - ore_value
       - - mndr:ore_unit
         - ore_unit
-        - xsd:anyURI
+        - drepr:uri
     links: [ ]
   mndr:Grade:1:
     properties:
@@ -636,7 +636,7 @@ semantic_model:
         - grade_value
       - - mndr:grade_unit
         - grade_unit
-        - xsd:anyURI
+        - drepr:uri
     links: [ ]
   mndr:Grade:2:
     properties:
@@ -644,7 +644,7 @@ semantic_model:
         - cutoff_grade_value
       - - mndr:grade_unit
         - cutoff_grade_unit
-        - xsd:anyURI
+        - drepr:uri
     static_properties: [ ]
     inverse_static_properties: [ ]
     links: [ ]
