@@ -137,7 +137,6 @@ attributes:
     missing_values: [-1]
   authors:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["authors"]]
-    missing_values: [-1]
   journal:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["journal"]]
     missing_values: [-1]
