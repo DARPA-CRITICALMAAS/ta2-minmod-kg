@@ -494,7 +494,7 @@ semantic_model:
       - [ mndr:source, deposit_type_source ]
       - - mndr:normalized_uri
         - deposit_type_normalized_uri
-        - xsd:anyURI
+        - drepr:uri
       - [ mndr:confidence, deposit_type_confidence ]
     subject: id_deposit_type_candidate
 
