@@ -23,7 +23,7 @@ semantic_model:
       - [mndr:name, name, xsd:string]
       - [mndr:environment, env, xsd:string]
       - [mndr:deposit_group, group, xsd:string]
-      - [mndr:id, depid, xsd:anyURI]
+      - [mndr:id, depid, drepr:uri]
     static_properties: []
     inverse_static_properties: []
     links: []
