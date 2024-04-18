@@ -7,23 +7,22 @@ preprocessing:
       return "https://minmod.isi.edu/resource/" + value
 attributes:
   name: [1.., 1]
+  unit_name: [1.., 1]
   id: [1.., 0]
   depid: [1.., 0]
 alignments:
-  - type: dimension
-    value: id:0 <-> name:0
-  - type: dimension
-    value: id:0 <-> depid:0
+  - type: auto
 semantic_model:
   mndr:Unit:1:
     properties:
       - [drepr:uri, id]
       - [rdfs:label, name, xsd:string]
-      - [mndr:unit_name, name, xsd:string]
+      - [mndr:unit_name, unit_name, xsd:string]
       - [mndr:id, depid, xsd:anyURI]
     static_properties: []
     inverse_static_properties: []
     links: []
+    subject: id
 
   prefixes:
     mndr: https://minmod.isi.edu/resource/
