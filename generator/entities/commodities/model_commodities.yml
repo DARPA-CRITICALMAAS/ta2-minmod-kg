@@ -24,7 +24,7 @@ semantic_model:
       - [rdfs:label, label, xsd:string]
       - [mndr:name, name, xsd:string]
       - [mndr:name_mrds, mrds, xsd:string]
-      - [mndr:sameAs, sameAs, drepr:uri]
+      - [owl:sameAs, sameAs, drepr:uri]
     static_properties: []
     inverse_static_properties: []
     links: []
