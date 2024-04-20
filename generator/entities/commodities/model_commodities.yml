@@ -13,24 +13,22 @@ attributes:
   minmod_id: [1.., 0]
   mrds: [1.., 1]
   name: [1.., 2]
+  label: [1.., 2]
   sameAs: [1.., 3]
 alignments:
-  - type: dimension
-    value: mrds:0 <-> minmod_id:0
-  - type: dimension
-    value: name:0 <-> minmod_id:0
-  - type: dimension
-    value: sameAs:0 <-> minmod_id:0
+  - type: auto
 semantic_model:
   mndr:Commodity:1:
     properties:
       - [drepr:uri, minmod_id]
-      - [rdfs:label, name, xsd:string]
+      - [rdfs:label, label, xsd:string]
       - [mndr:name, name, xsd:string]
-      - [mndr:sameAs, sameAs, xsd:anyURI]
+      - [mndr:name_mrds, mrds, xsd:string]
+      - [owl:sameAs, sameAs, drepr:uri]
     static_properties: []
     inverse_static_properties: []
     links: []
+    subject: minmod_id
 
   prefixes:
     mndr: https://minmod.isi.edu/resource/

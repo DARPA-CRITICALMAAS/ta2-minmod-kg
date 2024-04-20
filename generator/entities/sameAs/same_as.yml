@@ -10,7 +10,7 @@ semantic_model:
   mndr:MineralSite:1:
     properties:
       - [drepr:uri, minmod_id]
-      - [owl:sameAs, same_as_id, xsd:anyURI]
+      - [owl:sameAs, same_as_id, drepr:uri]
     static_properties: []
     inverse_static_properties: []
     links: []

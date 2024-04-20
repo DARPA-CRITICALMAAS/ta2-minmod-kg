@@ -29,7 +29,7 @@ attributes:
   source_month_document:
     path: ["MineralSystem", .., "source", .., ["supporting_references"], .., ["document"], ["month"]]
   source_authors:
-    path: [MineralSystem, .., source, .., ["supporting_references"], .., ["document"], ["authors"]]
+    path:  ["MineralSystem", .., "source", .., ["supporting_references"], .., ["document"], ["authors"]]
     value_type: list[str]
   source_journal:
     path: ["MineralSystem", .., "source", .., ["supporting_references"], .., ["document"], ["journal"]]
@@ -76,7 +76,7 @@ attributes:
   pathway_month_document:
     path: ["MineralSystem", .., "pathway", .., ["supporting_references"], .., ["document"], ["month"]]
   pathway_authors:
-    path: [MineralSystem, .., pathway, .., ["supporting_references"], .., ["document"], ["authors"]]
+    path: ["MineralSystem", .., "pathway", .., ["supporting_references"], .., ["document"], ["authors"]]
     value_type: list[str]
   pathway_journal:
     path: ["MineralSystem", .., "pathway", .., ["supporting_references"], .., ["document"], ["journal"]]
