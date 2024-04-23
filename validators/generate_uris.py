@@ -14,15 +14,15 @@ def mineral_site_uri(site):
     except Exception as e:
         return ({"error": str(e)})
 
-def deposit_type_uri(data):
+def deposit_type_uri(data, ms_id):
     try:
         if data is None:
             raise
-        processed_data = process_deposit_type(data)
+        processed_data = process_deposit_type(data, ms_id)
         return ({"result": processed_data})
     except Exception as e:
+        print(e)
         return ({"error": str(e)})
-
 
 def mineral_system_uri(data):
     try:
@@ -111,8 +111,13 @@ def process_mineral_system(ms):
     return 'mineral_system' + hashed_string
 
 
-def process_deposit_type(data):
+def process_deposit_type(data, ms_id):
     merged_string = ''
+
+    merged_string = merged_string + ms_id
+    print(data)
+    print(type(data))
+
     if 'observed_name' in data:
         merged_string = merged_string + custom_slugify(data['observed_name'])
     merged_string += '-'

@@ -10,8 +10,9 @@ def mineral_site_uri(data):
     uri = response['result']
     return uri
 
-def deposit_uri(data):
-    response = generate_uris.deposit_type_uri(data)
+def deposit_uri(data, ms_id):
+    response = generate_uris.deposit_type_uri(data, ms_id)
+    print(response)
     uri = response['result']
     return uri
 def document_uri(data):
