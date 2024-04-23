@@ -27,7 +27,7 @@ attributes:
     missing_values: [-1]
   deposit_type_normalized_uri:
     path: [ "MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
-    missing_values: [-1]
+    missing_values: [""]
   geology_info:
     path: [ "MineralSite", .. , ["geology_info"]]
     missing_values: [-1]
@@ -72,7 +72,7 @@ attributes:
     missing_values: [-1]
   commodity:
     path: ["MineralSite", .. ,["mineral_inventory"], .. , ["commodity"]]
-    missing_values: [-1]
+    missing_values: [""]
   observed_commodity:
     path: [ "MineralSite", .. ,[ "mineral_inventory" ], .. , [ "observed_commodity" ] ]
     missing_values: [-1]
@@ -259,29 +259,29 @@ alignments:
       - { source: 1, target: 1 }
   - type: dimension
     source: id_mineral_site
-    target: deposit_type_name
+    target: id_deposit_type_candidate
     aligned_dims:
       - { source: 1, target: 1 }
   - type: dimension
-    source: deposit_type_name
+    source: id_deposit_type_candidate
     target: deposit_type_source
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
   - type: dimension
-    source: deposit_type_name
-    target: id_deposit_type_candidate
+    source: id_deposit_type_candidate
+    target: deposit_type_name
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
   - type: dimension
-    source: deposit_type_name
+    source: id_deposit_type_candidate
     target: deposit_type_normalized_uri
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
   - type: dimension
-    source: deposit_type_name
+    source: id_deposit_type_candidate
     target: deposit_type_confidence
     aligned_dims:
       - { source: 1, target: 1 }
