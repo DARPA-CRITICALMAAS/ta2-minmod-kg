@@ -7,9 +7,11 @@ attributes:
     path: [ "MineralSite", .. , ["name"]]
     missing_values: [-1]
   source_mineral_site:
-    path: [ "MineralSite", .. , "source_id" ]
+    path: [ "MineralSite", .. , ["source_id"] ]
+    missing_values: [-1]
   record_mineral_site:
-    path: [ "MineralSite", .. , "record_id" ]
+    path: [ "MineralSite", .. , ["record_id"] ]
+    missing_values: [-1]
   mineral_inven:
     path: [ "MineralSite", .. , ["mineral_inventory"]]
     missing_values: [-1]
