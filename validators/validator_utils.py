@@ -145,7 +145,8 @@ def mineral_site_schema():
                                                         "page": {
                                                             "anyOf": [
                                                                 { "type": "number" },
-                                                                { "type": "null" }
+                                                                { "type": "string" },
+                                                                { "type": "null" },
                                                             ]
                                                         },
                                                         "bounding_box": {
@@ -173,6 +174,7 @@ def mineral_site_schema():
                                             "ore_value": {
                                                 "anyOf": [
                                                     { "type": "number" },
+                                                    { "type": "string" },
                                                     { "type": "null" }
                                                 ]
                                             }
@@ -185,6 +187,7 @@ def mineral_site_schema():
                                             "grade_value": {
                                                 "anyOf": [
                                                     { "type": "number" },
+                                                    { "type": "string" },
                                                     { "type": "null" }
                                                 ]
                                             }
@@ -197,6 +200,7 @@ def mineral_site_schema():
                                             "grade_value": {
                                                 "anyOf": [
                                                     { "type": "number" },
+                                                    { "type": "string" },
                                                     { "type": "null" }
                                                 ]
                                             }
