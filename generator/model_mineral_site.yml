@@ -632,6 +632,8 @@ semantic_model:
         - ore_unit
         - drepr:uri
     links: [ ]
+    subject: ore_unit
+    
   mndr:Grade:1:
     properties:
       - - mndr:grade_value
@@ -640,6 +642,8 @@ semantic_model:
         - grade_unit
         - drepr:uri
     links: [ ]
+    subject: grade_unit
+    
   mndr:Grade:2:
     properties:
       - - mndr:grade_value
@@ -650,6 +654,7 @@ semantic_model:
     static_properties: [ ]
     inverse_static_properties: [ ]
     links: [ ]
+    subject: cutoff_grade_unit
   prefixes:
     mndr: https://minmod.isi.edu/resource/
     geokb: https://geokb.wikibase.cloud/entity/
