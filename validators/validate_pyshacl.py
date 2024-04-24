@@ -263,7 +263,7 @@ def validate_using_shacl_mineral_site(data_graph):
                         ] ;
             sh:property [
                             sh:path mndr:grade_value ;
-                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:double ]) ;
                         ] .
     
                                         
@@ -289,7 +289,7 @@ def validate_using_shacl_mineral_site(data_graph):
                         ] ;
                         sh:property [
                             sh:path mndr:confidence ;
-                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:double ]) ;
                         ]
                         .
                         
