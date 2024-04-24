@@ -175,7 +175,7 @@ def mineral_site_schema():
                                                 "anyOf": [
                                                     { "type": "number" },
                                                     { "type": "string" },
-                                                    { "type": None }
+                                                    { "type": "null" }
                                                 ]
                                             }
                                         }
@@ -188,7 +188,7 @@ def mineral_site_schema():
                                                 "anyOf": [
                                                     { "type": "number" },
                                                     { "type": "string" },
-                                                    { "type": None }
+                                                    { "type": "null" }
                                                 ]
                                             }
                                         }
@@ -201,7 +201,7 @@ def mineral_site_schema():
                                                 "anyOf": [
                                                     { "type": "number" },
                                                     { "type": "string" },
-                                                    { "type": None }
+                                                    { "type": "null" }
                                                 ]
                                             }
                                         }
