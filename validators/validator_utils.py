@@ -152,8 +152,7 @@ def mineral_site_schema():
                                                                 "y_max": {"type": ["string", "number"]}
                                                             }
                                                         }
-                                                    },
-                                                    "required": ["page"]
+                                                    }
                                                 }
 
                                             }
@@ -166,22 +165,24 @@ def mineral_site_schema():
                                         "type": "object",
                                         "properties": {
                                             "ore_unit": {"type": "string"},
-                                            "ore_value": {"type": "number"}
+                                            "ore_value": {"type": "number",
+                                                          "nullable": true}
                                         }
                                     },
                                     "grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number"}
+                                            "grade_value": {"type": "number",
+                                                            "nullable": true}
                                         }
-
                                     },
                                     "cutoff_grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number"}
+                                            "grade_value": {"type": "number",
+                                                            "nullable": true}
                                         }
                                     }
                                 },
