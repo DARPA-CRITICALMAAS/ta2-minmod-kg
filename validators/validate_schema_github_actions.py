@@ -32,7 +32,7 @@ def validate_json_schema(json_data):
 
     schema = validator_utils.mineral_site_schema()
     json_string = json.dumps(json_data)
-    print(json_string)
+    # print(json_string)
     mineral_site_json = json.loads(json_string)
 
     try:
