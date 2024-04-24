@@ -3,6 +3,6 @@ requests==2.31.0
 rdflib==6.3.2
 pyshacl==0.25.0
 jsonschema==4.17.3
-drepr==2.11.2
+drepr-v2==1.2.1
 validators==0.22.0
 python-slugify==8.0.4

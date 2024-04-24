@@ -82,22 +82,22 @@ attributes:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"]]
     missing_values: [-1]
   ore_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["ore"], ["ore_value"]]
     missing_values: [-1]
   grade_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["grade"], ["grade_value"]]
     missing_values: [-1]
   cutoff_grade_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], ["grade_value"]]
     missing_values: [-1]
   cutoff_grade_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_unit" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], ["grade_unit"] ]
     missing_values: [-1]
   ore_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_unit" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], ["ore_unit"] ]
     missing_values: [-1]
   grade_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_unit" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], ["grade_unit"] ]
     missing_values: [-1]
   id:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , "id"]
