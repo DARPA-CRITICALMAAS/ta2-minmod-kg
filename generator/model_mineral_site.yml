@@ -628,6 +628,7 @@ semantic_model:
     properties:
       - - mndr:ore_value
         - ore_value
+        - xsd:decimal
       - - mndr:ore_unit
         - ore_unit
         - drepr:uri
@@ -638,6 +639,7 @@ semantic_model:
     properties:
       - - mndr:grade_value
         - grade_value
+        - xsd:decimal
       - - mndr:grade_unit
         - grade_unit
         - drepr:uri
@@ -648,6 +650,7 @@ semantic_model:
     properties:
       - - mndr:grade_value
         - cutoff_grade_value
+        - xsd:decimal
       - - mndr:grade_unit
         - cutoff_grade_unit
         - drepr:uri
@@ -656,7 +659,7 @@ semantic_model:
     links: [ ]
     subject: cutoff_grade_unit
 
-    
+
   prefixes:
     mndr: https://minmod.isi.edu/resource/
     geokb: https://geokb.wikibase.cloud/entity/
