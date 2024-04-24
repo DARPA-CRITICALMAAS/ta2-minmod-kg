@@ -166,7 +166,7 @@ def mineral_site_schema():
                                         "properties": {
                                             "ore_unit": {"type": "string"},
                                             "ore_value": {"type": "number",
-                                                          "nullable": true}
+                                                          "nullable": True}
                                         }
                                     },
                                     "grade": {
@@ -174,7 +174,7 @@ def mineral_site_schema():
                                         "properties": {
                                             "grade_unit": {"type": "string"},
                                             "grade_value": {"type": "number",
-                                                            "nullable": true}
+                                                            "nullable": True}
                                         }
                                     },
                                     "cutoff_grade": {
@@ -182,7 +182,7 @@ def mineral_site_schema():
                                         "properties": {
                                             "grade_unit": {"type": "string"},
                                             "grade_value": {"type": "number",
-                                                            "nullable": true}
+                                                            "nullable": True}
                                         }
                                     }
                                 },
