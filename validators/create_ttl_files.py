@@ -29,7 +29,6 @@ def run_drepr_on_mineral_system(datasource):
 
 def create_drepr_file_mineral_site(file_path):
     file_content = run_drepr_on_mineral_site(file_path)
-    print(file_content)
     validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
     if not validated_drepr:
