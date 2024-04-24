@@ -142,7 +142,8 @@ def mineral_site_schema():
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "page": {"type": "number"},
+                                                        "page": {"type": "number",
+                                                                 "nullable": True},
                                                         "bounding_box": {
                                                             "type": "object",
                                                             "properties": {
