@@ -21,7 +21,6 @@ def deposit_type_uri(data, ms_id):
         processed_data = process_deposit_type(data, ms_id)
         return ({"result": processed_data})
     except Exception as e:
-        print(e)
         return ({"error": str(e)})
 
 def mineral_system_uri(data):
@@ -115,8 +114,6 @@ def process_deposit_type(data, ms_id):
     merged_string = ''
 
     merged_string = merged_string + ms_id
-    print(data)
-    print(type(data))
 
     if 'observed_name' in data:
         merged_string = merged_string + custom_slugify(data['observed_name'])
