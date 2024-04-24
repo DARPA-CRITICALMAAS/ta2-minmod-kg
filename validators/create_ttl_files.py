@@ -1,5 +1,6 @@
 import subprocess
 import validate_pyshacl
+import time
 
 def run_drepr_on_file(datasource, model_file):
     destination = 'generated_files/ttl_files/'
@@ -11,6 +12,8 @@ def run_drepr_on_file(datasource, model_file):
         output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
         output_data = '\n'.join(output_lines)
         print(output_data)
+        time.sleep(2)
+
         return output_data
     except subprocess.CalledProcessError as e:
         print("Error executing command:", e)
