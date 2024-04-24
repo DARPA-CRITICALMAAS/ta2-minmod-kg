@@ -9,7 +9,7 @@ def run_drepr_on_file(datasource, model_file):
 
     try:
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
-        output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
+        output_lines = result.stdout.splitlines()
         output_data = '\n'.join(output_lines)
         print(output_data)
         time.sleep(2)
