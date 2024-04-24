@@ -114,7 +114,6 @@ def mineral_site_schema():
                                         "type": "array",
                                         "items": {"type": "string"}
                                     },
-                                    "contained_metal": {"type": "number"},
                                     "reference": {
                                         "type": "object",
                                         "properties": {

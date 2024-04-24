@@ -164,12 +164,6 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:minCount 0 ;
             sh:datatype xsd:string ;
         ];
-        sh:property [   
-            sh:path mndr:contained_metal ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:double ] ) ;
-    
-        ];
         .
         
     mndr:MineralSite  a  sh:NodeShape ;
