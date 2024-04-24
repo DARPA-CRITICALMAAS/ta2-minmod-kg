@@ -946,6 +946,8 @@ semantic_model:
     static_properties: [ ]
     inverse_static_properties: [ ]
     links: [ ]
+    
+    
   prefixes:
     mndr: https://minmod.isi.edu/resource/
     geokb: https://geokb.wikibase.cloud/entity/
