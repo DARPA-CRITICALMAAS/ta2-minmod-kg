@@ -1,6 +1,5 @@
 import subprocess
 import validate_pyshacl
-import time
 
 def run_drepr_on_file(datasource, model_file):
     destination = 'generated_files/ttl_files/'
@@ -11,9 +10,6 @@ def run_drepr_on_file(datasource, model_file):
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
         output_lines = result.stdout.splitlines()
         output_data = '\n'.join(output_lines)
-        print(output_data)
-        time.sleep(2)
-
         return output_data
     except subprocess.CalledProcessError as e:
         print("Error executing command:", e)
@@ -33,9 +29,6 @@ def run_drepr_on_mineral_system(datasource):
 
 def create_drepr_file_mineral_site(file_path):
     file_content = run_drepr_on_mineral_site(file_path)
-
-    print(file_content)
-    time.sleep(5)
     validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
     if not validated_drepr:
