@@ -90,13 +90,13 @@ attributes:
     missing_values: [-1]
   cutoff_grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], ["grade_unit"] ]
-    missing_values: [-1]
+    missing_values: [""]
   ore_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], ["ore_unit"] ]
-    missing_values: [-1]
+    missing_values: [""]
   grade_unit:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], ["grade_unit"] ]
-    missing_values: [-1]
+    missing_values: [""]
   id:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , "id"]
   category:
