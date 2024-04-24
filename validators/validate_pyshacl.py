@@ -102,31 +102,6 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:datatype xsd:string ;
         ];
         .
-        
-    mndr:BoundingBox  a  sh:NodeShape ;
-    sh:targetClass mndr:BoundingBox;
-    sh:class mndr:BoundingBox;
-        sh:property [   
-            sh:path mndr:x_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:x_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:y_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:y_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [sh:datatype xsd:string] ) ;
-        ];
-        .
                           
     mndr:Reference  a  sh:NodeShape ;
     sh:targetClass mndr:Reference;
