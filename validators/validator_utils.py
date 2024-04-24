@@ -142,8 +142,12 @@ def mineral_site_schema():
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "page": {"type": "number",
-                                                                 "nullable": True},
+                                                        "page": {
+                                                            "anyOf": [
+                                                                { "type": "number" },
+                                                                { "type": "null" }
+                                                            ]
+                                                        },
                                                         "bounding_box": {
                                                             "type": "object",
                                                             "properties": {
@@ -166,24 +170,36 @@ def mineral_site_schema():
                                         "type": "object",
                                         "properties": {
                                             "ore_unit": {"type": "string"},
-                                            "ore_value": {"type": "number",
-                                                          "nullable": True}
+                                            "ore_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
                                     },
                                     "grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number",
-                                                            "nullable": True}
+                                            "grade_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
                                     },
                                     "cutoff_grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number",
-                                                            "nullable": True}
+                                            "grade_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
                                     }
                                 },
