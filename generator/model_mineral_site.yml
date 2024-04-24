@@ -110,15 +110,15 @@ attributes:
   bounding_box:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"]]
   x_min:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_min" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["x_min"] ]
   x_max:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_max" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["x_max"] ]
   y_min:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_min" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["y_min"] ]
   y_max:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_max" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["y_max"] ]
   page:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .., "page"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .., ["page"]]
 
 alignments:
   - type: dimension
