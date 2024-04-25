@@ -1,5 +1,12 @@
 version: "2"
 resources: json
+preprocessing:
+  - type: pmap
+    path: [ "MineralSite", .. ]
+    code: |
+      value = value.copy()
+      
+      return value
 attributes:
   id_mineral_site:
     path: [ "MineralSite", .. , "id" ]
@@ -117,6 +124,9 @@ attributes:
   id_document:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["id"]]
     missing_values: [-1]
+  id_document_ref:
+    path: [ "MineralSite", .. , [ "mineral_inventory" ], .. , [ "reference" ], [ "document" ], [ "id" ] ]
+    missing_values: [ -1 ]
   uri_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["uri"]]
     missing_values: [-1]
@@ -562,13 +572,13 @@ semantic_model:
 
   mndr:Reference:1:
     properties:
-      - [ mndr:date, date ]
+      - [ mndr:document_id, id_document_ref ]
     links:
       - - mndr:document
         - mndr:Document:1
       - - mndr:page_info
         - mndr:PageInfo:1
-    subject: date
+    subject: id_document_ref
 
   mndr:PageInfo:1:
     properties:
