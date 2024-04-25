@@ -1,12 +1,5 @@
 version: "2"
 resources: json
-preprocessing:
-  - type: pmap
-    path: [ "MineralSite", .. ]
-    code: |
-      value = value.copy()
-      
-      return value
 attributes:
   id_mineral_site:
     path: [ "MineralSite", .. , "id" ]
@@ -368,6 +361,12 @@ alignments:
   - type: dimension
     source: id
     target: id_reference
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: id_document_ref
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
