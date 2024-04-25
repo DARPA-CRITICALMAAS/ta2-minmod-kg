@@ -545,14 +545,14 @@ semantic_model:
       - - mndr:observed_commodity
         - observed_commodity
     links:
+      - - mndr:reference
+        - mndr:Reference:1
       - - mndr:ore
         - mndr:Ore:1
       - - mndr:grade
         - mndr:Grade:1
       - - mndr:cutoff_grade
         - mndr:Grade:2
-      - - mndr:reference
-        - mndr:Reference:1
       - [mndr:category, mndr:Category:1]
     subject: id
 
@@ -562,12 +562,13 @@ semantic_model:
 
   mndr:Reference:1:
     properties:
-      - [mndr:date, id_reference]
+      - [ mndr:date, date ]
     links:
       - - mndr:document
         - mndr:Document:1
       - - mndr:page_info
         - mndr:PageInfo:1
+    subject: date
 
   mndr:PageInfo:1:
     properties:
