@@ -571,7 +571,7 @@ semantic_model:
 
   mndr:Reference:1:
     properties:
-      - [ mndr:document_id, id_document_ref ]
+      - [ drepr:blank, id_document_ref ]
     links:
       - - mndr:document
         - mndr:Document:1
