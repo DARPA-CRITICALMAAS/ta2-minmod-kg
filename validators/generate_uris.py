@@ -141,27 +141,26 @@ def process_document(data):
     merged_string = ''
     if 'doi' in data:
         merged_string = merged_string + custom_slugify(data['doi'])
-    merged_string += '-'
-
-    if 'uri' in data:
+        merged_string += '-'
+    elif 'uri' in data:
         merged_string = merged_string + custom_slugify(data['uri'])
-    merged_string += '-'
+        merged_string += '-'
+    else:
+        if 'title' in data:
+            merged_string = merged_string+ custom_slugify(data['title'])
+        merged_string += '-'
 
-    if 'title' in data:
-        merged_string = merged_string+ custom_slugify(data['title'])
-    merged_string += '-'
+        if 'year' in data:
+            merged_string = merged_string + custom_slugify(str(data['year']))
+        merged_string += '-'
 
-    if 'year' in data:
-        merged_string = merged_string + custom_slugify(str(data['year']))
-    merged_string += '-'
+        if 'authors' in data:
+            merged_string = merged_string  + custom_slugify(str(data['authors']))
+        merged_string += '-'
 
-    if 'authors' in data:
-        merged_string = merged_string  + custom_slugify(str(data['authors']))
-    merged_string += '-'
-
-    if 'month' in data:
-        merged_string = merged_string + custom_slugify(str(data['month']))
-    merged_string += '-'
+        if 'month' in data:
+            merged_string = merged_string + custom_slugify(str(data['month']))
+        merged_string += '-'
 
     if merged_string == '':
         return 'document' + str(uuid.uuid4())
