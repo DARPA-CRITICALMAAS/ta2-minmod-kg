@@ -9,13 +9,13 @@ def add_id_to_mineral_site(json_data, new_json_folder, file_name_without_path):
     mndr_url = 'https://minmod.isi.edu/resource/'
 
     for ms in ms_list:
-        ms_id = validator_utils.mineral_site_uri(ms)
+        ms_id = validator_utils.mineral_site(ms)
         ms['id'] = mndr_url + ms_id
         if "deposit_type_candidate" in ms:
             for dp in ms['deposit_type_candidate']:
                 if 'normalized_uri' in dp:
                     validator_utils.is_valid_uri(dp['normalized_uri'])
-                dp['id'] = mndr_url + validator_utils.deposit_uri(dp, ms_id)
+                dp['id'] = mndr_url + validator_utils.deposit_type(dp, ms_id)
                 
         if "location_info" in ms:
             ll = ms["location_info"]
@@ -53,7 +53,7 @@ def add_id_to_mineral_site(json_data, new_json_folder, file_name_without_path):
                     "site": ms,
                     "id": counter
                 }
-                mi['id'] = mndr_url + validator_utils.mineral_inventory_uri(mi_data)
+                mi['id'] = mndr_url + validator_utils.mineral_inventory(mi_data)
                 counter += 1
 
                 if "reference" in mi:
@@ -63,7 +63,7 @@ def add_id_to_mineral_site(json_data, new_json_folder, file_name_without_path):
                         doc_data = {
                             "document": document
                         }
-                        document['id'] = mndr_url + validator_utils.document_uri(doc_data)
+                        document['id'] = mndr_url + validator_utils.document(doc_data)
 
 
     file_to_write = new_json_folder + '/' + file_name_without_path
@@ -86,7 +86,7 @@ def add_id_to_mineral_system(json_data, new_json_folder, file_name_without_path)
             for dp in ms['deposit_type']:
                 validator_utils.is_valid_uri(dp)
 
-        ms['id'] = mndr_url + validator_utils.mineral_system_uri(ms)
+        ms['id'] = mndr_url + validator_utils.mineral_system(ms)
 
         fields = ['source', 'pathway', 'trap', 'preservation', 'energy', 'outflow']
 
@@ -101,7 +101,7 @@ def add_id_to_mineral_system(json_data, new_json_folder, file_name_without_path)
                                 doc_data = {
                                     "document": document
                                 }
-                                document['id'] = mndr_url + validator_utils.document_uri(doc_data)
+                                document['id'] = mndr_url + validator_utils.document(doc_data)
 
 
     file_to_write = new_json_folder + '/' + file_name_without_path

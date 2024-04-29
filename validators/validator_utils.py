@@ -5,28 +5,28 @@ import validators
 def is_valid_uri(uri):
     return validators.url(uri)
 
-def mineral_site_uri(data):
-    response = generate_uris.mineral_site_uri(data)
+def mineral_site(data):
+    response = generate_uris.mineral_site(data)
     uri = response['result']
     return uri
 
-def deposit_uri(data, ms_id):
-    response = generate_uris.deposit_type_uri(data, ms_id)
+def deposit_type(data, ms_id):
+    response = generate_uris.deposit_type(data, ms_id)
     uri = response['result']
     return uri
-def document_uri(data):
-    response = generate_uris.document_uri(data)
-    uri = response['result']
-    return uri
-
-
-def mineral_system_uri(data):
-    response = generate_uris.mineral_system_uri(data)
+def document(data):
+    response = generate_uris.document(data)
     uri = response['result']
     return uri
 
-def mineral_inventory_uri(param1):
-    response = generate_uris.mineral_inventory_uri(param1)
+
+def mineral_system(data):
+    response = generate_uris.mineral_system(data)
+    uri = response['result']
+    return uri
+
+def mineral_inventory(param1):
+    response = generate_uris.mineral_inventory(param1)
     uri = response['result']
     return uri
 

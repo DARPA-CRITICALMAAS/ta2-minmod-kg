@@ -5,7 +5,7 @@ from slugify import slugify
 import hashlib
 from urllib.parse import urlparse
 
-def mineral_site_uri(site):
+def mineral_site(site):
     try:
         if site is None:
             raise
@@ -14,7 +14,7 @@ def mineral_site_uri(site):
     except Exception as e:
         return ({"error": str(e)})
 
-def deposit_type_uri(data, ms_id):
+def deposit_type(data, ms_id):
     try:
         if data is None:
             raise
@@ -23,7 +23,7 @@ def deposit_type_uri(data, ms_id):
     except Exception as e:
         return ({"error": str(e)})
 
-def mineral_system_uri(data):
+def mineral_system(data):
     try:
         if data is None:
             raise
@@ -33,7 +33,7 @@ def mineral_system_uri(data):
         return ({"error": str(e)})
 
 
-def document_uri(data):
+def document(data):
     try:
         json_param = data.get('document')
         if json_param is None:
@@ -46,7 +46,7 @@ def document_uri(data):
     except Exception as e:
         return ({"error": str(e)})
 
-def mineral_inventory_uri(data):
+def mineral_inventory(data):
     try:
 
         param1 = data.get('site')
