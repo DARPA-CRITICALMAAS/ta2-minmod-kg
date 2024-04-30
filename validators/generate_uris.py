@@ -5,7 +5,7 @@ from slugify import slugify
 import hashlib
 from urllib.parse import urlparse
 
-def mineral_site_uri(site):
+def mineral_site(site):
     try:
         if site is None:
             raise
@@ -14,17 +14,16 @@ def mineral_site_uri(site):
     except Exception as e:
         return ({"error": str(e)})
 
-def deposit_type_uri(data):
+def deposit_type(data, ms_id):
     try:
         if data is None:
             raise
-        processed_data = process_deposit_type(data)
+        processed_data = process_deposit_type(data, ms_id)
         return ({"result": processed_data})
     except Exception as e:
         return ({"error": str(e)})
 
-
-def mineral_system_uri(data):
+def mineral_system(data):
     try:
         if data is None:
             raise
@@ -34,7 +33,7 @@ def mineral_system_uri(data):
         return ({"error": str(e)})
 
 
-def document_uri(data):
+def document(data):
     try:
         json_param = data.get('document')
         if json_param is None:
@@ -47,7 +46,7 @@ def document_uri(data):
     except Exception as e:
         return ({"error": str(e)})
 
-def mineral_inventory_uri(data):
+def mineral_inventory(data):
     try:
 
         param1 = data.get('site')
@@ -111,8 +110,11 @@ def process_mineral_system(ms):
     return 'mineral_system' + hashed_string
 
 
-def process_deposit_type(data):
+def process_deposit_type(data, ms_id):
     merged_string = ''
+
+    merged_string = merged_string + ms_id
+
     if 'observed_name' in data:
         merged_string = merged_string + custom_slugify(data['observed_name'])
     merged_string += '-'
@@ -139,27 +141,26 @@ def process_document(data):
     merged_string = ''
     if 'doi' in data:
         merged_string = merged_string + custom_slugify(data['doi'])
-    merged_string += '-'
-
-    if 'uri' in data:
+        merged_string += '-'
+    elif 'uri' in data:
         merged_string = merged_string + custom_slugify(data['uri'])
-    merged_string += '-'
+        merged_string += '-'
+    else:
+        if 'title' in data:
+            merged_string = merged_string+ custom_slugify(data['title'])
+        merged_string += '-'
 
-    if 'title' in data:
-        merged_string = merged_string+ custom_slugify(data['title'])
-    merged_string += '-'
+        if 'year' in data:
+            merged_string = merged_string + custom_slugify(str(data['year']))
+        merged_string += '-'
 
-    if 'year' in data:
-        merged_string = merged_string + custom_slugify(str(data['year']))
-    merged_string += '-'
+        if 'authors' in data:
+            merged_string = merged_string  + custom_slugify(str(data['authors']))
+        merged_string += '-'
 
-    if 'authors' in data:
-        merged_string = merged_string  + custom_slugify(str(data['authors']))
-    merged_string += '-'
-
-    if 'month' in data:
-        merged_string = merged_string + custom_slugify(str(data['month']))
-    merged_string += '-'
+        if 'month' in data:
+            merged_string = merged_string + custom_slugify(str(data['month']))
+        merged_string += '-'
 
     if merged_string == '':
         return 'document' + str(uuid.uuid4())

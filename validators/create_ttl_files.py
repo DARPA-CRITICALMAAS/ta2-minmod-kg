@@ -3,12 +3,12 @@ import validate_pyshacl
 
 def run_drepr_on_file(datasource, model_file):
     destination = 'generated_files/ttl_files/'
-    command = f' python -m drepr -r {model_file} -d default="{datasource}"'
+    command = f' python -m drepr {model_file} default="{datasource}"'
     print('Running ... ', command)
 
     try:
         result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
-        output_lines = result.stdout.splitlines()[2:]  # Skip the first two lines
+        output_lines = result.stdout.splitlines()
         output_data = '\n'.join(output_lines)
         return output_data
     except subprocess.CalledProcessError as e:
@@ -18,12 +18,12 @@ def run_drepr_on_file(datasource, model_file):
 
 
 def run_drepr_on_mineral_site(datasource):
-    model_file = 'generator/model.yml'
+    model_file = 'generator/model_mineral_site.yml'
     return run_drepr_on_file(datasource, model_file)
 
 
 def run_drepr_on_mineral_system(datasource):
-    model_file = 'generator/model_mineral_system.yml'
+    model_file = 'generator/model_mineral_system_v2.yml'
     return run_drepr_on_file(datasource, model_file)
 
 

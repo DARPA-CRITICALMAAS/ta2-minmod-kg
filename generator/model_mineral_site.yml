@@ -80,30 +80,27 @@ attributes:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"]]
     missing_values: [-1]
   ore_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["ore"], ["ore_value"]]
     missing_values: [-1]
   grade_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["grade"], ["grade_value"]]
     missing_values: [-1]
   cutoff_grade_value:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_value"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], ["grade_value"]]
     missing_values: [-1]
   cutoff_grade_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], "grade_unit" ]
-    missing_values: [-1]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["cutoff_grade"], ["grade_unit"] ]
+    missing_values: [""]
   ore_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], "ore_unit" ]
-    missing_values: [-1]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["ore"], ["ore_unit"] ]
+    missing_values: [""]
   grade_unit:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], "grade_unit" ]
-    missing_values: [-1]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["grade"], ["grade_unit"] ]
+    missing_values: [""]
   id:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , "id"]
   category:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["category"], .. ]
-    missing_values: [-1]
-  contained_metal:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["contained_metal"]]
     missing_values: [-1]
   date:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["date"]]
@@ -120,6 +117,9 @@ attributes:
   id_document:
     path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["id"]]
     missing_values: [-1]
+  id_document_ref:
+    path: [ "MineralSite", .. , [ "mineral_inventory" ], .. , [ "reference" ], [ "document" ], [ "id" ] ]
+    missing_values: [ -1 ]
   uri_document:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["document"], ["uri"]]
     missing_values: [-1]
@@ -156,19 +156,19 @@ attributes:
     path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"]]
     missing_values: [-1]
   x_min:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_min" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["x_min"] ]
     missing_values: [-1]
   x_max:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "x_max" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["x_max"] ]
     missing_values: [-1]
   y_min:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_min" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["y_min"] ]
     missing_values: [-1]
   y_max:
-    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], "y_max" ]
+    path: [ "MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .. , ["bounding_box"], ["y_max"] ]
     missing_values: [-1]
   page:
-    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .., "page"]
+    path: ["MineralSite", .. , ["mineral_inventory"], .. , ["reference"], ["page_info"], .., ["page"]]
     missing_values: [-1]
 
 alignments:
@@ -306,12 +306,6 @@ alignments:
       - { source: 3, target: 3 }
   - type: dimension
     source: id
-    target: contained_metal
-    aligned_dims:
-      - { source: 1, target: 1 }
-      - { source: 3, target: 3 }
-  - type: dimension
-    source: id
     target: ore
     aligned_dims:
       - { source: 1, target: 1 }
@@ -367,6 +361,12 @@ alignments:
   - type: dimension
     source: id
     target: id_reference
+    aligned_dims:
+      - { source: 1, target: 1 }
+      - { source: 3, target: 3 }
+  - type: dimension
+    source: id
+    target: id_document_ref
     aligned_dims:
       - { source: 1, target: 1 }
       - { source: 3, target: 3 }
@@ -543,8 +543,6 @@ semantic_model:
       - [ drepr:uri, id ]
       - - mndr:id
         - id
-      - - mndr:contained_metal
-        - contained_metal
       - - mndr:date
         - date
         - xsd:date
@@ -556,14 +554,14 @@ semantic_model:
       - - mndr:observed_commodity
         - observed_commodity
     links:
+      - - mndr:reference
+        - mndr:Reference:1
       - - mndr:ore
         - mndr:Ore:1
       - - mndr:grade
         - mndr:Grade:1
       - - mndr:cutoff_grade
         - mndr:Grade:2
-      - - mndr:reference
-        - mndr:Reference:1
       - [mndr:category, mndr:Category:1]
     subject: id
 
@@ -573,12 +571,13 @@ semantic_model:
 
   mndr:Reference:1:
     properties:
-      - [mndr:date, id_reference]
+      - [ drepr:blank, id_document_ref ]
     links:
       - - mndr:document
         - mndr:Document:1
       - - mndr:page_info
         - mndr:PageInfo:1
+    subject: id_document_ref
 
   mndr:PageInfo:1:
     properties:
@@ -626,28 +625,38 @@ semantic_model:
     properties:
       - - mndr:ore_value
         - ore_value
+        - xsd:decimal
       - - mndr:ore_unit
         - ore_unit
         - drepr:uri
     links: [ ]
+    subject: ore_unit
+    
   mndr:Grade:1:
     properties:
       - - mndr:grade_value
         - grade_value
+        - xsd:decimal
       - - mndr:grade_unit
         - grade_unit
         - drepr:uri
     links: [ ]
+    subject: grade_unit
+    
   mndr:Grade:2:
     properties:
       - - mndr:grade_value
         - cutoff_grade_value
+        - xsd:decimal
       - - mndr:grade_unit
         - cutoff_grade_unit
         - drepr:uri
     static_properties: [ ]
     inverse_static_properties: [ ]
     links: [ ]
+    subject: cutoff_grade_unit
+
+
   prefixes:
     mndr: https://minmod.isi.edu/resource/
     geokb: https://geokb.wikibase.cloud/entity/

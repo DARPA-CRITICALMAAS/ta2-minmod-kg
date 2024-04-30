@@ -5,28 +5,28 @@ import validators
 def is_valid_uri(uri):
     return validators.url(uri)
 
-def mineral_site_uri(data):
-    response = generate_uris.mineral_site_uri(data)
+def mineral_site(data):
+    response = generate_uris.mineral_site(data)
     uri = response['result']
     return uri
 
-def deposit_uri(data):
-    response = generate_uris.deposit_type_uri(data)
+def deposit_type(data, ms_id):
+    response = generate_uris.deposit_type(data, ms_id)
     uri = response['result']
     return uri
-def document_uri(data):
-    response = generate_uris.document_uri(data)
-    uri = response['result']
-    return uri
-
-
-def mineral_system_uri(data):
-    response = generate_uris.mineral_system_uri(data)
+def document(data):
+    response = generate_uris.document(data)
     uri = response['result']
     return uri
 
-def mineral_inventory_uri(param1):
-    response = generate_uris.mineral_inventory_uri(param1)
+
+def mineral_system(data):
+    response = generate_uris.mineral_system(data)
+    uri = response['result']
+    return uri
+
+def mineral_inventory(param1):
+    response = generate_uris.mineral_inventory(param1)
     uri = response['result']
     return uri
 
@@ -114,7 +114,6 @@ def mineral_site_schema():
                                         "type": "array",
                                         "items": {"type": "string"}
                                     },
-                                    "contained_metal": {"type": "number"},
                                     "reference": {
                                         "type": "object",
                                         "properties": {
@@ -142,7 +141,13 @@ def mineral_site_schema():
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "page": {"type": "number"},
+                                                        "page": {
+                                                            "anyOf": [
+                                                                { "type": "number" },
+                                                                { "type": "string" },
+                                                                { "type": "null" },
+                                                            ]
+                                                        },
                                                         "bounding_box": {
                                                             "type": "object",
                                                             "properties": {
@@ -152,8 +157,7 @@ def mineral_site_schema():
                                                                 "y_max": {"type": ["string", "number"]}
                                                             }
                                                         }
-                                                    },
-                                                    "required": ["page"]
+                                                    }
                                                 }
 
                                             }
@@ -166,22 +170,39 @@ def mineral_site_schema():
                                         "type": "object",
                                         "properties": {
                                             "ore_unit": {"type": "string"},
-                                            "ore_value": {"type": "number"}
+                                            "ore_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "string" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
                                     },
                                     "grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number"}
+                                            "grade_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "string" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
-
                                     },
                                     "cutoff_grade": {
                                         "type": "object",
                                         "properties": {
                                             "grade_unit": {"type": "string"},
-                                            "grade_value": {"type": "number"}
+                                            "grade_value": {
+                                                "anyOf": [
+                                                    { "type": "number" },
+                                                    { "type": "string" },
+                                                    { "type": "null" }
+                                                ]
+                                            }
                                         }
                                     }
                                 },

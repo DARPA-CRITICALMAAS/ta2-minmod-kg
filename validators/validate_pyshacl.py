@@ -102,31 +102,6 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:datatype xsd:string ;
         ];
         .
-        
-    mndr:BoundingBox  a  sh:NodeShape ;
-    sh:targetClass mndr:BoundingBox;
-    sh:class mndr:BoundingBox;
-        sh:property [   
-            sh:path mndr:x_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:x_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:y_min ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
-        ];
-        sh:property [   
-            sh:path mndr:y_max ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
-        ];
-        .
                           
     mndr:Reference  a  sh:NodeShape ;
     sh:targetClass mndr:Reference;
@@ -188,12 +163,6 @@ def validate_using_shacl_mineral_site(data_graph):
             sh:path mndr:id ;
             sh:minCount 0 ;
             sh:datatype xsd:string ;
-        ];
-        sh:property [   
-            sh:path mndr:contained_metal ;
-            sh:minCount 0 ;
-            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
-    
         ];
         .
         
@@ -263,7 +232,7 @@ def validate_using_shacl_mineral_site(data_graph):
                         ] ;
             sh:property [
                             sh:path mndr:grade_value ;
-                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:double ]) ;
                         ] .
     
                                         
@@ -289,7 +258,7 @@ def validate_using_shacl_mineral_site(data_graph):
                         ] ;
                         sh:property [
                             sh:path mndr:confidence ;
-                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] ) ;
+                            sh:or ( [ sh:datatype xsd:decimal ] [ sh:datatype xsd:integer ] [ sh:datatype xsd:double ]) ;
                         ]
                         .
                         
