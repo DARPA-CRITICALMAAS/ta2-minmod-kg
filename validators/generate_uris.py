@@ -119,7 +119,7 @@ def process_deposit_type(data, ms_id):
     merged_string += '-'
     merged_string = merged_string + custom_slugify(data.get('normalized_uri', ''))
     merged_string += '-'
-    merged_string = merged_string + custom_slugify(data.get('confidence', ''))
+    merged_string = merged_string + custom_slugify(str(data.get('confidence', '')))
     merged_string += '-'
 
     if merged_string == '':
