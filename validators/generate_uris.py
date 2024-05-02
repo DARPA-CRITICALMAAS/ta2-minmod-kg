@@ -93,8 +93,10 @@ def process_mineral_system(ms):
 
         if f in ms:
             f_object = ms[f]
-            merged_string += custom_slugify(f_object.get('theoretical',''))
-            merged_string += custom_slugify(f_object.get('criteria',''))
+            if 'theoretical' in f_object:
+                merged_string += custom_slugify(f_object['theoretical'])
+            if 'criteria' in f_object:
+                merged_string += custom_slugify(f_object['criteria'])
 
     if 'deposit_type' in ms:
         for dt in ms['deposit_type']:
@@ -113,13 +115,20 @@ def process_deposit_type(data, ms_id):
 
     merged_string = merged_string + ms_id
 
-    merged_string = merged_string + custom_slugify(data.get('observed_name', ''))
+    if 'observed_name' in data:
+        merged_string = merged_string + custom_slugify(data['observed_name'])
     merged_string += '-'
-    merged_string = merged_string + custom_slugify(data.get('source', ''))
+
+    if 'source' in data:
+        merged_string = merged_string + custom_slugify(data['source'])
     merged_string += '-'
-    merged_string = merged_string + custom_slugify(data.get('normalized_uri', ''))
+
+    if 'normalized_uri' in data:
+        merged_string = merged_string+ custom_slugify(data['normalized_uri'])
     merged_string += '-'
-    merged_string = merged_string + custom_slugify(str(data.get('confidence', '')))
+
+    if 'confidence' in data:
+        merged_string = merged_string + custom_slugify(str(data['confidence']))
     merged_string += '-'
 
     if merged_string == '':
@@ -129,9 +138,6 @@ def process_deposit_type(data, ms_id):
     return 'deposit_type' + hashed_string
 
 def process_document(data):
-    if data is None:
-        return ''
-        
     merged_string = ''
     if 'doi' in data:
         merged_string = merged_string + custom_slugify(data['doi'])
@@ -140,13 +146,20 @@ def process_document(data):
         merged_string = merged_string + custom_slugify(data['uri'])
         merged_string += '-'
     else:
-        merged_string = merged_string+ custom_slugify(data.get('title', ''))
+        if 'title' in data:
+            merged_string = merged_string+ custom_slugify(data['title'])
         merged_string += '-'
-        merged_string = merged_string+ custom_slugify(str(data.get('year', '')))
+
+        if 'year' in data:
+            merged_string = merged_string + custom_slugify(str(data['year']))
         merged_string += '-'
-        merged_string = merged_string+ custom_slugify(str(data.get('authors', '')))
+
+        if 'authors' in data:
+            merged_string = merged_string  + custom_slugify(str(data['authors']))
         merged_string += '-'
-        merged_string = merged_string+ custom_slugify(str(data.get('month', '')))
+
+        if 'month' in data:
+            merged_string = merged_string + custom_slugify(str(data['month']))
         merged_string += '-'
 
     if merged_string == '':
@@ -164,10 +177,10 @@ def process_mineral_inventory(ms, id):
     if 'mineral_inventory' in ms:
         list_mi = ms['mineral_inventory']
         process_mi = list_mi[int(id)]
-        reference = process_mi.get('reference', {'document': {}})
-        document = reference.get('document', None)
+        reference = process_mi['reference']
+        document = reference['document']
         uri_doc = process_document(document)
-        commodity = process_mi.get('commodity', '')
+        commodity = process_mi['commodity']
         grade_unit = str(process_mi.get('grade', {'grade_value':''}).get('grade_value', ''))
         
         ore_unit = str(process_mi.get('ore', {'ore_value':''}).get('ore_value', ''))
