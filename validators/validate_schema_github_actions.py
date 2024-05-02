@@ -204,7 +204,15 @@ if validator_utils.is_json_file_under_data(file_path):
     if 'MineralSite' in json_data:
         json_data = add_id_to_mineral_site(json_data, temp_file)
     elif 'MineralSystem' in json_data:
-        json_data = add_id_to_mineral_system(json_data, temp_file)
+        json_data = add_id_to_mineral_system(json_data, temp_file)       
+elif validator_utils.is_ttl_file_under_data(file_path):
+    file_content = read_file_from_github(owner, repo, file_path, token, branch)
+    print(f'{file_path} is a ttl file, running validation on it')
+    try:
+        create_ttl_files.validate_mineral_site(file_content)      
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise    
 else:
     print(f'{file_path} is not a JSON file')
 
