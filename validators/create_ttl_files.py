@@ -29,17 +29,17 @@ def run_drepr_on_mineral_system(datasource):
 
 def create_drepr_file_mineral_site(file_path):
     file_content = run_drepr_on_mineral_site(file_path)
-    validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
+    validation_result = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
 
-    if not validated_drepr:
+    if not validation_result:
         print('Pyshacl Validation failed for Mineral Site')
         raise
     else:
         print('Pyshacl Validation succeeded Mineral Site')
         
 def validate_mineral_site(file_content):
-    validated_drepr = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
-    if not validated_drepr:
+    validation_result = validate_pyshacl.validate_using_shacl_mineral_site(file_content)
+    if not validation_result:
         print('Pyshacl Validation failed for Mineral Site')
         raise
     else:
@@ -47,9 +47,9 @@ def validate_mineral_site(file_content):
 
 def create_drepr_file_mineral_system(file_path):
     file_content = run_drepr_on_mineral_system(file_path)
-    validated_drepr = validate_pyshacl.validate_mineral_system_using_shacl(file_content)
+    validation_result = validate_pyshacl.validate_mineral_system_using_shacl(file_content)
 
-    if not validated_drepr:
+    if not validation_result:
         print('Pyshacl Validation failed for pyshacl Mineral System')
         raise
     else:
