@@ -49,6 +49,15 @@ def is_json_file_under_data(file_path):
 
     return is_under_data_folder and file_extension.lower() == '.json'
 
+def is_ttl_file_under_data(file_path):
+    path, file_extension = os.path.splitext(file_path)
+    split_path = path.split('/')
+    is_under_data_folder = False
+    if (len(split_path) > 2 and split_path[-2] == 'usc'):
+        is_under_data_folder = True
+
+    return is_under_data_folder and file_extension.lower() == '.ttl'
+
 def get_filename(file_path):
     path, file_extension = os.path.splitext(file_path)
     split_path = path.split('/')
