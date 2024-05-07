@@ -93,8 +93,9 @@ def process_mineral_system(ms):
 
         if f in ms:
             f_object = ms[f]
-            merged_string += custom_slugify(f_object.get('theoretical',''))
-            merged_string += custom_slugify(f_object.get('criteria',''))
+            for item in f_object:
+                merged_string += custom_slugify(item.get('theoretical',''))
+                merged_string += custom_slugify(item.get('criteria',''))
 
     if 'deposit_type' in ms:
         for dt in ms['deposit_type']:
