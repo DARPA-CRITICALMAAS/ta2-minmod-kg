@@ -1,6 +1,8 @@
 import os
+
 import generate_uris
 import validators
+
 
 def is_valid_uri(uri):
     return validators.url(uri)
@@ -78,6 +80,8 @@ def mineral_site_schema():
                         "name" : {"type" : "string"},
                         "source_id" : {"type" : "string"},
                         "record_id" : {"type": ["string", "number"]},
+                        "site_type": {"type" : "string"},
+                        "site_rank": {"type" : "string"},
                         "location_info": {
                             "type": "object",
                             "properties": {
