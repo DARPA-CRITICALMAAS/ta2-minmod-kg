@@ -1,0 +1,90 @@
+version: 1
+
+extractors:
+  - name: category
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/category.yml
+      format: turtle
+  - name: commodity
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/commodity.yml
+      format: turtle
+  - name: deposit_type
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/deposit_type.yml
+      format: turtle
+  - name: unit
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/unit.yml
+      format: turtle
+  - name: same_as
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/same_as.yml
+      format: turtle
+  - name: mineral_site
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/mineral_site.yml
+      format: turtle
+  - name: mineral_system
+    type: drepr
+    ext: ttl
+    args:
+      path: extractors/mineral_system.yml
+      format: turtle
+  - name: copy
+    type: copy
+    args: {}
+
+pipeline:
+  - name: category
+    input: data/entities/category.csv
+    output: predefined-entities/
+    extractor: category
+  - name: commodity
+    input: data/entities/commodity.csv
+    output: predefined-entities/
+    extractor: commodity
+  - name: deposit_type
+    input: data/entities/deposit_type.csv
+    output: predefined-entities/
+    extractor: deposit_type
+  - name: unit
+    input: data/entities/unit.csv
+    output: predefined-entities/
+    extractor: unit
+  - name: sameas
+    input: data/umn/sameas/*.csv
+    output: same-as/
+    extractor: same_as
+  - name: inferlink
+    input: data/inferlink/extractions/*.json
+    output: inferlink/
+    extractor: mineral_site
+  - name: umn
+    input: data/umn/*.json
+    output: umn/
+    extractor: mineral_site
+  - name: sri
+    input: data/sri/*.json
+    output: sri/
+    extractor: mineral_site
+  - name: mappable_criteria
+    input: data/sri/mappableCriteria/*.json
+    output: mappable_criteria/
+    extractor: mineral_system
+  - name: usc
+    input: data/usc/*.ttl
+    output: usc/
+    extractor: copy
