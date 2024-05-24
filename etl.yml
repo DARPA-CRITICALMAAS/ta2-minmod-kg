@@ -5,43 +5,43 @@ extractors:
     type: drepr
     ext: ttl
     args:
-      path: extractors/category.yml
+      path: ::FILE_DIR::extractors/category.yml
       format: turtle
   - name: commodity
     type: drepr
     ext: ttl
     args:
-      path: extractors/commodity.yml
+      path: ::FILE_DIR::extractors/commodity.yml
       format: turtle
   - name: deposit_type
     type: drepr
     ext: ttl
     args:
-      path: extractors/deposit_type.yml
+      path: ::FILE_DIR::extractors/deposit_type.yml
       format: turtle
   - name: unit
     type: drepr
     ext: ttl
     args:
-      path: extractors/unit.yml
+      path: ::FILE_DIR::extractors/unit.yml
       format: turtle
   - name: same_as
     type: drepr
     ext: ttl
     args:
-      path: extractors/same_as.yml
+      path: ::FILE_DIR::extractors/same_as.yml
       format: turtle
   - name: mineral_site
     type: drepr
     ext: ttl
     args:
-      path: extractors/mineral_site.yml
+      path: ::FILE_DIR::extractors/mineral_site.yml
       format: turtle
   - name: mineral_system
     type: drepr
     ext: ttl
     args:
-      path: extractors/mineral_system.yml
+      path: ::FILE_DIR::extractors/mineral_system.yml
       format: turtle
   - name: copy
     type: copy
