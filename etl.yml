@@ -9,6 +9,9 @@ services:
         - ::CFG_DIR::extractors/commodity.yml
         - ::CFG_DIR::extractors/deposit_type.yml
         - ::CFG_DIR::extractors/unit.yml
+        - ::CFG_DIR::extractors/country.yml
+        - ::CFG_DIR::extractors/state_or_province.yml
+        - ::CFG_DIR::extractors/epsg.yml
       format: turtle
   - name: same as
     classpath: statickg.services.drepr.DReprService
