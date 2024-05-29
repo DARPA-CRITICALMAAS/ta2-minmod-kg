@@ -29,10 +29,9 @@ services:
   - name: copy
     classpath: statickg.services.copy.CopyService
   - name: load to fuseki
-    classpath: statickg.services.sh.ShService
+    classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
-      capture_output: false
-      verbose: 1
+      batch_size: 128
 
 pipeline:
   - service: predefined entities
@@ -62,4 +61,10 @@ pipeline:
   - service: load to fuseki
     args:
       input: ::DATA_DIR::**/*.ttl
-      command: echo {FILEPATH}
+      input_basedir: "::DATA_DIR::"
+      dbdir: "::DB_DIR::"
+      command: >-
+        docker run --rm -it -w /data
+        -v {DB_DIR}:/databases
+        -v ::DATA_DIR::{}:/data
+        minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}

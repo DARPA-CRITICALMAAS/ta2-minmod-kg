@@ -1,0 +1,6 @@
+name: minmod
+
+services:
+  kg:
+    image: minmod-fuseki
+    build: containers/fuseki
