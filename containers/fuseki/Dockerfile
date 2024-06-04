@@ -11,3 +11,4 @@ RUN cd tmp && \
     mv apache-jena-fuseki-5.0.0 /opt/fuseki
 
 COPY --chmod=+x dataloader.sh /opt/
+COPY config.ttl /opt/fuseki/config.ttl
