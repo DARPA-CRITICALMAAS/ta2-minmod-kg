@@ -12,3 +12,4 @@ RUN cd tmp && \
 
 COPY --chmod=+x dataloader.sh /opt/
 COPY config.ttl /opt/fuseki/config.ttl
+COPY shiro.ini /opt/fuseki/shiro.ini

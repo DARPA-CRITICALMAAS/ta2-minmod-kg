@@ -7,6 +7,7 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
 
 
 [] rdf:type fuseki:Server ;
+  # 60s timeout to first result, then 120s timeout to for rest of query.
   ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "60000,120000" ] ;
   fuseki:services (
     :service
@@ -14,11 +15,11 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
 
 :service rdf:type fuseki:Service ;
   fuseki:name "minmod" ;
+  # fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql"; fuseki:allowedUsers "*" ] ;
+  # fuseki:endpoint [ fuseki:operation fuseki:gsp-r ; fuseki:name "get"; fuseki:allowedUsers "*" ] ;
   fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql" ] ;
   fuseki:endpoint [ fuseki:operation fuseki:gsp-r ; fuseki:name "get" ] ;
-  fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ] ; 
-  # fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ] ;
-  # fuseki:endpoint [ fuseki:operation fuseki:patch ; fuseki:name "patch" ] ; 
+  fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ; fuseki:allowedUsers "admin" ] ; 
   fuseki:dataset :dataset ;
   .
 
