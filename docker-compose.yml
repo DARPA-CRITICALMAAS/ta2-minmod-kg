@@ -4,3 +4,6 @@ services:
   kg:
     image: minmod-fuseki
     build: containers/fuseki
+  etl:
+    image: minmod-etl
+    build: containers/etl
