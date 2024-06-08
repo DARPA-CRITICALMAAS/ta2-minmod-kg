@@ -68,13 +68,17 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/resource/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  - service: load to fuseki
-    args:
-      input: ::DATA_DIR::*/**/*.ttl
-      input_basedir: "::DATA_DIR::"
-      dbdir: "::DB_DIR::"
-      command: >-
-        docker run --rm -it -w /data
-        -v {DB_DIR}:/databases
-        -v ::DATA_DIR::{}:/data
-        minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}
+  # - service: load to fuseki
+  #   args:
+  #     input: ::DATA_DIR::*/**/*.ttl
+  #     input_basedir: "::DATA_DIR::"
+  #     dbdir: "::DB_DIR::"
+  #     endpoint:
+  #       update: http://localhost:3030/minmod/update
+  #       gsp: http://localhost:3030/minmod/data
+  #     replaceable_input: ::DATA_DIR::version.ttl
+  #     command: >-
+  #       docker run --rm -it -w /data
+  #       -v {DB_DIR}:/databases
+  #       -v ::DATA_DIR::{}:/data
+  #       minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}

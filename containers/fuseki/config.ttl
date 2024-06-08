@@ -20,8 +20,8 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
 :service rdf:type fuseki:Service ;
   fuseki:name "minmod" ;
   fuseki:endpoint [ fuseki:operation fuseki:query ; fuseki:name "sparql" ] ;
+  fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ] ;
   fuseki:endpoint [ fuseki:operation fuseki:gsp-r ; fuseki:name "get" ] ;
-  # fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ; fuseki:allowedUsers "admin" ] ; 
   fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ] ; 
   fuseki:dataset :dataset ;
   .

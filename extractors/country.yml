@@ -5,9 +5,18 @@ preprocessing:
     path: [1.., 0]
     code: |
       return "https://minmod.isi.edu/resource/" + value
+  - type: pmap
+    path: [1.., 3]
+    code: |
+      if value == "":
+        return []
+      return [x.strip() for x in value.split("|")]
 attributes:
   uri: [1.., 0]
   name: [1.., 2]
+  altname: [1.., 3, ..]
+  iso3: [1.., 4]
+  iso2: [1.., 5]
 alignments:
   - type: auto
 semantic_model:
@@ -15,6 +24,9 @@ semantic_model:
     properties:
       - [drepr:uri, uri]
       - [rdfs:label, name, xsd:string]
+      - [skos:altLabel, altname, xsd:string]
+      - [skos:altLabel, iso3, xsd:string]
+      - [skos:altLabel, iso2, xsd:string]
 
   prefixes:
     mndr: https://minmod.isi.edu/resource/
@@ -22,3 +34,4 @@ semantic_model:
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#
     gkbi: https://geokb.wikibase.cloud/entity/
+    skos: http://www.w3.org/2004/02/skos/core#

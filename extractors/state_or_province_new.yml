@@ -1,0 +1,50 @@
+version: 2
+resources:
+  state_or_province: csv
+  country: csv
+
+preprocessing:
+  - type: pmap
+    resource_id: state_or_province
+    path: [1.., 0]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+  - type: pmap
+    resource_id: country
+    path: [1.., 0]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+attributes:
+  sop_uri:
+    resource_id: state_or_province
+    path: [1.., 0]
+  name:
+    resource_id: state_or_province
+    path: [1.., 2]
+  sop_country:
+    resource_id: state_or_province
+    path: [1.., 5]
+  country:
+    resource_id: country
+    path: [1.., 2]
+  country_uri:
+    resource_id: country
+    path: [1.., 0]
+alignments:
+  - type: auto
+  - type: value
+    source: sop_country
+    target: country
+semantic_model:
+  mndr:StateOrProvince:1:
+    properties:
+      - [drepr:uri, sop_uri]
+      - [rdfs:label, name, xsd:string]
+      - [mndr:country, country_uri, drepr:uri]
+
+  prefixes:
+    mndr: https://minmod.isi.edu/resource/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    owl: http://www.w3.org/2002/07/owl#
+    gkbi: https://geokb.wikibase.cloud/entity/
