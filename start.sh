@@ -5,7 +5,7 @@ CWD=$(pwd)
 set -x
 
 # start ETL service
-docker run --name etl --rm --network host \
+docker run --name etl --rm --network host -d \
     -w $CWD \
     -v $CWD:$CWD \
     -v /var/run/docker.sock:/var/run/docker.sock \
