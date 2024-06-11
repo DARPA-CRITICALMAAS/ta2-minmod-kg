@@ -12,6 +12,8 @@ RUN apt update && apt install -y ca-certificates curl git && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 
 
+RUN git config --global --add safe.directory "*"
+
 # install libraries
 ADD minmodkg /kg/minmodkg
 ADD pyproject.toml /kg/
