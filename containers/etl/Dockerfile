@@ -13,5 +13,5 @@ RUN apt update && apt install -y ca-certificates curl git && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 
 
 # install statickg
-RUN pip install statickg==1.2.2
+RUN pip install 'statickg>=1.3.0'
 RUN pip install requests
