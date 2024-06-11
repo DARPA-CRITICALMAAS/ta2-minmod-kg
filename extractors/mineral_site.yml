@@ -28,12 +28,6 @@ preprocessing:
         id = id[:80] + "__" + hashlib.sha256(id.encode()).hexdigest()[:8]
       return "https://minmod.isi.edu/resource/site__" + id
   - type: pmap
-    path: ["MineralSite", .., ["deposit_type_candidate"], ..]
-    code: |
-      if 'id' not in value:
-        value['id'] = str(context.get_index())
-      return value
-  - type: pmap
     path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"]]
     code: |
       if 'id' not in value:
@@ -52,17 +46,16 @@ attributes:
   site_type: ["MineralSite", .., ["site_type"]]
   site_rank: ["MineralSite", .., ["site_rank"]]
 
-  deposit_type_id: ["MineralSite", .., ["deposit_type_candidate"], .., "id"]
-  deposit_type_name: ["MineralSite", .., ["deposit_type_candidate"], .., ["observed_name"]]
-  deposit_type_source: ["MineralSite", .., ["deposit_type_candidate"], .., ["source"]]
-  deposit_type_confidence: ["MineralSite", .., ["deposit_type_candidate"], .., ["confidence"]]
-  deposit_type_normalized_uri:
-    path: ["MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
-    missing_values: [""]
+  deposit_type_name: ["MineralSite", .., ["deposit_type_candidate"], .., "observed_name"]
+  deposit_type_source: ["MineralSite", .., ["deposit_type_candidate"], .., "source"]
+  deposit_type_confidence: ["MineralSite", .., ["deposit_type_candidate"], .., "confidence"]
+  deposit_type_normalized_uri: ["MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
 
   location: ["MineralSite", .., ["location_info"], ["location"]]
   country: ["MineralSite", .., ["location_info"], ["country"]]
+  extracted_country: ["MineralSite", .., ["location_info"], ["extracted_country"]]
   state: ["MineralSite", .., ["location_info"], ["state_or_province"]]
+  extracted_state: ["MineralSite", .., ["location_info"], ["extracted_state_or_province"]]
   crs: ["MineralSite", .., ["location_info"], ["crs"]]
 
   geology_info_age: ["MineralSite", .., ["geology_info"], ["age"]]
@@ -75,9 +68,7 @@ attributes:
 
   inv_commodity: ["MineralSite", .., ["mineral_inventory"], .., "commodity"]
   inv_observed_commodity: ["MineralSite", .., ["mineral_inventory"], .., ["observed_commodity"]]
-  inv_zone:
-    path: ["MineralSite", .., ["mineral_inventory"], .., ["zone"]]
-    missing_values: [""]
+  inv_zone: ["MineralSite", .., ["mineral_inventory"], .., ["zone"]]
   inv_date: ["MineralSite", .., ["mineral_inventory"], .., ["date"]]
   inv_category: ["MineralSite", .., ["mineral_inventory"], .., ["category"], ..]
 
@@ -130,7 +121,6 @@ semantic_model:
 
   mndr:DepositTypeCandidate:1:
     properties:
-      - [drepr:blank, deposit_type_id]
       - [mndr:observed_name, deposit_type_name]
       - [mndr:source, deposit_type_source]
       - [mndr:normalized_uri, deposit_type_normalized_uri, drepr:uri]
@@ -138,9 +128,11 @@ semantic_model:
 
   mndr:LocationInfo:1:
     properties:
-      - [mndr:country, country]
-      - [mndr:crs, crs]
-      - [mndr:state_or_province, state]
+      - [mndr:country, country, drepr:uri]
+      - [mndr:extracted_country, extracted_country]
+      - [mndr:crs, crs, drepr:uri]
+      - [mndr:state_or_province, state, drepr:uri]
+      - [mndr:extracted_state_or_province, extracted_state]
       - [mndr:location, location, geo:wktLiteral]
     subject: country
 

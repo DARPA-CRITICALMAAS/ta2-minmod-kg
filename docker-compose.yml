@@ -1,9 +1,13 @@
 name: minmod
 
 services:
-  kg:
-    image: minmod-fuseki
-    build: containers/fuseki
+  # kg:
+  #   image: minmod-fuseki
+  #   build: containers/fuseki
   etl:
     image: minmod-etl
     build: containers/etl
+    volumes:
+      - ..:/criticalmaas
+    command: >
+      python -m statickg /criticalmaas/ta2-minmod-kg/etl.yml /criticalmaas/ta2-minmod-kg/data /criticalmaas/ta2-minmod-data
