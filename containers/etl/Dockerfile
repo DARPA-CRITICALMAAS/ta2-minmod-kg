@@ -12,5 +12,11 @@ RUN apt update && apt install -y ca-certificates curl git && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 
 
-# install statickg
-RUN pip install 'statickg>=1.3.0'
+# install libraries
+ADD minmodkg /kg/minmodkg
+ADD pyproject.toml /kg/
+ADD README.md /kg/
+
+WORKDIR /kg
+
+RUN pip install .

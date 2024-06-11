@@ -86,7 +86,7 @@ pipeline:
         find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
       load:
         command: >-
-          docker run --rm -it -w /data
+          docker run --rm -w /data
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
           minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}

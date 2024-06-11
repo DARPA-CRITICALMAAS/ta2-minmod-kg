@@ -6,4 +6,6 @@ services:
     build: containers/fuseki
   etl:
     image: minmod-etl
-    build: containers/etl
+    build: 
+      context: .
+      dockerfile: containers/etl/Dockerfile
