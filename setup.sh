@@ -8,4 +8,4 @@ docker run --name etl --rm -d \
     -v ./data:/kg-data \
     -v ./ta2-minmod-data:/data \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    python -m statickg /kg/etl.yml /kg-data /data
+    minmod-etl python -m statickg /kg/etl.yml /kg-data /data

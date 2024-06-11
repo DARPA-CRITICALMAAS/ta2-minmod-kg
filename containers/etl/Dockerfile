@@ -14,4 +14,3 @@ RUN apt update && apt install -y ca-certificates curl git && \
 
 # install statickg
 RUN pip install 'statickg>=1.3.0'
-RUN pip install requests
