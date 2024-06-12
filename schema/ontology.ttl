@@ -1,0 +1,627 @@
+@prefix : <https://minmod.isi.edu/ontology/> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <https://minmod.isi.edu/ontology/> .
+
+<https://minmod.isi.edu/ontology/> rdf:type owl:Ontology .
+
+#################################################################
+#    Datatypes
+#################################################################
+
+###  http://www.opengis.net/ont/geosparql#wktLiteral
+geo:wktLiteral rdf:type rdfs:Datatype .
+
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  https://minmod.isi.edu/ontology/bounding_box
+:bounding_box rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :page_info_objectproperty ;
+              rdfs:range :BoundingBox .
+
+
+###  https://minmod.isi.edu/ontology/category
+:category rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+          rdfs:range :ResourceReserveCategory .
+
+
+###  https://minmod.isi.edu/ontology/commodity
+:commodity rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+           rdfs:range :Commodity .
+
+
+###  https://minmod.isi.edu/ontology/country
+:country rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf :location_info_objectproperty ;
+         rdfs:range :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/crs
+:crs rdf:type owl:ObjectProperty ;
+     rdfs:subPropertyOf :location_info_objectproperty ;
+     rdfs:range :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/cutoff_grade
+:cutoff_grade rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+              rdfs:range :Measure .
+
+
+###  https://minmod.isi.edu/ontology/deposit_type
+:deposit_type rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :mineral_system_objectproperty ;
+              rdfs:domain :DepositType .
+
+
+###  https://minmod.isi.edu/ontology/deposit_type_candidate
+:deposit_type_candidate rdf:type owl:ObjectProperty ;
+                        rdfs:subPropertyOf :mineral_site_objectproperty ;
+                        rdfs:range :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/document
+:document rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf :reference_objectproperty ;
+          rdfs:range :Document .
+
+
+###  https://minmod.isi.edu/ontology/energy
+:energy rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf :mineral_system_objectproperty ;
+        rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/environment
+:environment rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf :deposit_type .
+
+
+###  https://minmod.isi.edu/ontology/geology_info
+:geology_info rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :mineral_site_objectproperty ;
+              rdfs:range :GeologyInfo .
+
+
+###  https://minmod.isi.edu/ontology/grade
+:grade rdf:type owl:ObjectProperty ;
+       rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+       rdfs:range :Measure .
+
+
+###  https://minmod.isi.edu/ontology/group
+:group rdf:type owl:ObjectProperty ;
+       rdfs:subPropertyOf :deposit_type .
+
+
+###  https://minmod.isi.edu/ontology/location_info
+:location_info rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :mineral_site_objectproperty ;
+               rdfs:range :LocationInfo .
+
+
+###  https://minmod.isi.edu/ontology/location_info_objectproperty
+:location_info_objectproperty rdf:type owl:ObjectProperty ;
+                              rdfs:subPropertyOf owl:topObjectProperty ;
+                              rdfs:domain :LocationInfo .
+
+
+###  https://minmod.isi.edu/ontology/mappable_criteria_objectproperty
+:mappable_criteria_objectproperty rdf:type owl:ObjectProperty ;
+                                  rdfs:subPropertyOf owl:topObjectProperty ;
+                                  rdfs:domain :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/match_info_objectproperty
+:match_info_objectproperty rdf:type owl:ObjectProperty ;
+                           rdfs:subPropertyOf owl:topObjectProperty ;
+                           rdfs:domain :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/measure_objectproperty
+:measure_objectproperty rdf:type owl:ObjectProperty ;
+                        rdfs:subPropertyOf owl:topObjectProperty ;
+                        rdfs:domain :Measure .
+
+
+###  https://minmod.isi.edu/ontology/mineral_inventory
+:mineral_inventory rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf :mineral_site_objectproperty ;
+                   rdfs:range :MineralInventory .
+
+
+###  https://minmod.isi.edu/ontology/mineral_inventory_objectproperty
+:mineral_inventory_objectproperty rdf:type owl:ObjectProperty ;
+                                  rdfs:subPropertyOf owl:topObjectProperty ;
+                                  rdfs:domain :MineralInventory .
+
+
+###  https://minmod.isi.edu/ontology/mineral_site_objectproperty
+:mineral_site_objectproperty rdf:type owl:ObjectProperty ;
+                             rdfs:subPropertyOf owl:topObjectProperty ;
+                             rdfs:domain :MineralSite .
+
+
+###  https://minmod.isi.edu/ontology/mineral_system_objectproperty
+:mineral_system_objectproperty rdf:type owl:ObjectProperty ;
+                               rdfs:subPropertyOf owl:topObjectProperty ;
+                               rdfs:domain :MineralSystem .
+
+
+###  https://minmod.isi.edu/ontology/normalized_uri
+:normalized_uri rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf :match_info_objectproperty ;
+                rdfs:range :Commodity ,
+                           :CoordinateReferenceSystem ,
+                           :Country ,
+                           :DepositType ,
+                           :StateOrProvince ,
+                           :Unit .
+
+
+###  https://minmod.isi.edu/ontology/ore
+:ore rdf:type owl:ObjectProperty ;
+     rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+     rdfs:range :Measure .
+
+
+###  https://minmod.isi.edu/ontology/outflow
+:outflow rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf :mineral_system_objectproperty ;
+         rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/page_info
+:page_info rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :reference_objectproperty ;
+           rdfs:range :PageInfo .
+
+
+###  https://minmod.isi.edu/ontology/page_info_objectproperty
+:page_info_objectproperty rdf:type owl:ObjectProperty ;
+                          rdfs:subPropertyOf owl:topObjectProperty ;
+                          rdfs:domain :PageInfo .
+
+
+###  https://minmod.isi.edu/ontology/pathway
+:pathway rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf :mineral_system_objectproperty ;
+         rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/potential_dataset
+:potential_dataset rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf :mappable_criteria_objectproperty ;
+                   rdfs:range :EvidenceLayer .
+
+
+###  https://minmod.isi.edu/ontology/preservation
+:preservation rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf :mineral_system_objectproperty ;
+              rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/reference
+:reference rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+           rdfs:range :Reference .
+
+
+###  https://minmod.isi.edu/ontology/reference_objectproperty
+:reference_objectproperty rdf:type owl:ObjectProperty ;
+                          rdfs:subPropertyOf owl:topObjectProperty ;
+                          rdfs:domain :Reference .
+
+
+###  https://minmod.isi.edu/ontology/source
+:source rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf :mineral_system_objectproperty ;
+        rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/state_or_province
+:state_or_province rdf:type owl:ObjectProperty ;
+                   rdfs:subPropertyOf :location_info_objectproperty ;
+                   rdfs:range :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/supporting_references
+:supporting_references rdf:type owl:ObjectProperty ;
+                       rdfs:subPropertyOf :mappable_criteria_objectproperty ;
+                       rdfs:range :Reference .
+
+
+###  https://minmod.isi.edu/ontology/trap
+:trap rdf:type owl:ObjectProperty ;
+      rdfs:subPropertyOf :mineral_system_objectproperty ;
+      rdfs:range :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/unit
+:unit rdf:type owl:ObjectProperty ;
+      rdfs:subPropertyOf :measure_objectproperty ;
+      rdfs:range :Unit .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  https://minmod.isi.edu/ontology/age
+:age rdf:type owl:DatatypeProperty ;
+     rdfs:subPropertyOf :geology_info_dataproperty ;
+     rdfs:comment "Age of the geologic unit or event" .
+
+
+###  https://minmod.isi.edu/ontology/bounding_box_dataproperty
+:bounding_box_dataproperty rdf:type owl:DatatypeProperty ;
+                           rdfs:subPropertyOf owl:topDataProperty ;
+                           rdfs:domain :BoundingBox .
+
+
+###  https://minmod.isi.edu/ontology/comments
+:comments rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf :geology_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/confidence
+:confidence rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf :match_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/criteria
+:criteria rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf :mappable_criteria_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/date
+:date rdf:type owl:DatatypeProperty ;
+      rdfs:subPropertyOf :mineral_inventory_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/deposit_type_dataproperty
+:deposit_type_dataproperty rdf:type owl:DatatypeProperty ;
+                           rdfs:subPropertyOf owl:topDataProperty .
+
+
+###  https://minmod.isi.edu/ontology/description
+:description rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf :document_dataproperty ,
+                                :geology_info_dataproperty ;
+             rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/document_dataproperty
+:document_dataproperty rdf:type owl:DatatypeProperty ;
+                       rdfs:subPropertyOf owl:topDataProperty ;
+                       rdfs:domain :Document .
+
+
+###  https://minmod.isi.edu/ontology/doi
+:doi rdf:type owl:DatatypeProperty ;
+     rdfs:subPropertyOf :document_dataproperty ;
+     rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/environment
+:environment rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf :deposit_type_dataproperty ,
+                                :geology_info_dataproperty ;
+             rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/evidence_layer_dataproperty
+:evidence_layer_dataproperty rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdfs:domain :EvidenceLayer .
+
+
+###  https://minmod.isi.edu/ontology/geology_info_dataproperty
+:geology_info_dataproperty rdf:type owl:DatatypeProperty ;
+                           rdfs:subPropertyOf owl:topDataProperty ;
+                           rdfs:domain :GeologyInfo .
+
+
+###  https://minmod.isi.edu/ontology/group
+:group rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :deposit_type_dataproperty ;
+       rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/issue
+:issue rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/journal
+:journal rdf:type owl:DatatypeProperty ;
+         rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/lithology
+:lithology rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :geology_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/location
+:location rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf :location_info_dataproperty ;
+          rdfs:domain :LocationInfo ;
+          rdfs:range geo:wktLiteral .
+
+
+###  https://minmod.isi.edu/ontology/location_info_dataproperty
+:location_info_dataproperty rdf:type owl:DatatypeProperty ;
+                            rdfs:subPropertyOf owl:topDataProperty .
+
+
+###  https://minmod.isi.edu/ontology/mappable_criteria_dataproperty
+:mappable_criteria_dataproperty rdf:type owl:DatatypeProperty ;
+                                rdfs:subPropertyOf owl:topDataProperty ;
+                                rdfs:domain :MappableCriteria .
+
+
+###  https://minmod.isi.edu/ontology/match_info_dataproperty
+:match_info_dataproperty rdf:type owl:DatatypeProperty ;
+                         rdfs:subPropertyOf owl:topDataProperty ;
+                         rdfs:domain :MatchInfo .
+
+
+###  https://minmod.isi.edu/ontology/measure_dataproperty
+:measure_dataproperty rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdfs:domain :Measure .
+
+
+###  https://minmod.isi.edu/ontology/mineral_inventory_dataproperty
+:mineral_inventory_dataproperty rdf:type owl:DatatypeProperty ;
+                                rdfs:subPropertyOf owl:topDataProperty ;
+                                rdfs:domain :MineralInventory .
+
+
+###  https://minmod.isi.edu/ontology/mineral_site_dataproperty
+:mineral_site_dataproperty rdf:type owl:DatatypeProperty ;
+                           rdfs:subPropertyOf owl:topDataProperty ;
+                           rdfs:domain :MineralSite .
+
+
+###  https://minmod.isi.edu/ontology/month
+:month rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/name
+:name rdf:type owl:DatatypeProperty ;
+      rdfs:subPropertyOf :deposit_type_dataproperty ;
+      rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/observed_name
+:observed_name rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf :match_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/page
+:page rdf:type owl:DatatypeProperty ;
+      rdfs:subPropertyOf :page_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/page_info_dataproperty
+:page_info_dataproperty rdf:type owl:DatatypeProperty ;
+                        rdfs:subPropertyOf owl:topDataProperty ;
+                        rdfs:domain :PageInfo .
+
+
+###  https://minmod.isi.edu/ontology/process
+:process rdf:type owl:DatatypeProperty ;
+         rdfs:subPropertyOf :geology_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/record_id
+:record_id rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :mineral_site_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/relevance_score
+:relevance_score rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf :evidence_layer_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/source
+:source rdf:type owl:DatatypeProperty ;
+        rdfs:subPropertyOf :match_info_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/source_id
+:source_id rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :mineral_site_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/theoretical
+:theoretical rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf :mappable_criteria_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/title
+:title rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/unit_name
+:unit_name rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :geology_info_dataproperty ;
+           rdfs:comment "Name of the geologic unit" .
+
+
+###  https://minmod.isi.edu/ontology/uri
+:uri rdf:type owl:DatatypeProperty ;
+     rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/value
+:value rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :measure_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/volume
+:volume rdf:type owl:DatatypeProperty ;
+        rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/x_max
+:x_max rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :bounding_box_dataproperty ;
+       rdfs:range xsd:decimal .
+
+
+###  https://minmod.isi.edu/ontology/x_min
+:x_min rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :bounding_box_dataproperty ;
+       rdfs:range xsd:decimal .
+
+
+###  https://minmod.isi.edu/ontology/y_max
+:y_max rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :bounding_box_dataproperty ;
+       rdfs:range xsd:decimal .
+
+
+###  https://minmod.isi.edu/ontology/y_min
+:y_min rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf :bounding_box_dataproperty ;
+       rdfs:range xsd:decimal .
+
+
+###  https://minmod.isi.edu/ontology/year
+:year rdf:type owl:DatatypeProperty ;
+      rdfs:subPropertyOf :document_dataproperty .
+
+
+###  https://minmod.isi.edu/ontology/zone
+:zone rdf:type owl:DatatypeProperty ;
+      rdfs:subPropertyOf :mineral_inventory_dataproperty .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  https://minmod.isi.edu/ontology/BoundingBox
+:BoundingBox rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Commodity
+:Commodity rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/CoordinateReferenceSystem
+:CoordinateReferenceSystem rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Country
+:Country rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/DepositType
+:DepositType rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Document
+:Document rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/EvidenceLayer
+:EvidenceLayer rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/GeologyInfo
+:GeologyInfo rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/LocationInfo
+:LocationInfo rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/MappableCriteria
+:MappableCriteria rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/MatchInfo
+:MatchInfo rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Measure
+:Measure rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/MineralInventory
+:MineralInventory rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/MineralSite
+:MineralSite rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/MineralSystem
+:MineralSystem rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/PageInfo
+:PageInfo rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Reference
+:Reference rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/ResourceReserveCategory
+:ResourceReserveCategory rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/StateOrProvince
+:StateOrProvince rdf:type owl:Class .
+
+
+###  https://minmod.isi.edu/ontology/Unit
+:Unit rdf:type owl:Class .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :BoundingBox
+                :Commodity
+                :CoordinateReferenceSystem
+                :Country
+                :DepositType
+                :Document
+                :EvidenceLayer
+                :GeologyInfo
+                :LocationInfo
+                :MappableCriteria
+                :MatchInfo
+                :Measure
+                :MineralInventory
+                :MineralSite
+                :MineralSystem
+                :PageInfo
+                :Reference
+                :ResourceReserveCategory
+                :StateOrProvince
+                :Unit
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
