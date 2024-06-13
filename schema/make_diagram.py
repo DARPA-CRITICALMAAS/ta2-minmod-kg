@@ -3,7 +3,7 @@ from itertools import chain
 from pathlib import Path
 
 import erdantic as erd
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, create_model
 from rdflib import OWL, RDF, RDFS, Graph, Namespace, URIRef
 
 mno = Namespace("https://minmod.isi.edu/ontology/")
@@ -53,7 +53,7 @@ def make_er_diagram():
         mno.BoundingBox,
         mno.PageInfo,
         mno.Reference,
-        mno.MappableCriteria,
+        # mno.MappableCriteria,
     ]
     for cls in classes:
         assert isinstance(cls, URIRef)
@@ -69,9 +69,13 @@ def make_er_diagram():
             else:
                 for obj in g.objects(prop, RDFS.range, unique=True):
                     objname = obj[len(mno) :]
-                    fields.append((propname, models[objname]))
+                    fields.append((propname, models[objname][0]))
 
-        model = make_dataclass(clsname, fields, bases=(BaseModel,))
+        # model = make_dataclass(clsname, fields, bases=(BaseModel,))
+        model = create_model(
+            clsname,
+            **{propname: (fieldtype, Field()) for propname, fieldtype in fields},
+        )
         models[clsname] = (model, fields)
 
     graph = erd.create(*[model for model, fields in models.values() if len(fields) > 0])
