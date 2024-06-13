@@ -1,17 +1,22 @@
+import re
 from collections import defaultdict
 from dataclasses import asdict, dataclass, make_dataclass
+from datetime import datetime
 from graphlib import TopologicalSorter
 from itertools import chain
 from pathlib import Path
-from typing import Union
+from typing import TypeAlias, Union
 
 import erdantic as erd
-from pydantic import BaseModel, Field, create_model
-from rdflib import OWL, RDF, RDFS, XSD, Graph, Namespace, URIRef
+from pydantic import BaseModel, ConfigDict, Field, create_model
+from rdflib import OWL, RDF, RDFS, XSD, BNode, Graph, Literal, Namespace, URIRef
 
 mno = Namespace("https://minmod.isi.edu/ontology/")
 geo = Namespace("http://www.opengis.net/ont/geosparql#")
 hasSubPropertyOf = mno.hasSubPropertyOf
+
+
+class URI(str): ...
 
 
 def get_all_values(g: Graph, s: URIRef, p: URIRef, subItemOf: URIRef):
@@ -45,32 +50,50 @@ def load_ontology():
     return g
 
 
+def read_a_list(g: Graph, s):
+    out: list[URIRef] = []
+    for pred, obj in g.predicate_objects(s):
+        if pred == RDF.rest:
+            out.extend(read_a_list(g, obj))
+        else:
+            assert isinstance(obj, URIRef)
+            out.append(obj)
+    return out
+
+
 def make_er_diagram():
     g = load_ontology()
 
-    models = {}
-
-    # classes = list(g.subjects(RDF.type, OWL.Class))
-    classes = [
-        mno.EvidenceLayer,
-        mno.Document,
-        mno.BoundingBox,
-        mno.PageInfo,
-        mno.Reference,
-        # mno.MappableCriteria,
-    ]
-
+    # get class orders
     edges: dict[URIRef, list[URIRef]] = defaultdict(list)
     for subj in g.subjects(RDF.type, OWL.Class):
-        assert isinstance(subj, URIRef)
+        if not isinstance(subj, URIRef):
+            continue
         for prop in g.subjects(RDFS.domain, subj):
-            if (prop, RDF.type, OWL.DatatypeProperty) in g:
-                continue
             for obj in g.objects(prop, RDFS.range, unique=True):
-                assert isinstance(obj, URIRef)
-                edges[subj].append(obj)
-
+                if isinstance(obj, URIRef):
+                    if obj in mno:
+                        edges[subj].append(obj)
+                else:
+                    assert (obj, OWL.unionOf, None) in g
+                    for sobj in read_a_list(g, next(g.objects(obj, OWL.unionOf))):
+                        if sobj in mno:
+                            edges[subj].append(sobj)
     ts = TopologicalSorter(edges)
+
+    namespaces = list(g.namespaces())
+
+    # get data types
+    datatypes = {}
+    for subj in g.subjects(RDF.type, RDFS.Datatype):
+        ((prefix, ns),) = [
+            (prefix, ns) for prefix, ns in namespaces if str(subj).startswith(ns)
+        ]
+        typename = prefix + ":" + str(subj)[len(ns) :]
+        datatypes[subj] = make_dataclass(typename, [])
+
+    # iterate over classes and create models
+    models = {}
     for subj in ts.static_order():
         clsname = subj[len(mno) :]
         fields = []
@@ -79,39 +102,44 @@ def make_er_diagram():
             if (prop, hasSubPropertyOf, None) in g:
                 continue
             propname = prop[len(mno) :]
-            if (prop, RDF.type, OWL.DatatypeProperty) in g:
-                ranges = set()
-                for obj in g.objects(prop, RDFS.range, unique=True):
-                    assert isinstance(obj, URIRef)
-                    if obj == XSD.string:
-                        ranges.add(str)
-                    elif obj == XSD.integer:
-                        ranges.add(int)
-                    elif obj == XSD.decimal:
-                        ranges.add(float)
-                    elif obj == geo.wktLiteral:
-                        ranges.add("WktLiteral")
-                    else:
-                        raise NotImplementedError()
-                    ranges.add(obj)
-                fields.append((propname, str))
-            else:
-                ranges = [
-                    models[str(obj)[len(mno) :]]
-                    for obj in g.objects(prop, RDFS.range, unique=True)
-                ]
-                fields.append(
-                    (
-                        propname,
-                        Union[tuple(ranges)],
-                    )
-                )
+            ranges = list(g.objects(prop, RDFS.range, unique=True))
+            if len(ranges) > 1:
+                raise Exception("Cannot represent intersection types in pydantic")
+            fields.append((propname, get_field_type(g, models, datatypes, ranges[0])))
 
-        models[clsname] = make_dataclass(clsname, fields, bases=(BaseModel,))
+        models[clsname] = create_model(
+            clsname,
+            **{name: (type, Field()) for name, type in fields},  # type: ignore
+            __config__=ConfigDict(arbitrary_types_allowed=True)
+        )  # type: ignore
 
     graph = erd.create(*list(models.values()))
     graph.draw(out=Path(__file__).parent / "er_diagram.png")
     return
+
+
+def get_field_type(g: Graph, models, datatypes, obj):
+    if obj == XSD.string:
+        return str
+    if obj == XSD.integer:
+        return int
+    if obj == XSD.decimal:
+        return float
+    if obj == XSD.anyURI:
+        return URI
+    if obj == XSD.dateTime:
+        return datetime
+    if isinstance(obj, URIRef) and obj in mno:
+        return models[str(obj)[len(mno) :]]
+    if obj in datatypes:
+        return datatypes[obj]
+    if isinstance(obj, BNode):
+        assert (obj, OWL.unionOf, None) in g
+        types = []
+        for sobj in read_a_list(g, next(g.objects(obj, OWL.unionOf))):
+            types.append(get_field_type(g, models, datatypes, sobj))
+        return Union[tuple(types)]  # type: ignore
+    raise NotImplementedError(obj)
 
 
 if __name__ == "__main__":

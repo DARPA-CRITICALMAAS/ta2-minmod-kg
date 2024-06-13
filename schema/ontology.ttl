@@ -7,7 +7,11 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @base <https://minmod.isi.edu/ontology/> .
 
-<https://minmod.isi.edu/ontology/> rdf:type owl:Ontology .
+<https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
+                                    rdfs:comment """Ontology for Minmod Knowledge Graph
+
+
+By default, we assume that the cardinality constraints is maximum 1. If the cardinality is exact 1, or empty or more than 1, it will be specified explicitly""" .
 
 #################################################################
 #    Datatypes
@@ -83,7 +87,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/environment
 :environment rdf:type owl:ObjectProperty ;
-             rdfs:subPropertyOf :deposit_type .
+             rdfs:subPropertyOf :deposit_type ;
+             rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/geology_info
@@ -100,7 +105,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/group
 :group rdf:type owl:ObjectProperty ;
-       rdfs:subPropertyOf :deposit_type .
+       rdfs:subPropertyOf :deposit_type ;
+       rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/location_info
@@ -160,12 +166,15 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/normalized_uri
 :normalized_uri rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf :match_info_objectproperty ;
-                rdfs:range :Commodity ,
-                           :CoordinateReferenceSystem ,
-                           :Country ,
-                           :DepositType ,
-                           :StateOrProvince ,
-                           :Unit .
+                rdfs:range [ rdf:type owl:Class ;
+                             owl:unionOf ( :Commodity
+                                           :CoordinateReferenceSystem
+                                           :Country
+                                           :DepositType
+                                           :StateOrProvince
+                                           :Unit
+                                         )
+                           ] .
 
 
 ###  https://minmod.isi.edu/ontology/ore
@@ -224,8 +233,16 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/source
 :source rdf:type owl:ObjectProperty ;
-        rdfs:subPropertyOf :mineral_system_objectproperty ;
-        rdfs:range :MappableCriteria .
+        rdfs:domain [ rdf:type owl:Class ;
+                      owl:unionOf ( :MatchInfo
+                                    :MineralSystem
+                                  )
+                    ] ;
+        rdfs:range [ rdf:type owl:Class ;
+                     owl:unionOf ( xsd:string
+                                   :MappableCriteria
+                                 )
+                   ] .
 
 
 ###  https://minmod.isi.edu/ontology/state_or_province
@@ -259,6 +276,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/age
 :age rdf:type owl:DatatypeProperty ;
      rdfs:subPropertyOf :geology_info_dataproperty ;
+     rdfs:range xsd:string ;
      rdfs:comment "Age of the geologic unit or event" .
 
 
@@ -270,22 +288,26 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/comments
 :comments rdf:type owl:DatatypeProperty ;
-          rdfs:subPropertyOf :geology_info_dataproperty .
+          rdfs:subPropertyOf :geology_info_dataproperty ;
+          rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/confidence
 :confidence rdf:type owl:DatatypeProperty ;
-            rdfs:subPropertyOf :match_info_dataproperty .
+            rdfs:subPropertyOf :match_info_dataproperty ;
+            rdfs:range xsd:decimal .
 
 
 ###  https://minmod.isi.edu/ontology/criteria
 :criteria rdf:type owl:DatatypeProperty ;
-          rdfs:subPropertyOf :mappable_criteria_dataproperty .
+          rdfs:subPropertyOf :mappable_criteria_dataproperty ;
+          rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/date
 :date rdf:type owl:DatatypeProperty ;
-      rdfs:subPropertyOf :mineral_inventory_dataproperty .
+      rdfs:subPropertyOf :mineral_inventory_dataproperty ;
+      rdfs:range xsd:dateTime .
 
 
 ###  https://minmod.isi.edu/ontology/deposit_type_dataproperty
@@ -315,8 +337,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/environment
 :environment rdf:type owl:DatatypeProperty ;
              rdfs:subPropertyOf :deposit_type_dataproperty ,
-                                :geology_info_dataproperty ;
-             rdfs:range xsd:string .
+                                :geology_info_dataproperty .
 
 
 ###  https://minmod.isi.edu/ontology/evidence_layer_dataproperty
@@ -333,23 +354,25 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/group
 :group rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :deposit_type_dataproperty ;
-       rdfs:range xsd:string .
+       rdfs:subPropertyOf :deposit_type_dataproperty .
 
 
 ###  https://minmod.isi.edu/ontology/issue
 :issue rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :document_dataproperty .
+       rdfs:subPropertyOf :document_dataproperty ;
+       rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/journal
 :journal rdf:type owl:DatatypeProperty ;
-         rdfs:subPropertyOf :document_dataproperty .
+         rdfs:subPropertyOf :document_dataproperty ;
+         rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/lithology
 :lithology rdf:type owl:DatatypeProperty ;
-           rdfs:subPropertyOf :geology_info_dataproperty .
+           rdfs:subPropertyOf :geology_info_dataproperty ;
+           rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/location
@@ -396,7 +419,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/month
 :month rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :document_dataproperty .
+       rdfs:subPropertyOf :document_dataproperty ;
+       rdfs:range xsd:integer .
 
 
 ###  https://minmod.isi.edu/ontology/name
@@ -407,12 +431,14 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/observed_name
 :observed_name rdf:type owl:DatatypeProperty ;
-               rdfs:subPropertyOf :match_info_dataproperty .
+               rdfs:subPropertyOf :match_info_dataproperty ;
+               rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/page
 :page rdf:type owl:DatatypeProperty ;
-      rdfs:subPropertyOf :page_info_dataproperty .
+      rdfs:subPropertyOf :page_info_dataproperty ;
+      rdfs:range xsd:integer .
 
 
 ###  https://minmod.isi.edu/ontology/page_info_dataproperty
@@ -423,58 +449,75 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/process
 :process rdf:type owl:DatatypeProperty ;
-         rdfs:subPropertyOf :geology_info_dataproperty .
+         rdfs:subPropertyOf :geology_info_dataproperty ;
+         rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/record_id
 :record_id rdf:type owl:DatatypeProperty ;
-           rdfs:subPropertyOf :mineral_site_dataproperty .
+           rdfs:subPropertyOf :mineral_site_dataproperty ;
+           rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/relevance_score
 :relevance_score rdf:type owl:DatatypeProperty ;
-                 rdfs:subPropertyOf :evidence_layer_dataproperty .
+                 rdfs:subPropertyOf :evidence_layer_dataproperty ;
+                 rdfs:range xsd:decimal .
 
 
-###  https://minmod.isi.edu/ontology/source
-:source rdf:type owl:DatatypeProperty ;
-        rdfs:subPropertyOf :match_info_dataproperty .
+###  https://minmod.isi.edu/ontology/site_rank
+:site_rank rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :mineral_site_dataproperty ;
+           rdfs:range xsd:string .
+
+
+###  https://minmod.isi.edu/ontology/site_type
+:site_type rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf :mineral_site_dataproperty ;
+           rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/source_id
 :source_id rdf:type owl:DatatypeProperty ;
-           rdfs:subPropertyOf :mineral_site_dataproperty .
+           rdfs:subPropertyOf :mineral_site_dataproperty ;
+           rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/theoretical
 :theoretical rdf:type owl:DatatypeProperty ;
-             rdfs:subPropertyOf :mappable_criteria_dataproperty .
+             rdfs:subPropertyOf :mappable_criteria_dataproperty ;
+             rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/title
 :title rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :document_dataproperty .
+       rdfs:subPropertyOf :document_dataproperty ;
+       rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/unit_name
 :unit_name rdf:type owl:DatatypeProperty ;
            rdfs:subPropertyOf :geology_info_dataproperty ;
+           rdfs:range xsd:string ;
            rdfs:comment "Name of the geologic unit" .
 
 
 ###  https://minmod.isi.edu/ontology/uri
 :uri rdf:type owl:DatatypeProperty ;
-     rdfs:subPropertyOf :document_dataproperty .
+     rdfs:subPropertyOf :document_dataproperty ;
+     rdfs:range xsd:anyURI .
 
 
 ###  https://minmod.isi.edu/ontology/value
 :value rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :measure_dataproperty .
+       rdfs:subPropertyOf :measure_dataproperty ;
+       rdfs:range xsd:decimal .
 
 
 ###  https://minmod.isi.edu/ontology/volume
 :volume rdf:type owl:DatatypeProperty ;
-        rdfs:subPropertyOf :document_dataproperty .
+        rdfs:subPropertyOf :document_dataproperty ;
+        rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/x_max
@@ -503,12 +546,14 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/year
 :year rdf:type owl:DatatypeProperty ;
-      rdfs:subPropertyOf :document_dataproperty .
+      rdfs:subPropertyOf :document_dataproperty ;
+      rdfs:range xsd:integer .
 
 
 ###  https://minmod.isi.edu/ontology/zone
 :zone rdf:type owl:DatatypeProperty ;
-      rdfs:subPropertyOf :mineral_inventory_dataproperty .
+      rdfs:subPropertyOf :mineral_inventory_dataproperty ;
+      rdfs:range xsd:string .
 
 
 #################################################################
@@ -568,7 +613,30 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 
 ###  https://minmod.isi.edu/ontology/MineralSite
-:MineralSite rdf:type owl:Class .
+:MineralSite rdf:type owl:Class ;
+             rdfs:subClassOf [ rdf:type owl:Restriction ;
+                               owl:onProperty :deposit_type_candidate ;
+                               owl:someValuesFrom :MineralInventory
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :mineral_inventory ;
+                               owl:someValuesFrom :MineralInventory
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :location_info ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :LocationInfo
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :record_id ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onDataRange xsd:string
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :source_id ;
+                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onDataRange xsd:string
+                             ] .
 
 
 ###  https://minmod.isi.edu/ontology/MineralSystem
