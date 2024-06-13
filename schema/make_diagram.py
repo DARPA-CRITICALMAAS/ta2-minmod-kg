@@ -1,12 +1,16 @@
+from collections import defaultdict
 from dataclasses import asdict, dataclass, make_dataclass
+from graphlib import TopologicalSorter
 from itertools import chain
 from pathlib import Path
+from typing import Union
 
 import erdantic as erd
 from pydantic import BaseModel, Field, create_model
-from rdflib import OWL, RDF, RDFS, Graph, Namespace, URIRef
+from rdflib import OWL, RDF, RDFS, XSD, Graph, Namespace, URIRef
 
 mno = Namespace("https://minmod.isi.edu/ontology/")
+geo = Namespace("http://www.opengis.net/ont/geosparql#")
 hasSubPropertyOf = mno.hasSubPropertyOf
 
 
@@ -55,30 +59,57 @@ def make_er_diagram():
         mno.Reference,
         # mno.MappableCriteria,
     ]
-    for cls in classes:
-        assert isinstance(cls, URIRef)
-        clsname = cls[len(mno) :]
+
+    edges: dict[URIRef, list[URIRef]] = defaultdict(list)
+    for subj in g.subjects(RDF.type, OWL.Class):
+        assert isinstance(subj, URIRef)
+        for prop in g.subjects(RDFS.domain, subj):
+            if (prop, RDF.type, OWL.DatatypeProperty) in g:
+                continue
+            for obj in g.objects(prop, RDFS.range, unique=True):
+                assert isinstance(obj, URIRef)
+                edges[subj].append(obj)
+
+    ts = TopologicalSorter(edges)
+    for subj in ts.static_order():
+        clsname = subj[len(mno) :]
         fields = []
-        for prop in g.subjects(RDFS.domain, cls):
+        for prop in g.subjects(RDFS.domain, subj):
             assert isinstance(prop, URIRef)
             if (prop, hasSubPropertyOf, None) in g:
                 continue
             propname = prop[len(mno) :]
             if (prop, RDF.type, OWL.DatatypeProperty) in g:
+                ranges = set()
+                for obj in g.objects(prop, RDFS.range, unique=True):
+                    assert isinstance(obj, URIRef)
+                    if obj == XSD.string:
+                        ranges.add(str)
+                    elif obj == XSD.integer:
+                        ranges.add(int)
+                    elif obj == XSD.decimal:
+                        ranges.add(float)
+                    elif obj == geo.wktLiteral:
+                        ranges.add("WktLiteral")
+                    else:
+                        raise NotImplementedError()
+                    ranges.add(obj)
                 fields.append((propname, str))
             else:
-                for obj in g.objects(prop, RDFS.range, unique=True):
-                    objname = obj[len(mno) :]
-                    fields.append((propname, models[objname][0]))
+                ranges = [
+                    models[str(obj)[len(mno) :]]
+                    for obj in g.objects(prop, RDFS.range, unique=True)
+                ]
+                fields.append(
+                    (
+                        propname,
+                        Union[tuple(ranges)],
+                    )
+                )
 
-        # model = make_dataclass(clsname, fields, bases=(BaseModel,))
-        model = create_model(
-            clsname,
-            **{propname: (fieldtype, Field()) for propname, fieldtype in fields},
-        )
-        models[clsname] = (model, fields)
+        models[clsname] = make_dataclass(clsname, fields, bases=(BaseModel,))
 
-    graph = erd.create(*[model for model, fields in models.values() if len(fields) > 0])
+    graph = erd.create(*list(models.values()))
     graph.draw(out=Path(__file__).parent / "er_diagram.png")
     return
 
