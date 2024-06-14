@@ -5,7 +5,7 @@ from datetime import datetime
 from graphlib import TopologicalSorter
 from itertools import chain
 from pathlib import Path
-from typing import TypeAlias, Union
+from typing import List, Optional, TypeAlias, Union
 
 import erdantic as erd
 from pydantic import BaseModel, ConfigDict, Field, create_model
@@ -61,24 +61,48 @@ def read_a_list(g: Graph, s):
     return out
 
 
+def get_domain_or_range(g: Graph, prop: URIRef, attr: URIRef):
+    output = set()
+    for obj in g.objects(prop, attr, unique=True):
+        if isinstance(obj, URIRef):
+            output.add(obj)
+        else:
+            assert (obj, OWL.unionOf, None) in g
+            for sobj in read_a_list(g, next(g.objects(obj, OWL.unionOf))):
+                output.add(sobj)
+    return sorted(output)
+
+
 def make_er_diagram():
     g = load_ontology()
 
+    # get list of properties
+    props = {}
+    domain2props = {}
+    for prop in chain(
+        g.subjects(RDF.type, OWL.ObjectProperty),
+        g.subjects(RDF.type, OWL.DatatypeProperty),
+        g.subjects(RDF.type, RDF.Property),
+    ):
+        assert isinstance(prop, URIRef)
+        domains = get_domain_or_range(g, prop, RDFS.domain)
+        ranges = get_domain_or_range(g, prop, RDFS.range)
+
+        props[prop] = {
+            "domain": domains,
+            "range": ranges,
+        }
+        for domain in domains:
+            domain2props.setdefault(domain, []).append(prop)
+    domain2props = {k: sorted(v) for k, v in domain2props.items()}
+
     # get class orders
-    edges: dict[URIRef, list[URIRef]] = defaultdict(list)
-    for subj in g.subjects(RDF.type, OWL.Class):
-        if not isinstance(subj, URIRef):
-            continue
-        for prop in g.subjects(RDFS.domain, subj):
-            for obj in g.objects(prop, RDFS.range, unique=True):
-                if isinstance(obj, URIRef):
-                    if obj in mno:
-                        edges[subj].append(obj)
-                else:
-                    assert (obj, OWL.unionOf, None) in g
-                    for sobj in read_a_list(g, next(g.objects(obj, OWL.unionOf))):
-                        if sobj in mno:
-                            edges[subj].append(sobj)
+    edges: dict[URIRef, list[URIRef]] = {
+        subj: [] for subj in g.subjects(RDF.type, OWL.Class) if isinstance(subj, URIRef)
+    }
+    for subj in edges.keys():
+        for prop in domain2props.get(subj, []):
+            edges[subj].extend((t for t in props[prop]["range"] if t in edges))
     ts = TopologicalSorter(edges)
 
     namespaces = list(g.namespaces())
@@ -90,22 +114,41 @@ def make_er_diagram():
             (prefix, ns) for prefix, ns in namespaces if str(subj).startswith(ns)
         ]
         typename = prefix + ":" + str(subj)[len(ns) :]
-        datatypes[subj] = make_dataclass(typename, [])
+        datatypes[subj] = type(typename, (object,), {})
 
     # iterate over classes and create models
     models = {}
     for subj in ts.static_order():
-        clsname = subj[len(mno) :]
+        # gather all restrictions -- not parse yet
+        prop2restriction = defaultdict(list)
+        for obj in g.objects(subj, RDFS.subClassOf):
+            if (obj, RDF.type, OWL.Restriction) not in g:
+                continue
+
+            (prop,) = list(g.objects(obj, OWL.onProperty))
+            prop2restriction[prop].append(obj)
+
         fields = []
-        for prop in g.subjects(RDFS.domain, subj):
+
+        # things with label
+        if (subj, RDFS.subClassOf, mno.ThingHasLabel) in g:
+            fields.append(("name", str))
+
+        clsname = subj[len(mno) :]
+        for prop in domain2props.get(subj, []):
             assert isinstance(prop, URIRef)
             if (prop, hasSubPropertyOf, None) in g:
                 continue
             propname = prop[len(mno) :]
-            ranges = list(g.objects(prop, RDFS.range, unique=True))
-            if len(ranges) > 1:
+            if sum(1 for _ in g.objects(prop, RDFS.range, unique=True)) > 1:
                 raise Exception("Cannot represent intersection types in pydantic")
-            fields.append((propname, get_field_type(g, models, datatypes, ranges[0])))
+            fieldtype = get_field_type(
+                g, models, datatypes, props[prop]["range"], prop2restriction[prop]
+            )
+            fields.append((propname, fieldtype))
+
+        if len(fields) == 0:
+            continue
 
         models[clsname] = create_model(
             clsname,
@@ -118,28 +161,73 @@ def make_er_diagram():
     return
 
 
-def get_field_type(g: Graph, models, datatypes, obj):
-    if obj == XSD.string:
-        return str
-    if obj == XSD.integer:
-        return int
-    if obj == XSD.decimal:
-        return float
-    if obj == XSD.anyURI:
-        return URI
-    if obj == XSD.dateTime:
-        return datetime
-    if isinstance(obj, URIRef) and obj in mno:
-        return models[str(obj)[len(mno) :]]
-    if obj in datatypes:
-        return datatypes[obj]
-    if isinstance(obj, BNode):
-        assert (obj, OWL.unionOf, None) in g
-        types = []
-        for sobj in read_a_list(g, next(g.objects(obj, OWL.unionOf))):
-            types.append(get_field_type(g, models, datatypes, sobj))
-        return Union[tuple(types)]  # type: ignore
-    raise NotImplementedError(obj)
+def get_field_type(
+    g: Graph,
+    models: dict[str, type],
+    datatypes: dict[str, type],
+    types: list[URIRef],
+    restrictions: list[URIRef | BNode],
+):
+    if len(restrictions) > 0:
+        for restriction in restrictions:
+            if (restriction, OWL.allValuesFrom, None) in g:
+                (val,) = list(g.objects(restriction, OWL.allValuesFrom))
+                if isinstance(val, URIRef):
+                    vals = [val]
+                else:
+                    vals = read_a_list(g, val)
+                types = [type for type in types if type in vals]
+                assert len(types) > 0
+
+    norm_types = []
+    for obj in types:
+        if obj == XSD.string:
+            norm_types.append(str)
+        elif obj == XSD.integer:
+            norm_types.append(int)
+        elif obj == XSD.decimal:
+            norm_types.append(float)
+        elif obj == XSD.anyURI:
+            norm_types.append(URI)
+        elif obj == XSD.dateTime:
+            norm_types.append(datetime)
+        elif isinstance(obj, URIRef) and obj in mno:
+            norm_types.append(models[str(obj)[len(mno) :]])
+        elif obj in datatypes:
+            norm_types.append(datatypes[obj])
+        else:
+            raise NotImplementedError(obj)
+
+    if len(norm_types) == 1:
+        norm_type = norm_types[0]
+    else:
+        assert len(norm_types) > 1
+        norm_type = Union[tuple(norm_types)]  # type: ignore
+
+    if restrictions is not None:
+        update = False
+        for restriction in restrictions:
+            for cons, cons_val in g.predicate_objects(restriction):
+                if cons in (RDF.type, OWL.onProperty, OWL.allValuesFrom):
+                    continue
+                if cons == OWL.cardinality:
+                    # do nothing
+                    assert isinstance(cons_val, Literal)
+                    assert cons_val.value == 1
+                    update = True
+                elif cons == OWL.maxCardinality:
+                    assert isinstance(cons_val, Literal)
+                    assert cons_val.value == 1
+                    norm_type = Optional[norm_type]  # type: ignore
+                    update = True
+                else:
+                    raise NotImplementedError(cons)
+        if not update:
+            norm_type = list[norm_type]
+    else:
+        # by default, it's a list of values
+        norm_type = list[norm_type]
+    return norm_type
 
 
 if __name__ == "__main__":

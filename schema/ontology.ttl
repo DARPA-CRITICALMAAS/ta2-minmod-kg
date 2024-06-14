@@ -8,10 +8,7 @@
 @base <https://minmod.isi.edu/ontology/> .
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
-                                    rdfs:comment """Ontology for Minmod Knowledge Graph
-
-
-By default, we assume that the cardinality constraints is maximum 1. If the cardinality is exact 1, or empty or more than 1, it will be specified explicitly""" .
+                                    rdfs:comment "Ontology for Minmod Knowledge Graph" .
 
 #################################################################
 #    Datatypes
@@ -64,7 +61,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/deposit_type
 :deposit_type rdf:type owl:ObjectProperty ;
               rdfs:subPropertyOf :mineral_system_objectproperty ;
-              rdfs:domain :DepositType .
+              rdfs:range :DepositType .
 
 
 ###  https://minmod.isi.edu/ontology/deposit_type_candidate
@@ -85,12 +82,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
         rdfs:range :MappableCriteria .
 
 
-###  https://minmod.isi.edu/ontology/environment
-:environment rdf:type owl:ObjectProperty ;
-             rdfs:subPropertyOf :deposit_type ;
-             rdfs:range xsd:string .
-
-
 ###  https://minmod.isi.edu/ontology/geology_info
 :geology_info rdf:type owl:ObjectProperty ;
               rdfs:subPropertyOf :mineral_site_objectproperty ;
@@ -101,12 +92,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 :grade rdf:type owl:ObjectProperty ;
        rdfs:subPropertyOf :mineral_inventory_objectproperty ;
        rdfs:range :Measure .
-
-
-###  https://minmod.isi.edu/ontology/group
-:group rdf:type owl:ObjectProperty ;
-       rdfs:subPropertyOf :deposit_type ;
-       rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/location_info
@@ -232,7 +217,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 
 ###  https://minmod.isi.edu/ontology/source
-:source rdf:type owl:ObjectProperty ;
+:source rdf:type rdf:Property ;
         rdfs:domain [ rdf:type owl:Class ;
                       owl:unionOf ( :MatchInfo
                                     :MineralSystem
@@ -298,6 +283,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
             rdfs:range xsd:decimal .
 
 
+###  https://minmod.isi.edu/ontology/contained_metal
+:contained_metal rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf :mineral_inventory_dataproperty ;
+                 rdfs:range xsd:decimal .
+
+
 ###  https://minmod.isi.edu/ontology/criteria
 :criteria rdf:type owl:DatatypeProperty ;
           rdfs:subPropertyOf :mappable_criteria_dataproperty ;
@@ -337,7 +328,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/environment
 :environment rdf:type owl:DatatypeProperty ;
              rdfs:subPropertyOf :deposit_type_dataproperty ,
-                                :geology_info_dataproperty .
+                                :geology_info_dataproperty ;
+             rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/evidence_layer_dataproperty
@@ -354,7 +346,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/group
 :group rdf:type owl:DatatypeProperty ;
-       rdfs:subPropertyOf :deposit_type_dataproperty .
+       rdfs:subPropertyOf :deposit_type_dataproperty ;
+       rdfs:range xsd:string .
 
 
 ###  https://minmod.isi.edu/ontology/issue
@@ -560,24 +553,56 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 #    Classes
 #################################################################
 
+###  https://minmod.isi.edu/ontology/ThingHasLabel
+:ThingHasLabel rdf:type owl:Class ;
+               rdfs:comment "Instance of this class must have rdfs:label" .
+
 ###  https://minmod.isi.edu/ontology/BoundingBox
-:BoundingBox rdf:type owl:Class .
+:BoundingBox rdf:type owl:Class ;
+             rdfs:subClassOf [ rdf:type owl:Restriction ;
+                               owl:onProperty :x_max ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :x_min ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :y_max ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :y_min ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] .
 
 
 ###  https://minmod.isi.edu/ontology/Commodity
-:Commodity rdf:type owl:Class .
+:Commodity rdf:type owl:Class ;
+           rdfs:subClassOf :ThingHasLabel .
 
 
 ###  https://minmod.isi.edu/ontology/CoordinateReferenceSystem
-:CoordinateReferenceSystem rdf:type owl:Class .
+:CoordinateReferenceSystem rdf:type owl:Class ;
+                           rdfs:subClassOf :ThingHasLabel .
 
 
 ###  https://minmod.isi.edu/ontology/Country
-:Country rdf:type owl:Class .
+:Country rdf:type owl:Class ;
+         rdfs:subClassOf :ThingHasLabel .
 
 
 ###  https://minmod.isi.edu/ontology/DepositType
-:DepositType rdf:type owl:Class .
+:DepositType rdf:type owl:Class ;
+             rdfs:subClassOf :ThingHasLabel ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :environment ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :group ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] .
 
 
 ###  https://minmod.isi.edu/ontology/Document
@@ -585,82 +610,240 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 
 ###  https://minmod.isi.edu/ontology/EvidenceLayer
-:EvidenceLayer rdf:type owl:Class .
+:EvidenceLayer rdf:type owl:Class ;
+               rdfs:subClassOf :ThingHasLabel ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :relevance_score ;
+                                 owl:cardinality "1"^^xsd:nonNegativeInteger
+                               ] .
 
 
 ###  https://minmod.isi.edu/ontology/GeologyInfo
-:GeologyInfo rdf:type owl:Class .
+:GeologyInfo rdf:type owl:Class ;
+             rdfs:subClassOf [ rdf:type owl:Restriction ;
+                               owl:onProperty :age ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :comments ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :description ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :unit_name ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             ] .
 
 
 ###  https://minmod.isi.edu/ontology/LocationInfo
-:LocationInfo rdf:type owl:Class .
+:LocationInfo rdf:type owl:Class ;
+              rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                owl:onProperty :crs ;
+                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :country ;
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :state_or_province ;
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :location ;
+                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                              ] .
 
 
 ###  https://minmod.isi.edu/ontology/MappableCriteria
-:MappableCriteria rdf:type owl:Class .
+:MappableCriteria rdf:type owl:Class ;
+                  rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                    owl:onProperty :criteria ;
+                                    owl:cardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :theoretical ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] .
 
 
 ###  https://minmod.isi.edu/ontology/MatchInfo
-:MatchInfo rdf:type owl:Class .
+:MatchInfo rdf:type owl:Class ;
+           rdfs:subClassOf [ rdf:type owl:Restriction ;
+                             owl:onProperty :source ;
+                             owl:allValuesFrom xsd:string
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :source ;
+                             owl:cardinality "1"^^xsd:nonNegativeInteger
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :normalized_uri ;
+                             owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :confidence ;
+                             owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :observed_name ;
+                             owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                           ] .
 
 
 ###  https://minmod.isi.edu/ontology/Measure
-:Measure rdf:type owl:Class .
+:Measure rdf:type owl:Class ;
+         rdfs:subClassOf [ rdf:type owl:Restriction ;
+                           owl:onProperty :unit ;
+                           owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                         ] ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty :value ;
+                           owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                         ] .
 
 
 ###  https://minmod.isi.edu/ontology/MineralInventory
-:MineralInventory rdf:type owl:Class .
+:MineralInventory rdf:type owl:Class ;
+                  rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                    owl:onProperty :commodity ;
+                                    owl:cardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :reference ;
+                                    owl:cardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :category ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :cutoff_grade ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :grade ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :ore ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :date ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :zone ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] .
 
 
 ###  https://minmod.isi.edu/ontology/MineralSite
 :MineralSite rdf:type owl:Class ;
-             rdfs:subClassOf [ rdf:type owl:Restriction ;
-                               owl:onProperty :deposit_type_candidate ;
-                               owl:someValuesFrom :MineralInventory
-                             ] ,
-                             [ rdf:type owl:Restriction ;
-                               owl:onProperty :mineral_inventory ;
-                               owl:someValuesFrom :MineralInventory
-                             ] ,
+             rdfs:subClassOf :ThingHasLabel ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :location_info ;
-                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                               owl:onClass :LocationInfo
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
                              ] ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :record_id ;
-                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                               owl:onDataRange xsd:string
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
                              ] ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :source_id ;
-                               owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                               owl:onDataRange xsd:string
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :site_rank ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :site_type ;
+                               owl:maxCardinality "1"^^xsd:nonNegativeInteger
                              ] .
 
 
 ###  https://minmod.isi.edu/ontology/MineralSystem
-:MineralSystem rdf:type owl:Class .
+:MineralSystem rdf:type owl:Class ;
+               rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                 owl:onProperty :source ;
+                                 owl:allValuesFrom :MappableCriteria
+                               ] .
 
 
 ###  https://minmod.isi.edu/ontology/PageInfo
-:PageInfo rdf:type owl:Class .
+:PageInfo rdf:type owl:Class ;
+          rdfs:subClassOf [ rdf:type owl:Restriction ;
+                            owl:onProperty :bounding_box ;
+                            owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :page ;
+                            owl:cardinality "1"^^xsd:nonNegativeInteger
+                          ] .
 
 
 ###  https://minmod.isi.edu/ontology/Reference
-:Reference rdf:type owl:Class .
+:Reference rdf:type owl:Class ;
+           rdfs:subClassOf [ rdf:type owl:Restriction ;
+                             owl:onProperty :document ;
+                             owl:cardinality "1"^^xsd:nonNegativeInteger
+                           ] .
 
 
 ###  https://minmod.isi.edu/ontology/ResourceReserveCategory
-:ResourceReserveCategory rdf:type owl:Class .
+:ResourceReserveCategory rdf:type owl:Class ;
+                         rdfs:subClassOf :ThingHasLabel .
 
 
 ###  https://minmod.isi.edu/ontology/StateOrProvince
-:StateOrProvince rdf:type owl:Class .
+:StateOrProvince rdf:type owl:Class ;
+                 rdfs:subClassOf :ThingHasLabel ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :description ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :doi ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :issue ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :journal ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :month ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :title ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :uri ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :volume ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty :year ;
+                                   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                 ] .
 
 
 ###  https://minmod.isi.edu/ontology/Unit
-:Unit rdf:type owl:Class .
+:Unit rdf:type owl:Class ;
+      rdfs:subClassOf :ThingHasLabel .
 
 
 #################################################################
