@@ -1,0 +1,11 @@
+name: minmod
+
+services:
+  kg:
+    image: minmod-fuseki
+    build: containers/fuseki
+  etl:
+    image: minmod-etl
+    build: 
+      context: .
+      dockerfile: containers/etl/Dockerfile
