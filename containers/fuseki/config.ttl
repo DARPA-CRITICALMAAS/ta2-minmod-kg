@@ -10,8 +10,8 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
   # fuseki:passwd "users";
   # fuseki:auth "basic";
 
-  # 60s timeout to first result, then 120s timeout to for rest of query.
-  ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "60000,120000" ] ;
+  # 5 minute timeout.
+  ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "300000" ] ;
 
   fuseki:services (
     :service

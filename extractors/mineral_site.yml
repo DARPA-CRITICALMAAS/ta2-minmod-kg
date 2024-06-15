@@ -108,7 +108,7 @@ semantic_model:
   mndr:MineralSite:1:
     properties:
       - [drepr:uri, site_uri]
-      - [mndr:name, site_name]
+      - [rdfs:label, site_name]
       - [mndr:source_id, site_source_id]
       - [mndr:record_id, site_record_id]
       - [mndr:site_type, site_type]

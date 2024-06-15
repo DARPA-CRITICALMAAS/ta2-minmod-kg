@@ -10,6 +10,8 @@ packages = [{ include = "minmodkg" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 statickg = "^1.3.0"
+
+[tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"
 pydantic = "^2.7.4"
 

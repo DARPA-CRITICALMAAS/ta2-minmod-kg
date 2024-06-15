@@ -33,6 +33,8 @@ services:
     classpath: statickg.services.copy.CopyService
   - name: version
     classpath: statickg.services.version.VersionService
+  - name: concat
+    classpath: statickg.services.concat.ConcatTTLService
   - name: load to fuseki
     classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
@@ -70,6 +72,12 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/resource/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
+  # - service: concat
+  #   args:
+  #     input:
+  #       - ::DATA_DIR::*/**/*.ttl
+  #       - ::DATA_DIR::version.ttl
+  #     output: ::DATA_DIR::all.ttl
   - service: load to fuseki
     args:
       input: ::DATA_DIR::*/**/*.ttl
