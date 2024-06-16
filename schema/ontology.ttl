@@ -8,7 +8,8 @@
 @base <https://minmod.isi.edu/ontology/> .
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
-                                    rdfs:comment "Ontology for Minmod Knowledge Graph" .
+                                    rdfs:comment "Ontology for Minmod Knowledge Graph" ;
+                                    owl:versionInfo "1.0.0" .
 
 #################################################################
 #    Datatypes
@@ -31,13 +32,13 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/category
 :category rdf:type owl:ObjectProperty ;
           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-          rdfs:range :ResourceReserveCategory .
+          rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/commodity
 :commodity rdf:type owl:ObjectProperty ;
            rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-           rdfs:range :Commodity .
+           rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/country
@@ -156,6 +157,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                            :CoordinateReferenceSystem
                                            :Country
                                            :DepositType
+                                           :ResourceReserveCategory
                                            :StateOrProvince
                                            :Unit
                                          )
@@ -251,7 +253,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/unit
 :unit rdf:type owl:ObjectProperty ;
       rdfs:subPropertyOf :measure_objectproperty ;
-      rdfs:range :Unit .
+      rdfs:range :MatchInfo .
 
 
 #################################################################
@@ -553,10 +555,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 #    Classes
 #################################################################
 
-###  https://minmod.isi.edu/ontology/ThingHasLabel
-:ThingHasLabel rdf:type owl:Class ;
-               rdfs:comment "Instance of this class must have rdfs:label" .
-
 ###  https://minmod.isi.edu/ontology/BoundingBox
 :BoundingBox rdf:type owl:Class ;
              rdfs:subClassOf [ rdf:type owl:Restriction ;
@@ -641,11 +639,11 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/LocationInfo
 :LocationInfo rdf:type owl:Class ;
               rdfs:subClassOf [ rdf:type owl:Restriction ;
-                                owl:onProperty :crs ;
-                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                                owl:onProperty :country ;
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] ,
                               [ rdf:type owl:Restriction ;
-                                owl:onProperty :country ;
+                                owl:onProperty :crs ;
                                 owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] ,
                               [ rdf:type owl:Restriction ;
@@ -654,7 +652,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                               ] ,
                               [ rdf:type owl:Restriction ;
                                 owl:onProperty :location ;
-                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] .
 
 
@@ -715,10 +713,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :reference ;
                                     owl:cardinality "1"^^xsd:nonNegativeInteger
-                                  ] ,
-                                  [ rdf:type owl:Restriction ;
-                                    owl:onProperty :category ;
-                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :cutoff_grade ;
@@ -839,6 +833,11 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                    owl:onProperty :year ;
                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                  ] .
+
+
+###  https://minmod.isi.edu/ontology/ThingHasLabel
+:ThingHasLabel rdf:type owl:Class ;
+               rdfs:comment "Instance of this class must have rdfs:label" .
 
 
 ###  https://minmod.isi.edu/ontology/Unit
