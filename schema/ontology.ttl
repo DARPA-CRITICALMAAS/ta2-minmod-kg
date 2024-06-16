@@ -31,13 +31,13 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/category
 :category rdf:type owl:ObjectProperty ;
           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-          rdfs:range :ResourceReserveCategory .
+          rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/commodity
 :commodity rdf:type owl:ObjectProperty ;
            rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-           rdfs:range :Commodity .
+           rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/country
@@ -158,6 +158,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                            :DepositType
                                            :StateOrProvince
                                            :Unit
+                                           :ResourceReserveCategory
                                          )
                            ] .
 
@@ -251,7 +252,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/unit
 :unit rdf:type owl:ObjectProperty ;
       rdfs:subPropertyOf :measure_objectproperty ;
-      rdfs:range :Unit .
+      rdfs:range :MatchInfo .
 
 
 #################################################################
@@ -642,7 +643,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 :LocationInfo rdf:type owl:Class ;
               rdfs:subClassOf [ rdf:type owl:Restriction ;
                                 owl:onProperty :crs ;
-                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] ,
                               [ rdf:type owl:Restriction ;
                                 owl:onProperty :country ;
@@ -654,7 +655,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                               ] ,
                               [ rdf:type owl:Restriction ;
                                 owl:onProperty :location ;
-                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] .
 
 
@@ -715,10 +716,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :reference ;
                                     owl:cardinality "1"^^xsd:nonNegativeInteger
-                                  ] ,
-                                  [ rdf:type owl:Restriction ;
-                                    owl:onProperty :category ;
-                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :cutoff_grade ;
