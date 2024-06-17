@@ -105,115 +105,115 @@ alignments:
   - type: auto
 
 semantic_model:
-  mndr:MineralSite:1:
+  mno:MineralSite:1:
     properties:
       - [drepr:uri, site_uri]
       - [rdfs:label, site_name]
-      - [mndr:source_id, site_source_id]
-      - [mndr:record_id, site_record_id]
-      - [mndr:site_type, site_type]
-      - [mndr:site_rank, site_rank]
+      - [mno:source_id, site_source_id]
+      - [mno:record_id, site_record_id]
+      - [mno:site_type, site_type]
+      - [mno:site_rank, site_rank]
     links:
-      - [mndr:deposit_type_candidate, mndr:DepositTypeCandidate:1]
-      - [mndr:location_info, mndr:LocationInfo:1]
-      - [mndr:geology_info, mndr:GeologyInfo:1]
-      - [mndr:mineral_inventory, mndr:MineralInventory:1]
+      - [mno:deposit_type_candidate, mno:DepositTypeCandidate:1]
+      - [mno:location_info, mno:LocationInfo:1]
+      - [mno:geology_info, mno:GeologyInfo:1]
+      - [mno:mineral_inventory, mno:MineralInventory:1]
 
-  mndr:DepositTypeCandidate:1:
+  mno:DepositTypeCandidate:1:
     properties:
-      - [mndr:observed_name, deposit_type_name]
-      - [mndr:source, deposit_type_source]
-      - [mndr:normalized_uri, deposit_type_normalized_uri, drepr:uri]
-      - [mndr:confidence, deposit_type_confidence]
+      - [mno:observed_name, deposit_type_name]
+      - [mno:source, deposit_type_source]
+      - [mno:normalized_uri, deposit_type_normalized_uri, drepr:uri]
+      - [mno:confidence, deposit_type_confidence]
 
-  mndr:LocationInfo:1:
+  mno:LocationInfo:1:
     properties:
-      - [mndr:country, country, drepr:uri]
-      - [mndr:extracted_country, extracted_country]
-      - [mndr:crs, crs, drepr:uri]
-      - [mndr:state_or_province, state, drepr:uri]
-      - [mndr:extracted_state_or_province, extracted_state]
-      - [mndr:location, location, geo:wktLiteral]
+      - [mno:country, country, drepr:uri]
+      - [mno:extracted_country, extracted_country]
+      - [mno:crs, crs, drepr:uri]
+      - [mno:state_or_province, state, drepr:uri]
+      - [mno:extracted_state_or_province, extracted_state]
+      - [mno:location, location, geo:wktLiteral]
     subject: country
 
-  mndr:GeologyInfo:1:
+  mno:GeologyInfo:1:
     properties:
-      - [mndr:unit_name, geology_info_unit_name]
-      - [mndr:age, geology_info_age]
-      - [mndr:lithology, geology_info_lithology]
-      - [mndr:comments, geology_info_comments]
-      - [mndr:description, geology_info_description]
-      - [mndr:process, geology_info_process]
+      - [mno:unit_name, geology_info_unit_name]
+      - [mno:age, geology_info_age]
+      - [mno:lithology, geology_info_lithology]
+      - [mno:comments, geology_info_comments]
+      - [mno:description, geology_info_description]
+      - [mno:process, geology_info_process]
     subject: geology_info_unit_name
 
-  mndr:MineralInventory:1:
+  mno:MineralInventory:1:
     properties:
-      - [mndr:date, inv_date, xsd:date]
-      - [mndr:zone, inv_zone]
-      - [mndr:commodity, inv_commodity, drepr:uri]
-      - [mndr:observed_commodity, inv_observed_commodity]
-      - [mndr:category, inv_category, drepr:uri]
+      - [mno:date, inv_date, xsd:date]
+      - [mno:zone, inv_zone]
+      - [mno:commodity, inv_commodity, drepr:uri]
+      - [mno:observed_commodity, inv_observed_commodity]
+      - [mno:category, inv_category, drepr:uri]
     links:
-      - [mndr:reference, mndr:Reference:1]
-      - [mndr:ore, mndr:Ore:1]
-      - [mndr:grade, mndr:Grade:1]
-      - [mndr:cutoff_grade, mndr:Grade:cutoff]
+      - [mno:reference, mno:Reference:1]
+      - [mno:ore, mno:Ore:1]
+      - [mno:grade, mno:Grade:1]
+      - [mno:cutoff_grade, mno:Grade:cutoff]
     subject: inv_commodity
 
-  mndr:Reference:1:
+  mno:Reference:1:
     properties:
       - [drepr:blank, refid]
     links:
-      - [mndr:document, mndr:Document:1]
-      - [mndr:page_info, mndr:PageInfo:1]
+      - [mno:document, mno:Document:1]
+      - [mno:page_info, mno:PageInfo:1]
 
-  mndr:PageInfo:1:
+  mno:PageInfo:1:
     properties:
-      - [mndr:page, page_no]
+      - [mno:page, page_no]
     links:
-      - [mndr:bounding_box, mndr:BoundingBox:1]
+      - [mno:bounding_box, mno:BoundingBox:1]
 
-  mndr:BoundingBox:1:
+  mno:BoundingBox:1:
     properties:
-      - [mndr:x_min, x_min]
-      - [mndr:x_max, x_max]
-      - [mndr:y_min, y_min]
-      - [mndr:y_max, y_max]
+      - [mno:x_min, x_min]
+      - [mno:x_max, x_max]
+      - [mno:y_min, y_min]
+      - [mno:y_max, y_max]
 
-  mndr:Document:1:
+  mno:Document:1:
     properties:
       - [drepr:blank, docid]
-      - [mndr:uri, doc_uri]
-      - [mndr:doi, doi]
-      - [mndr:journal, journal]
-      - [mndr:authors, authors]
-      - [mndr:description, doc_desc]
-      - [mndr:title, doc_title]
-      - [mndr:volume, volume]
-      - [mndr:issue, doc_issue]
-      - [mndr:month, doc_month]
-      - [mndr:year, doc_year]
+      - [mno:uri, doc_uri]
+      - [mno:doi, doi]
+      - [mno:journal, journal]
+      - [mno:authors, authors]
+      - [mno:description, doc_desc]
+      - [mno:title, doc_title]
+      - [mno:volume, volume]
+      - [mno:issue, doc_issue]
+      - [mno:month, doc_month]
+      - [mno:year, doc_year]
 
-  mndr:Ore:1:
+  mno:Ore:1:
     properties:
-      - [mndr:ore_value, ore_value, xsd:decimal]
-      - [mndr:ore_unit, ore_unit, drepr:uri]
+      - [mno:ore_value, ore_value, xsd:decimal]
+      - [mno:ore_unit, ore_unit, drepr:uri]
     subject: ore_value
 
-  mndr:Grade:1:
+  mno:Grade:1:
     properties:
-      - [mndr:grade_value, grade_value, xsd:decimal]
-      - [mndr:grade_unit, grade_unit, drepr:uri]
+      - [mno:grade_value, grade_value, xsd:decimal]
+      - [mno:grade_unit, grade_unit, drepr:uri]
     subject: grade_value
 
-  mndr:Grade:cutoff:
+  mno:Grade:cutoff:
     properties:
-      - [mndr:grade_value, cutoff_grade_value, xsd:decimal]
-      - [mndr:grade_unit, cutoff_grade_unit, drepr:uri]
+      - [mno:grade_value, cutoff_grade_value, xsd:decimal]
+      - [mno:grade_unit, cutoff_grade_unit, drepr:uri]
     subject: cutoff_grade_value
 
   prefixes:
-    mndr: https://minmod.isi.edu/resource/
+    mno: https://minmod.isi.edu/ontology/
     geokb: https://geokb.wikibase.cloud/entity/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#

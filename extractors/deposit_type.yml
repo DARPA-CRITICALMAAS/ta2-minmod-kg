@@ -15,20 +15,16 @@ attributes:
 alignments:
   - type: auto
 semantic_model:
-  mndr:DepositType:1:
+  mno:DepositType:1:
     properties:
       - [drepr:uri, depid]
       - [rdfs:label, label, xsd:string]
-      - [mndr:environment, env, xsd:string]
-      - [mndr:deposit_group, group, xsd:string]
-      - [mndr:id, depid, drepr:uri]
-    static_properties: []
-    inverse_static_properties: []
-    links: []
-    subject: depid
+      - [mno:environment, env, xsd:string]
+      - [mno:deposit_group, group, xsd:string]
+      - [mno:id, depid, drepr:uri]
 
   prefixes:
-    mndr: https://minmod.isi.edu/resource/
+    mno: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#

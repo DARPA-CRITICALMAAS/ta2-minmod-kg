@@ -17,19 +17,15 @@ attributes:
 alignments:
   - type: auto
 semantic_model:
-  mndr:Commodity:1:
+  mno:Commodity:1:
     properties:
       - [drepr:uri, minmod_id]
       - [rdfs:label, name, xsd:string]
-      - [mndr:name_mrds, mrds, xsd:string]
+      - [mno:name_mrds, mrds, xsd:string]
       - [owl:sameAs, sameAs, drepr:uri]
-    static_properties: []
-    inverse_static_properties: []
-    links: []
-    subject: minmod_id
 
   prefixes:
-    mndr: https://minmod.isi.edu/resource/
+    mno: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#
