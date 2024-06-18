@@ -40,7 +40,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/commodity
 :commodity rdf:type owl:ObjectProperty ;
-           rdfs:subPropertyOf :commodity_form_objectproperty ,
+           rdfs:subPropertyOf :material_form_objectproperty ,
                               :mineral_inventory_objectproperty ;
            rdfs:range [ rdf:type owl:Class ;
                         owl:unionOf ( :Commodity
@@ -50,8 +50,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
            rdfs:label "commodity"@en .
 
 
-###  https://minmod.isi.edu/ontology/commodity_form_objectproperty
-:commodity_form_objectproperty rdf:type owl:ObjectProperty ;
+###  https://minmod.isi.edu/ontology/material_form_objectproperty
+:material_form_objectproperty rdf:type owl:ObjectProperty ;
                                rdfs:subPropertyOf owl:topObjectProperty .
 
 
@@ -105,8 +105,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
         rdfs:label "energy"@en .
 
 
-###  https://minmod.isi.edu/ontology/form
-:form rdf:type owl:ObjectProperty ;
+###  https://minmod.isi.edu/ontology/material_form
+:material_form rdf:type owl:ObjectProperty ;
       rdfs:subPropertyOf :mineral_inventory_objectproperty ;
       rdfs:range :MatchInfo .
 
@@ -193,7 +193,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                 rdfs:subPropertyOf :match_info_objectproperty ;
                 rdfs:range [ rdf:type owl:Class ;
                              owl:unionOf ( :Commodity
-                                           :CommodityForm
+                                           :MaterialForm
                                            :CoordinateReferenceSystem
                                            :Country
                                            :DepositType
@@ -339,10 +339,10 @@ geo:wktLiteral rdf:type rdfs:Datatype .
           rdfs:label "comments"@en .
 
 
-###  https://minmod.isi.edu/ontology/commodity_form_dataproperty
-:commodity_form_dataproperty rdf:type owl:DatatypeProperty ;
+###  https://minmod.isi.edu/ontology/material_form_dataproperty
+:material_form_dataproperty rdf:type owl:DatatypeProperty ;
                              rdfs:subPropertyOf owl:topDataProperty ;
-                             rdfs:domain :CommodityForm .
+                             rdfs:domain :MaterialForm .
 
 
 ###  https://minmod.isi.edu/ontology/confidence
@@ -361,7 +361,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/conversion
 :conversion rdf:type owl:DatatypeProperty ;
-            rdfs:subPropertyOf :commodity_form_dataproperty ;
+            rdfs:subPropertyOf :material_form_dataproperty ;
             rdfs:range xsd:decimal .
 
 
@@ -704,8 +704,8 @@ geo:wktLiteral rdf:type rdfs:Datatype .
            rdfs:label "Commodity"@en .
 
 
-###  https://minmod.isi.edu/ontology/CommodityForm
-:CommodityForm rdf:type owl:Class ;
+###  https://minmod.isi.edu/ontology/MaterialForm
+:MaterialForm rdf:type owl:Class ;
                rdfs:subClassOf :ThingHasLabel ,
                                [ rdf:type owl:Restriction ;
                                  owl:onProperty :commodity ;
@@ -720,7 +720,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                  owl:onProperty :conversion ;
                                  owl:cardinality "1"^^xsd:nonNegativeInteger
                                ] ;
-               rdfs:label "Commodity Form"@en .
+               rdfs:label "Material Form"@en .
 
 
 ###  https://minmod.isi.edu/ontology/CoordinateReferenceSystem
@@ -877,7 +877,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
-                                    owl:onProperty :form ;
+                                    owl:onProperty :material_form ;
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
