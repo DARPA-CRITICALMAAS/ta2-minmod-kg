@@ -40,9 +40,19 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/commodity
 :commodity rdf:type owl:ObjectProperty ;
-           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-           rdfs:range :MatchInfo ;
+           rdfs:subPropertyOf :commodity_form_objectproperty ,
+                              :mineral_inventory_objectproperty ;
+           rdfs:range [ rdf:type owl:Class ;
+                        owl:unionOf ( :Commodity
+                                      :MatchInfo
+                                    )
+                      ] ;
            rdfs:label "commodity"@en .
+
+
+###  https://minmod.isi.edu/ontology/commodity_form_objectproperty
+:commodity_form_objectproperty rdf:type owl:ObjectProperty ;
+                               rdfs:subPropertyOf owl:topObjectProperty .
 
 
 ###  https://minmod.isi.edu/ontology/country
@@ -93,6 +103,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
         rdfs:subPropertyOf :mineral_system_objectproperty ;
         rdfs:range :MappableCriteria ;
         rdfs:label "energy"@en .
+
+
+###  https://minmod.isi.edu/ontology/form
+:form rdf:type owl:ObjectProperty ;
+      rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+      rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/geology_info
@@ -177,6 +193,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                 rdfs:subPropertyOf :match_info_objectproperty ;
                 rdfs:range [ rdf:type owl:Class ;
                              owl:unionOf ( :Commodity
+                                           :CommodityForm
                                            :CoordinateReferenceSystem
                                            :Country
                                            :DepositType
@@ -322,6 +339,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
           rdfs:label "comments"@en .
 
 
+###  https://minmod.isi.edu/ontology/commodity_form_dataproperty
+:commodity_form_dataproperty rdf:type owl:DatatypeProperty ;
+                             rdfs:subPropertyOf owl:topDataProperty ;
+                             rdfs:domain :CommodityForm .
+
+
 ###  https://minmod.isi.edu/ontology/confidence
 :confidence rdf:type owl:DatatypeProperty ;
             rdfs:subPropertyOf :match_info_dataproperty ;
@@ -334,6 +357,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                  rdfs:subPropertyOf :mineral_inventory_dataproperty ;
                  rdfs:range xsd:decimal ;
                  rdfs:label "contained metal"@en .
+
+
+###  https://minmod.isi.edu/ontology/conversion
+:conversion rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf :commodity_form_dataproperty ;
+            rdfs:range xsd:decimal .
 
 
 ###  https://minmod.isi.edu/ontology/criteria
@@ -675,6 +704,25 @@ geo:wktLiteral rdf:type rdfs:Datatype .
            rdfs:label "Commodity"@en .
 
 
+###  https://minmod.isi.edu/ontology/CommodityForm
+:CommodityForm rdf:type owl:Class ;
+               rdfs:subClassOf :ThingHasLabel ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :commodity ;
+                                 owl:allValuesFrom :Commodity
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :commodity ;
+                                 owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                 owl:onClass :Commodity
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :conversion ;
+                                 owl:cardinality "1"^^xsd:nonNegativeInteger
+                               ] ;
+               rdfs:label "Commodity Form"@en .
+
+
 ###  https://minmod.isi.edu/ontology/CoordinateReferenceSystem
 :CoordinateReferenceSystem rdf:type owl:Class ;
                            rdfs:subClassOf :ThingHasLabel ;
@@ -813,7 +861,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 :MineralInventory rdf:type owl:Class ;
                   rdfs:subClassOf [ rdf:type owl:Restriction ;
                                     owl:onProperty :commodity ;
-                                    owl:cardinality "1"^^xsd:nonNegativeInteger
+                                    owl:allValuesFrom :MatchInfo
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :commodity ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :MatchInfo
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :reference ;
@@ -821,6 +874,10 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :cutoff_grade ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :form ;
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;

@@ -14,6 +14,8 @@ RUN apt update && apt install -y ca-certificates curl git && \
 
 RUN git config --global --add safe.directory "*"
 
+RUN useradd -ms /bin/bash criticalmaas
+
 # install libraries
 ADD minmodkg /kg/minmodkg
 ADD pyproject.toml /kg/
