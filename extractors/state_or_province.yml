@@ -12,14 +12,14 @@ attributes:
 alignments:
   - type: auto
 semantic_model:
-  mndr:StateOrProvince:1:
+  mno:StateOrProvince:1:
     properties:
       - [drepr:uri, uri]
       - [rdfs:label, name, xsd:string]
-      - [mndr:country, country, xsd:string]
+      - [mno:country, country, xsd:string]
 
   prefixes:
-    mndr: https://minmod.isi.edu/resource/
+    mno: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#

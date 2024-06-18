@@ -70,7 +70,7 @@ pipeline:
   - service: version
     args:
       entity: https://minmod.isi.edu/resource/kg
-      entity_type: https://minmod.isi.edu/resource/KnowledgeGraph
+      entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
   # - service: concat
   #   args:
