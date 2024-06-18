@@ -14,13 +14,16 @@ RUN apt update && apt install -y ca-certificates curl git && \
 
 RUN git config --global --add safe.directory "*"
 
-RUN useradd -ms /bin/bash criticalmaas
+ARG UID=1000
+ARG GID=1000
+
+RUN useradd -ms /bin/bash criticalmaas -u $UID -g $GID
+
+USER criticalmaas
 
 # install libraries
-ADD minmodkg /kg/minmodkg
-ADD pyproject.toml /kg/
-ADD README.md /kg/
+ADD minmodkg /home/criticalmaas/kg/minmodkg
+ADD pyproject.toml /home/criticalmaas/kg/
+ADD README.md /home/criticalmaas/kg/
 
-WORKDIR /kg
-
-RUN pip install .
+RUN cd /home/criticalmaas/kg && pip install .
