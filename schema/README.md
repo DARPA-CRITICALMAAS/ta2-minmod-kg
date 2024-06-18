@@ -1,3 +1,3 @@
 # Overview
 
-![KG ontology summary](schema/er_diagram.png)
+![KG ontology summary](./er_diagram.png)
