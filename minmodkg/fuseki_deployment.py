@@ -70,12 +70,25 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
 
         name = f"fuseki-{dbinfo.dir.name}"
         port = find_available_port(self.hostname, 3030)
-        subprocess.check_call(
-            self.get_start_command(args).format(
-                ID=name, PORT=str(port), DB_DIR=dbinfo.dir
-            ),
-            shell=True,
-        )
+        try:
+            subprocess.check_call(
+                self.get_start_command(args).format(
+                    ID=name, PORT=str(port), DB_DIR=dbinfo.dir
+                ),
+                shell=True,
+            )
+        except subprocess.CalledProcessError:
+            subprocess.check_call(
+                self.get_stop_command(args).format(ID=name),
+                shell=True,
+            )
+            subprocess.check_call(
+                self.get_start_command(args).format(
+                    ID=name, PORT=str(port), DB_DIR=dbinfo.dir
+                ),
+                shell=True,
+            )
+
         dbinfo.hostname = f"{self.hostname}:{port}"
         self.logger.debug(
             "Started Fuseki service at {} serving {}", dbinfo.hostname, dbinfo.dir.name
