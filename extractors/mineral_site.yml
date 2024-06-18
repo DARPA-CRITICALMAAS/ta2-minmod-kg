@@ -30,14 +30,23 @@ preprocessing:
   - type: pmap
     path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"]]
     code: |
-      if 'id' not in value:
-        value['id'] = str(context.get_index())
+      value['id'] = str(context.get_index())
       return value
   - type: pmap
     path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document"]
     code: |
-      if 'id' not in value:
-        value['id'] = str(context.get_index())
+      value['id'] = str(context.get_index())
+      return value
+  - type: pmap
+    path: ["MineralSite", .., ["location_info"]]
+    code: |
+      value['id'] = str(context.get_index())
+      return value
+  - type: pmap
+    path: ["MineralSite", .., ["mineral_inventory"], ..]
+    code: |
+      index = context.get_index()
+      value['id'] = "inv" + str((index[1], index[3]))
       return value
 attributes:
   site_name: ["MineralSite", .., ["name"]]
@@ -51,12 +60,20 @@ attributes:
   deposit_type_confidence: ["MineralSite", .., ["deposit_type_candidate"], .., "confidence"]
   deposit_type_normalized_uri: ["MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
 
+  loc_id: ["MineralSite", .., ["location_info"], "id"]
   location: ["MineralSite", .., ["location_info"], ["location"]]
-  country: ["MineralSite", .., ["location_info"], ["country"]]
-  extracted_country: ["MineralSite", .., ["location_info"], ["extracted_country"]]
-  state: ["MineralSite", .., ["location_info"], ["state_or_province"]]
-  extracted_state: ["MineralSite", .., ["location_info"], ["extracted_state_or_province"]]
-  crs: ["MineralSite", .., ["location_info"], ["crs"]]
+  crs_name: ["MineralSite", .., ["location_info"], ["crs"], ["observed_name"]]
+  crs_uri: ["MineralSite", .., ["location_info"], ["crs"], ["normalized_uri"]]
+  crs_source: ["MineralSite", .., ["location_info"], ["crs"], "source"]
+  crs_confidence: ["MineralSite", .., ["location_info"], ["crs"], "confidence"]
+  country_name: ["MineralSite", .., ["location_info"], ["country"], ["observed_name"]]
+  country_uri: ["MineralSite", .., ["location_info"], ["country"], ["normalized_uri"]]
+  country_source: ["MineralSite", .., ["location_info"], ["country"], "source"]
+  country_confidence: ["MineralSite", .., ["location_info"], ["country"], "confidence"]
+  state_or_province_name: ["MineralSite", .., ["location_info"], ["state_or_province"], ["observed_name"]]
+  state_or_province_uri: ["MineralSite", .., ["location_info"], ["state_or_province"], ["normalized_uri"]]
+  state_or_province_source: ["MineralSite", .., ["location_info"], ["state_or_province"], "source"]
+  state_or_province_confidence: ["MineralSite", .., ["location_info"], ["state_or_province"], "confidence"]
 
   geology_info_age: ["MineralSite", .., ["geology_info"], ["age"]]
   geology_info_unit_name: ["MineralSite", .., ["geology_info"], ["unit_name"]]
@@ -66,20 +83,35 @@ attributes:
   geology_info_environment: ["MineralSite", .., ["geology_info"], ["environment"]]
   geology_info_comments: ["MineralSite", .., ["geology_info"], ["comments"]]
 
-  inv_commodity: ["MineralSite", .., ["mineral_inventory"], .., "commodity"]
-  inv_observed_commodity: ["MineralSite", .., ["mineral_inventory"], .., ["observed_commodity"]]
+  inv_id: ["MineralSite", .., ["mineral_inventory"], .., "id"]
   inv_zone: ["MineralSite", .., ["mineral_inventory"], .., ["zone"]]
   inv_date: ["MineralSite", .., ["mineral_inventory"], .., ["date"]]
-  inv_category: ["MineralSite", .., ["mineral_inventory"], .., ["category"], ..]
+  commodity_name: ["MineralSite", .., ["mineral_inventory"], .., "commodity", ["observed_name"]]
+  commodity_uri: ["MineralSite", .., ["mineral_inventory"], .., "commodity", ["normalized_uri"]]
+  commodity_source: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "source"]
+  commodity_confidence: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "confidence"]
+  category_name: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["observed_name"]]
+  category_uri: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["normalized_uri"]]
+  category_source: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., "source"]
+  category_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., "confidence"]
 
-  ore_value: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["ore_value"]]
-  ore_unit: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["ore_unit"]]
+  ore_value: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["value"]]
+  ore_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], ["observed_name"]]
+  ore_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], ["normalized_uri"]]
+  ore_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], "source"]
+  ore_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], "confidence"]
 
-  grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["grade_value"]]
-  grade_unit: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["grade_unit"]]
+  grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["value"]]
+  grade_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], ["observed_name"]]
+  grade_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], ["normalized_uri"]]
+  grade_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], "source"]
+  grade_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], "confidence"]
 
-  cutoff_grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["grade_value"]]
-  cutoff_grade_unit: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["grade_unit"]]
+  cutoff_grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["value"]]
+  cutoff_grade_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["observed_name"]]
+  cutoff_grade_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["normalized_uri"]]
+  cutoff_grade_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "source"]
+  cutoff_grade_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "confidence"]
 
   refid: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "id"]
   docid: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", "id"]
@@ -117,7 +149,7 @@ semantic_model:
       - [mno:deposit_type_candidate, mno:DepositTypeCandidate:1]
       - [mno:location_info, mno:LocationInfo:1]
       - [mno:geology_info, mno:GeologyInfo:1]
-      - [mno:mineral_inventory, mno:MineralInventory:1]
+      # - [mno:mineral_inventory, mno:MineralInventory:1]
 
   mno:DepositTypeCandidate:1:
     properties:
@@ -126,16 +158,37 @@ semantic_model:
       - [mno:normalized_uri, deposit_type_normalized_uri, drepr:uri]
       - [mno:confidence, deposit_type_confidence]
 
+  # ------------------------------------------------------------
+  # LocationInfo
   mno:LocationInfo:1:
     properties:
-      - [mno:country, country, drepr:uri]
-      - [mno:extracted_country, extracted_country]
-      - [mno:crs, crs, drepr:uri]
-      - [mno:state_or_province, state, drepr:uri]
-      - [mno:extracted_state_or_province, extracted_state]
+      - [drepr:blank, loc_id]
       - [mno:location, location, geo:wktLiteral]
-    subject: country
+    links:
+      - [mno:crs, mno:MatchInfo:crs]
+      - [mno:state_or_province, mno:MatchInfo:state_or_province]
+      - [mno:country, mno:MatchInfo:country]
+  mno:MatchInfo:crs:
+    properties:
+      - [mno:observed_name, crs_name]
+      - [mno:normalized_uri, crs_uri, drepr:uri]
+      - [mno:source, crs_source]
+      - [mno:confidence, crs_confidence]
+  mno:MatchInfo:state_or_province:
+    properties:
+      - [mno:observed_name, state_or_province_name]
+      - [mno:normalized_uri, state_or_province_uri, drepr:uri]
+      - [mno:source, state_or_province_source]
+      - [mno:confidence, state_or_province_confidence]
+  mno:MatchInfo:country:
+    properties:
+      - [mno:observed_name, country_name]
+      - [mno:normalized_uri, country_uri, drepr:uri]
+      - [mno:source, country_source]
+      - [mno:confidence, country_confidence]
 
+  # ------------------------------------------------------------
+  # GeologyInfo
   mno:GeologyInfo:1:
     properties:
       - [mno:unit_name, geology_info_unit_name]
@@ -146,19 +199,66 @@ semantic_model:
       - [mno:process, geology_info_process]
     subject: geology_info_unit_name
 
+  # ------------------------------------------------------------
+  # MineralInventory
   mno:MineralInventory:1:
     properties:
+      - [drepr:blank, inv_id]
       - [mno:date, inv_date, xsd:date]
       - [mno:zone, inv_zone]
-      - [mno:commodity, inv_commodity, drepr:uri]
-      - [mno:observed_commodity, inv_observed_commodity]
-      - [mno:category, inv_category, drepr:uri]
     links:
+      - [mno:commodity, mno:MatchInfo:commodity]
+      - [mno:category, mno:MatchInfo:category, drepr:uri]
+      - [mno:ore, mno:Measure:ore]
+      - [mno:grade, mno:Measure:grade]
+      - [mno:cutoff_grade, mno:Measure:cutoff_grade]
       - [mno:reference, mno:Reference:1]
-      - [mno:ore, mno:Ore:1]
-      - [mno:grade, mno:Grade:1]
-      - [mno:cutoff_grade, mno:Grade:cutoff]
-    subject: inv_commodity
+    subject: inv_id
+  mno:Measure:ore:
+    properties:
+      - [mno:value, ore_value, xsd:decimal]
+    links:
+      - [mno:unit, mno:MatchInfo:ore_unit]
+  mno:Measure:grade:
+    properties:
+      - [mno:value, grade_value, xsd:decimal]
+    links:
+      - [mno:unit, mno:MatchInfo:grade_unit]
+  mno:Measure:cutoff_grade:
+    properties:
+      - [mno:value, cutoff_grade_value, xsd:decimal]
+    links:
+      - [mno:unit, mno:MatchInfo:cutoff_grade_unit]
+  mno:MatchInfo:category:
+    properties:
+      - [mno:observed_name, category_name]
+      - [mno:normalized_uri, category_uri, drepr:uri]
+      - [mno:source, category_source]
+      - [mno:confidence, category_confidence]
+  mno:MatchInfo:commodity:
+    properties:
+      - [mno:observed_name, commodity_name]
+      - [mno:normalized_uri, commodity_uri, drepr:uri]
+      - [mno:source, commodity_source]
+      - [mno:confidence, commodity_confidence]
+  mno:MatchInfo:ore_unit:
+    properties:
+      - [mno:observed_name, ore_unit_name]
+      - [mno:normalized_uri, ore_unit_uri, drepr:uri]
+      - [mno:source, ore_unit_source]
+      - [mno:confidence, ore_unit_confidence]
+  mno:MatchInfo:grade_unit:
+    properties:
+      - [mno:observed_name, grade_unit_name]
+      - [mno:normalized_uri, grade_unit_uri, drepr:uri]
+      - [mno:source, grade_unit_source]
+      - [mno:confidence, grade_unit_confidence]
+  mno:MatchInfo:cutoff_grade_unit:
+    properties:
+      - [mno:observed_name, cutoff_grade_unit_name]
+      - [mno:normalized_uri, cutoff_grade_unit_uri, drepr:uri]
+      - [mno:source, cutoff_grade_unit_source]
+      - [mno:confidence, cutoff_grade_unit_confidence]
 
   mno:Reference:1:
     properties:
@@ -193,24 +293,6 @@ semantic_model:
       - [mno:issue, doc_issue]
       - [mno:month, doc_month]
       - [mno:year, doc_year]
-
-  mno:Ore:1:
-    properties:
-      - [mno:ore_value, ore_value, xsd:decimal]
-      - [mno:ore_unit, ore_unit, drepr:uri]
-    subject: ore_value
-
-  mno:Grade:1:
-    properties:
-      - [mno:grade_value, grade_value, xsd:decimal]
-      - [mno:grade_unit, grade_unit, drepr:uri]
-    subject: grade_value
-
-  mno:Grade:cutoff:
-    properties:
-      - [mno:grade_value, cutoff_grade_value, xsd:decimal]
-      - [mno:grade_unit, cutoff_grade_unit, drepr:uri]
-    subject: cutoff_grade_value
 
   prefixes:
     mno: https://minmod.isi.edu/ontology/
