@@ -22,4 +22,4 @@ RUN cd /tmp && \
 
 ADD config.ttl ${FUSEKI_HOME}/config.ttl
 
-ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/bin:$PATH
+ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/:$PATH
