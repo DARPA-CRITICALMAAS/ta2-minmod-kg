@@ -208,9 +208,9 @@ def get_field_type(
         update = False
         for restriction in restrictions:
             for cons, cons_val in g.predicate_objects(restriction):
-                if cons in (RDF.type, OWL.onProperty, OWL.allValuesFrom):
+                if cons in (RDF.type, OWL.onProperty, OWL.allValuesFrom, OWL.onClass):
                     continue
-                if cons == OWL.cardinality:
+                if cons in (OWL.cardinality, OWL.qualifiedCardinality):
                     # do nothing
                     assert isinstance(cons_val, Literal)
                     assert cons_val.value == 1

@@ -10,8 +10,9 @@ RUN cd tmp && \
     rm apache-jena-fuseki-5.0.0.tar.gz && \
     mv apache-jena-fuseki-5.0.0 /opt/fuseki
 
-COPY --chmod=+x dataloader.sh /opt/
+RUN useradd -ms /bin/bash criticalmaas && \
+    chown -R criticalmaas:criticalmaas /opt/jena /opt/fuseki /run
+
+USER criticalmaas
+
 COPY config.ttl /opt/fuseki/config.ttl
-# COPY shiro.ini /opt/fuseki/shiro.ini
-# COPY users /opt/fuseki/users
-# COPY users /users

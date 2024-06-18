@@ -39,6 +39,7 @@ services:
     classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
       batch_size: 128
+      capture_output: true
   - name: deploy fuseki
     classpath: minmodkg.fuseki_deployment.FusekiDeploymentService
 
