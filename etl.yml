@@ -86,7 +86,9 @@ pipeline:
         update: /minmod/update
         gsp: /minmod/data
         start: >-
-          docker run --name {ID} -d -p {PORT}:3030
+          docker run --name {ID} 
+          --user $(id -u):$(id -g)
+          -d -p {PORT}:3030
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
           minmod-fuseki /opt/fuseki/fuseki-server --config=/opt/fuseki/config.ttl
@@ -95,6 +97,7 @@ pipeline:
       load:
         command: >-
           docker run --rm -w /data
+          --user $(id -u):$(id -g)
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
           minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}
@@ -103,7 +106,9 @@ pipeline:
   - service: deploy fuseki
     args:
       start: >-
-        docker run --name {ID} -d -p {PORT}:3030
+        docker run --name {ID}
+        --user $(id -u):$(id -g)
+        -d -p {PORT}:3030
         -v {DB_DIR}:/databases
         -v ::DATA_DIR::{}:/data
         minmod-fuseki /opt/fuseki/fuseki-server --config=/opt/fuseki/config.ttl
