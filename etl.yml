@@ -88,29 +88,26 @@ pipeline:
         gsp: /minmod/data
         start: >-
           docker run --name {ID} 
-          --user $(id -u):$(id -g)
           -d -p {PORT}:3030
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
-          minmod-fuseki /opt/fuseki/fuseki-server --config=/opt/fuseki/config.ttl
+          minmod-fuseki fuseki/fuseki-server --config=fuseki/config.ttl
         stop: docker stop {ID} && docker rm {ID}
         find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
       load:
         command: >-
           docker run --rm -w /data
-          --user $(id -u):$(id -g)
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
-          minmod-fuseki /opt/jena/bin/tdb2.tdbloader --loc /databases {FILES}
+          minmod-fuseki tdb2.tdbloader --loc /databases {FILES}
         basedir: "::DATA_DIR::"
         dbdir: "::DB_DIR::"
   - service: deploy fuseki
     args:
       start: >-
         docker run --name {ID}
-        --user $(id -u):$(id -g)
         -d -p {PORT}:3030
         -v {DB_DIR}:/databases
         -v ::DATA_DIR::{}:/data
-        minmod-fuseki /opt/fuseki/fuseki-server --config=/opt/fuseki/config.ttl
+        minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/config.ttl
       stop: docker stop {ID} && docker rm {ID}

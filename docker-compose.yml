@@ -3,9 +3,16 @@ name: minmod
 services:
   kg:
     image: minmod-fuseki
-    build: containers/fuseki
+    build:
+      context: ./containers/fuseki/
+      args:
+        UID: ${UID}
+        GID: ${GID}
   etl:
     image: minmod-etl
     build: 
       context: .
       dockerfile: containers/etl/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
