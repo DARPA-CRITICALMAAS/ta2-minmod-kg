@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jre
 ARG UID=1000
 ARG GID=1000
 
-RUN useradd -ms /bin/bash criticalmaas -u $UID -g $GID
+RUN groupadd -g $GID criticalmaas && useradd -ms /bin/bash criticalmaas -u $UID -g $GID
 
 USER criticalmaas
 WORKDIR /home/criticalmaas
