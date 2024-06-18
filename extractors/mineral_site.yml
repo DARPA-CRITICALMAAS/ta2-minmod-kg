@@ -90,6 +90,10 @@ attributes:
   commodity_uri: ["MineralSite", .., ["mineral_inventory"], .., "commodity", ["normalized_uri"]]
   commodity_source: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "source"]
   commodity_confidence: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "confidence"]
+  material_form_name: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], ["observed_name"]]
+  material_form_uri: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], ["normalized_uri"]]
+  material_form_source: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], "source"]
+  material_form_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], "confidence"]
   category_name: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["observed_name"]]
   category_uri: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["normalized_uri"]]
   category_source: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., "source"]
@@ -149,7 +153,7 @@ semantic_model:
       - [mno:deposit_type_candidate, mno:DepositTypeCandidate:1]
       - [mno:location_info, mno:LocationInfo:1]
       - [mno:geology_info, mno:GeologyInfo:1]
-      # - [mno:mineral_inventory, mno:MineralInventory:1]
+      - [mno:mineral_inventory, mno:MineralInventory:1]
 
   mno:DepositTypeCandidate:1:
     properties:
@@ -208,6 +212,7 @@ semantic_model:
       - [mno:zone, inv_zone]
     links:
       - [mno:commodity, mno:MatchInfo:commodity]
+      - [mno:material_form, mno:MatchInfo:material_form]
       - [mno:category, mno:MatchInfo:category, drepr:uri]
       - [mno:ore, mno:Measure:ore]
       - [mno:grade, mno:Measure:grade]
@@ -241,6 +246,12 @@ semantic_model:
       - [mno:normalized_uri, commodity_uri, drepr:uri]
       - [mno:source, commodity_source]
       - [mno:confidence, commodity_confidence]
+  mno:MatchInfo:material_form:
+    properties:
+      - [mno:observed_name, material_form_name]
+      - [mno:normalized_uri, material_form_uri, drepr:uri]
+      - [mno:source, material_form_source]
+      - [mno:confidence, material_form_confidence]
   mno:MatchInfo:ore_unit:
     properties:
       - [mno:observed_name, ore_unit_name]
