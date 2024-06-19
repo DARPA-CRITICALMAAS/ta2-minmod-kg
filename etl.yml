@@ -110,4 +110,4 @@ pipeline:
         -v {DB_DIR}:/databases
         -v ::DATA_DIR::{}:/data
         minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/config.ttl
-      stop: docker stop {ID} && docker rm {ID}
+      stop_all: docker container rm -f $(docker container ls -q --filter ancestor=minmod-fuseki)

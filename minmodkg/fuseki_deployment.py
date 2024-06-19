@@ -7,14 +7,23 @@ from typing import Mapping, NotRequired, TypedDict
 
 from loguru import logger
 
-from statickg.helper import find_available_port, get_classpath
+from statickg.helper import (
+    find_available_port,
+    get_classpath,
+    is_port_available,
+    wait_till_port_available,
+)
 from statickg.models.prelude import (
     ETLOutput,
     RelPathRefStr,
     RelPathRefStrOrStr,
     Repository,
 )
-from statickg.services.fuseki import DBInfo, FusekiDataLoaderService
+from statickg.services.fuseki import (
+    DBInfo,
+    FusekiDataLoaderService,
+    FusekiDataLoaderServiceInvokeArgs,
+)
 from statickg.services.interface import BaseFileService, BaseService
 
 
@@ -24,7 +33,7 @@ class FusekiDeploymentServiceConstructArgs(TypedDict):
 
 class FusekiDeploymentServiceInvokeArgs(TypedDict):
     start: RelPathRefStrOrStr
-    stop: RelPathRefStrOrStr
+    stop_all: RelPathRefStrOrStr
 
 
 class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
@@ -42,6 +51,7 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
         self.logger = logger.bind(name=get_classpath(self.__class__).rsplit(".", 1)[0])
         self.args = args
         self.hostname = args.get("hostname", "http://localhost")
+        self.current_dbinfo = None
 
     def forward(
         self,
@@ -50,18 +60,24 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
         agg_output: ETLOutput,
     ):
         args = deepcopy(args)
-
-        # --------------------------------------------------------------
-        # spin up a Fuseki server serving the directory
         lst: list[DBInfo] = agg_output.output[get_classpath(FusekiDataLoaderService)]
         (dbinfo,) = lst
 
         if not dbinfo.has_running_service():
+            if not is_port_available(self.hostname, 3030):
+                subprocess.check_call(self.get_stop_all_command(args), shell=True)
+
+            if not wait_till_port_available(self.hostname, 3030, timeout=10):
+                self.logger.error(
+                    "After stopping all fuseki services, port 3030 is still not available."
+                )
+                raise Exception(
+                    "Another one started a service on port 3030 that is not managed by this service"
+                )
+
             # only deploy the service when there is no running service for the directory
             self.start_fuseki(args, dbinfo)
 
-        # --------------------------------------------------------------
-        # after deployment, we will make sure that only one service is running
         return
 
     def start_fuseki(self, args: FusekiDeploymentServiceInvokeArgs, dbinfo: DBInfo):
@@ -79,7 +95,7 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
             )
         except subprocess.CalledProcessError:
             subprocess.check_call(
-                self.get_stop_command(args).format(ID=name),
+                self.get_stop_all_command(args).format(ID=name),
                 shell=True,
             )
             subprocess.check_call(
@@ -94,22 +110,6 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
             "Started Fuseki service at {} serving {}", dbinfo.hostname, dbinfo.dir.name
         )
 
-    def shutdown_fuseki(self, args: FusekiDeploymentServiceInvokeArgs, dbinfo: DBInfo):
-        # we should only have one service running at a time
-        if dbinfo.hostname is None:
-            return
-
-        subprocess.check_call(
-            self.get_stop_command(args).format(ID=f"fuseki-{dbinfo.dir.name}"),
-            shell=True,
-        )
-        self.logger.debug(
-            "Stopped Fuseki service at {}, which serves {}",
-            dbinfo.hostname,
-            dbinfo.dir.name,
-        )
-        dbinfo.hostname = None
-
     def get_start_command(self, args: FusekiDeploymentServiceInvokeArgs):
         cmd = args["start"]
         if isinstance(cmd, RelPathRefStr):
@@ -118,10 +118,10 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
             args["start"] = cmd
         return cmd
 
-    def get_stop_command(self, args: FusekiDeploymentServiceInvokeArgs):
-        cmd = args["stop"]
+    def get_stop_all_command(self, args: FusekiDeploymentServiceInvokeArgs):
+        cmd = args["stop_all"]
         if isinstance(cmd, RelPathRefStr):
             cmd = cmd.deref()
             # trick to avoid calling deref() again
-            args["stop"] = cmd
+            args["stop_all"] = cmd
         return cmd
