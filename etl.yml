@@ -12,6 +12,7 @@ services:
         - ::CFG_DIR::extractors/country.yml
         - ::CFG_DIR::extractors/state_or_province.yml
         - ::CFG_DIR::extractors/epsg.yml
+        - ::CFG_DIR::extractors/material_form.yml
       format: turtle
   - name: same as
     classpath: statickg.services.drepr.DReprService
