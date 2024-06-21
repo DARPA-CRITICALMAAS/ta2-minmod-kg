@@ -1,0 +1,35 @@
+version: 2
+resources: csv
+preprocessing:
+  - type: pmap
+    path: [1.., 0]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+  - type: pmap
+    path: [1.., 4]
+    code: |
+      return "https://minmod.isi.edu/resource/" + value
+attributes:
+  uri: [1.., 0]
+  name: [1.., 1]
+  formula: [1.., 2]
+  commodity: [1.., 4]
+  conversion: [1.., 5]
+alignments:
+  - type: auto
+
+semantic_model:
+  mno:MaterialForm:1:
+    properties:
+      - [drepr:uri, uri]
+      - [rdfs:label, name]
+      - [mno:formula, formula]
+      - [mno:commodity, commodity]
+      - [mno:conversion, conversion, xsd:decimal]
+
+  prefixes:
+    mno: https://minmod.isi.edu/ontology/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    owl: http://www.w3.org/2002/07/owl#
+    xsd: http://www.w3.org/2001/XMLSchema#
