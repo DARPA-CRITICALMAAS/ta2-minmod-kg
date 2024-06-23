@@ -213,7 +213,7 @@ semantic_model:
     links:
       - [mno:commodity, mno:MatchInfo:commodity]
       - [mno:material_form, mno:MatchInfo:material_form]
-      - [mno:category, mno:MatchInfo:category, drepr:uri]
+      - [mno:category, mno:MatchInfo:category]
       - [mno:ore, mno:Measure:ore]
       - [mno:grade, mno:Measure:grade]
       - [mno:cutoff_grade, mno:Measure:cutoff_grade]

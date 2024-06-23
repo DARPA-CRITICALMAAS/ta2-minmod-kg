@@ -55,24 +55,28 @@ class EntityLinking:
         entity_dir: Path,
         name: Literal["crs", "country", "state_or_province", "commodity"],
     ):
-        entdir = CRITICAL_MAAS_DIR / "kgdata/data/predefined-entities"
-        if name == "crs":
-            EntityLinking.instances[name] = EntityLinking(entdir / "epsg.ttl", "turtle")
-        elif name == "country":
-            EntityLinking.instances[name] = EntityLinking(
-                entdir / "country.ttl", "turtle"
-            )
-        elif name == "state_or_province":
-            EntityLinking.instances[name] = EntityLinking(
-                entdir / "state_or_province.ttl", "turtle"
-            )
-            name2country = {
-                doc.labels[0]: doc for doc in EntityLinking.get_instance("country").docs
-            }
-            for doc in EntityLinking.instances[name].docs:
-                doc.props["https://minmod.isi.edu/resource/country"] = name2country[
-                    doc.props["https://minmod.isi.edu/resource/country"]
-                ].id
+        if name not in EntityLinking.instances:
+            entdir = CRITICAL_MAAS_DIR / "kgdata/data/predefined-entities"
+            if name == "crs":
+                EntityLinking.instances[name] = EntityLinking(
+                    entdir / "epsg.ttl", "turtle"
+                )
+            elif name == "country":
+                EntityLinking.instances[name] = EntityLinking(
+                    entdir / "country.ttl", "turtle"
+                )
+            elif name == "state_or_province":
+                EntityLinking.instances[name] = EntityLinking(
+                    entdir / "state_or_province.ttl", "turtle"
+                )
+                name2country = {
+                    doc.labels[0]: doc
+                    for doc in EntityLinking.get_instance("country").docs
+                }
+                for doc in EntityLinking.instances[name].docs:
+                    doc.props["https://minmod.isi.edu/resource/country"] = name2country[
+                        doc.props["https://minmod.isi.edu/resource/country"]
+                    ].id
         return EntityLinking.instances[name]
 
     def link(
