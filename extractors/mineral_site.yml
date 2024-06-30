@@ -3,7 +3,7 @@ resources: json
 preprocessing:
   - type: pmap
     path: ["MineralSite", ..]
-    output: site_uri
+    output: { attr: site_uri }
     code: |
       from slugify import slugify
       import hashlib
