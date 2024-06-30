@@ -50,6 +50,7 @@ preprocessing:
       return value
 attributes:
   site_name: ["MineralSite", .., ["name"]]
+  site_aliases: ["MineralSite", .., ["aliases"], ..]
   site_source_id: ["MineralSite", .., "source_id"]
   site_record_id: ["MineralSite", .., "record_id"]
   site_type: ["MineralSite", .., ["site_type"]]
@@ -145,6 +146,7 @@ semantic_model:
     properties:
       - [drepr:uri, site_uri]
       - [rdfs:label, site_name]
+      - [skos:altLabel, site_aliases]
       - [mno:source_id, site_source_id]
       - [mno:record_id, site_record_id]
       - [mno:site_type, site_type]
@@ -316,3 +318,4 @@ semantic_model:
     geo: http://www.opengis.net/ont/geosparql#
     gkbi: https://geokb.wikibase.cloud/entity/
     gkbp: https://geokb.wikibase.cloud/wiki/Property/
+    skos: http://www.w3.org/2004/02/skos/core#

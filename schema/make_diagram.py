@@ -44,9 +44,18 @@ def load_ontology():
                 if val not in existing_vals:
                     g.add((prop, attr, val))
 
+    # run basic inference to inherit subClassOf
+    for subj, obj in list(g.subject_objects(RDFS.subClassOf, unique=True)):
+        if not isinstance(subj, URIRef) and not isinstance(obj, URIRef):
+            continue
+
+        for obj_parent in g.objects(obj, RDFS.subClassOf, unique=True):
+            g.add((subj, RDFS.subClassOf, obj_parent))
+
     # add hasSubPropertyOf
     for s, p, o in list(g.triples((None, RDFS.subPropertyOf, None))):
         g.add((o, hasSubPropertyOf, s))
+
     return g
 
 
@@ -95,6 +104,17 @@ def make_er_diagram():
         for domain in domains:
             domain2props.setdefault(domain, []).append(prop)
     domain2props = {k: sorted(v) for k, v in domain2props.items()}
+    for subj in g.subjects(RDF.type, OWL.Class):
+        if isinstance(subj, URIRef) and subj not in domain2props:
+            domain2props[subj] = []
+
+    for subj in domain2props:
+        for parent_subj in g.objects(subj, RDFS.subClassOf, unique=True):
+            if not isinstance(parent_subj, URIRef):
+                continue
+            for prop in domain2props.get(parent_subj, []):
+                if prop not in domain2props[subj]:
+                    domain2props[subj].append(prop)
 
     # get class orders
     edges: dict[URIRef, list[URIRef]] = {
@@ -133,6 +153,9 @@ def make_er_diagram():
         # things with label
         if (subj, RDFS.subClassOf, mno.ThingHasLabel) in g:
             fields.append(("name", str))
+
+        if (subj, RDFS.subClassOf, mno.ThingMayHaveAltLabel) in g:
+            fields.append(("aliases", Optional[list[str]]))
 
         clsname = subj[len(mno) :]
         for prop in domain2props.get(subj, []):

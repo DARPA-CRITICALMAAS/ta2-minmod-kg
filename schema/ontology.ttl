@@ -9,7 +9,7 @@
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
                                     rdfs:comment "Ontology for Minmod Knowledge Graph"@en ;
-                                    owl:versionInfo "1.1.0" .
+                                    owl:versionInfo "1.2.0" .
 
 #################################################################
 #    Datatypes
@@ -34,7 +34,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/category
 :category rdf:type owl:ObjectProperty ;
           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-          rdfs:range :MatchInfo ;
+          rdfs:range :ResourceReserveCategoryCandidate ;
           rdfs:label "category"@en .
 
 
@@ -44,28 +44,23 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                               :mineral_inventory_objectproperty ;
            rdfs:range [ rdf:type owl:Class ;
                         owl:unionOf ( :Commodity
-                                      :MatchInfo
+                                      :CommodityCandidate
                                     )
                       ] ;
            rdfs:label "commodity"@en .
 
 
-###  https://minmod.isi.edu/ontology/material_form_objectproperty
-:material_form_objectproperty rdf:type owl:ObjectProperty ;
-                               rdfs:subPropertyOf owl:topObjectProperty .
-
-
 ###  https://minmod.isi.edu/ontology/country
 :country rdf:type owl:ObjectProperty ;
          rdfs:subPropertyOf :location_info_objectproperty ;
-         rdfs:range :MatchInfo ;
+         rdfs:range :CountryCandidate ;
          rdfs:label "country"@en .
 
 
 ###  https://minmod.isi.edu/ontology/crs
 :crs rdf:type owl:ObjectProperty ;
      rdfs:subPropertyOf :location_info_objectproperty ;
-     rdfs:range :MatchInfo ;
+     rdfs:range :CoordinateReferenceSystemCandidate ;
      rdfs:comment "The Coordinate Reference System (CRS) of the location"@en ;
      rdfs:label "crs"@en .
 
@@ -87,7 +82,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/deposit_type_candidate
 :deposit_type_candidate rdf:type owl:ObjectProperty ;
                         rdfs:subPropertyOf :mineral_site_objectproperty ;
-                        rdfs:range :MatchInfo ;
+                        rdfs:range :DepositTypeCandidate ;
                         rdfs:label "deposit type candidate"@en .
 
 
@@ -103,12 +98,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
         rdfs:subPropertyOf :mineral_system_objectproperty ;
         rdfs:range :MappableCriteria ;
         rdfs:label "energy"@en .
-
-
-###  https://minmod.isi.edu/ontology/material_form
-:material_form rdf:type owl:ObjectProperty ;
-      rdfs:subPropertyOf :mineral_inventory_objectproperty ;
-      rdfs:range :MatchInfo .
 
 
 ###  https://minmod.isi.edu/ontology/geology_info
@@ -153,6 +142,17 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                            rdfs:label "match info objectproperty"@en .
 
 
+###  https://minmod.isi.edu/ontology/material_form
+:material_form rdf:type owl:ObjectProperty ;
+               rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+               rdfs:range :MaterialFormCandidate .
+
+
+###  https://minmod.isi.edu/ontology/material_form_objectproperty
+:material_form_objectproperty rdf:type owl:ObjectProperty ;
+                              rdfs:subPropertyOf owl:topObjectProperty .
+
+
 ###  https://minmod.isi.edu/ontology/measure_objectproperty
 :measure_objectproperty rdf:type owl:ObjectProperty ;
                         rdfs:subPropertyOf owl:topObjectProperty ;
@@ -193,10 +193,10 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                 rdfs:subPropertyOf :match_info_objectproperty ;
                 rdfs:range [ rdf:type owl:Class ;
                              owl:unionOf ( :Commodity
-                                           :MaterialForm
                                            :CoordinateReferenceSystem
                                            :Country
                                            :DepositType
+                                           :MaterialForm
                                            :ResourceReserveCategory
                                            :StateOrProvince
                                            :Unit
@@ -287,7 +287,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/state_or_province
 :state_or_province rdf:type owl:ObjectProperty ;
                    rdfs:subPropertyOf :location_info_objectproperty ;
-                   rdfs:range :MatchInfo ;
+                   rdfs:range :StateOrProvinceCandidate ;
                    rdfs:label "state or province"@en .
 
 
@@ -308,7 +308,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/unit
 :unit rdf:type owl:ObjectProperty ;
       rdfs:subPropertyOf :measure_objectproperty ;
-      rdfs:range :MatchInfo ;
+      rdfs:range :UnitCandidate ;
       rdfs:comment "The unit in which the quantity is measured, eg, metric tonnes, percent"@en ;
       rdfs:label "unit"@en .
 
@@ -337,12 +337,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
           rdfs:subPropertyOf :geology_info_dataproperty ;
           rdfs:range xsd:string ;
           rdfs:label "comments"@en .
-
-
-###  https://minmod.isi.edu/ontology/material_form_dataproperty
-:material_form_dataproperty rdf:type owl:DatatypeProperty ;
-                             rdfs:subPropertyOf owl:topDataProperty ;
-                             rdfs:domain :MaterialForm .
 
 
 ###  https://minmod.isi.edu/ontology/confidence
@@ -485,6 +479,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                          rdfs:subPropertyOf owl:topDataProperty ;
                          rdfs:domain :MatchInfo ;
                          rdfs:label "match info dataproperty"@en .
+
+
+###  https://minmod.isi.edu/ontology/material_form_dataproperty
+:material_form_dataproperty rdf:type owl:DatatypeProperty ;
+                            rdfs:subPropertyOf owl:topDataProperty ;
+                            rdfs:domain :MaterialForm .
 
 
 ###  https://minmod.isi.edu/ontology/measure_dataproperty
@@ -704,23 +704,14 @@ geo:wktLiteral rdf:type rdfs:Datatype .
            rdfs:label "Commodity"@en .
 
 
-###  https://minmod.isi.edu/ontology/MaterialForm
-:MaterialForm rdf:type owl:Class ;
-               rdfs:subClassOf :ThingHasLabel ,
-                               [ rdf:type owl:Restriction ;
-                                 owl:onProperty :commodity ;
-                                 owl:allValuesFrom :Commodity
-                               ] ,
-                               [ rdf:type owl:Restriction ;
-                                 owl:onProperty :commodity ;
-                                 owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                 owl:onClass :Commodity
-                               ] ,
-                               [ rdf:type owl:Restriction ;
-                                 owl:onProperty :conversion ;
-                                 owl:cardinality "1"^^xsd:nonNegativeInteger
-                               ] ;
-               rdfs:label "Material Form"@en .
+###  https://minmod.isi.edu/ontology/CommodityCandidate
+:CommodityCandidate rdf:type owl:Class ;
+                    rdfs:subClassOf :MatchInfo ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty :normalized_uri ;
+                                      owl:allValuesFrom :Commodity
+                                    ] ;
+                    rdfs:label "Commodity Candidate"@en .
 
 
 ###  https://minmod.isi.edu/ontology/CoordinateReferenceSystem
@@ -729,10 +720,30 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                            rdfs:label "Coordinate Reference System"@en .
 
 
+###  https://minmod.isi.edu/ontology/CoordinateReferenceSystemCandidate
+:CoordinateReferenceSystemCandidate rdf:type owl:Class ;
+                                    rdfs:subClassOf :MatchInfo ,
+                                                    [ rdf:type owl:Restriction ;
+                                                      owl:onProperty :normalized_uri ;
+                                                      owl:allValuesFrom :CoordinateReferenceSystem
+                                                    ] ;
+                                    rdfs:label "Coordinate Reference System Candidate"@en .
+
+
 ###  https://minmod.isi.edu/ontology/Country
 :Country rdf:type owl:Class ;
          rdfs:subClassOf :ThingHasLabel ;
          rdfs:label "Country"@en .
+
+
+###  https://minmod.isi.edu/ontology/CountryCandidate
+:CountryCandidate rdf:type owl:Class ;
+                  rdfs:subClassOf :MatchInfo ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty :normalized_uri ;
+                                    owl:allValuesFrom :Country
+                                  ] ;
+                  rdfs:label "Country Candidate"@en .
 
 
 ###  https://minmod.isi.edu/ontology/DepositType
@@ -747,6 +758,16 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                owl:cardinality "1"^^xsd:nonNegativeInteger
                              ] ;
              rdfs:label "Deposit Type"@en .
+
+
+###  https://minmod.isi.edu/ontology/DepositTypeCandidate
+:DepositTypeCandidate rdf:type owl:Class ;
+                      rdfs:subClassOf :MatchInfo ,
+                                      [ rdf:type owl:Restriction ;
+                                        owl:onProperty :normalized_uri ;
+                                        owl:allValuesFrom :DepositType
+                                      ] ;
+                      rdfs:label "Deposit Type Candidate"@en .
 
 
 ###  https://minmod.isi.edu/ontology/Document
@@ -835,13 +856,42 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                            ] ,
                            [ rdf:type owl:Restriction ;
                              owl:onProperty :confidence ;
-                             owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                             owl:cardinality "1"^^xsd:nonNegativeInteger
                            ] ,
                            [ rdf:type owl:Restriction ;
                              owl:onProperty :observed_name ;
                              owl:maxCardinality "1"^^xsd:nonNegativeInteger
                            ] ;
            rdfs:label "Match Info"@en .
+
+
+###  https://minmod.isi.edu/ontology/MaterialForm
+:MaterialForm rdf:type owl:Class ;
+              rdfs:subClassOf :ThingHasLabel ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :commodity ;
+                                owl:allValuesFrom :Commodity
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :commodity ;
+                                owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                owl:onClass :Commodity
+                              ] ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty :conversion ;
+                                owl:cardinality "1"^^xsd:nonNegativeInteger
+                              ] ;
+              rdfs:label "Material Form"@en .
+
+
+###  https://minmod.isi.edu/ontology/MaterialFormCandidate
+:MaterialFormCandidate rdf:type owl:Class ;
+                       rdfs:subClassOf :MatchInfo ,
+                                       [ rdf:type owl:Restriction ;
+                                         owl:onProperty :normalized_uri ;
+                                         owl:allValuesFrom :MaterialForm
+                                       ] ;
+                       rdfs:label "Material Form Candidate"@en .
 
 
 ###  https://minmod.isi.edu/ontology/Measure
@@ -861,12 +911,11 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 :MineralInventory rdf:type owl:Class ;
                   rdfs:subClassOf [ rdf:type owl:Restriction ;
                                     owl:onProperty :commodity ;
-                                    owl:allValuesFrom :MatchInfo
+                                    owl:allValuesFrom :CommodityCandidate
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :commodity ;
-                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                    owl:onClass :MatchInfo
+                                    owl:cardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty :reference ;
@@ -877,11 +926,11 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
-                                    owl:onProperty :material_form ;
+                                    owl:onProperty :grade ;
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
-                                    owl:onProperty :grade ;
+                                    owl:onProperty :material_form ;
                                     owl:maxCardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
@@ -902,6 +951,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/MineralSite
 :MineralSite rdf:type owl:Class ;
              rdfs:subClassOf :ThingHasLabel ,
+                             :ThingMayHaveAltLabel ,
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :location_info ;
                                owl:cardinality "1"^^xsd:nonNegativeInteger
@@ -962,6 +1012,16 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                          rdfs:label "Resource Reserve Category"@en .
 
 
+###  https://minmod.isi.edu/ontology/ResourceReserveCategoryCandidate
+:ResourceReserveCategoryCandidate rdf:type owl:Class ;
+                                  rdfs:subClassOf :MatchInfo ,
+                                                  [ rdf:type owl:Restriction ;
+                                                    owl:onProperty :normalized_uri ;
+                                                    owl:allValuesFrom :ResourceReserveCategory
+                                                  ] ;
+                                  rdfs:label "Resource Reserve Category Candidate"@en .
+
+
 ###  https://minmod.isi.edu/ontology/StateOrProvince
 :StateOrProvince rdf:type owl:Class ;
                  rdfs:subClassOf :ThingHasLabel ,
@@ -1004,16 +1064,42 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                  rdfs:label "State or Province"@en .
 
 
+###  https://minmod.isi.edu/ontology/StateOrProvinceCandidate
+:StateOrProvinceCandidate rdf:type owl:Class ;
+                          rdfs:subClassOf :MatchInfo ,
+                                          [ rdf:type owl:Restriction ;
+                                            owl:onProperty :normalized_uri ;
+                                            owl:allValuesFrom :StateOrProvince
+                                          ] ;
+                          rdfs:label "State Or Province Candidate"@en .
+
+
 ###  https://minmod.isi.edu/ontology/ThingHasLabel
 :ThingHasLabel rdf:type owl:Class ;
                rdfs:comment "Instance of this class must have rdfs:label"@en ;
                rdfs:label "Thing Has Label"@en .
 
 
+###  https://minmod.isi.edu/ontology/ThingMayHaveAltLabel
+:ThingMayHaveAltLabel rdf:type owl:Class ;
+                      rdfs:comment "Instance of this class may have aliases defined by skos:altLabel"@en ;
+                      rdfs:label "Thing May Have Alt Label"@en .
+
+
 ###  https://minmod.isi.edu/ontology/Unit
 :Unit rdf:type owl:Class ;
       rdfs:subClassOf :ThingHasLabel ;
       rdfs:label "Unit"@en .
+
+
+###  https://minmod.isi.edu/ontology/UnitCandidate
+:UnitCandidate rdf:type owl:Class ;
+               rdfs:subClassOf :MatchInfo ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty :normalized_uri ;
+                                 owl:allValuesFrom :Unit
+                               ] ;
+               rdfs:label "Unit Candidate"@en .
 
 
 #################################################################
@@ -1041,6 +1127,19 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                 :ResourceReserveCategory
                 :StateOrProvince
                 :Unit
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :CommodityCandidate
+                :CoordinateReferenceSystemCandidate
+                :CountryCandidate
+                :DepositTypeCandidate
+                :MaterialFormCandidate
+                :ResourceReserveCategoryCandidate
+                :StateOrProvinceCandidate
+                :UnitCandidate
               )
 ] .
 
