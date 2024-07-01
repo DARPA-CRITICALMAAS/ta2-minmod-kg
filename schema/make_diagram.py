@@ -82,7 +82,7 @@ def get_domain_or_range(g: Graph, prop: URIRef, attr: URIRef):
     return sorted(output)
 
 
-def make_er_diagram():
+def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = True):
     g = load_ontology()
 
     # get list of properties
@@ -170,7 +170,11 @@ def make_er_diagram():
             )
             fields.append((propname, fieldtype))
 
-        if len(fields) == 0:
+        if skip_empty_field and len(fields) == 0:
+            continue
+
+        if skip_parent_class and len(list(g.subjects(RDFS.subClassOf, subj))) > 0:
+            # skip parent classes -- only plot the leaf classes
             continue
 
         models[clsname] = create_model(
