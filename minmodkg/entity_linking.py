@@ -54,7 +54,13 @@ class EntityLinking:
     def get_instance(
         entity_dir: Path | str,
         name: Literal[
-            "crs", "country", "state_or_province", "commodity", "unit", "material_form"
+            "crs",
+            "country",
+            "state_or_province",
+            "commodity",
+            "unit",
+            "material_form",
+            "category",
         ],
     ) -> EntityLinking:
         entity_dir = Path(entity_dir)
@@ -71,7 +77,7 @@ class EntityLinking:
                     doc.props[f"{mno}country"] = name2country[
                         doc.props[f"{mno}country"]
                     ].id
-            elif name in ["commodity", "unit", "country", "material_form"]:
+            elif name in ["commodity", "unit", "country", "material_form", "category"]:
                 linker = EntityLinking(entity_dir / f"{name}.ttl", "turtle")
             else:
                 raise ValueError(f"Unknown entity type: {name}")
