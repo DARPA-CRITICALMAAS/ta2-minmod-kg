@@ -12,7 +12,9 @@ preprocessing:
 attributes:
   id: [1.., 0]
   name: [1.., 1]
-  aliases: [1.., 2, ..]
+  aliases:
+    path: [1.., 2, ..]
+    missing_values: [""]
 alignments:
   - type: auto
 semantic_model:

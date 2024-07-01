@@ -52,31 +52,31 @@ class EntityLinking:
 
     @staticmethod
     def get_instance(
-        entity_dir: Path,
-        name: Literal["crs", "country", "state_or_province", "commodity"],
-    ):
+        entity_dir: Path | str,
+        name: Literal[
+            "crs", "country", "state_or_province", "commodity", "unit", "material_form"
+        ],
+    ) -> EntityLinking:
+        entity_dir = Path(entity_dir)
         if name not in EntityLinking.instances:
-            entdir = CRITICAL_MAAS_DIR / "kgdata/data/predefined-entities"
+            mno = "https://minmod.isi.edu/ontology/"
+            mnr = "https://minmod.isi.edu/resource/"
             if name == "crs":
-                EntityLinking.instances[name] = EntityLinking(
-                    entdir / "epsg.ttl", "turtle"
-                )
-            elif name == "country":
-                EntityLinking.instances[name] = EntityLinking(
-                    entdir / "country.ttl", "turtle"
-                )
+                linker = EntityLinking(entity_dir / "epsg.ttl", "turtle")
             elif name == "state_or_province":
-                EntityLinking.instances[name] = EntityLinking(
-                    entdir / "state_or_province.ttl", "turtle"
-                )
-                name2country = {
-                    doc.labels[0]: doc
-                    for doc in EntityLinking.get_instance("country").docs
-                }
-                for doc in EntityLinking.instances[name].docs:
-                    doc.props["https://minmod.isi.edu/resource/country"] = name2country[
-                        doc.props["https://minmod.isi.edu/resource/country"]
+                linker = EntityLinking(entity_dir / "state_or_province.ttl", "turtle")
+                country_linker = EntityLinking.get_instance(entity_dir, "country")
+                name2country = {doc.labels[0]: doc for doc in country_linker.docs}
+                for doc in linker.docs:
+                    doc.props[f"{mno}country"] = name2country[
+                        doc.props[f"{mno}country"]
                     ].id
+            elif name in ["commodity", "unit", "country", "material_form"]:
+                linker = EntityLinking(entity_dir / f"{name}.ttl", "turtle")
+            else:
+                raise ValueError(f"Unknown entity type: {name}")
+
+            EntityLinking.instances[name] = linker
         return EntityLinking.instances[name]
 
     def link(
@@ -95,7 +95,7 @@ class EntityLinking:
             return None
 
         i, score = max(scores, key=lambda x: x[1])
-        return self.docs[i], score
+        return self.docs[i], float(score)
 
 
 class FeatExtractor:
@@ -155,3 +155,7 @@ def does_ordinal_match(s1: str, s2: str, sim: float, threshold: float) -> float:
         return 0.4
 
     return 0.0
+
+
+if __name__ == "__main__":
+    pass

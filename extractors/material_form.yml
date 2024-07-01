@@ -23,6 +23,7 @@ semantic_model:
     properties:
       - [drepr:uri, uri]
       - [rdfs:label, name]
+      - [skos:altLabel, formula]
       - [mno:formula, formula]
       - [mno:commodity, commodity]
       - [mno:conversion, conversion, xsd:decimal]
@@ -33,3 +34,4 @@ semantic_model:
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#
     xsd: http://www.w3.org/2001/XMLSchema#
+    skos: http://www.w3.org/2004/02/skos/core#
