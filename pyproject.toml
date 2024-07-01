@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ta2-minmod-kg"
-version = "1.0.1"
+version = "1.0.2"
 description = "code repository for TA2 Knowledge Graph (MinMod) construction & deployment"
 authors = ["Binh Vu <bvu687@gmail.com>"]
 license = "MIT"
@@ -9,7 +9,7 @@ packages = [{ include = "minmodkg" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-statickg = "^1.4.0"
+statickg = "^1.5.0"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

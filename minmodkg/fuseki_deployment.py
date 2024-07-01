@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 from copy import deepcopy
 from pathlib import Path
@@ -19,12 +20,8 @@ from statickg.models.prelude import (
     RelPathRefStrOrStr,
     Repository,
 )
-from statickg.services.fuseki import (
-    DBInfo,
-    FusekiDataLoaderService,
-    FusekiDataLoaderServiceInvokeArgs,
-)
-from statickg.services.interface import BaseFileService, BaseService
+from statickg.services.fuseki import DBInfo, FusekiDataLoaderService
+from statickg.services.interface import BaseService
 
 
 class FusekiDeploymentServiceConstructArgs(TypedDict):
@@ -76,13 +73,16 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
                 )
 
             # only deploy the service when there is no running service for the directory
-            self.start_fuseki(args, dbinfo)
+            if self.start_fuseki(args, dbinfo):
+                # remove old databases
+                for old_db in dbinfo.get_older_versions():
+                    shutil.rmtree(old_db.dir)
 
         return
 
     def start_fuseki(self, args: FusekiDeploymentServiceInvokeArgs, dbinfo: DBInfo):
         if dbinfo.hostname is not None:
-            return
+            return False
 
         name = f"fuseki-{dbinfo.dir.name}"
         port = find_available_port(self.hostname, 3030)
@@ -109,6 +109,7 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
         self.logger.debug(
             "Started Fuseki service at {} serving {}", dbinfo.hostname, dbinfo.dir.name
         )
+        return True
 
     def get_start_command(self, args: FusekiDeploymentServiceInvokeArgs):
         cmd = args["start"]
