@@ -4,7 +4,7 @@ preprocessing:
   - type: pmap
     path: [1.., 4]
     code: |
-      if value == ""
+      if value == "":
         return ""
       return "https://geokb.wikibase.cloud/entity/" + value
   - type: pmap
