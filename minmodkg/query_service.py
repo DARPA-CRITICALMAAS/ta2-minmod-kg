@@ -39,15 +39,22 @@ def commodities():
     return get_commodities(get_snapshot_id())
 
 
-# @app.get("/mineral_locations_with_grade_tonnage")
-# def mineral_locations_with_grade_tonnage():
-#     return get_grade_tonnage_inventory(get_snapshot_id(), "gold")
+@app.get("/mineral_site_grade_and_tonnage/{commodity}")
+def mineral_site_grade_and_tonnage(commodity: str):
+    if is_minmod_id(commodity):
+        pass
+
+    return get_grade_tonnage_inventory(get_snapshot_id(), "gold")
 
 
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
     query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
     qres = run_sparql_query(query, endpoint)
     return qres[0]["snapshot_id"]
+
+
+def is_minmod_id(text: str) -> bool:
+    return text.startswith("Q") and text[1:].isdigit()
 
 
 @lru_cache(maxsize=1)
