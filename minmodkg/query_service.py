@@ -10,7 +10,7 @@ from typing import Literal, Optional
 import networkx as nx
 import pandas as pd
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
@@ -40,11 +40,20 @@ def commodities():
 
 
 @app.get("/mineral_site_grade_and_tonnage/{commodity}")
-def mineral_site_grade_and_tonnage(commodity: str):
-    if is_minmod_id(commodity):
-        pass
+def mineral_site_grade_and_tonnage(
+    commodity: str,
+    norm_tonnage_unit: Optional[str] = None,
+    norm_grade_unit: Optional[str] = None,
+):
+    if not is_minmod_id(commodity):
+        uri = get_commodity_by_name(commodity)
+        if uri is None:
+            raise HTTPException(
+                status_code=404, detail=f"Commodity `{commodity}` not found"
+            )
+        commodity = uri
 
-    return get_grade_tonnage_inventory(get_snapshot_id(), "gold")
+    return get_grade_tonnage_inventory(get_snapshot_id(), commodity)
 
 
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
@@ -55,6 +64,14 @@ def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
 
 def is_minmod_id(text: str) -> bool:
     return text.startswith("Q") and text[1:].isdigit()
+
+
+def get_commodity_by_name(name: str) -> Optional[str]:
+    query = 'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label "%s" . }' % name
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    if len(qres) == 0:
+        return None
+    return qres[0]["uri"]
 
 
 @lru_cache(maxsize=1)
