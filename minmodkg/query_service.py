@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Optional
 
 import networkx as nx
 import pandas as pd
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Response
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
@@ -48,9 +48,11 @@ def mineral_site_grade_and_tonnage(
         norm_grade_unit=norm_grade_unit,
         date_precision=date_precision,
     )
-    if accept is not None and "application/csv" in accept:
+    if accept is not None and "text/csv" in accept:
         df = pd.DataFrame(output)
-        return df.to_csv(index=False, float_format="%.5f")
+        return Response(
+            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
+        )
     return output
 
 
@@ -64,9 +66,11 @@ def mineral_site_deposit_types(
         get_snapshot_id(),
         commodity,
     )
-    if accept is not None and "application/csv" in accept:
+    if accept is not None and "text/csv" in accept:
         df = pd.DataFrame(output)
-        return df.to_csv(index=False, float_format="%.5f")
+        return Response(
+            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
+        )
     return output
 
 
@@ -80,9 +84,11 @@ def mineral_site_location(
         get_snapshot_id(),
         commodity,
     )
-    if accept is not None and "application/csv" in accept:
+    if accept is not None and "text/csv" in accept:
         df = pd.DataFrame(output)
-        return df.to_csv(index=False, float_format="%.5f")
+        return Response(
+            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
+        )
     return output
 
 
@@ -102,9 +108,11 @@ def hyper_mineral_sites(
         norm_grade_unit=norm_grade_unit,
         date_precision=date_precision,
     )
-    if accept is not None and "application/csv" in accept:
+    if accept is not None and "text/csv" in accept:
         df = pd.DataFrame(output)
-        return df.to_csv(index=False, float_format="%.5f")
+        return Response(
+            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
+        )
     return output
 
 
