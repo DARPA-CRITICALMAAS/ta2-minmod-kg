@@ -39,6 +39,11 @@ def commodities():
     return get_commodities(get_snapshot_id())
 
 
+# @app.get("/mineral_locations_with_grade_tonnage")
+# def mineral_locations_with_grade_tonnage():
+#     return get_grade_tonnage_inventory(get_snapshot_id(), "gold")
+
+
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
     query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
     qres = run_sparql_query(query, endpoint)
