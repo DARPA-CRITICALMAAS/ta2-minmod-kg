@@ -677,3 +677,6 @@ def fmt_grade_tonnage(
         record["total_grade"] = grade_tonnage.get_total_reserve_grade(norm_grade_unit)
 
     return record
+
+
+app.include_router(router)
