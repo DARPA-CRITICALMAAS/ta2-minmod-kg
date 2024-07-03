@@ -5,12 +5,12 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from functools import cached_property, cmp_to_key, lru_cache, total_ordering
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
 import networkx as nx
 import pandas as pd
 import requests
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
@@ -44,16 +44,75 @@ def mineral_site_grade_and_tonnage(
     commodity: str,
     norm_tonnage_unit: Optional[str] = None,
     norm_grade_unit: Optional[str] = None,
+    date_precision: Literal["year", "month", "day"] = "month",
+    accept: Annotated[str | None, Header()] = None,
 ):
-    if not is_minmod_id(commodity):
-        uri = get_commodity_by_name(commodity)
-        if uri is None:
-            raise HTTPException(
-                status_code=404, detail=f"Commodity `{commodity}` not found"
-            )
-        commodity = uri
+    commodity = norm_commodity(commodity)
+    output = get_grade_tonnage_inventory(
+        get_snapshot_id(),
+        commodity,
+        norm_tonnage_unit=norm_tonnage_unit,
+        norm_grade_unit=norm_grade_unit,
+        date_precision=date_precision,
+    )
+    if accept is not None and "application/csv" in accept:
+        df = pd.DataFrame(output)
+        return df.to_csv(index=False, float_format="%.5f")
+    return output
 
-    return get_grade_tonnage_inventory(get_snapshot_id(), commodity)
+
+@app.get("/mineral_site_deposit_types/{commodity}")
+def mineral_site_deposit_types(
+    commodity: str,
+    accept: Annotated[str | None, Header()] = None,
+):
+    commodity = norm_commodity(commodity)
+    output = get_deposit_type_classification(
+        get_snapshot_id(),
+        commodity,
+    )
+    if accept is not None and "application/csv" in accept:
+        df = pd.DataFrame(output)
+        return df.to_csv(index=False, float_format="%.5f")
+    return output
+
+
+@app.get("/mineral_site_location/{commodity}")
+def mineral_site_location(
+    commodity: str,
+    accept: Annotated[str | None, Header()] = None,
+):
+    commodity = norm_commodity(commodity)
+    output = get_mineral_site_location(
+        get_snapshot_id(),
+        commodity,
+    )
+    if accept is not None and "application/csv" in accept:
+        df = pd.DataFrame(output)
+        return df.to_csv(index=False, float_format="%.5f")
+    return output
+
+
+@app.get("/hyper_mineral_sites/{commodity}")
+def hyper_mineral_sites(
+    commodity: str,
+    norm_tonnage_unit: Optional[str] = None,
+    norm_grade_unit: Optional[str] = None,
+    date_precision: Literal["year", "month", "day"] = "month",
+    accept: Annotated[str | None, Header()] = None,
+):
+    commodity = norm_commodity(commodity)
+    output = get_hyper_mineral_site_data(
+        get_snapshot_id(),
+        commodity,
+        norm_tonnage_unit=norm_tonnage_unit,
+        norm_grade_unit=norm_grade_unit,
+        date_precision=date_precision,
+    )
+    if accept is not None and "application/csv" in accept:
+        df = pd.DataFrame(output)
+        return df.to_csv(index=False, float_format="%.5f")
+    return output
 
 
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
@@ -66,12 +125,34 @@ def is_minmod_id(text: str) -> bool:
     return text.startswith("Q") and text[1:].isdigit()
 
 
+def norm_commodity(commodity: str) -> str:
+    if commodity.startswith("http"):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Expect commodity to be either just an id (QXXX) or name. Get `{commodity}` instead",
+        )
+    if not is_minmod_id(commodity):
+        uri = get_commodity_by_name(commodity)
+        if uri is None:
+            raise HTTPException(
+                status_code=404, detail=f"Commodity `{commodity}` not found"
+            )
+        commodity = uri
+    return commodity
+
+
 def get_commodity_by_name(name: str) -> Optional[str]:
-    query = 'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label "%s" . }' % name
+    query = (
+        'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") }'
+        % name
+    )
     qres = run_sparql_query(query, DEFAULT_ENDPOINT)
     if len(qres) == 0:
         return None
-    return qres[0]["uri"]
+    uri = qres[0]["uri"]
+    assert uri.startswith(MNR_NS)
+    uri = uri[len(MNR_NS) :]
+    return uri
 
 
 @lru_cache(maxsize=1)
@@ -103,7 +184,7 @@ def get_deposit_types(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 
 
 @lru_cache(maxsize=32)
-def get_mineral_hypersite_data(
+def get_hyper_mineral_site_data(
     snapshot_id: str,
     commodity: str,
     norm_tonnage_unit=None,
@@ -312,7 +393,7 @@ def get_deposit_type_classification(
         ?deposit_candidate_uri :confidence ?deposit_confidence .
         ?deposit_candidate_uri :normalized_uri [
             rdfs:label ?deposit_name ;
-            :deposit_group ?deposit_group ;
+            :group ?deposit_group ;
             :environment ?deposit_environment ] .
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
@@ -420,7 +501,15 @@ def get_deposit_type_classification(
         ["ms", "ms_name", "country", "state_or_province", "loc_crs", "loc_wkt"]
     ].drop_duplicates(subset=["ms"])
     merged_deposits_df = pd.merge(unique_ms_data, final_df, on="ms", how="left")
-    return merged_deposits_df.to_dict("records")
+
+    # fix me: temporary code to deal with nan values
+    output = []
+    for record in merged_deposits_df.to_dict("records"):
+        for k in record:
+            if pd.isna(record[k]):
+                record[k] = None
+        output.append(record)
+    return output
 
 
 @lru_cache(maxsize=32)
