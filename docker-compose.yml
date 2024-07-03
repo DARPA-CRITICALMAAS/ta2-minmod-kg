@@ -6,13 +6,13 @@ services:
     build:
       context: ./containers/fuseki/
       args:
-        UID: ${UID}
-        GID: ${GID}
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
   etl:
     image: minmod-etl
     build: 
       context: .
       dockerfile: containers/etl/Dockerfile
       args:
-        UID: ${UID}
-        GID: ${GID}
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}

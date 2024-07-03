@@ -30,8 +30,13 @@ MNR_NS = "https://minmod.isi.edu/resource/"
 
 
 @app.get("/deposit_types")
-async def deposit_types():
+def deposit_types():
     return get_deposit_types(get_snapshot_id())
+
+
+@app.get("/commodities")
+def commodities():
+    return get_commodities(get_snapshot_id())
 
 
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
@@ -41,11 +46,24 @@ def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
 
 
 @lru_cache(maxsize=1)
+def get_commodities(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+    SELECT ?uri ?name
+    WHERE {
+        ?uri a :Commodity ;
+            rdfs:label ?name .
+    }
+    """
+    qres = run_sparql_query(query, endpoint)
+    return qres
+
+
+@lru_cache(maxsize=1)
 def get_deposit_types(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-    SELECT ?type ?name ?environment ?group
+    SELECT ?uri ?name ?environment ?group
     WHERE {
-        ?type a :DepositType ;
+        ?uri a :DepositType ;
             rdfs:label ?name ;
             :environment ?environment ;
             :group ?group .
