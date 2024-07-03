@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from copy import deepcopy
-from dataclasses import dataclass
-from datetime import datetime
-from functools import cached_property, cmp_to_key, lru_cache, total_ordering
+from functools import lru_cache
 from typing import Annotated, Literal, Optional
 
 import networkx as nx
 import pandas as pd
-import requests
 from fastapi import FastAPI, Header, HTTPException
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
@@ -17,9 +12,7 @@ from minmodkg.grade_tonnage_model import (
     ResourceCategory,
     SiteGradeTonnage,
 )
-from minmodkg.misc import group_by_key, run_sparql_query
-
-from criticalmaas.sparql_generate_query import merge_wkt
+from minmodkg.misc import group_by_key, merge_wkt, run_sparql_query
 
 """
 An endpoint to allow querying derived data from the Minmod knowledge graph.
