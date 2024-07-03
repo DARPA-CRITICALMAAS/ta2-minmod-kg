@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Optional
 
 import networkx as nx
 import pandas as pd
-from fastapi import FastAPI, Header, HTTPException, Response
+from fastapi import APIRouter, FastAPI, Header, HTTPException, Response
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
@@ -20,19 +20,20 @@ An endpoint to allow querying derived data from the Minmod knowledge graph.
 app = FastAPI()
 DEFAULT_ENDPOINT = "https://minmod.isi.edu/sparql"
 MNR_NS = "https://minmod.isi.edu/resource/"
+router = APIRouter(prefix="/api/v1")
 
 
-@app.get("/deposit_types")
+@router.get("/deposit_types")
 def deposit_types():
     return get_deposit_types(get_snapshot_id())
 
 
-@app.get("/commodities")
+@router.get("/commodities")
 def commodities():
     return get_commodities(get_snapshot_id())
 
 
-@app.get("/mineral_site_grade_and_tonnage/{commodity}")
+@router.get("/mineral_site_grade_and_tonnage/{commodity}")
 def mineral_site_grade_and_tonnage(
     commodity: str,
     norm_tonnage_unit: Optional[str] = None,
@@ -56,7 +57,7 @@ def mineral_site_grade_and_tonnage(
     return output
 
 
-@app.get("/mineral_site_deposit_types/{commodity}")
+@router.get("/mineral_site_deposit_types/{commodity}")
 def mineral_site_deposit_types(
     commodity: str,
     accept: Annotated[str | None, Header()] = None,
@@ -74,7 +75,7 @@ def mineral_site_deposit_types(
     return output
 
 
-@app.get("/mineral_site_location/{commodity}")
+@router.get("/mineral_site_location/{commodity}")
 def mineral_site_location(
     commodity: str,
     accept: Annotated[str | None, Header()] = None,
@@ -92,7 +93,7 @@ def mineral_site_location(
     return output
 
 
-@app.get("/hyper_mineral_sites/{commodity}")
+@router.get("/hyper_mineral_sites/{commodity}")
 def hyper_mineral_sites(
     commodity: str,
     norm_tonnage_unit: Optional[str] = None,
