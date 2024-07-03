@@ -9,7 +9,7 @@
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
                                     rdfs:comment "Ontology for Minmod Knowledge Graph"@en ;
-                                    owl:versionInfo "1.2.1" .
+                                    owl:versionInfo "1.2.2" .
 
 #################################################################
 #    Datatypes
@@ -377,6 +377,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/deposit_type_dataproperty
 :deposit_type_dataproperty rdf:type owl:DatatypeProperty ;
                            rdfs:subPropertyOf owl:topDataProperty ;
+                           rdfs:domain :DepositType ;
                            rdfs:label "deposit type dataproperty"@en .
 
 
@@ -455,7 +456,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/location
 :location rdf:type owl:DatatypeProperty ;
           rdfs:subPropertyOf :location_info_dataproperty ;
-          rdfs:domain :LocationInfo ;
           rdfs:range geo:wktLiteral ;
           rdfs:comment "Polygon or Point, value indicates the geolocation of the site"@en ;
           rdfs:label "location"@en .
@@ -464,6 +464,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/location_info_dataproperty
 :location_info_dataproperty rdf:type owl:DatatypeProperty ;
                             rdfs:subPropertyOf owl:topDataProperty ;
+                            rdfs:domain :LocationInfo ;
                             rdfs:label "location info dataproperty"@en .
 
 

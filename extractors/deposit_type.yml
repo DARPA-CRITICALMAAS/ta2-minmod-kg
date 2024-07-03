@@ -20,8 +20,7 @@ semantic_model:
       - [drepr:uri, depid]
       - [rdfs:label, label, xsd:string]
       - [mno:environment, env, xsd:string]
-      - [mno:deposit_group, group, xsd:string]
-      - [mno:id, depid, drepr:uri]
+      - [mno:group, group, xsd:string]
 
   prefixes:
     mno: https://minmod.isi.edu/ontology/
