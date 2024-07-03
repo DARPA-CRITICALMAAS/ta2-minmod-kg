@@ -17,10 +17,12 @@ from minmodkg.misc import group_by_key, merge_wkt, run_sparql_query
 """
 An endpoint to allow querying derived data from the Minmod knowledge graph.
 """
-app = FastAPI()
+app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
 DEFAULT_ENDPOINT = "https://minmod.isi.edu/sparql"
 MNR_NS = "https://minmod.isi.edu/resource/"
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(
+    prefix="/api/v1",
+)
 
 
 @router.get("/deposit_types")
