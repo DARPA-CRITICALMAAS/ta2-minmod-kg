@@ -586,7 +586,24 @@ def get_grade_tonnage_inventory(
     """ % (
         f"mnr:{commodity}"
     )
-    qres = run_sparql_query(query, endpoint)
+    qres = run_sparql_query(
+        query,
+        endpoint,
+        [
+            "ms_name",
+            "loc",
+            "country",
+            "country_name",
+            "state_or_province",
+            "state_or_province_name",
+            "loc_crs",
+            "loc_crs_name",
+            "loc_wkt",
+            "doc",
+            "mi_zone",
+            "mi_date",
+        ],
+    )
     # compute grade & tonnage for each mineral site
     grade_tonnage_model = GradeTonnageModel()
 

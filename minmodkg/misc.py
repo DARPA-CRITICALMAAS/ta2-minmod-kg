@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, TypeVar
+from typing import Any, Optional, TypeVar
 
 import pandas as pd
 import requests
@@ -38,7 +38,9 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
     return groups
 
 
-def run_sparql_query(query, endpoint=DEFAULT_ENDPOINT) -> list[dict]:
+def run_sparql_query(
+    query, endpoint=DEFAULT_ENDPOINT, keys: Optional[list[str]] = None
+) -> list[dict]:
     # add prefixes
     final_query = (
         """
@@ -79,6 +81,10 @@ def run_sparql_query(query, endpoint=DEFAULT_ENDPOINT) -> list[dict]:
         for key in res:
             if key not in sample:
                 sample[key] = res[key]
+    if keys is not None:
+        for key in keys:
+            if key not in sample:
+                sample[key] = {"type": "bnode"}
 
     output = [{} for _ in range(len(qres))]
     for key, val in sample.items():
