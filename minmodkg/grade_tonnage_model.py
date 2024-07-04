@@ -214,6 +214,9 @@ class GradeTonnageModel:
         if norm_grade_unit is None:
             norm_grade_unit = percent_unit
 
+        resource_cat = frozenset({c.value for c in ResourceCategory})
+        reserve_cat = frozenset({c.value for c in ReserveCategory})
+
         # group by zone & date
         grade_tonnages = []
         for date, invs_by_date in group_by_attr(invs, "date").items():
@@ -223,10 +226,8 @@ class GradeTonnageModel:
                 # therefore, we need to handle them.
                 # assert len(invs_by_date_zone) == 1
 
-                grade_tonnage_zone = SiteGradeTonnage()
-
                 # the first step is normalization
-                estimates = []
+                cat2ests = {}
                 for inv in invs_by_date_zone:
                     try:
                         ore = unit_conversion(
@@ -239,37 +240,50 @@ class GradeTonnageModel:
                         # the data is broken, so we skip it
                         continue
 
-                    estimates.append(
-                        (
-                            frozenset(inv.category),
-                            GradeTonnageEstimate(
-                                tonnage=ore,
-                                contained_metal=ore
-                                * unit_conversion(grade, norm_grade_unit, percent_unit),
-                            ),
-                        )
+                    cat = frozenset(inv.category)
+                    if not (
+                        len(cat.difference(resource_cat)) == 0
+                        or len(cat.difference(reserve_cat)) == 0
+                    ):
+                        # ignore errorneous data
+                        continue
+
+                    cat2ests[frozenset(inv.category)] = GradeTonnageEstimate(
+                        tonnage=ore,
+                        contained_metal=ore
+                        * unit_conversion(grade, norm_grade_unit, percent_unit),
                     )
 
-                cat2estimates = defaultdict(list)
-                for inv, estimate in estimates:
-                    cat = tuple(sorted(inv.category))
-                    cat2estimates[cat].append(estimate)
-                cat2estimate = {
-                    cat: max(
-                        ests, key=cmp_to_key(GradeTonnageEstimate.is_equal_or_better)
+                cat_est = [
+                    (
+                        cat,
+                        max(
+                            ests,
+                            key=cmp_to_key(GradeTonnageEstimate.is_equal_or_better),
+                        ),
                     )
-                    for cat, ests in cat2estimates.items()
-                }
+                    for cat, ests in cat2ests.items()
+                ]
 
                 # now, we need to compute resource/reserve estimates by summing up the estimate
+                resource_est = []
+                reserve_est = []
 
+                for i in range(len(cat_est)):
+                    cat, est = cat_est[i]
+
+                    if len(cat.intersection(resource_est)) > 0:
+                        norm_est = est
+
+                    for j in range(i + 1, len(cat_est)):
+                        ...
                 grade_tonnage_per_zones.append(
                     (
                         zone,
                         SiteGradeTonnage(
                             {
                                 cat: self.aggregate_tonnage_estimates(vals)
-                                for cat, vals in estimates.items()
+                                for cat, vals in cat2ests.items()
                             }
                         ),
                     )
