@@ -51,6 +51,7 @@ def run_sparql_query(query, endpoint=DEFAULT_ENDPOINT) -> list[dict]:
     PREFIX gkbi: <https://geokb.wikibase.cloud/entity/>
     PREFIX gkbt: <https://geokb.wikibase.cloud/prop/direct/>
     PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     \n"""
         + query
     )

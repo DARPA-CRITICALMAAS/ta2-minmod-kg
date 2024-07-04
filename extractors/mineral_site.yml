@@ -15,8 +15,12 @@ preprocessing:
       record_id = value["record_id"]
       if source_id.startswith("http://"):
         source_id = source_id[7:]
+        if source_id.endswith("/"):
+          source_id = source_id[:-1]
       elif source_id.startswith("https://"):
         source_id = source_id[8:]
+        if source_id.endswith("/"):
+          source_id = source_id[:-1]
       coms.append(slugify(source_id))
       if isinstance(record_id, int):
         coms.append(str(record_id))
