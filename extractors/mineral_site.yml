@@ -1,36 +1,12 @@
-version: 2
+version: 3
 resources: json
 preprocessing:
   - type: pmap
     path: ["MineralSite", ..]
     output: { attr: site_uri }
     code: |
-      from slugify import slugify
-      import hashlib
-
-      coms = []
-      if "name" in value:
-        coms.append(slugify(value["name"]))
-      source_id = value["source_id"]
-      record_id = value["record_id"]
-      if source_id.startswith("http://"):
-        source_id = source_id[7:]
-        if source_id.endswith("/"):
-          source_id = source_id[:-1]
-      elif source_id.startswith("https://"):
-        source_id = source_id[8:]
-        if source_id.endswith("/"):
-          source_id = source_id[:-1]
-      coms.append(slugify(source_id))
-      if isinstance(record_id, int):
-        coms.append(str(record_id))
-      else:
-        coms.append(slugify(record_id))
-
-      id = "__".join(coms)
-      if len(id) > 80:
-        id = id[:80] + "__" + hashlib.sha256(id.encode()).hexdigest()[:8]
-      return "https://minmod.isi.edu/resource/site__" + id
+      from minmodkg.transformations import make_site_uri
+      return make_site_uri(value['source_id'], value['record_id'])
   - type: pmap
     path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"]]
     code: |
