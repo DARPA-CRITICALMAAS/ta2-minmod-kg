@@ -17,7 +17,7 @@ RUN git config --global --add safe.directory "*"
 ARG UID=1000
 ARG GID=1000
 
-RUN groupadd -g $GID criticalmaas || useradd -ms /bin/bash criticalmaas -u $UID -g $GID
+RUN groupadd -f -g $GID criticalmaas && useradd -ms /bin/bash criticalmaas -u $UID -g $GID
 
 USER criticalmaas
 
