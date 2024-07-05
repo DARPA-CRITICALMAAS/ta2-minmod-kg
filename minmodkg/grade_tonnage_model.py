@@ -46,50 +46,40 @@ class GradeTonnageEstimate:
     def is_equal_or_better(self, other: GradeTonnageEstimate):
         return self.contained_metal >= other.contained_metal
 
+    def add(self, other: GradeTonnageEstimate) -> GradeTonnageEstimate:
+        return GradeTonnageEstimate(
+            self.tonnage + other.tonnage, self.contained_metal + other.contained_metal
+        )
+
 
 @dataclass(frozen=True)
 class SiteGradeTonnage:
-    category2estimate: dict[str, GradeTonnageEstimate]
+    resource_estimate: Optional[GradeTonnageEstimate] = None
+    reserve_estimate: Optional[GradeTonnageEstimate] = None
 
     @cached_property
     def total_resource_contained_metal(self):
-        if all(cat.value not in self.category2estimate for cat in ResourceCategory):
-            return None
-        return sum(
-            self.category2estimate[cat.value].contained_metal
-            for cat in ResourceCategory
-            if cat.value in self.category2estimate
-        )
+        if self.resource_estimate is not None:
+            return self.resource_estimate.contained_metal
+        return None
 
     @cached_property
     def total_resource_tonnage(self):
-        if all(cat.value not in self.category2estimate for cat in ResourceCategory):
-            return None
-        return sum(
-            self.category2estimate[cat.value].tonnage
-            for cat in ResourceCategory
-            if cat.value in self.category2estimate
-        )
+        if self.resource_estimate is not None:
+            return self.resource_estimate.tonnage
+        return None
 
     @cached_property
     def total_reserve_contained_metal(self):
-        if all(cat.value not in self.category2estimate for cat in ReserveCategory):
-            return None
-        return sum(
-            self.category2estimate[cat.value].contained_metal
-            for cat in ReserveCategory
-            if cat.value in self.category2estimate
-        )
+        if self.reserve_estimate is not None:
+            return self.reserve_estimate.contained_metal
+        return None
 
     @cached_property
     def total_reserve_tonnage(self):
-        if all(cat.value not in self.category2estimate for cat in ReserveCategory):
-            return None
-        return sum(
-            self.category2estimate[cat.value].tonnage
-            for cat in ReserveCategory
-            if cat.value in self.category2estimate
-        )
+        if self.reserve_estimate is not None:
+            return self.reserve_estimate.tonnage
+        return None
 
     @cached_property
     def total_compared_contained_metal(self):
@@ -99,7 +89,12 @@ class SiteGradeTonnage:
 
     @cached_property
     def total_contained_metal(self):
-        return sum(val.contained_metal for val in self.category2estimate.values())
+        total = 0
+        if self.total_resource_contained_metal is not None:
+            total += self.total_resource_contained_metal
+        if self.total_reserve_contained_metal is not None:
+            total += self.total_reserve_contained_metal
+        return total
 
     def get_total_resource_grade(self, unit: Optional[str] = None) -> Optional[float]:
         if unit is None:
@@ -116,7 +111,9 @@ class SiteGradeTonnage:
             return 0.0
 
         return unit_conversion(
-            total_resource_contained_metal / total_resource_tonnage, percent_unit, unit
+            total_resource_contained_metal / total_resource_tonnage * 100,
+            percent_unit,
+            unit,
         )
 
     def get_total_reserve_grade(self, unit: Optional[str] = None) -> Optional[float]:
@@ -134,7 +131,9 @@ class SiteGradeTonnage:
             return 0.0
 
         return unit_conversion(
-            total_reserve_contained_metal / total_reserve_tonnage, percent_unit, unit
+            total_reserve_contained_metal / total_reserve_tonnage * 100,
+            percent_unit,
+            unit,
         )
 
     def is_equal_or_better(self, other: SiteGradeTonnage):
@@ -151,19 +150,21 @@ class SiteGradeTonnage:
         return self.total_contained_metal >= other.total_contained_metal
 
     def add(self, other: SiteGradeTonnage):
-        newval = self.category2estimate.copy()
-        for k, v in other.category2estimate.items():
-            if k not in newval:
-                newval[k] = v
-            else:
-                newval[k] = GradeTonnageEstimate(
-                    tonnage=newval[k].tonnage + v.tonnage,
-                    contained_metal=newval[k].contained_metal + v.contained_metal,
-                )
-        return SiteGradeTonnage(newval)
+        resource_estimate = self.resource_estimate
+        reserve_estimate = self.reserve_estimate
 
-    def get_estimate(self, category: str, default: V) -> Union[GradeTonnageEstimate, V]:
-        return self.category2estimate.get(category, default)
+        if resource_estimate is not None:
+            if other.resource_estimate is not None:
+                resource_estimate = resource_estimate.add(other.resource_estimate)
+        elif other.resource_estimate is not None:
+            resource_estimate = other.resource_estimate
+
+        if reserve_estimate is not None:
+            if other.reserve_estimate is not None:
+                reserve_estimate = reserve_estimate.add(other.reserve_estimate)
+        elif other.reserve_estimate is not None:
+            reserve_estimate = other.reserve_estimate
+        return SiteGradeTonnage(resource_estimate, reserve_estimate)
 
 
 class GradeTonnageModel:
@@ -171,11 +172,12 @@ class GradeTonnageModel:
 
     @dataclass
     class MineralInventory:
+        id: str  # unique identifier of the inventory -- for knowing the reported data is sum of multiple categories or not
         date: Optional[
             str
         ]  # %YYYY-%MM-%DD: this allow us to group by and sort by date without parsing it
         zone: Optional[str]
-        category: str
+        category: list[str]
         ore_value: float
         ore_unit: str
         grade_value: float
@@ -192,17 +194,21 @@ class GradeTonnageModel:
         if norm_grade_unit is None:
             norm_grade_unit = percent_unit
 
+        resource_cat = frozenset({c.value for c in ResourceCategory})
+        reserve_cat = frozenset({c.value for c in ReserveCategory})
+
         # group by zone & date
         grade_tonnages = []
         for date, invs_by_date in group_by_attr(invs, "date").items():
             grade_tonnage_per_zones = []
             for zone, invs_by_date_zone in group_by_attr(invs_by_date, "zone").items():
                 # the extraction may went wrong and we have multiple results per category
+                # therefore, we need to handle them.
                 # assert len(invs_by_date_zone) == 1
 
-                estimates = defaultdict(list)
+                # the first step is normalization
+                cat2ests = defaultdict(list)
                 for inv in invs_by_date_zone:
-                    cat = inv.category
                     try:
                         ore = unit_conversion(
                             inv.ore_value, inv.ore_unit, norm_tonnage_unit
@@ -214,25 +220,68 @@ class GradeTonnageModel:
                         # the data is broken, so we skip it
                         continue
 
-                    estimates[cat].append(
+                    cat = frozenset(inv.category)
+                    if not (cat.issubset(resource_cat) or cat.issubset(reserve_cat)):
+                        # ignore errorneous data
+                        continue
+
+                    cat2ests[frozenset(inv.category)].append(
                         GradeTonnageEstimate(
                             tonnage=ore,
                             contained_metal=ore
-                            * unit_conversion(grade, norm_grade_unit, percent_unit),
+                            * unit_conversion(grade, norm_grade_unit, percent_unit)
+                            / 100,
                         )
                     )
 
-                if len(estimates) == 0:
-                    continue
+                cat_est = [
+                    (
+                        cat,
+                        max(
+                            ests,
+                            key=cmp_to_key(GradeTonnageEstimate.is_equal_or_better),
+                        ),
+                    )
+                    for cat, ests in cat2ests.items()
+                ]
+
+                # now, we need to compute resource/reserve estimates by summing up the estimate
+                resource_est = [x for x in cat_est if x[0].issubset(resource_cat)]
+                reserve_est = [x for x in cat_est if x[0].issubset(reserve_cat)]
+
+                attr2est = {"resource": None, "reserve": None}
+                for attr, ests in [
+                    ("resource", resource_est),
+                    ("reserve", reserve_est),
+                ]:
+                    allcats = {cat for cat, _ in ests}
+                    while True:
+                        new_ests = []
+                        for i in range(len(ests)):
+                            cat, est = ests[i]
+                            for j in range(i + 1, len(ests)):
+                                if cat.isdisjoint(ests[j][0]):
+                                    newcat = cat.union(ests[j][0])
+                                    if newcat not in allcats:
+                                        # we can merge them
+                                        new_ests.append((newcat, est.add(ests[j][1])))
+                                        allcats.add(newcat)
+                        if len(new_ests) == 0:
+                            break
+                        ests.extend(new_ests)
+
+                    if len(ests) != 0:
+                        attr2est[attr] = max(
+                            (x[1] for x in ests),
+                            key=cmp_to_key(GradeTonnageEstimate.is_equal_or_better),
+                        )
 
                 grade_tonnage_per_zones.append(
                     (
                         zone,
                         SiteGradeTonnage(
-                            {
-                                cat: self.aggregate_tonnage_estimates(vals)
-                                for cat, vals in estimates.items()
-                            }
+                            resource_estimate=attr2est["resource"],
+                            reserve_estimate=attr2est["reserve"],
                         ),
                     )
                 )
@@ -247,10 +296,7 @@ class GradeTonnageModel:
         if len(grade_tonnages) == 0:
             return None
 
-        return self.aggregate_site_tonnage_by_date(grade_tonnages)
-
-    def aggregate_tonnage_estimates(self, vals: Iterable[GradeTonnageEstimate]):
-        return max(vals, key=cmp_to_key(GradeTonnageEstimate.is_equal_or_better))
+        return self.aggregate_site_tonnages_by_date(grade_tonnages)
 
     def aggregate_site_tonnages_by_zone(
         self, vals: list[tuple[Optional[str], SiteGradeTonnage]]
@@ -282,13 +328,14 @@ class GradeTonnageModel:
             assert zone_tonnage is not None
             return zone_tonnage
 
-    def aggregate_site_tonnage_by_date(
+    def aggregate_site_tonnages_by_date(
         self, vals: Iterable[tuple[Optional[str], SiteGradeTonnage]]
     ):
         return max(vals, key=cmp_to_key(lambda a, b: a[1].is_equal_or_better(b[1])))[1]
 
 
 def unit_conversion(value: float, unit: str, to_unit: str) -> float:
+
     if unit == to_unit:
         return value
 
