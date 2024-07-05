@@ -266,17 +266,18 @@ class GradeTonnageModel:
                 ]
 
                 # now, we need to compute resource/reserve estimates by summing up the estimate
-                resource_est = []
-                reserve_est = []
+                resource_est = [
+                    x
+                    for x in cat_est
+                    if x[0].issubset(resource_cat)
+                ]
+                reserve_est = [
+                    x for x in cat_est
+                    if x[0].issubset(reserve_cat)
+                ]
 
-                for i in range(len(cat_est)):
-                    cat, est = cat_est[i]
-
-                    if len(cat.intersection(resource_est)) > 0:
-                        norm_est = est
-
-                    for j in range(i + 1, len(cat_est)):
-                        ...
+                for lst in [resource_cat, reserve_cat]:
+                    new_lst = []
                 grade_tonnage_per_zones.append(
                     (
                         zone,
@@ -341,6 +342,7 @@ class GradeTonnageModel:
 
 
 def unit_conversion(value: float, unit: str, to_unit: str) -> float:
+
     if unit == to_unit:
         return value
 
