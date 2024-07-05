@@ -538,6 +538,7 @@ def get_grade_tonnage_inventory(
         ?state_or_province_name
         ?doc
         
+        ?mi
         ?mi_cat
         ?mi_date
         ?mi_zone
@@ -612,15 +613,16 @@ def get_grade_tonnage_inventory(
         grade_tonnage = grade_tonnage_model(
             [
                 GradeTonnageModel.MineralInventory(
-                    date=inv["mi_date"],
-                    zone=inv["mi_zone"],
-                    category=inv["mi_cat"],
-                    ore_value=inv["mi_ore_value"],
-                    ore_unit=inv["mi_ore_unit"],
-                    grade_value=inv["mi_grade_value"],
-                    grade_unit=inv["mi_grade_unit"],
+                    id=inv,
+                    date=inv_props[0]["mi_date"],
+                    zone=inv_props[0]["mi_zone"],
+                    category=[x["mi_cat"] for x in inv_props],
+                    ore_value=inv_props[0]["mi_ore_value"],
+                    ore_unit=inv_props[0]["mi_ore_unit"],
+                    grade_value=inv_props[0]["mi_grade_value"],
+                    grade_unit=inv_props[0]["mi_grade_unit"],
                 )
-                for inv in invs
+                for inv, inv_props in group_by_key(invs, "mi").items()
             ],
             norm_tonnage_unit=norm_tonnage_unit,
             norm_grade_unit=norm_grade_unit,
@@ -666,23 +668,14 @@ def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 def fmt_grade_tonnage(
     grade_tonnage: Optional[SiteGradeTonnage], norm_grade_unit: Optional[str] = None
 ) -> dict:
-    default_estimate = GradeTonnageEstimate(0.0, 0.0)
     if grade_tonnage is None:
-        grade_tonnage = SiteGradeTonnage({})
+        grade_tonnage = SiteGradeTonnage()
 
     record = {
         "tot_contained_metal": grade_tonnage.total_resource_contained_metal,
         "total_tonnage": grade_tonnage.total_resource_tonnage,
         "total_grade": (grade_tonnage.get_total_resource_grade(norm_grade_unit)),
     }
-
-    for cat in ResourceCategory:
-        record[f"tot_tonnage_{cat.name.lower()}"] = grade_tonnage.get_estimate(
-            cat.value, default_estimate
-        ).tonnage
-        record[f"tot_contained_{cat.name.lower()}"] = grade_tonnage.get_estimate(
-            cat.value, default_estimate
-        ).contained_metal
 
     # just in case we have more data about reserve than resource
     if grade_tonnage.total_reserve_tonnage is not None and (
