@@ -334,6 +334,52 @@ class GradeTonnageModel:
         return max(vals, key=cmp_to_key(lambda a, b: a[1].is_equal_or_better(b[1])))[1]
 
 
+weight_uncompatible_units = {
+    f"{MNR_NS}{id}"
+    for id in [
+        "Q201",
+        "Q203",
+        "Q204",
+        "Q205",
+        "Q207",
+        "Q208",
+        "Q209",
+        "Q210",
+        "Q212",
+        "Q217",
+        "Q220",
+        "Q206",
+        "Q211",
+        "221",
+        "Q218",
+        "Q219",
+    ]
+}
+percent_uncompatible_units = {
+    f"{MNR_NS}{id}"
+    for id in [
+        "Q200",
+        "Q202",
+        "Q204",
+        "Q205",
+        "Q206",
+        "Q207",
+        "Q208",
+        "Q209",
+        "Q210",
+        "Q211",
+        "Q212",
+        "Q213",
+        "Q214",
+        "Q215",
+        "Q216",
+        "Q218",
+        "Q219",
+        "Q221",
+    ]
+}
+
+
 def unit_conversion(value: float, unit: str, to_unit: str) -> float:
 
     if unit == to_unit:
@@ -344,7 +390,15 @@ def unit_conversion(value: float, unit: str, to_unit: str) -> float:
         if unit == f"{MNR_NS}Q200":
             # from tonnes
             return value / 1_000_000
-        if unit in {f"{MNR_NS}Q217", f"{MNR_NS}Q218"}:
+        if unit == f"{MNR_NS}Q213":
+            # from million short tons
+            return value / 1.10231
+        if unit == f"{MNR_NS}Q214":
+            return value / 1_000_000 / 1.10231
+        if unit == f"{MNR_NS}Q215":
+            # million pounds
+            return value * 0.000454
+        if unit in weight_uncompatible_units:
             raise UnconvertibleUnitError((value, unit, to_unit))
         raise NotImplementedError((value, unit, to_unit))
 
@@ -356,6 +410,8 @@ def unit_conversion(value: float, unit: str, to_unit: str) -> float:
         if unit == f"{MNR_NS}Q217":
             # from kg per tonne
             return value / 10
+        if unit in percent_uncompatible_units:
+            raise UnconvertibleUnitError((value, unit, to_unit))
         raise NotImplementedError((value, unit, to_unit))
 
     raise NotImplementedError((value, unit, to_unit))
