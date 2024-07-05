@@ -38,10 +38,7 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
     return groups
 
 
-def run_sparql_query(
-    query, endpoint=DEFAULT_ENDPOINT, keys: Optional[list[str]] = None
-) -> list[dict]:
-    # add prefixes
+def send_sparql_query(query, endpoint=DEFAULT_ENDPOINT):
     final_query = (
         """
     PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -67,6 +64,15 @@ def run_sparql_query(
         },
         verify=False,  # Set to False to bypass SSL verification as per the '-k' in curl
     )
+    return response
+
+
+def run_sparql_query(
+    query,
+    endpoint=DEFAULT_ENDPOINT,
+    keys: Optional[list[str]] = None,
+) -> list[dict]:
+    response = send_sparql_query(query, endpoint)
 
     if response.status_code != 200:
         raise Exception(response.text)
