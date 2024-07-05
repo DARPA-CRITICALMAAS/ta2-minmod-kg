@@ -242,8 +242,8 @@ class GradeTonnageModel:
 
                     cat = frozenset(inv.category)
                     if not (
-                        len(cat.difference(resource_cat)) == 0
-                        or len(cat.difference(reserve_cat)) == 0
+                        cat.issubset(resource_cat)
+                        or cat.issubset(reserve_cat)
                     ):
                         # ignore errorneous data
                         continue
