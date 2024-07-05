@@ -112,6 +112,14 @@ def run_sparql_query(
                     else:
                         output[i][key] = None
             elif val["datatype"] in {
+                "http://www.w3.org/2001/XMLSchema#integer",
+            }:
+                for i, row in enumerate(qres):
+                    if key in row:
+                        output[i][key] = int(row[key]["value"])
+                    else:
+                        output[i][key] = None
+            elif val["datatype"] in {
                 "http://www.w3.org/2001/XMLSchema#decimal",
                 "http://www.w3.org/2001/XMLSchema#double",
             }:
