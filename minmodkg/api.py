@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from typing import Annotated, Literal, Optional
 
@@ -18,7 +19,7 @@ from minmodkg.misc import group_by_key, merge_wkt, run_sparql_query
 An endpoint to allow querying derived data from the Minmod knowledge graph.
 """
 app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
-DEFAULT_ENDPOINT = "https://minmod.isi.edu/sparql"
+DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
 MNR_NS = "https://minmod.isi.edu/resource/"
 router = APIRouter(
     prefix="/api/v1",
@@ -148,7 +149,7 @@ def norm_commodity(commodity: str) -> str:
 def get_commodity_by_name(name: str) -> Optional[str]:
     query = (
         'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") }'
-        % name
+        % name.lower()
     )
     qres = run_sparql_query(query, DEFAULT_ENDPOINT)
     if len(qres) == 0:
