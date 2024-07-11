@@ -7,7 +7,7 @@ from slugify import slugify
 MNR_NS = "https://minmod.isi.edu/resource/"
 
 
-def make_site_uri(source_id: str, record_id: str) -> str:
+def make_site_uri(source_id: str, record_id: str, namespace: str = MNR_NS) -> str:
     if source_id.startswith("http://"):
         if source_id.startswith("http://"):
             source_id = source_id[7:]
@@ -28,4 +28,4 @@ def make_site_uri(source_id: str, record_id: str) -> str:
     path = f"{source_id}__{record_id}"
     if len(path) > 120:
         path = path[:120] + "__" + hashlib.sha256(path.encode()).hexdigest()[:8]
-    return f"{MNR_NS}site__{path}"
+    return f"{namespace}site__{path}"
