@@ -274,13 +274,13 @@ wmi = ["wmi (>=1.5.1)"]
 
 [[package]]
 name = "drepr-v2"
-version = "1.5.0"
+version = "1.5.1"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "drepr_v2-1.5.0-py3-none-any.whl", hash = "sha256:a0840787c6153a4c3feee5936b407ca84a52fb8aed1a90619fe0c52529483de4"},
-    {file = "drepr_v2-1.5.0.tar.gz", hash = "sha256:fa388c7d7c635d05b60fa57a9e323aefd3596a53b1add66fb30fee56b31fd02c"},
+    {file = "drepr_v2-1.5.1-py3-none-any.whl", hash = "sha256:82805f279f24b45af3edb5261c6613ac7a70f228fbf889ee85090d6c676733fd"},
+    {file = "drepr_v2-1.5.1.tar.gz", hash = "sha256:97b980a6b7e0483d034b079c5ebb51b6d6d01ad6c693535e3d283668c706366a"},
 ]
 
 [package.dependencies]
@@ -1473,17 +1473,17 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "statickg"
-version = "1.6.2"
+version = "1.6.3"
 description = "Tools for creating & running knowledge graphs from files"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "statickg-1.6.2-py3-none-any.whl", hash = "sha256:eddd5878b5b7d7f61dfba39b0eb3d0a468336044744f833714dc5c9ad3c2c1d5"},
-    {file = "statickg-1.6.2.tar.gz", hash = "sha256:9ce5addaa8ef54c202c361f508aad1c79f5be961f47f6c47e3c4c9daa6e848b7"},
+    {file = "statickg-1.6.3-py3-none-any.whl", hash = "sha256:c147a3e6e42208dcd9943ecab8e6fa8c581f851c1e387876f62cf892947a21d9"},
+    {file = "statickg-1.6.3.tar.gz", hash = "sha256:dcb75e9554b7281f94ade8153e9d7dde5fb9bbf4934e77f2bf3a228bae0d21b5"},
 ]
 
 [package.dependencies]
-drepr-v2 = ">=1.5.0,<2.0.0"
+drepr-v2 = ">=1.5.1,<2.0.0"
 hugedict = ">=2.13.4,<3.0.0"
 joblib = ">=1.4.2,<2.0.0"
 orjson = ">=3.10.3,<4.0.0"
@@ -1994,4 +1994,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "91564dec09a97a71ed474ce258e3148ff1b29ee2aa532ed055ab8c0ce5d63f70"
+content-hash = "4a914625754745080af451e35d747de0dde4d5f0b7e4fa851ec81ff606653b82"
