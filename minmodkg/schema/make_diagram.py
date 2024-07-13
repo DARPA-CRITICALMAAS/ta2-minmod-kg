@@ -14,6 +14,7 @@ from rdflib import OWL, RDF, RDFS, XSD, BNode, Graph, Literal, Namespace, URIRef
 mno = Namespace("https://minmod.isi.edu/ontology/")
 geo = Namespace("http://www.opengis.net/ont/geosparql#")
 hasSubPropertyOf = mno.hasSubPropertyOf
+schema_dir = Path(__file__).parent.parent.parent / "schema"
 
 
 class URI(str): ...
@@ -28,7 +29,7 @@ def get_all_values(g: Graph, s: URIRef, p: URIRef, subItemOf: URIRef):
 
 
 def load_ontology():
-    ontology_file = Path(__file__).parent / "ontology.ttl"
+    ontology_file = schema_dir / "ontology.ttl"
     g = Graph()
     g.parse(ontology_file, format="turtle")
 
@@ -82,9 +83,7 @@ def get_domain_or_range(g: Graph, prop: URIRef, attr: URIRef):
     return sorted(output)
 
 
-def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = True):
-    g = load_ontology()
-
+def get_domain_to_props(g: Graph):
     # get list of properties
     props = {}
     domain2props = {}
@@ -115,7 +114,22 @@ def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = Tru
             for prop in domain2props.get(parent_subj, []):
                 if prop not in domain2props[subj]:
                     domain2props[subj].append(prop)
+    return props, domain2props
 
+
+def get_data_types(g: Graph):
+    namespaces = list(g.namespaces())
+    datatypes = {}
+    for subj in g.subjects(RDF.type, RDFS.Datatype):
+        ((prefix, ns),) = [
+            (prefix, ns) for prefix, ns in namespaces if str(subj).startswith(ns)
+        ]
+        typename = prefix + ":" + str(subj)[len(ns) :]
+        datatypes[subj] = type(typename, (object,), {})
+    return datatypes
+
+
+def get_class_in_order(g: Graph, props, domain2props):
     # get class orders
     edges: dict[URIRef, list[URIRef]] = {
         subj: [] for subj in g.subjects(RDF.type, OWL.Class) if isinstance(subj, URIRef)
@@ -124,21 +138,21 @@ def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = Tru
         for prop in domain2props.get(subj, []):
             edges[subj].extend((t for t in props[prop]["range"] if t in edges))
     ts = TopologicalSorter(edges)
+    return list(ts.static_order())
 
-    namespaces = list(g.namespaces())
+
+def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = True):
+    g = load_ontology()
+
+    # get list of properties
+    props, domain2props = get_domain_to_props(g)
 
     # get data types
-    datatypes = {}
-    for subj in g.subjects(RDF.type, RDFS.Datatype):
-        ((prefix, ns),) = [
-            (prefix, ns) for prefix, ns in namespaces if str(subj).startswith(ns)
-        ]
-        typename = prefix + ":" + str(subj)[len(ns) :]
-        datatypes[subj] = type(typename, (object,), {})
+    datatypes = get_data_types(g)
 
     # iterate over classes and create models
     models = {}
-    for subj in ts.static_order():
+    for subj in get_class_in_order(g, props, domain2props):
         # gather all restrictions -- not parse yet
         prop2restriction = defaultdict(list)
         for obj in g.objects(subj, RDFS.subClassOf):
@@ -184,7 +198,7 @@ def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = Tru
         )  # type: ignore
 
     graph = erd.create(*list(models.values()))
-    graph.draw(out=Path(__file__).parent / "er_diagram.png")
+    graph.draw(out=schema_dir / "er_diagram.png")
     return
 
 

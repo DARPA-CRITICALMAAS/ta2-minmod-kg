@@ -1,0 +1,138 @@
+@prefix : <https://minmod.isi.edu/ontology/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:BoundingBoxShape a sh:NodeShape ;
+    sh:targetClass :BoundingBox .
+
+:CommodityCandidateShape a sh:NodeShape ;
+    sh:targetClass :CommodityCandidate .
+
+:CommodityShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :Commodity .
+
+:CoordinateReferenceSystemCandidateShape a sh:NodeShape ;
+    sh:targetClass :CoordinateReferenceSystemCandidate .
+
+:CoordinateReferenceSystemShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :CoordinateReferenceSystem .
+
+:CountryCandidateShape a sh:NodeShape ;
+    sh:targetClass :CountryCandidate .
+
+:CountryShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :Country .
+
+:DepositTypeCandidateShape a sh:NodeShape ;
+    sh:targetClass :DepositTypeCandidate .
+
+:DepositTypeShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :DepositType .
+
+:DocumentShape a sh:NodeShape ;
+    sh:targetClass :Document .
+
+:EvidenceLayerShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :EvidenceLayer .
+
+:GeologyInfoShape a sh:NodeShape ;
+    sh:targetClass :GeologyInfo .
+
+:LocationInfoShape a sh:NodeShape ;
+    sh:targetClass :LocationInfo .
+
+:MappableCriteriaShape a sh:NodeShape ;
+    sh:targetClass :MappableCriteria .
+
+:MatchInfoShape a sh:NodeShape ;
+    sh:targetClass :MatchInfo .
+
+:MaterialFormCandidateShape a sh:NodeShape ;
+    sh:targetClass :MaterialFormCandidate .
+
+:MaterialFormShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :MaterialForm .
+
+:MeasureShape a sh:NodeShape ;
+    sh:targetClass :Measure .
+
+:MineralInventoryShape a sh:NodeShape ;
+    sh:targetClass :MineralInventory .
+
+:MineralSiteShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :MineralSite .
+
+:MineralSystemShape a sh:NodeShape ;
+    sh:targetClass :MineralSystem .
+
+:PageInfoShape a sh:NodeShape ;
+    sh:targetClass :PageInfo .
+
+:ReferenceShape a sh:NodeShape ;
+    sh:targetClass :Reference .
+
+:ResourceReserveCategoryCandidateShape a sh:NodeShape ;
+    sh:targetClass :ResourceReserveCategoryCandidate .
+
+:ResourceReserveCategoryShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :ResourceReserveCategory .
+
+:StateOrProvinceCandidateShape a sh:NodeShape ;
+    sh:targetClass :StateOrProvinceCandidate .
+
+:StateOrProvinceShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :StateOrProvince .
+
+:ThingHasLabelShape a sh:NodeShape ;
+    sh:targetClass :ThingHasLabel .
+
+:ThingMayHaveAltLabelShape a sh:NodeShape ;
+    sh:targetClass :ThingMayHaveAltLabel .
+
+:UnitCandidateShape a sh:NodeShape ;
+    sh:targetClass :UnitCandidate .
+
+:UnitShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:path rdfs:label ;
+            sh:severity sh:Violation ] ;
+    sh:targetClass :Unit .
+
