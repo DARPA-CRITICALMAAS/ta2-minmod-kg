@@ -24,7 +24,6 @@ services:
     args:
       path: ::CFG_DIR::extractors/mineral_site.yml
       format: turtle
-      verbose: 2
   - name: mineral system
     classpath: statickg.services.drepr.DReprService
     ext: ttl
@@ -88,7 +87,7 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  # test incremental loading
+  # # test incremental loading
   # - service: load to fuseki
   #   args:
   #     input: ::DATA_DIR::*/**/*.ttl

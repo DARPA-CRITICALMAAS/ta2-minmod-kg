@@ -1473,13 +1473,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "statickg"
-version = "1.6.0"
+version = "1.6.2"
 description = "Tools for creating & running knowledge graphs from files"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "statickg-1.6.0-py3-none-any.whl", hash = "sha256:7ce85348cc595c27e5f8c4c2a1e1415c5919d63cb58418557084c90416b0d3ab"},
-    {file = "statickg-1.6.0.tar.gz", hash = "sha256:9e6039afbd842da2477e8e8dc6350d4c1d04cf97a80fbb7ff001288797ceb792"},
+    {file = "statickg-1.6.2-py3-none-any.whl", hash = "sha256:eddd5878b5b7d7f61dfba39b0eb3d0a468336044744f833714dc5c9ad3c2c1d5"},
+    {file = "statickg-1.6.2.tar.gz", hash = "sha256:9ce5addaa8ef54c202c361f508aad1c79f5be961f47f6c47e3c4c9daa6e848b7"},
 ]
 
 [package.dependencies]
@@ -1994,4 +1994,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0b754dd8bc0c52d950da48b0847f75e6c4dda01e8347e12bbed079229bd82394"
+content-hash = "91564dec09a97a71ed474ce258e3148ff1b29ee2aa532ed055ab8c0ce5d63f70"

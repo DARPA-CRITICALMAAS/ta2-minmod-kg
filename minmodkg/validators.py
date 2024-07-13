@@ -40,7 +40,7 @@ class FilenameValidatorService(BaseFileService[FilenameValidatorServiceInvokeArg
         regex = re.compile(self.args["pattern"])
 
         invalid_filenames = []
-        for infile in tqdm(infiles, desc="Validate file names", disable=verbose < 2):
+        for infile in tqdm(infiles, desc="Validate file names", disable=verbose != 1):
             if not regex.match(infile.path.stem):
                 invalid_filenames.append(infile.relpath)
 
