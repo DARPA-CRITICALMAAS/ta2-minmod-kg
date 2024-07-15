@@ -6,7 +6,7 @@ from typing import Annotated, Literal, Optional
 
 import networkx as nx
 import pandas as pd
-from fastapi import APIRouter, FastAPI, Header, HTTPException, Response
+from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Response
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
@@ -42,6 +42,7 @@ def mineral_site_grade_and_tonnage(
     norm_tonnage_unit: Optional[str] = None,
     norm_grade_unit: Optional[str] = None,
     date_precision: Literal["year", "month", "day"] = "month",
+    format: Annotated[str | None, Query()] = "json",
     accept: Annotated[str | None, Header()] = None,
 ):
     commodity = norm_commodity(commodity)
@@ -53,6 +54,9 @@ def mineral_site_grade_and_tonnage(
         date_precision=date_precision,
     )
     if accept is not None and "text/csv" in accept:
+        format = "csv"
+
+    if format == "csv":
         df = pd.DataFrame(output)
         return Response(
             df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
@@ -63,6 +67,7 @@ def mineral_site_grade_and_tonnage(
 @router.get("/mineral_site_deposit_types/{commodity}")
 def mineral_site_deposit_types(
     commodity: str,
+    format: Annotated[str | None, Query()] = "json",
     accept: Annotated[str | None, Header()] = None,
 ):
     commodity = norm_commodity(commodity)
@@ -71,6 +76,9 @@ def mineral_site_deposit_types(
         commodity,
     )
     if accept is not None and "text/csv" in accept:
+        format = "csv"
+
+    if format == "csv":
         df = pd.DataFrame(output)
         return Response(
             df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
@@ -81,6 +89,7 @@ def mineral_site_deposit_types(
 @router.get("/mineral_site_location/{commodity}")
 def mineral_site_location(
     commodity: str,
+    format: Annotated[str | None, Query()] = "json",
     accept: Annotated[str | None, Header()] = None,
 ):
     commodity = norm_commodity(commodity)
@@ -89,6 +98,9 @@ def mineral_site_location(
         commodity,
     )
     if accept is not None and "text/csv" in accept:
+        format = "csv"
+
+    if format == "csv":
         df = pd.DataFrame(output)
         return Response(
             df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
@@ -102,6 +114,7 @@ def hyper_mineral_sites(
     norm_tonnage_unit: Optional[str] = None,
     norm_grade_unit: Optional[str] = None,
     date_precision: Literal["year", "month", "day"] = "month",
+    format: Annotated[str | None, Query()] = "json",
     accept: Annotated[str | None, Header()] = None,
 ):
     commodity = norm_commodity(commodity)
@@ -113,6 +126,9 @@ def hyper_mineral_sites(
         date_precision=date_precision,
     )
     if accept is not None and "text/csv" in accept:
+        format = "csv"
+
+    if format == "csv":
         df = pd.DataFrame(output)
         return Response(
             df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
