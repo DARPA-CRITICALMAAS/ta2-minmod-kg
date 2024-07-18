@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Literal, Optional
@@ -17,7 +18,14 @@ class Doc:
     props: dict[str, str]
 
 
-class EntityLinking:
+class IEntityLinking(ABC):
+    @abstractmethod
+    def link(
+        self, query: str, has_props: Optional[dict[str, str]] = None
+    ) -> Optional[tuple[Doc, float]]: ...
+
+
+class EntityLinking(IEntityLinking):
     instances = {}
 
     def __init__(self, data_file: Path | str, format: str):

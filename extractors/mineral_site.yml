@@ -151,22 +151,22 @@ semantic_model:
       - [drepr:blank, loc_id]
       - [mno:location, location, geo:wktLiteral]
     links:
-      - [mno:crs, mno:MatchInfo:crs]
-      - [mno:state_or_province, mno:MatchInfo:state_or_province]
-      - [mno:country, mno:MatchInfo:country]
-  mno:MatchInfo:crs:
+      - [mno:crs, mno:CoordinateReferenceSystemCandidate:crs]
+      - [mno:state_or_province, mno:StateOrProvinceCandidate:state_or_province]
+      - [mno:country, mno:CountryCandidate:country]
+  mno:CoordinateReferenceSystemCandidate:crs:
     properties:
       - [mno:observed_name, crs_name]
       - [mno:normalized_uri, crs_uri, drepr:uri]
       - [mno:source, crs_source]
       - [mno:confidence, crs_confidence]
-  mno:MatchInfo:state_or_province:
+  mno:StateOrProvinceCandidate:state_or_province:
     properties:
       - [mno:observed_name, state_or_province_name]
       - [mno:normalized_uri, state_or_province_uri, drepr:uri]
       - [mno:source, state_or_province_source]
       - [mno:confidence, state_or_province_confidence]
-  mno:MatchInfo:country:
+  mno:CountryCandidate:country:
     properties:
       - [mno:observed_name, country_name]
       - [mno:normalized_uri, country_uri, drepr:uri]
@@ -193,9 +193,9 @@ semantic_model:
       - [mno:date, inv_date, xsd:date]
       - [mno:zone, inv_zone]
     links:
-      - [mno:commodity, mno:MatchInfo:commodity]
-      - [mno:material_form, mno:MatchInfo:material_form]
-      - [mno:category, mno:MatchInfo:category]
+      - [mno:commodity, mno:CommodityCandidate:commodity]
+      - [mno:material_form, mno:MaterialFormCandidate:material_form]
+      - [mno:category, mno:ResourceReserveCategoryCandidate:category]
       - [mno:ore, mno:Measure:ore]
       - [mno:grade, mno:Measure:grade]
       - [mno:cutoff_grade, mno:Measure:cutoff_grade]
@@ -205,48 +205,48 @@ semantic_model:
     properties:
       - [mno:value, ore_value, xsd:decimal]
     links:
-      - [mno:unit, mno:MatchInfo:ore_unit]
+      - [mno:unit, mno:UnitCandidate:ore_unit]
   mno:Measure:grade:
     properties:
       - [mno:value, grade_value, xsd:decimal]
     links:
-      - [mno:unit, mno:MatchInfo:grade_unit]
+      - [mno:unit, mno:UnitCandidate:grade_unit]
   mno:Measure:cutoff_grade:
     properties:
       - [mno:value, cutoff_grade_value, xsd:decimal]
     links:
-      - [mno:unit, mno:MatchInfo:cutoff_grade_unit]
-  mno:MatchInfo:category:
+      - [mno:unit, mno:UnitCandidate:cutoff_grade_unit]
+  mno:ResourceReserveCategoryCandidate:category:
     properties:
       - [mno:observed_name, category_name]
       - [mno:normalized_uri, category_uri, drepr:uri]
       - [mno:source, category_source]
       - [mno:confidence, category_confidence]
-  mno:MatchInfo:commodity:
+  mno:CommodityCandidate:commodity:
     properties:
       - [mno:observed_name, commodity_name]
       - [mno:normalized_uri, commodity_uri, drepr:uri]
       - [mno:source, commodity_source]
       - [mno:confidence, commodity_confidence]
-  mno:MatchInfo:material_form:
+  mno:MaterialFormCandidate:material_form:
     properties:
       - [mno:observed_name, material_form_name]
       - [mno:normalized_uri, material_form_uri, drepr:uri]
       - [mno:source, material_form_source]
       - [mno:confidence, material_form_confidence]
-  mno:MatchInfo:ore_unit:
+  mno:UnitCandidate:ore_unit:
     properties:
       - [mno:observed_name, ore_unit_name]
       - [mno:normalized_uri, ore_unit_uri, drepr:uri]
       - [mno:source, ore_unit_source]
       - [mno:confidence, ore_unit_confidence]
-  mno:MatchInfo:grade_unit:
+  mno:UnitCandidate:grade_unit:
     properties:
       - [mno:observed_name, grade_unit_name]
       - [mno:normalized_uri, grade_unit_uri, drepr:uri]
       - [mno:source, grade_unit_source]
       - [mno:confidence, grade_unit_confidence]
-  mno:MatchInfo:cutoff_grade_unit:
+  mno:UnitCandidate:cutoff_grade_unit:
     properties:
       - [mno:observed_name, cutoff_grade_unit_name]
       - [mno:normalized_uri, cutoff_grade_unit_uri, drepr:uri]

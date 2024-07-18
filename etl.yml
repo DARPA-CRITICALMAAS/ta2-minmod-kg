@@ -70,6 +70,8 @@ pipeline:
         output: ::DATA_DIR::mineral-sites/umn/
       - input: ::REPO::data/sri/*.json
         output: ::DATA_DIR::mineral-sites/sri/
+      - input: ::REPO::data/usc/*.json
+        output: ::DATA_DIR::mineral-sites/usc/
   - service: same as
     args:
       input: ::REPO::data/umn/sameas/*.csv
