@@ -5,6 +5,8 @@ from typing import Any, Optional, TypeVar
 
 import pandas as pd
 import requests
+import shapely.ops
+from pyproj import Transformer
 from shapely.errors import WKTReadingError
 from shapely.geometry import GeometryCollection
 from shapely.wkt import dumps, loads
@@ -185,3 +187,14 @@ def merge_wkt(series):
     else:
         # return None if there are no valid geometries
         return None
+
+
+def reproject_wkt(wkt: str, from_crs: str, to_crs: str) -> str:
+    assert from_crs.startswith("EPSG:"), from_crs
+    assert to_crs.startswith("EPSG:"), to_crs
+
+    transformer = Transformer.from_crs(
+        int(from_crs[len("EPSG:") :]), int(to_crs[len("EPSG:") :])
+    )
+
+    return dumps(shapely.ops.transform(transformer.transform, loads(wkt)))

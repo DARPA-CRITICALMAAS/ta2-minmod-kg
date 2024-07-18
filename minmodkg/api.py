@@ -13,7 +13,7 @@ from minmodkg.grade_tonnage_model import (
     ResourceCategory,
     SiteGradeTonnage,
 )
-from minmodkg.misc import group_by_key, merge_wkt, run_sparql_query
+from minmodkg.misc import group_by_key, merge_wkt, reproject_wkt, run_sparql_query
 
 """
 An endpoint to allow querying derived data from the Minmod knowledge graph.
@@ -34,6 +34,11 @@ def deposit_types():
 @router.get("/commodities")
 def commodities():
     return get_commodities(get_snapshot_id())
+
+
+@router.get("/units")
+def units():
+    return get_units(get_snapshot_id())
 
 
 @router.get("/mineral_site_grade_and_tonnage/{commodity}")
@@ -136,6 +141,24 @@ def hyper_mineral_sites(
     return output
 
 
+@router.get("/dedup_mineral_sites/{commodity}")
+def dedup_mineral_sites(
+    commodity: str,
+    norm_tonnage_unit: Optional[str] = None,
+    norm_grade_unit: Optional[str] = None,
+    date_precision: Literal["year", "month", "day"] = "month",
+):
+    commodity = norm_commodity(commodity)
+    output = get_dedup_mineral_site_data(
+        get_snapshot_id(),
+        commodity,
+        norm_tonnage_unit=norm_tonnage_unit,
+        norm_grade_unit=norm_grade_unit,
+        date_precision=date_precision,
+    )
+    return output
+
+
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
     query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
     qres = run_sparql_query(query, endpoint)
@@ -190,6 +213,19 @@ def get_commodities(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 
 
 @lru_cache(maxsize=1)
+def get_units(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+    SELECT ?uri ?name
+    WHERE {
+        ?uri a :Unit ;
+            rdfs:label ?name .
+    }
+    """
+    qres = run_sparql_query(query, endpoint)
+    return qres
+
+
+@lru_cache(maxsize=1)
 def get_deposit_types(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
     SELECT ?uri ?name ?environment ?group
@@ -202,6 +238,122 @@ def get_deposit_types(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     """
     qres = run_sparql_query(query, endpoint)
     return qres
+
+
+@lru_cache(maxsize=32)
+def get_dedup_mineral_site_data(
+    snapshot_id: str,
+    commodity: str,
+    norm_tonnage_unit=None,
+    norm_grade_unit=None,
+    date_precision: Literal["year", "month", "day"] = "month",
+    endpoint=DEFAULT_ENDPOINT,
+):
+    """This new function is going to replace `get_hyper_mineral_site_data`"""
+    site2group = get_site_group(snapshot_id, endpoint)
+    sites_info = get_mineral_site_location(
+        snapshot_id=snapshot_id, commodity=commodity, endpoint=endpoint
+    )
+    dpt_info = get_deposit_type_classification(
+        snapshot_id=snapshot_id, commodity=commodity, endpoint=endpoint
+    )
+    grade_tonnage_info = get_grade_tonnage_inventory(
+        snapshot_id=snapshot_id,
+        commodity=commodity,
+        norm_tonnage_unit=norm_tonnage_unit,
+        norm_grade_unit=norm_grade_unit,
+        date_precision=date_precision,
+        endpoint=endpoint,
+    )
+
+    # ---- 1. find top grade-tonnage per each hypersite ----
+    for record in grade_tonnage_info:
+        record["group_id"] = site2group[record["ms"]]
+    group2best_gt = {}
+    for group_id, lst in group_by_key(grade_tonnage_info, "group_id").items():
+        # group by 'group_id' and find the entry with the highest 'tot_contained_metal'
+        lst = [x for x in lst if x["tot_contained_metal"] is not None]
+        if len(lst) == 0:
+            continue
+        group2best_gt[group_id] = max(lst, key=lambda x: x["tot_contained_metal"])
+
+    # ---- 2. find top deposit type per each hypersite ----
+    for record in dpt_info:
+        record["group_id"] = site2group[record["ms"]]
+    group2best_dpt = {}
+    for group_id, lst in group_by_key(dpt_info, "group_id").items():
+        # group by 'group_id' and find the entry with the highest 'top1_deposit_classification_confidence'
+        lst = [
+            x for x in lst if x["top1_deposit_classification_confidence"] is not None
+        ]
+        if len(lst) == 0:
+            continue
+        group2best_dpt[group_id] = max(
+            lst, key=lambda x: x["top1_deposit_classification_confidence"]
+        )
+
+    # ---- 3. squash into single-row hypersites ----
+    output = []
+    for group_id, lst in group_by_key(sites_info, "group_id").items():
+        record: dict = {
+            "group_id": group_id,
+            "sites": [
+                {
+                    key: x[key]
+                    for key in [
+                        "ms",
+                        "ms_name",
+                        "ms_type",
+                        "ms_rank",
+                        "country",
+                        "state_or_province",
+                    ]
+                }
+                for x in lst
+            ],
+            "commodity": commodity,
+        }
+
+        crs_wkts = [
+            (x["loc_crs"], x["loc_wkt"]) for x in lst if x["loc_wkt"] is not None
+        ]
+        if len(crs_wkts) > 0:
+            crs, wkt = merge_wkts(crs_wkts)
+            record["loc_crs"] = crs
+            record["loc_wkt"] = wkt
+        else:
+            record["loc_crs"] = None
+            record["loc_wkt"] = None
+
+        for key in ["tot_contained_metal", "total_tonnage", "total_grade"]:
+            if group_id not in group2best_gt:
+                record[key] = None
+            else:
+                record[key] = group2best_gt[group_id][key]
+
+        record["total_contained_metal"] = record.pop("tot_contained_metal")
+        record["total_contained_metal_unit"] = norm_tonnage_unit
+        record["total_tonnage_unit"] = norm_tonnage_unit
+        record["total_grade_unit"] = norm_grade_unit
+
+        if group_id not in group2best_dpt:
+            record["deposit_types"] = []
+        else:
+            _tmp = group2best_dpt[group_id]
+            record["deposit_types"] = [
+                {
+                    "name": _tmp[f"top{k}_deposit_type"],
+                    "group": _tmp[f"top{k}_deposit_group"],
+                    "environment": _tmp[f"top{k}_deposit_environment"],
+                    "confidence": _tmp[f"top{k}_deposit_classification_confidence"],
+                    "source": _tmp[f"top{k}_deposit_classification_source"],
+                }
+                for k in range(1, 6)
+                if _tmp[f"top{k}_deposit_type"] is not None
+            ]
+
+        output.append(record)
+    return output
 
 
 @lru_cache(maxsize=32)
@@ -704,6 +856,34 @@ def fmt_grade_tonnage(
         record["total_grade"] = grade_tonnage.get_total_reserve_grade(norm_grade_unit)
 
     return record
+
+
+def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
+    """Merge a list of WKTS with potentially different CRS into a single WKT"""
+    norm_lst: list[tuple[str, str]] = [(crs or "EPSG:4326", wkt) for crs, wkt in lst]
+    all_crs = set(x[0] for x in norm_lst)
+    if len(all_crs) == 0:
+        norm_crs = ""
+    elif len(all_crs) == 1:
+        norm_crs = all_crs.pop()
+    else:
+        if "EPSG:4326" in all_crs:
+            norm_crs = "EPSG:4326"
+        else:
+            norm_crs = all_crs.pop()
+
+        # we convert everything to norm_crs
+        norm_lst = [(crs, reproject_wkt(wkt, crs, norm_crs)) for crs, wkt in norm_lst]
+
+    # all CRS are the same
+    wkts = sorted({x[1] for x in norm_lst})
+    if len(wkts) > 1:
+        wkt = merge_wkt(wkts)
+        if wkt is None:
+            wkt = ""
+    else:
+        wkt = wkts[0]
+    return norm_crs, wkt
 
 
 app.include_router(router)
