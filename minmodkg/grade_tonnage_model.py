@@ -178,6 +178,8 @@ class GradeTonnageModel:
         ]  # %YYYY-%MM-%DD: this allow us to group by and sort by date without parsing it
         zone: Optional[str]
         category: list[str]
+        # if available, is a factor that helps to convert data from the material form to the original form
+        material_form_conversion: Optional[float]
         ore_value: float
         ore_unit: str
         grade_value: float
@@ -219,6 +221,11 @@ class GradeTonnageModel:
                     except UnconvertibleUnitError as e:
                         # the data is broken, so we skip it
                         continue
+
+                    # check if the numbers are for a different material form
+                    if inv.material_form_conversion is not None:
+                        ore *= inv.material_form_conversion
+                        grade *= inv.material_form_conversion
 
                     cat = frozenset(inv.category)
                     if not (cat.issubset(resource_cat) or cat.issubset(reserve_cat)):

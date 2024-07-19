@@ -46,7 +46,7 @@ services:
   - name: validate filename
     classpath: minmodkg.validators.FilenameValidatorService
     args:
-      pattern: ^[a-zA-Z0-9_\-]+$
+      pattern: ^[a-zA-Z0-9_\-,]+$
 pipeline:
   - service: validate filename
     args:

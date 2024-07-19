@@ -21,9 +21,17 @@ An endpoint to allow querying derived data from the Minmod knowledge graph.
 app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
 DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
 MNR_NS = "https://minmod.isi.edu/resource/"
+
+resource_rounter = APIRouter(prefix="/resource")
 router = APIRouter(
     prefix="/api/v1",
 )
+
+
+@router.get("/resource/{resource_id}")
+def get_resource(resource_id: str):
+    query = f"SELECT ? ?o WHERE {{ mnr:{resource_id} ?p ?o }}"
+    return run_sparql_query(query, DEFAULT_ENDPOINT)
 
 
 @router.get("/deposit_types")
@@ -711,6 +719,7 @@ def get_grade_tonnage_inventory(
         ?mi_cat
         ?mi_date
         ?mi_zone
+        ?mi_form_conversion
 
         ?mi_ore_value
         ?mi_ore_unit
@@ -729,6 +738,8 @@ def get_grade_tonnage_inventory(
                 :value ?mi_ore_value ;
                 :unit/:normalized_uri ?mi_ore_unit 
             ] .
+
+        OPTIONAL { ?mi :material_form/:normalized_uri/:conversion ?mi_form_conversion . }
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
         OPTIONAL { 
@@ -772,6 +783,7 @@ def get_grade_tonnage_inventory(
             "doc",
             "mi_zone",
             "mi_date",
+            "mi_form_conversion",
         ],
     )
     # compute grade & tonnage for each mineral site
@@ -786,6 +798,7 @@ def get_grade_tonnage_inventory(
                     date=inv_props[0]["mi_date"],
                     zone=inv_props[0]["mi_zone"],
                     category=[x["mi_cat"] for x in inv_props],
+                    material_form_conversion=inv_props[0]["mi_form_conversion"],
                     ore_value=inv_props[0]["mi_ore_value"],
                     ore_unit=inv_props[0]["mi_ore_unit"],
                     grade_value=inv_props[0]["mi_grade_value"],
@@ -886,4 +899,5 @@ def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
     return norm_crs, wkt
 
 
+app.include_router(router)
 app.include_router(router)
