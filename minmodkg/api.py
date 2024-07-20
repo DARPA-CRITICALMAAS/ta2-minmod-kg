@@ -81,7 +81,7 @@ def render_entity(subj: URIRef):
             return next(g.objects(subj, RDFS.label))
         return subj.n3(g.namespace_manager)
 
-    def make_tree(g, subj: URIRef | BNode | RDFLiteral):
+    def make_tree(g, subj: URIRef | BNode | RDFLiteral, visited: set):
         if isinstance(subj, RDFLiteral):
             return H.p(subj)
         if isinstance(subj, URIRef):
@@ -91,11 +91,15 @@ def render_entity(subj: URIRef):
 
             return H.a(href=subj)(subj_name)
 
+        if subj in visited:
+            return H.p("skiped as visited before")
+
+        visited.add(subj)
         assert isinstance(subj, BNode)
         children = []
         for p, o in g.predicate_objects(subj):
             if p != RDFS.label:
-                children.append((H.a(href=p)(label(g, p)), make_tree(g, o)))
+                children.append((H.a(href=p)(label(g, p)), make_tree(g, o, visited)))
 
         return (
             H.table(_class="table")(
@@ -114,7 +118,7 @@ def render_entity(subj: URIRef):
     children = []
     for p, o in g.predicate_objects(subj):
         if p != RDFS.label:
-            children.append((H.a(href=p)(label(g, p)), make_tree(g, o)))
+            children.append((H.a(href=p)(label(g, p)), make_tree(g, o, set())))
 
     tree = H.div(_class="container-fluid")(
         H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(
