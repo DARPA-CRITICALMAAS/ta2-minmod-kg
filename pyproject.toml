@@ -13,6 +13,7 @@ statickg = "^1.6.3"
 fastapi = "^0.111.0"
 networkx = "^2.8.8"
 httpx = "^0.27.0"
+htbuilder = "^0.6.2"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

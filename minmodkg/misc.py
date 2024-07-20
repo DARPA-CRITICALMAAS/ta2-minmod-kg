@@ -136,7 +136,16 @@ def run_sparql_query(
             }:
                 for i, row in enumerate(qres):
                     if key in row:
-                        output[i][key] = int(row[key]["value"])
+                        try:
+                            output[i][key] = int(row[key]["value"])
+                        except ValueError:
+                            # we think it's an integer but it's not, so we don't attempt to parse this column
+                            for i, row in enumerate(qres):
+                                if key in row:
+                                    output[i][key] = row[key]["value"]
+                                else:
+                                    output[i][key] = None
+                            break
                     else:
                         output[i][key] = None
             elif val["datatype"] in {

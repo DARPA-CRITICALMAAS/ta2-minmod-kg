@@ -122,9 +122,9 @@ def upload_ta2_output(commodity: str, norm_tonnage_unit: str, norm_grade_unit: s
 
 if __name__ == "__main__":
     # replace_deposit_types()
-    # CDRHelper.truncate(CDRHelper.DedupSites)
-    # for commodity in ["zinc", "nickel", "copper", "cobalt"]:
-    for commodity in ["lithium"]:
+    CDRHelper.truncate(CDRHelper.DedupSites)
+    for commodity in ["zinc", "nickel", "cobalt", "lithium", "copper"]:
+        # for commodity in ["lithium"]:
         upload_ta2_output(
             commodity, norm_tonnage_unit=Mt_unit, norm_grade_unit=percent_unit
         )

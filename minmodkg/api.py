@@ -4,16 +4,27 @@ import os
 from functools import lru_cache
 from typing import Annotated, Literal, Optional
 
+import htbuilder as H
 import networkx as nx
 import pandas as pd
 from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Response
+from fastapi.responses import HTMLResponse
 from minmodkg.grade_tonnage_model import (
     GradeTonnageEstimate,
     GradeTonnageModel,
     ResourceCategory,
     SiteGradeTonnage,
 )
-from minmodkg.misc import group_by_key, merge_wkt, reproject_wkt, run_sparql_query
+from minmodkg.misc import (
+    group_by_key,
+    merge_wkt,
+    reproject_wkt,
+    run_sparql_query,
+    send_sparql_query,
+)
+from rdflib import RDFS, BNode, Graph
+from rdflib import Literal as RDFLiteral
+from rdflib import URIRef
 
 """
 An endpoint to allow querying derived data from the Minmod knowledge graph.
@@ -21,17 +32,115 @@ An endpoint to allow querying derived data from the Minmod knowledge graph.
 app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
 DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
 MNR_NS = "https://minmod.isi.edu/resource/"
+MNO_NS = "https://minmod.isi.edu/ontology/"
 
-resource_rounter = APIRouter(prefix="/resource")
+resource_router = APIRouter(prefix="/resource")
 router = APIRouter(
     prefix="/api/v1",
 )
 
 
-@router.get("/resource/{resource_id}")
+@resource_router.get("/{resource_id}")
 def get_resource(resource_id: str):
-    query = f"SELECT ? ?o WHERE {{ mnr:{resource_id} ?p ?o }}"
-    return run_sparql_query(query, DEFAULT_ENDPOINT)
+    g = Graph()
+    resp = send_sparql_query(
+        """
+    CONSTRUCT { 
+        ?a ?b ?c . 
+        ?s ?p ?o . 
+        ?c rdfs:label ?cname .
+        ?o rdfs:label ?oname .
+    }
+    WHERE {
+        ?a ?b ?c .
+        OPTIONAL { ?c rdfs:label ?cname . }
+        ?a (<>|!<>)* ?s . 
+        FILTER (isBlank(?s)) .
+        ?s ?p ?o .
+        OPTIONAL { ?o rdfs:label ?oname . }
+        VALUES ?a { %s } 
+    }
+"""
+        % f"mnr:{resource_id}"
+    )
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    g.parse(data=resp.text, format="turtle")
+
+    def make_tree(g, subj: URIRef | BNode | RDFLiteral):
+        if isinstance(subj, RDFLiteral):
+            return H.p(subj)
+        if isinstance(subj, URIRef):
+            subj_name = subj.n3(g.namespace_manager)
+            if (subj, RDFS.label, None) in g:
+                subj_name = next(g.objects(subj, RDFS.label))
+
+            return H.a(href=subj)(subj_name)
+
+        assert isinstance(subj, BNode)
+        children = []
+        for p, o in g.predicate_objects(subj):
+            if p != RDFS.label:
+                children.append((H.p(p.n3(g.namespace_manager)), make_tree(g, o)))
+
+        return (
+            H.table(_class="table")(
+                *[
+                    H.tr(
+                        H.td(p),
+                        H.td(o),
+                    )
+                    for p, o in children
+                ]
+            ),
+        )
+
+    subj = URIRef(MNR_NS + resource_id)
+    resource_name = resource_id
+    if (subj, RDFS.label, None) in g:
+        resource_name = next(g.objects(subj, RDFS.label))
+
+    children = []
+    for p, o in g.predicate_objects(subj):
+        if p != RDFS.label:
+            children.append((H.p(p.n3(g.namespace_manager)), make_tree(g, o)))
+
+    tree = H.div(_class="container-fluid")(
+        H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(
+            H.div(_class="col")(
+                H.h4(
+                    H.a(href=subj)(resource_name),
+                ),
+                H.small(_class="text-muted fw-semibold")(subj),
+            )
+        ),
+        H.table(_class="table table-striped")(
+            *[
+                H.tr(
+                    H.td(p),
+                    H.td(o),
+                )
+                for p, o in children
+            ]
+        ),
+    )
+    return HTMLResponse(
+        content=f"""
+<html>
+    <head>
+        <title>{resource_name}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    </head>
+    <body>
+        {tree}
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    </body>
+</html>
+                        """,
+        status_code=200,
+    )
+    # return Response(g.serialize(format="json-ld"), media_type="application/ld+json")
 
 
 @router.get("/deposit_types")
@@ -899,5 +1008,5 @@ def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
     return norm_crs, wkt
 
 
-app.include_router(router)
+app.include_router(resource_router)
 app.include_router(router)

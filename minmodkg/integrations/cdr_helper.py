@@ -27,8 +27,8 @@ else:
     keyfile = Path(os.path.expanduser("~/.config/cdr.key"))
     assert keyfile.exists()
     AUTH_TOKEN = keyfile.read_text().strip()
-# MINMOD_API = "https://minmod.isi.edu/api/v1"
-MINMOD_API = "http://localhost:8000/api/v1"
+MINMOD_API = "https://minmod.isi.edu/api/v1"
+# MINMOD_API = "http://localhost:8000/api/v1"
 MINMOD_SYSTEM = "minmod"
 CDR_API = "https://api.cdr.land/v1"
 
