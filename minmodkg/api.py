@@ -31,17 +31,19 @@ An endpoint to allow querying derived data from the Minmod knowledge graph.
 """
 app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
 DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
+# DEFAULT_ENDPOINT = os.environ.get(
+#     "SPARQL_ENDPOINT", "http://localhost:3030/minmod/sparql"
+# )
 MNR_NS = "https://minmod.isi.edu/resource/"
 MNO_NS = "https://minmod.isi.edu/ontology/"
 
-resource_router = APIRouter(prefix="/resource")
+rdf_view_router = APIRouter()
 router = APIRouter(
     prefix="/api/v1",
 )
 
 
-@resource_router.get("/{resource_id}")
-def get_resource(resource_id: str):
+def render_entity(subj: URIRef):
     g = Graph()
     resp = send_sparql_query(
         """
@@ -50,22 +52,34 @@ def get_resource(resource_id: str):
         ?s ?p ?o . 
         ?c rdfs:label ?cname .
         ?o rdfs:label ?oname .
+        ?p rdfs:label ?pname .
+        ?b rdfs:label ?bname .
     }
     WHERE {
         ?a ?b ?c .
         OPTIONAL { ?c rdfs:label ?cname . }
-        ?a (<>|!<>)* ?s . 
-        FILTER (isBlank(?s)) .
-        ?s ?p ?o .
-        OPTIONAL { ?o rdfs:label ?oname . }
+        OPTIONAL { ?b rdfs:label ?bname . }
+        OPTIONAL { 
+            ?a (<>|!<>)* ?s . 
+            FILTER (isBlank(?s)) .
+            ?s ?p ?o .
+            OPTIONAL { ?o rdfs:label ?oname . }
+            OPTIONAL { ?p rdfs:label ?pname .}
+        }
         VALUES ?a { %s } 
     }
 """
-        % f"mnr:{resource_id}"
+        % f"<{subj}>",
+        endpoint=DEFAULT_ENDPOINT,
     )
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     g.parse(data=resp.text, format="turtle")
+
+    def label(g, subj: URIRef | BNode):
+        if (subj, RDFS.label, None) in g:
+            return next(g.objects(subj, RDFS.label))
+        return subj.n3(g.namespace_manager)
 
     def make_tree(g, subj: URIRef | BNode | RDFLiteral):
         if isinstance(subj, RDFLiteral):
@@ -81,7 +95,7 @@ def get_resource(resource_id: str):
         children = []
         for p, o in g.predicate_objects(subj):
             if p != RDFS.label:
-                children.append((H.p(p.n3(g.namespace_manager)), make_tree(g, o)))
+                children.append((H.a(href=p)(label(g, p)), make_tree(g, o)))
 
         return (
             H.table(_class="table")(
@@ -95,21 +109,18 @@ def get_resource(resource_id: str):
             ),
         )
 
-    subj = URIRef(MNR_NS + resource_id)
-    resource_name = resource_id
-    if (subj, RDFS.label, None) in g:
-        resource_name = next(g.objects(subj, RDFS.label))
+    subj_label = label(g, subj)
 
     children = []
     for p, o in g.predicate_objects(subj):
         if p != RDFS.label:
-            children.append((H.p(p.n3(g.namespace_manager)), make_tree(g, o)))
+            children.append((H.a(href=p)(label(g, p)), make_tree(g, o)))
 
     tree = H.div(_class="container-fluid")(
         H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(
             H.div(_class="col")(
                 H.h4(
-                    H.a(href=subj)(resource_name),
+                    H.a(href=subj)(subj_label),
                 ),
                 H.small(_class="text-muted fw-semibold")(subj),
             )
@@ -128,8 +139,9 @@ def get_resource(resource_id: str):
         content=f"""
 <html>
     <head>
-        <title>{resource_name}</title>
+        <title>{subj_label}</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <style>a {{ text-decoration: none; }}</style>
     </head>
     <body>
         {tree}
@@ -140,7 +152,16 @@ def get_resource(resource_id: str):
                         """,
         status_code=200,
     )
-    # return Response(g.serialize(format="json-ld"), media_type="application/ld+json")
+
+
+@rdf_view_router.get("/resource/{resource_id}")
+def get_resource(resource_id: str):
+    return render_entity(URIRef(MNR_NS + resource_id))
+
+
+@rdf_view_router.get("/ontology/{resource_id}")
+def get_ontology(resource_id: str):
+    return render_entity(URIRef(MNO_NS + resource_id))
 
 
 @router.get("/deposit_types")
@@ -1008,5 +1029,5 @@ def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
     return norm_crs, wkt
 
 
-app.include_router(resource_router)
+app.include_router(rdf_view_router)
 app.include_router(router)

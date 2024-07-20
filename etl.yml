@@ -84,6 +84,10 @@ pipeline:
     args:
       input: ::REPO::data/usc/*.ttl
       output: ::DATA_DIR::usc/
+  - service: copy
+    args:
+      input: ::CFG_DIR::schema/ontology.ttl
+      output: "::DATA_DIR::"
   - service: version
     args:
       entity: https://minmod.isi.edu/resource/kg
@@ -108,7 +112,9 @@ pipeline:
   #       dbdir: "::DB_DIR::"
   - service: load to fuseki
     args:
-      input: ::DATA_DIR::*/**/*.ttl
+      input:
+        - ::DATA_DIR::*/**/*.ttl
+        - ::DATA_DIR::ontology.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
         update: /minmod/update
