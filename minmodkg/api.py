@@ -92,7 +92,7 @@ def render_entity(subj: URIRef):
             return H.a(href=subj)(subj_name)
 
         if subj in visited:
-            return H.p("skiped as visited before")
+            return H.p(style="font-style: italic")("skiped as visited before")
 
         visited.add(subj)
         assert isinstance(subj, BNode)
