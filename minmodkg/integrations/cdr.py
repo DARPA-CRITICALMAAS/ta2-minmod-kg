@@ -56,7 +56,12 @@ def replace_deposit_types():
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
 
 
-def upload_ta2_output(commodity: str, norm_tonnage_unit: str, norm_grade_unit: str):
+def upload_ta2_output(
+    commodity: str,
+    norm_tonnage_unit: str,
+    norm_grade_unit: str,
+    no_upload: bool = False,
+):
     resp = httpx.get(
         f"{MINMOD_API}/dedup_mineral_sites/{commodity}",
         params={
@@ -67,6 +72,9 @@ def upload_ta2_output(commodity: str, norm_tonnage_unit: str, norm_grade_unit: s
         timeout=None,
     )
     resp.raise_for_status()
+
+    if no_upload:
+        return
 
     dedup_sites = resp.json()
 
@@ -122,9 +130,46 @@ def upload_ta2_output(commodity: str, norm_tonnage_unit: str, norm_grade_unit: s
 
 if __name__ == "__main__":
     # replace_deposit_types()
-    CDRHelper.truncate(CDRHelper.DedupSites)
-    for commodity in ["zinc", "nickel", "cobalt", "lithium", "copper"]:
-        # for commodity in ["lithium"]:
+    # CDRHelper.truncate(CDRHelper.DedupSites)
+
+    commodities = [
+        # "Zinc",
+        # "Nickel",
+        # "Cobalt",
+        # "Lithium",
+        # "Copper",
+        "Scandium",
+        "Lanthanum",
+        "Cerium",
+        "Yttrium",
+        "Praseodymium",
+        "Neoymium",
+        "Samarium",
+        "Europium",
+        "Terbium",
+        "Gadolinium",
+        "Ytterbium",
+        "Dysprosium",
+        "Thulium",
+        "Lutetium",
+        "Holmium",
+        "Erbium",
+    ]
+
+    for commodity in tqdm(commodities):
         upload_ta2_output(
-            commodity, norm_tonnage_unit=Mt_unit, norm_grade_unit=percent_unit
+            commodity,
+            norm_tonnage_unit=Mt_unit,
+            norm_grade_unit=percent_unit,
+            no_upload=True,
+        )
+
+    CDRHelper.truncate(CDRHelper.DedupSites)
+
+    for commodity in tqdm(commodities):
+        upload_ta2_output(
+            commodity,
+            norm_tonnage_unit=Mt_unit,
+            norm_grade_unit=percent_unit,
+            no_upload=False,
         )

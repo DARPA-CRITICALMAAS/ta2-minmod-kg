@@ -656,7 +656,15 @@ def get_mineral_site_location(
     """
         % f"mnr:{commodity}"
     )
-    qres = run_sparql_query(query, endpoint)
+    qres = run_sparql_query(
+        query,
+        endpoint,
+        [
+            "ms_name",
+            "ms_type",
+            "ms_rank",
+        ],
+    )
 
     site2group = get_site_group(snapshot_id, endpoint)
     output = []
