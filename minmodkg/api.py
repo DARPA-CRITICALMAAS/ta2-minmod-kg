@@ -6,6 +6,7 @@ from typing import Annotated, Literal, Optional
 
 import htbuilder as H
 import networkx as nx
+import orjson
 import pandas as pd
 from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse
@@ -22,6 +23,7 @@ from minmodkg.misc import (
     run_sparql_query,
     send_sparql_query,
 )
+from minmodkg.transformations import make_site_uri
 from rdflib import RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -166,6 +168,11 @@ def get_resource(resource_id: str):
 @rdf_view_router.get("/ontology/{resource_id}")
 def get_ontology(resource_id: str):
     return render_entity(URIRef(MNO_NS + resource_id))
+
+
+@router.get("/get_site_uri")
+def get_site_uri(source_id: str, record_id: str):
+    return make_site_uri(source_id, record_id)
 
 
 @router.get("/deposit_types")
