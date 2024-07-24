@@ -8,6 +8,8 @@ from typing import NamedTuple, Optional
 
 import httpx
 import orjson
+import shapely
+import shapely.wkt
 import timer
 from cdr_schemas.mineral import (
     DedupSite,
@@ -84,6 +86,18 @@ def upload_ta2_output(
 
     inputs = []
     for group in dedup_sites:
+        if group["loc_wkt"] is not None:
+            assert group["loc_wkt"] != ""
+            try:
+                geometry = shapely.wkt.loads(group["loc_wkt"])
+            except shapely.errors.GEOSException:
+                # attempt fixing error
+                print("Invalid WKT", group["loc_wkt"])
+                raise
+            centroid = shapely.wkt.dumps(shapely.centroid(geometry))
+        else:
+            centroid = ""
+
         inputs.append(
             orjson.loads(
                 DedupSite(
@@ -108,6 +122,7 @@ def upload_ta2_output(
                     grade=group["total_grade"],
                     grade_units=unit_uri2name[group["total_grade_unit"]],
                     crs=group["loc_crs"] or "",
+                    centroid=centroid,
                     geom=group["loc_wkt"],
                     deposit_type_candidate=[
                         DepositTypeCandidate(
@@ -133,11 +148,6 @@ if __name__ == "__main__":
     # CDRHelper.truncate(CDRHelper.DedupSites)
 
     commodities = [
-        # "Zinc",
-        # "Nickel",
-        # "Cobalt",
-        # "Lithium",
-        # "Copper",
         "Scandium",
         "Lanthanum",
         "Cerium",
@@ -154,17 +164,22 @@ if __name__ == "__main__":
         "Lutetium",
         "Holmium",
         "Erbium",
+        "Zinc",
+        "Nickel",
+        "Cobalt",
+        "Lithium",
+        "Copper",
     ]
 
-    for commodity in tqdm(commodities):
-        upload_ta2_output(
-            commodity,
-            norm_tonnage_unit=Mt_unit,
-            norm_grade_unit=percent_unit,
-            no_upload=True,
-        )
+    # for commodity in tqdm(commodities):
+    #     upload_ta2_output(
+    #         commodity,
+    #         norm_tonnage_unit=Mt_unit,
+    #         norm_grade_unit=percent_unit,
+    #         no_upload=True,
+    #     )
 
-    CDRHelper.truncate(CDRHelper.DedupSites)
+    # CDRHelper.truncate(CDRHelper.DedupSites)
 
     for commodity in tqdm(commodities):
         upload_ta2_output(
