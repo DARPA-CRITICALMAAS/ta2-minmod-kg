@@ -29,7 +29,7 @@ from minmodkg.integrations.cdr_helper import (
     CDRHelper,
     MinmodHelper,
 )
-from minmodkg.misc import MNR_NS, batch, run_sparql_query
+from minmodkg.misc import MNR_NS, batch, reproject_wkt, run_sparql_query
 from tqdm import tqdm
 
 
@@ -95,6 +95,9 @@ def upload_ta2_output(
                 print("Invalid WKT", group["loc_wkt"])
                 raise
             centroid = shapely.wkt.dumps(shapely.centroid(geometry))
+            if group["loc_crs"] is not None:
+                assert group["loc_crs"] != ""
+                centroid = reproject_wkt(centroid, group["loc_crs"], "EPSG:4326")
         else:
             centroid = ""
 
@@ -171,15 +174,15 @@ if __name__ == "__main__":
         "Copper",
     ]
 
-    # for commodity in tqdm(commodities):
-    #     upload_ta2_output(
-    #         commodity,
-    #         norm_tonnage_unit=Mt_unit,
-    #         norm_grade_unit=percent_unit,
-    #         no_upload=True,
-    #     )
+    for commodity in tqdm(commodities):
+        upload_ta2_output(
+            commodity,
+            norm_tonnage_unit=Mt_unit,
+            norm_grade_unit=percent_unit,
+            no_upload=True,
+        )
 
-    # CDRHelper.truncate(CDRHelper.DedupSites)
+    CDRHelper.truncate(CDRHelper.DedupSites)
 
     for commodity in tqdm(commodities):
         upload_ta2_output(

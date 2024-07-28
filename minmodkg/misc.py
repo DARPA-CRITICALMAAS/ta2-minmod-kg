@@ -202,6 +202,9 @@ def reproject_wkt(wkt: str, from_crs: str, to_crs: str) -> str:
     assert from_crs.startswith("EPSG:"), from_crs
     assert to_crs.startswith("EPSG:"), to_crs
 
+    if from_crs == to_crs:
+        return wkt
+
     transformer = Transformer.from_crs(
         int(from_crs[len("EPSG:") :]), int(to_crs[len("EPSG:") :])
     )

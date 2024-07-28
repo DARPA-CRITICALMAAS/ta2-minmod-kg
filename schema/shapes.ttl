@@ -1,7 +1,5 @@
 @prefix : <https://minmod.isi.edu/ontology/> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 :BoundingBoxShape a sh:NodeShape ;
     sh:targetClass :BoundingBox .
@@ -9,51 +7,22 @@
 :CommodityCandidateShape a sh:NodeShape ;
     sh:targetClass :CommodityCandidate .
 
-:CommodityShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
-    sh:targetClass :Commodity .
-
 :CoordinateReferenceSystemCandidateShape a sh:NodeShape ;
     sh:targetClass :CoordinateReferenceSystemCandidate .
 
-:CoordinateReferenceSystemShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
-    sh:targetClass :CoordinateReferenceSystem .
-
 :CountryCandidateShape a sh:NodeShape ;
     sh:targetClass :CountryCandidate .
-
-:CountryShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
-    sh:targetClass :Country .
 
 :DepositTypeCandidateShape a sh:NodeShape ;
     sh:targetClass :DepositTypeCandidate .
 
 :DepositTypeShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
     sh:targetClass :DepositType .
 
 :DocumentShape a sh:NodeShape ;
     sh:targetClass :Document .
 
 :EvidenceLayerShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
     sh:targetClass :EvidenceLayer .
 
 :GeologyInfoShape a sh:NodeShape ;
@@ -72,10 +41,6 @@
     sh:targetClass :MaterialFormCandidate .
 
 :MaterialFormShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
     sh:targetClass :MaterialForm .
 
 :MeasureShape a sh:NodeShape ;
@@ -85,10 +50,6 @@
     sh:targetClass :MineralInventory .
 
 :MineralSiteShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
     sh:targetClass :MineralSite .
 
 :MineralSystemShape a sh:NodeShape ;
@@ -103,36 +64,341 @@
 :ResourceReserveCategoryCandidateShape a sh:NodeShape ;
     sh:targetClass :ResourceReserveCategoryCandidate .
 
-:ResourceReserveCategoryShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
-    sh:targetClass :ResourceReserveCategory .
-
 :StateOrProvinceCandidateShape a sh:NodeShape ;
     sh:targetClass :StateOrProvinceCandidate .
-
-:StateOrProvinceShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
-            sh:severity sh:Violation ] ;
-    sh:targetClass :StateOrProvince .
-
-:ThingHasLabelShape a sh:NodeShape ;
-    sh:targetClass :ThingHasLabel .
-
-:ThingMayHaveAltLabelShape a sh:NodeShape ;
-    sh:targetClass :ThingMayHaveAltLabel .
 
 :UnitCandidateShape a sh:NodeShape ;
     sh:targetClass :UnitCandidate .
 
-:UnitShape a sh:NodeShape ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:path rdfs:label ;
+:MatchInfo :confidence [ sh:path :confidence ;
             sh:severity sh:Violation ] ;
-    sh:targetClass :Unit .
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:MineralSite :deposit_type_candidate [ sh:class :DepositTypeCandidate ;
+            sh:path :deposit_type_candidate ;
+            sh:severity sh:Violation ] ;
+    :geology_info [ sh:class :GeologyInfo ;
+            sh:path :geology_info ;
+            sh:severity sh:Violation ] ;
+    :location_info [ sh:class :LocationInfo ;
+            sh:path :location_info ;
+            sh:severity sh:Violation ] ;
+    :mineral_inventory [ sh:class :MineralInventory ;
+            sh:path :mineral_inventory ;
+            sh:severity sh:Violation ] ;
+    :record_id [ sh:path :record_id ;
+            sh:severity sh:Violation ] ;
+    :site_rank [ sh:path :site_rank ;
+            sh:severity sh:Violation ] ;
+    :site_type [ sh:path :site_type ;
+            sh:severity sh:Violation ] ;
+    :source_id [ sh:path :source_id ;
+            sh:severity sh:Violation ] .
+
+:MineralSystem :deposit_type [ sh:class :DepositType ;
+            sh:path :deposit_type ;
+            sh:severity sh:Violation ] ;
+    :energy [ sh:class :MappableCriteria ;
+            sh:path :energy ;
+            sh:severity sh:Violation ] ;
+    :outflow [ sh:class :MappableCriteria ;
+            sh:path :outflow ;
+            sh:severity sh:Violation ] ;
+    :pathway [ sh:class :MappableCriteria ;
+            sh:path :pathway ;
+            sh:severity sh:Violation ] ;
+    :preservation [ sh:class :MappableCriteria ;
+            sh:path :preservation ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] ;
+    :trap [ sh:class :MappableCriteria ;
+            sh:path :trap ;
+            sh:severity sh:Violation ] .
+
+:BoundingBox :x_max [ sh:path :x_max ;
+            sh:severity sh:Violation ] ;
+    :x_min [ sh:path :x_min ;
+            sh:severity sh:Violation ] ;
+    :y_max [ sh:path :y_max ;
+            sh:severity sh:Violation ] ;
+    :y_min [ sh:path :y_min ;
+            sh:severity sh:Violation ] .
+
+:CommodityCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:CoordinateReferenceSystemCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:CountryCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:DepositTypeCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:Document :description [ sh:path :description ;
+            sh:severity sh:Violation ] ;
+    :doi [ sh:path :doi ;
+            sh:severity sh:Violation ] ;
+    :issue [ sh:path :issue ;
+            sh:severity sh:Violation ] ;
+    :journal [ sh:path :journal ;
+            sh:severity sh:Violation ] ;
+    :month [ sh:path :month ;
+            sh:severity sh:Violation ] ;
+    :title [ sh:path :title ;
+            sh:severity sh:Violation ] ;
+    :uri [ sh:path :uri ;
+            sh:severity sh:Violation ] ;
+    :volume [ sh:path :volume ;
+            sh:severity sh:Violation ] ;
+    :year [ sh:path :year ;
+            sh:severity sh:Violation ] .
+
+:EvidenceLayer :relevance_score [ sh:path :relevance_score ;
+            sh:severity sh:Violation ] .
+
+:GeologyInfo :age [ sh:path :age ;
+            sh:severity sh:Violation ] ;
+    :comments [ sh:path :comments ;
+            sh:severity sh:Violation ] ;
+    :description [ sh:path :description ;
+            sh:severity sh:Violation ] ;
+    :environment [ sh:path :environment ;
+            sh:severity sh:Violation ] ;
+    :lithology [ sh:path :lithology ;
+            sh:severity sh:Violation ] ;
+    :process [ sh:path :process ;
+            sh:severity sh:Violation ] ;
+    :unit_name [ sh:path :unit_name ;
+            sh:severity sh:Violation ] .
+
+:LocationInfo :country [ sh:class :CountryCandidate ;
+            sh:path :country ;
+            sh:severity sh:Violation ] ;
+    :crs [ sh:class :CoordinateReferenceSystemCandidate ;
+            sh:path :crs ;
+            sh:severity sh:Violation ] ;
+    :location [ sh:path :location ;
+            sh:severity sh:Violation ] ;
+    :state_or_province [ sh:class :StateOrProvinceCandidate ;
+            sh:path :state_or_province ;
+            sh:severity sh:Violation ] .
+
+:MaterialFormCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:MineralInventory :category [ sh:class :ResourceReserveCategoryCandidate ;
+            sh:path :category ;
+            sh:severity sh:Violation ] ;
+    :commodity [ sh:class :Commodity,
+                :CommodityCandidate ;
+            sh:path :commodity ;
+            sh:severity sh:Violation ] ;
+    :contained_metal [ sh:path :contained_metal ;
+            sh:severity sh:Violation ] ;
+    :cutoff_grade [ sh:class :Measure ;
+            sh:path :cutoff_grade ;
+            sh:severity sh:Violation ] ;
+    :date [ sh:path :date ;
+            sh:severity sh:Violation ] ;
+    :grade [ sh:class :Measure ;
+            sh:path :grade ;
+            sh:severity sh:Violation ] ;
+    :material_form [ sh:class :MaterialFormCandidate ;
+            sh:path :material_form ;
+            sh:severity sh:Violation ] ;
+    :ore [ sh:class :Measure ;
+            sh:path :ore ;
+            sh:severity sh:Violation ] ;
+    :reference [ sh:class :Reference ;
+            sh:path :reference ;
+            sh:severity sh:Violation ] ;
+    :zone [ sh:path :zone ;
+            sh:severity sh:Violation ] .
+
+:PageInfo :bounding_box [ sh:class :BoundingBox ;
+            sh:path :bounding_box ;
+            sh:severity sh:Violation ] ;
+    :page [ sh:path :page ;
+            sh:severity sh:Violation ] .
+
+:ResourceReserveCategoryCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:StateOrProvinceCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:UnitCandidate :confidence [ sh:path :confidence ;
+            sh:severity sh:Violation ] ;
+    :normalized_uri [ sh:class :Commodity,
+                :CoordinateReferenceSystem,
+                :Country,
+                :DepositType,
+                :MaterialForm,
+                :ResourceReserveCategory,
+                :StateOrProvince,
+                :Unit ;
+            sh:path :normalized_uri ;
+            sh:severity sh:Violation ] ;
+    :observed_name [ sh:path :observed_name ;
+            sh:severity sh:Violation ] ;
+    :source [ sh:class :MappableCriteria ;
+            sh:path :source ;
+            sh:severity sh:Violation ] .
+
+:Reference :document [ sh:class :Document ;
+            sh:path :document ;
+            sh:severity sh:Violation ] ;
+    :page_info [ sh:class :PageInfo ;
+            sh:path :page_info ;
+            sh:severity sh:Violation ] .
+
+:Measure :unit [ sh:class :UnitCandidate ;
+            sh:path :unit ;
+            sh:severity sh:Violation ] ;
+    :value [ sh:path :value ;
+            sh:severity sh:Violation ] .
+
+:MaterialForm :conversion [ sh:path :conversion ;
+            sh:severity sh:Violation ] .
+
+:DepositType :environment [ sh:path :environment ;
+            sh:severity sh:Violation ] ;
+    :group [ sh:path :group ;
+            sh:severity sh:Violation ] ;
+    :name [ sh:path :name ;
+            sh:severity sh:Violation ] .
+
+:MappableCriteria :criteria [ sh:path :criteria ;
+            sh:severity sh:Violation ] ;
+    :potential_dataset [ sh:class :EvidenceLayer ;
+            sh:path :potential_dataset ;
+            sh:severity sh:Violation ] ;
+    :supporting_references [ sh:class :Reference ;
+            sh:path :supporting_references ;
+            sh:severity sh:Violation ] ;
+    :theoretical [ sh:path :theoretical ;
+            sh:severity sh:Violation ] .
 
