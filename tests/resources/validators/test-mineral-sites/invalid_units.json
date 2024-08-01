@@ -1,0 +1,85 @@
+{
+    "MineralSite": [
+      {
+        "source_id": "https://w3id.org/usgs/z/4530692/7NZZ8XII",
+        "record_id": 1,
+        "name": "NI 43-101 Technical Report for the Hakkira Project in Middle East, Turkey dated April 2011",
+        "location_info": {
+          "location": "MULTIPOINT(43.9833 37.5833, 42.5 37.5, 41.8963 37.0925)",
+          "crs": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q701",
+            "source": "Inferlink Extraction v1",
+            "confidence": 1.0
+          },
+          "country": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q1227",
+            "source": "Inferlink Extraction v1",
+            "confidence": 1.0
+          },
+          "state_or_province": {
+            "observed_name": "Hakkari and Sirnak Provinces",
+            "source": "Inferlink Extraction v1",
+            "confidence": 0.0
+          }
+        },
+        "mineral_inventory": [
+          {
+            "commodity": {
+              "normalized_uri": "https://minmod.isi.edu/resource/Q589",
+              "source": "Inferlink Extraction v1",
+              "confidence": 0.9
+            },
+            "category": [
+              {
+                "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+                "source": "Inferlink Extraction v1",
+                "confidence": 0.9
+              }
+            ],
+            "ore": {
+              "value": 2.41,
+              "unit": {
+                "normalized_uri": "https://minmod.isi.edu/resource/Q702",
+                "source": "Inferlink Extraction v1",
+                "confidence": 0.9
+              }
+            },
+            "grade": {
+              "value": 1.92,
+              "unit": {
+                "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+                "source": "Inferlink Extraction v1",
+                "confidence": 0.9
+              }
+            },
+            "reference": {
+              "document": {
+                "title": "NI 43-101 Technical Report for the Hakkira Project in Middle East, Turkey dated April 2011",
+                "doi": "https://w3id.org/usgs/z/4530692/7NZZ8XII",
+                "authors": [
+                  "Mike Robertson",
+                  "Mike Hall"
+                ],
+                "year": 2011,
+                "month": 4,
+                "description": "The report provides a comprehensive technical overview of the Hakkari Zinc Project, detailing geology, exploration, and resource estimation compliant with NI 43-101 standards."
+              },
+              "page_info": [
+                {}
+              ]
+            },
+            "date": "2011-4",
+            "zone": "license 5"
+          }
+        ],
+        "deposit_type_candidate": [
+          {
+            "observed_name": "Mississippi Valley Type (MVT) zinc-lead sulphide",
+            "normalized_uri": "https://minmod.isi.edu/resource/Q380",
+            "source": "report",
+            "confidence": 1.0
+          }
+        ]
+      }
+    ]
+  }

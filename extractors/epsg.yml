@@ -11,7 +11,7 @@ attributes:
 alignments:
   - type: auto
 semantic_model:
-  mno:EPSG:1:
+  mno:CoordinateReferenceSystem:1:
     properties:
       - [drepr:uri, uri]
       - [rdfs:label, name, xsd:string]
