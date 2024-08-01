@@ -29,6 +29,7 @@ semantic_model:
       - [mno:conversion, conversion, xsd:decimal]
 
   prefixes:
+    mnr: https://minmod.isi.edu/resource/
     mno: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
