@@ -318,6 +318,7 @@ if __name__ == "__main__":
                 )
                 print("::endgroup::")
             else:
-                print("Not validate file", relpath)
+                print("::group::Not validate file", relpath)
+                print("::endgroup::")
 
     app()
