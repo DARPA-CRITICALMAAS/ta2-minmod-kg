@@ -310,11 +310,13 @@ if __name__ == "__main__":
                     "test-mineral-sites/",
                 ]
             ) and relpath.endswith(".json"):
+                print("::group::Validate file", relpath)
                 validator.validate_mineral_site(
                     RelPath(
                         basetype=BaseType.DATA_DIR, basepath=datadir, relpath=relpath
                     )
                 )
+                print("::endgroup::")
             else:
                 print("Not validate file", relpath)
 
