@@ -15,7 +15,10 @@ preprocessing:
   - type: pmap
     path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document"]
     code: |
-      value['id'] = str(context.get_index())
+      if "uri" in value:
+        value["id"] = value["uri"]
+      else:
+        value['id'] = str(context.get_index())
       return value
   - type: pmap
     path: ["MineralSite", .., ["location_info"]]
