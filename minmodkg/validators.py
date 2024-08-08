@@ -238,6 +238,16 @@ class ContentValidator:
         )
         shacl_output = process.stdout.decode("utf-8")
 
+        # removing warning
+        shacl_output_lines = shacl_output.splitlines()
+        for i, line in enumerate(shacl_output_lines):
+            if not line.startswith("@prefix"):
+                assert re.match(r"\d*", line) is not None
+                assert "WARN" in line
+            else:
+                shacl_output = "\n".join(shacl_output_lines[i:])
+                break
+
         if process.returncode != 0:
             print("=" * 80, "\n", "-" * 10, "SHACL output", "-" * 10, "\n")
             print(shacl_output)
@@ -245,7 +255,14 @@ class ContentValidator:
             raise Exception("SHACL validation failed")
         else:
             g = Graph()
-            g.parse(data=shacl_output, format="turtle")
+            try:
+                g.parse(data=shacl_output, format="turtle")
+            except:
+                print("=" * 80, "\n", "-" * 10, "SHACL output", "-" * 10, "\n")
+                print(shacl_output)
+                print("=" * 80)
+                raise Exception("SHACL validation failed")
+
             for subj in g.subjects(RDF.type, SH.ValidationReport):
                 (conforms,) = list(g.objects(subj, SH.conforms))
                 if not conforms:
