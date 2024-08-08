@@ -82,10 +82,6 @@ pipeline:
       output: ::DATA_DIR::mappable-criteria/
   - service: copy
     args:
-      input: ::REPO::data/usc/*.ttl
-      output: ::DATA_DIR::usc/
-  - service: copy
-    args:
       input: ::CFG_DIR::schema/ontology.ttl
       output: "::DATA_DIR::"
   - service: version
