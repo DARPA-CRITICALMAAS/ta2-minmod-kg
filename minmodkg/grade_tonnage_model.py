@@ -43,6 +43,10 @@ class GradeTonnageEstimate:
     tonnage: float
     contained_metal: float
 
+    # def __post_init__(self):
+    #     if self.contained_metal == 0.0:
+    #         assert self.tonnage == 0.0
+
     def is_equal_or_better(self, other: GradeTonnageEstimate):
         return self.contained_metal >= other.contained_metal
 
@@ -232,12 +236,15 @@ class GradeTonnageModel:
                         # ignore errorneous data
                         continue
 
+                    norm_grade = unit_conversion(grade, norm_grade_unit, percent_unit)
+                    if norm_grade == 0.0:
+                        # ignore errorneous data
+                        continue
+
                     cat2ests[frozenset(inv.category)].append(
                         GradeTonnageEstimate(
                             tonnage=ore,
-                            contained_metal=ore
-                            * unit_conversion(grade, norm_grade_unit, percent_unit)
-                            / 100,
+                            contained_metal=ore * norm_grade / 100,
                         )
                     )
 
