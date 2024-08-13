@@ -151,6 +151,12 @@ if __name__ == "__main__":
     # CDRHelper.truncate(CDRHelper.DedupSites)
 
     commodities = [
+        "Zinc",
+        "Nickel",
+        "Cobalt",
+        "Lithium",
+        "Copper",
+        "Tungsten",
         "Scandium",
         "Lanthanum",
         "Cerium",
@@ -167,11 +173,14 @@ if __name__ == "__main__":
         "Lutetium",
         "Holmium",
         "Erbium",
-        "Zinc",
-        "Nickel",
-        "Cobalt",
-        "Lithium",
-        "Copper",
+        "Germanium",
+        "Gallium",
+        "Indium",
+        "Silver",
+        "Rhenium",
+        "Molybdenum",
+        "Tellurium",
+        "Gold",
     ]
 
     for commodity in tqdm(commodities):

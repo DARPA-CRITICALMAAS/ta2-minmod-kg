@@ -498,7 +498,7 @@ def get_dedup_mineral_site_data(
                     "source": _tmp[f"top{k}_deposit_classification_source"],
                 }
                 for k in range(1, 6)
-                if _tmp[f"top{k}_deposit_type"] is not None
+                if _tmp.get(f"top{k}_deposit_type") is not None
             ]
 
         output.append(record)
