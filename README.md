@@ -17,7 +17,7 @@ Code for TA2 Knowledge Graph and other related services such as its API, CDR int
 Setup the workspace by cloning [ta2-minmod-data](https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data) and this repository [ta2-minmod-kg](/) inside your `WORKDIR`
 
 ```bash
-git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
+git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
 git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
 mkdir kgdata
 ```
@@ -55,5 +55,6 @@ docker-compose up nginx api
 3. Upload data to CDR:
 
 ```
+export CDR_TOKEN=<your cdr token>
 python -m minmodkg.integrations.cdr
 ```
