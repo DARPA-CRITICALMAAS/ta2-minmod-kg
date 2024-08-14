@@ -12,21 +12,48 @@ Code for TA2 Knowledge Graph and other related services such as its API, CDR int
 
 ## Installation
 
-List of providing services:
+### Setup the workspace
 
-1. Graph database ([Fuseki](https://jena.apache.org/documentation/fuseki2/)): for processing SPARQL queries
-2. [API](/minmodkg/api.py)
-3. Nginx
+Setup the workspace by cloning [ta2-minmod-data](https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data) and this repository [ta2-minmod-kg](/) inside your `WORKDIR`
 
-### Docker
+```bash
+git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
+git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
+mkdir kgdata
+```
 
-Building required docker images: `USER_ID=$(id -u) GROUP_ID=$(id -g) docker-compose build`
+### Setup dependencies
 
-### Manual
+* List of services:
+  - Graph database ([Fuseki](https://jena.apache.org/documentation/fuseki2/)): for processing SPARQL queries
+  - [API](/minmodkg/api.py)
+* Install the services using Docker: `USER_ID=$(id -u) GROUP_ID=$(id -g) docker-compose build`
+* Install python library
 
-`poetry install`
+    Require [poetry](https://python-poetry.org/): `pip install poetry`
+    ```
+    cd ta2-minmod-kg
+    python -m venv .venv
+    poetry install
+    ```
 
-## Usage
+## Quick start
 
+1. Start the process that build TA2 graph database:
 
+```
+source ta2-minmod-kg/.venv/bin/activate
+python -m statickg ta2-minmod-kg/etl.yml ./kgdata ta2-minmod-data --overwrite-config --refresh 20
+```
 
+2. Start API and other services
+
+```
+docker-compose up nginx api
+```
+
+3. Upload data to CDR:
+
+```
+python -m minmodkg.integrations.cdr
+```
