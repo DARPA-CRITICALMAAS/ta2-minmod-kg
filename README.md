@@ -18,23 +18,38 @@ Setup the workspace by cloning [ta2-minmod-data](https://github.com/DARPA-CRITIC
 
 ```bash
 git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
-git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
+git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
 mkdir kgdata
 ```
 
 ### Setup dependencies
 
-* List of services:
-  - Graph database ([Fuseki](https://jena.apache.org/documentation/fuseki2/)): for processing SPARQL queries
-  - [API](/minmodkg/api.py)
-* Install the services using Docker: `USER_ID=$(id -u) GROUP_ID=$(id -g) docker-compose build`
+* Install required services using Docker:
+  
+    List of services: [graph database](https://jena.apache.org/documentation/fuseki2/) and our [API](/minmodkg/api.py)
+
+    ```
+    cd ta2-minmod-kg
+    USER_ID=$(id -u) GROUP_ID=$(id -g) docker-compose build
+    cd ..
+    ```
+    
+    On mac, use `docker compose` instead of `docker-compose`
+
+    ```
+    cd ta2-minmod-kg
+    USER_ID=$(id -u) GROUP_ID=$(id -g) docker compose build
+    cd ..
+    ```
+  
 * Install python library
 
     Require [poetry](https://python-poetry.org/): `pip install poetry`
     ```
     cd ta2-minmod-kg
     python -m venv .venv
-    poetry install
+    poetry install --only main
+    cd ..
     ```
 
 ## Quick start
