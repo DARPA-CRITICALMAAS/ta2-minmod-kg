@@ -1,3 +1,4 @@
+version: '3'
 name: minmod
 
 services:
@@ -9,10 +10,42 @@ services:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
   etl:
-    image: minmod-etl
+    image: minmod
     build: 
       context: .
       dockerfile: containers/etl/Dockerfile
       args:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
+  nginx:
+    image: minmod-nginx
+    build:
+      context: ./containers/nginx/
+    volumes:
+      - /etc/letsencrypt:/certs/
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - minmod
+  api:
+    image: minmod
+    ports:
+      - "8000:8000"
+    environment:
+      SPARQL_ENDPOINT: http://kg:3030/minmod/sparql
+    networks:
+      - minmod
+    command: fastapi run /home/criticalmaas/kg/minmodkg/api.py
+  dashboard:
+    image: toan2/minmod-dashboard
+    ports:
+      - "8050:8050"
+    networks:
+      - minmod
+    command: python ./app.py dev
+
+networks:
+  minmod:
+    name: minmod
+    external: true

@@ -21,6 +21,8 @@ RUN groupadd -f -g $GID criticalmaas && useradd -ms /bin/bash criticalmaas -u $U
 
 USER criticalmaas
 
+ENV PATH="/home/criticalmaas/.local/bin:${PATH}"
+
 # install libraries
 ADD minmodkg /home/criticalmaas/kg/minmodkg
 ADD pyproject.toml /home/criticalmaas/kg/

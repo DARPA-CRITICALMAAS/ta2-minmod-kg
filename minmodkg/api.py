@@ -33,9 +33,6 @@ An endpoint to allow querying derived data from the Minmod knowledge graph.
 """
 app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
 DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
-# DEFAULT_ENDPOINT = os.environ.get(
-#     "SPARQL_ENDPOINT", "http://localhost:3030/minmod/sparql"
-# )
 MNR_NS = "https://minmod.isi.edu/resource/"
 MNO_NS = "https://minmod.isi.edu/ontology/"
 

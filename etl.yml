@@ -138,5 +138,7 @@ pipeline:
         -d -p {PORT}:3030
         -v {DB_DIR}:/databases
         -v ::DATA_DIR::{}:/data
+        --network=minmod
+        --network-alias=kg
         minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/config.ttl
       stop_all: docker container rm -f $(docker container ls -aq --filter ancestor=minmod-fuseki)
