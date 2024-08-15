@@ -26,23 +26,24 @@ mkdir kgdata
 
 **1. Installing required services using Docker:**
   
-    List of services: [graph database](https://jena.apache.org/documentation/fuseki2/), our [API](/minmodkg/api.py), [nginx](https://nginx.org)
+List of services: [graph database](https://jena.apache.org/documentation/fuseki2/), our [API](/minmodkg/api.py), [nginx](https://nginx.org)
 
-    ```
-    cd ta2-minmod-kg
-    USER_ID=$(id -u) GROUP_ID=$(id -g) docker compose build
-    cd ..
-    ```
-  
+```
+cd ta2-minmod-kg
+USER_ID=$(id -u) GROUP_ID=$(id -g) docker compose build
+cd ..
+```
+
 **2. Installing python library**
 
-    Requiring [poetry](https://python-poetry.org/): `pip install poetry`
-    ```
-    cd ta2-minmod-kg
-    python -m venv .venv
-    poetry install --only main
-    cd ..
-    ```
+Requiring [poetry](https://python-poetry.org/): `pip install poetry`
+    
+```
+cd ta2-minmod-kg
+python -m venv .venv
+poetry install --only main
+cd ..
+```
 
 **3. Generating an SSL certificate**
 
