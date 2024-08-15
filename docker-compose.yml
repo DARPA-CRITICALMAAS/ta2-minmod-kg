@@ -22,7 +22,7 @@ services:
     build:
       context: ./containers/nginx/
     volumes:
-      - /etc/letsencrypt:/certs/
+      - ${CERT_DIR}:/certs/
     ports:
       - "80:80"
       - "443:443"
