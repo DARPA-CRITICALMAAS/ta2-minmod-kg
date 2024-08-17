@@ -30,6 +30,7 @@ List of services: [graph database](https://jena.apache.org/documentation/fuseki2
 
 ```
 cd ta2-minmod-kg
+docker network create minmod
 USER_ID=$(id -u) GROUP_ID=$(id -g) docker compose build
 cd ..
 ```
