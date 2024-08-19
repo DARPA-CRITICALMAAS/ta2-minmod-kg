@@ -442,7 +442,7 @@ def get_dedup_mineral_site_data(
             if site["ms_rank"] is None:
                 site["ms_rank"] = "U"
             if site["ms_type"] is None:
-                site["ms_type"] = "Unknown"
+                site["ms_type"] = "NotSpecified"
 
         crs_wkts = [
             (x["loc_crs"], x["loc_wkt"]) for x in lst if x["loc_wkt"] is not None
