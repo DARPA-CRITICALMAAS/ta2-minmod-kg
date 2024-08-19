@@ -25,8 +25,8 @@ mkdir kgdata
 ### Setup dependencies
 
 **1. Installing required services using Docker:**
-  
-List of services: [graph database](https://jena.apache.org/documentation/fuseki2/), our [API](/minmodkg/api.py), [nginx](https://nginx.org)
+
+List of services: [knowledge graph](https://jena.apache.org/documentation/fuseki2/), our [API](/minmodkg/api.py), [nginx](https://nginx.org)
 
 ```
 cd ta2-minmod-kg
@@ -56,7 +56,13 @@ openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha25
 
 ## Usage
 
-**1. Building TA2 graph database**
+<div align="center">
+  <img src="/docs/system-overview.png" alt="drawing" width="70%" />
+</div>
+
+The figure above denotes how different components work to produce mineral site data and grade tonnage models. The rounded rectangle are systems, blue rectangle are processes, and the parallelogram is the input source.
+
+**1. Building TA2 knowledge graph**
 
 ```
 source ta2-minmod-kg/.venv/bin/activate
