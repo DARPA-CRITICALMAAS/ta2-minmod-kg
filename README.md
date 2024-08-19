@@ -99,9 +99,8 @@ Note that this process will continue running to monitor for new changes. Hence, 
 
 **2. Starting other services**
 
-```
-cd ta2-minmod-kg
-docker compose up nginx api
+```bash
+docker compose -f ./ta2-minmod-kg/docker-compose.yml up nginx api
 ```
 
 If you also want to start our [dashboard](https://minmod.isi.edu), run `docker compose up nginx api dashboard` instead. Note that currently, URLs for TA2 services are hardcoded in the dashboard, so it will not query our local services.
