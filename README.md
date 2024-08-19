@@ -31,7 +31,7 @@ List of services: [knowledge graph](https://jena.apache.org/documentation/fuseki
 ```
 cd ta2-minmod-kg
 docker network create minmod
-USER_ID=$(id -u) GROUP_ID=$(id -g) docker compose build
+USER_ID=$(id -u) GROUP_ID=$(id -g) CERT_DIR=/tmp docker compose build
 cd ..
 ```
 
