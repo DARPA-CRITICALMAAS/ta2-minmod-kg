@@ -125,7 +125,7 @@ By default, the CDR should return all sites matched the provided two parameters.
 
 **5. Browsing the data locally**
 
-You can browse the data locally by replacing the hostname from `minmod.isi.edu` to `localhost. For example, `https://minmod.isi.edu/resource/kg` by `https://localhost/resource/kg`
+You can browse the data locally by replacing the hostname from `minmod.isi.edu` to `localhost`. For example, `https://minmod.isi.edu/resource/kg` by `https://localhost/resource/kg`
 
 **6. Querying data**
 
