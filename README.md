@@ -42,7 +42,7 @@ The following commands will use these environment variables:
 
 2. `CERT_DIR`: a directory containing SSL certificate (`fullchain.pem` and `privkey.pem`) for your server (see more at [Generating an SSL certificate](#generating-an-ssl-certificate)).
 
-To make it easy to set these environment variables, you can create a copied file named `.env` from [`.env.example`](/.env.example) and update the values accordingly. Then you can run the following command to set the environment variables:
+To make it easy to set these environment variables, you can create a copied file named `.env` from [`.env.template`](/.env.template) and update the values accordingly. Then you can run the following command to set the environment variables:
 
 ```bash
 . ./ta2-minmod-kg/.env
