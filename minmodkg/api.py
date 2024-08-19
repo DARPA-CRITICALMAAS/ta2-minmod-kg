@@ -259,40 +259,13 @@ def mineral_site_location(
     return output
 
 
-@router.get("/hyper_mineral_sites/{commodity}")
-def hyper_mineral_sites(
-    commodity: str,
-    norm_tonnage_unit: Optional[str] = None,
-    norm_grade_unit: Optional[str] = None,
-    date_precision: Literal["year", "month", "day"] = "month",
-    format: Annotated[str | None, Query()] = "json",
-    accept: Annotated[str | None, Header()] = None,
-):
-    commodity = norm_commodity(commodity)
-    output = get_hyper_mineral_site_data(
-        get_snapshot_id(),
-        commodity,
-        norm_tonnage_unit=norm_tonnage_unit,
-        norm_grade_unit=norm_grade_unit,
-        date_precision=date_precision,
-    )
-    if accept is not None and "text/csv" in accept:
-        format = "csv"
-
-    if format == "csv":
-        df = pd.DataFrame(output)
-        return Response(
-            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
-        )
-    return output
-
-
 @router.get("/dedup_mineral_sites/{commodity}")
 def dedup_mineral_sites(
     commodity: str,
     norm_tonnage_unit: Optional[str] = None,
     norm_grade_unit: Optional[str] = None,
     date_precision: Literal["year", "month", "day"] = "month",
+    format: Annotated[str | None, Query()] = "json",
 ):
     commodity = norm_commodity(commodity)
     output = get_dedup_mineral_site_data(
@@ -302,6 +275,11 @@ def dedup_mineral_sites(
         norm_grade_unit=norm_grade_unit,
         date_precision=date_precision,
     )
+    if format == "csv":
+        df = pd.DataFrame(output)
+        return Response(
+            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
+        )
     return output
 
 
@@ -497,110 +475,6 @@ def get_dedup_mineral_site_data(
                 for k in range(1, 6)
                 if _tmp.get(f"top{k}_deposit_type") is not None
             ]
-
-        output.append(record)
-    return output
-
-
-@lru_cache(maxsize=32)
-def get_hyper_mineral_site_data(
-    snapshot_id: str,
-    commodity: str,
-    norm_tonnage_unit=None,
-    norm_grade_unit=None,
-    date_precision: Literal["year", "month", "day"] = "month",
-    endpoint=DEFAULT_ENDPOINT,
-):
-    site2group = get_site_group(snapshot_id, endpoint)
-    sites_info = get_mineral_site_location(
-        snapshot_id=snapshot_id, commodity=commodity, endpoint=endpoint
-    )
-    dpt_info = get_deposit_type_classification(
-        snapshot_id=snapshot_id, commodity=commodity, endpoint=endpoint
-    )
-    grade_tonnage_info = get_grade_tonnage_inventory(
-        snapshot_id=snapshot_id,
-        commodity=commodity,
-        norm_tonnage_unit=norm_tonnage_unit,
-        norm_grade_unit=norm_grade_unit,
-        date_precision=date_precision,
-        endpoint=endpoint,
-    )
-
-    # ---- 1. find top grade-tonnage per each hypersite ----
-    for record in grade_tonnage_info:
-        record["group_id"] = site2group[record["ms"]]
-    group2best_gt = {}
-    for group_id, lst in group_by_key(grade_tonnage_info, "group_id").items():
-        # group by 'group_id' and find the entry with the highest 'tot_contained_metal'
-        lst = [x for x in lst if x["tot_contained_metal"] is not None]
-        if len(lst) == 0:
-            continue
-        group2best_gt[group_id] = max(lst, key=lambda x: x["tot_contained_metal"])
-
-    # ---- 2. find top deposit type per each hypersite ----
-    for record in dpt_info:
-        record["group_id"] = site2group[record["ms"]]
-    group2best_dpt = {}
-    for group_id, lst in group_by_key(dpt_info, "group_id").items():
-        # group by 'group_id' and find the entry with the highest 'top1_deposit_classification_confidence'
-        lst = [
-            x for x in lst if x["top1_deposit_classification_confidence"] is not None
-        ]
-        if len(lst) == 0:
-            continue
-        group2best_dpt[group_id] = max(
-            lst, key=lambda x: x["top1_deposit_classification_confidence"]
-        )
-
-    # ---- 3. squash into single-row hypersites ----
-    output = []
-    for group_id, lst in group_by_key(sites_info, "group_id").items():
-        record: dict = {"group_id": group_id}
-
-        for key in [
-            "ms",
-            "ms_name",
-            "ms_type",
-            "ms_rank",
-            "country",
-            "state_or_province",
-        ]:
-            record[key] = sorted({x[key] for x in lst if x[key] is not None})
-
-        record["loc_crs"] = list(
-            {x["loc_crs"] for x in lst if x["loc_crs"] is not None}
-        )
-        record["loc_wkt"] = sorted(
-            {x["loc_wkt"] for x in lst if x["loc_wkt"] is not None}
-        )
-        if len(record["loc_wkt"]) > 1:
-            record["loc_wkt"] = merge_wkt(record["loc_wkt"])
-
-        for key in record:
-            if isinstance(record[key], list):
-                if len(record[key]) == 1:
-                    record[key] = record[key][0]
-                elif len(record[key]) == 0:
-                    record[key] = None
-
-        for key in ["tot_contained_metal", "total_tonnage", "total_grade"]:
-            if group_id not in group2best_gt:
-                record[key] = None
-            else:
-                record[key] = group2best_gt[group_id][key]
-
-        for key in [
-            "top1_deposit_type",
-            "top1_deposit_group",
-            "top1_deposit_environment",
-            "top1_deposit_classification_confidence",
-            "top1_deposit_classification_source",
-        ]:
-            if group_id not in group2best_dpt:
-                record[key] = None
-            else:
-                record[key] = group2best_dpt[group_id][key]
 
         output.append(record)
     return output

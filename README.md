@@ -22,6 +22,40 @@ git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
 mkdir kgdata
 ```
 
+The directory will look like this
+
+    <WORKDIR>
+      ├── data                      # for storing databases
+      ├── ta2-minmod-data           # ta2-minmod-data repository
+      └── ta2-minmod-kg             # code to setup TA2 KG
+
+### Setup the environment variables
+
+The following commands will use these environment variables:
+
+1. `USER_ID` & `GROUP_ID`: the current user id, this is to make sure the docker containers will create files with the same owner as the current user. You can set the `USER_ID` and `GROUP_ID` automatically using this command:
+
+   ```
+   export USER_ID=$(id -u)
+   export GROUP_ID=$(id -g)
+   ```
+
+2. `CERT_DIR`: a directory containing SSL certificate (`fullchain.pem` and `privkey.pem`) for your server (see more at [Generating an SSL certificate](#generating-an-ssl-certificate)).
+
+To make it easy to set these environment variables, you can create a copied file named `.env` from [`.env.example`](/.env.example) and update the values accordingly. Then you can run the following command to set the environment variables:
+
+```bash
+. ./ta2-minmod-kg/.env
+```
+
+### Generating an SSL certificate
+
+You can use [Let's Encrypt](https://letsencrypt.org/) to create a free SSL certificate (`fullchain.pem` and `privkey.pem`) for your server. However, for the purpose of testing locally, you can generate your own using the following command
+
+```
+openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
+```
+
 ### Setup dependencies
 
 **1. Installing required services using Docker:**
@@ -31,7 +65,7 @@ List of services: [knowledge graph](https://jena.apache.org/documentation/fuseki
 ```
 cd ta2-minmod-kg
 docker network create minmod
-USER_ID=$(id -u) GROUP_ID=$(id -g) CERT_DIR=/tmp docker compose build
+docker compose build
 cd ..
 ```
 
@@ -44,14 +78,6 @@ cd ta2-minmod-kg
 python -m venv .venv
 poetry install --only main
 cd ..
-```
-
-**3. Generating an SSL certificate**
-
-You can use [Let's Encrypt](https://letsencrypt.org/) to create a free SSL certificate for your server. However, for the purpose of testing locally, you can generate your own using the following command
-
-```
-openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
 ```
 
 ## Usage
@@ -73,14 +99,12 @@ Note that this process will continue running to monitor for new changes. Hence, 
 
 **2. Starting other services**
 
-Let `CERT_PATH` be the directory containing your SSL certificate (`fullchain.pem` and `privkey.pem`) created in the [setup step](#installation).
-
 ```
 cd ta2-minmod-kg
-CERT_DIR=<CERT_PATH> docker compose up nginx api
+docker compose up nginx api
 ```
 
-If you also want to start our [dashboard](https://minmod.isi.edu), run `CERT_DIR=<CERT_PATH> docker compose up nginx api dashboard` instead. Note that currently, URLs for TA2 services are hardcoded in the dashboard, so it will not query our local services.
+If you also want to start our [dashboard](https://minmod.isi.edu), run `docker compose up nginx api dashboard` instead. Note that currently, URLs for TA2 services are hardcoded in the dashboard, so it will not query our local services.
 
 Once it starts, you can view our API docs in [https://localhost/api/v1/docs](https://localhost/api/v1/docs)
 
