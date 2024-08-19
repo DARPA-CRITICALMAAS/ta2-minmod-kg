@@ -38,7 +38,7 @@ cd ..
 **2. Installing python library**
 
 Requiring [poetry](https://python-poetry.org/): `pip install poetry`
-    
+
 ```
 cd ta2-minmod-kg
 python -m venv .venv
@@ -89,7 +89,7 @@ Once it starts, you can view our API docs in [https://localhost/api/v1/docs](htt
 To upload data to CDR, you need to obtain a token first. Then, run the following command:
 
 ```
-export CDR_TOKEN=<your cdr token>
+export CDR_AUTH_TOKEN=<your cdr token>
 export MINMOD_API=https://localhost/api/v1
 export MINMOD_SYSTEM=test
 python -m minmodkg.integrations.cdr
@@ -99,24 +99,29 @@ The two environment variables `MINMOD_API` and `MINMOD_SYSTEM` are used for test
 
 **4. Download data from CDR**
 
-The CDR endpoint for getting TA2 output is [https://api.cdr.land/docs#/Minerals/list_dedup_site_commodity_v1_minerals_dedup_site_search__commodity__get](https://api.cdr.land/docs#/Minerals/list_dedup_site_commodity_v1_minerals_dedup_site_search__commodity__get).
+The CDR endpoint for getting TA2 output is [https://api.cdr.land/docs#/Minerals/list_dedup_site_commodity_v1_minerals_dedup_site_search**commodity**get](https://api.cdr.land/docs#/Minerals/list_dedup_site_commodity_v1_minerals_dedup_site_search__commodity__get).
 
 There are two required parameters:
+
 - commodity: name of the commodity (capitalize, case-sensitive) e.g., `Lithium`. Here is [list of commodities](https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data/blob/main/data/entities/commodity.csv)
 - system: `minmod`
 
 By default, the CDR should return all sites matched the provided two parameters. To further filter the data for sites with deposit type classification and sites with grade/tonnage data, we can apply the following additional filters:
+
 - Site with deposit type classification: `with_location = true`, and `with_deposit_types_only = true`
 
   CURL Command:
+
   ```
   curl -X 'GET' \
   'https://api.cdr.land/v1/minerals/dedup-site/search/Lithium?with_location=true&with_deposit_types_only=true&system=minmod&top_n=1&limit=-1' \
   -H 'Authorization: Bearer <your token>'
   ```
+
 - Site with grade/tonnage data: `with_contained_metals = true`
 
   CURL Command:
+
   ```
   curl -X 'GET' \
   'https://api.cdr.land/v1/minerals/dedup-site/search/Lithium?with_contained_metals=true&system=minmod&top_n=1&limit=-1' \

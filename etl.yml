@@ -120,6 +120,8 @@ pipeline:
           -d -p {PORT}:3030
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
+          --network=minmod
+          --network-alias=kg
           minmod-fuseki fuseki/fuseki-server --config=fuseki/config.ttl
         stop: docker stop {ID} && docker rm {ID}
         find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
