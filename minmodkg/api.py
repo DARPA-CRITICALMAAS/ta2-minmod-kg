@@ -276,6 +276,9 @@ def dedup_mineral_sites(
         date_precision=date_precision,
     )
     if format == "csv":
+        for x in output:
+            x["sites"] = orjson.dumps(x["sites"]).decode()
+            x["deposit_types"] = orjson.dumps(x["deposit_types"]).decode()
         df = pd.DataFrame(output)
         return Response(
             df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
