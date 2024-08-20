@@ -445,12 +445,17 @@ def get_dedup_mineral_site_data(
                 site["ms_type"] = "NotSpecified"
 
         crs_wkts = [
-            (x["loc_crs"], x["loc_wkt"]) for x in lst if x["loc_wkt"] is not None
+            (rank_source(x["ms"]), x["loc_crs"], x["loc_wkt"])
+            for x in lst
+            if x["loc_wkt"] is not None
         ]
         if len(crs_wkts) > 0:
-            crs, wkt = merge_wkts(crs_wkts)
+            best_crs, best_wkt = merge_wkts(crs_wkts)
+            crs, wkt = merge_wkts(crs_wkts, min_rank=-1)
             record["loc_crs"] = crs
             record["loc_wkt"] = wkt
+            record["best_loc_crs"] = best_crs
+            record["best_loc_wkt"] = best_wkt
         else:
             record["loc_crs"] = None
             record["loc_wkt"] = None
@@ -897,9 +902,15 @@ def fmt_grade_tonnage(
     return record
 
 
-def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
+def merge_wkts(
+    lst: list[tuple[int, Optional[str], str]], min_rank: Optional[int] = None
+) -> tuple[str, str]:
     """Merge a list of WKTS with potentially different CRS into a single WKT"""
-    norm_lst: list[tuple[str, str]] = [(crs or "EPSG:4326", wkt) for crs, wkt in lst]
+    if min_rank is None:
+        min_rank = max(x[0] for x in lst)
+    norm_lst: list[tuple[str, str]] = [
+        (crs or "EPSG:4326", wkt) for rank, crs, wkt in lst if rank >= min_rank
+    ]
     all_crs = set(x[0] for x in norm_lst)
     if len(all_crs) == 0:
         norm_crs = ""
@@ -923,6 +934,24 @@ def merge_wkts(lst: list[tuple[Optional[str], str]]) -> tuple[str, str]:
     else:
         wkt = wkts[0]
     return norm_crs, wkt
+
+
+def rank_source(source_id: str) -> int:
+    """Get ranking of a source, higher is better"""
+    default_score = 5
+    order = [
+        ("https://api.cdr.land/v1/docs/documents", 10),
+        ("https://w3id.org/usgs", 10),
+        ("https://doi.org/", 10),
+        ("http://minmod.isi.edu/", 10),
+        ("https://mrdata.usgs.gov/deposit", 7),
+        ("https://mrdata.usgs.gov/mrds", 1),
+    ]
+
+    for prefix, score in order:
+        if source_id.startswith(prefix):
+            return score
+    return default_score
 
 
 app.include_router(rdf_view_router)
