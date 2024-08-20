@@ -462,6 +462,8 @@ def get_dedup_mineral_site_data(
         else:
             record["loc_crs"] = None
             record["loc_wkt"] = None
+            record["best_loc_crs"] = None
+            record["best_loc_wkt"] = None
 
         for key in ["tot_contained_metal", "total_tonnage", "total_grade"]:
             if group_id not in group2best_gt:
