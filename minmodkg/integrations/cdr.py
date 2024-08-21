@@ -86,18 +86,18 @@ def upload_ta2_output(
 
     inputs = []
     for group in dedup_sites:
-        if group["loc_wkt"] is not None:
-            assert group["loc_wkt"] != ""
+        if group["best_loc_wkt"] is not None:
+            assert group["best_loc_wkt"] != ""
             try:
-                geometry = shapely.wkt.loads(group["loc_wkt"])
+                geometry = shapely.wkt.loads(group["best_loc_wkt"])
             except shapely.errors.GEOSException:
                 # attempt fixing error
-                print("Invalid WKT", group["loc_wkt"])
+                print("Invalid WKT", group["best_loc_wkt"])
                 raise
             centroid = shapely.wkt.dumps(shapely.centroid(geometry))
-            if group["loc_crs"] is not None:
-                assert group["loc_crs"] != ""
-                centroid = reproject_wkt(centroid, group["loc_crs"], "EPSG:4326")
+            if group["best_loc_crs"] is not None:
+                assert group["best_loc_crs"] != ""
+                centroid = reproject_wkt(centroid, group["best_loc_crs"], "EPSG:4326")
         else:
             centroid = ""
 
@@ -124,9 +124,9 @@ def upload_ta2_output(
                     tonnage_units=unit_uri2name[group["total_tonnage_unit"]],
                     grade=group["total_grade"],
                     grade_units=unit_uri2name[group["total_grade_unit"]],
-                    crs=group["loc_crs"] or "",
+                    crs=group["best_loc_crs"] or "",
                     centroid=centroid,
-                    geom=group["loc_wkt"],
+                    geom=group["best_loc_wkt"],
                     deposit_type_candidate=[
                         DepositTypeCandidate(
                             deposit_type_id=dpt2id[dt["name"]],
