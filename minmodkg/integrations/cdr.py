@@ -162,7 +162,7 @@ if __name__ == "__main__":
         "Cerium",
         "Yttrium",
         "Praseodymium",
-        "Neoymium",
+        "Neodymium",
         "Samarium",
         "Europium",
         "Terbium",
