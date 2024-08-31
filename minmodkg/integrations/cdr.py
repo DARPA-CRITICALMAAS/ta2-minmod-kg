@@ -1,27 +1,9 @@
 from __future__ import annotations
 
-import os
-from enum import Enum
-from functools import lru_cache
-from pathlib import Path
-from typing import NamedTuple, Optional
-
 import httpx
 import orjson
 import shapely
 import shapely.wkt
-import timer
-from cdr_schemas.mineral import (
-    DedupSite,
-    DedupSiteRecord,
-    DepositType,
-    DepositTypeCandidate,
-    GeoLocationInfo,
-    MineralInventory,
-    MineralSite,
-)
-from joblib import Parallel, delayed
-from loguru import logger
 from minmodkg.grade_tonnage_model import Mt_unit, percent_unit
 from minmodkg.integrations.cdr_helper import (
     MINMOD_API,
@@ -29,7 +11,13 @@ from minmodkg.integrations.cdr_helper import (
     CDRHelper,
     MinmodHelper,
 )
-from minmodkg.misc import MNR_NS, batch, reproject_wkt, run_sparql_query
+from minmodkg.integrations.cdr_schemas import (
+    DedupSite,
+    DedupSiteRecord,
+    DepositType,
+    DepositTypeCandidate,
+)
+from minmodkg.misc import MNR_NS, reproject_wkt
 from tqdm import tqdm
 
 

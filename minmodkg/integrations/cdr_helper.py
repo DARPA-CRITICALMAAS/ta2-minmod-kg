@@ -2,23 +2,14 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from enum import Enum
 from functools import lru_cache
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import Optional
 
 import httpx
-import orjson
 import timer
-from cdr_schemas.mineral import (
-    DepositTypeCandidate,
-    GeoLocationInfo,
-    MineralInventory,
-    MineralSite,
-)
 from joblib import Parallel, delayed
-from loguru import logger
-from minmodkg.misc import MNR_NS, batch, run_sparql_query
+from minmodkg.misc import MNR_NS
 from tqdm import tqdm
 
 if "CDR_AUTH_TOKEN" in os.environ:
