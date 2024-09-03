@@ -286,6 +286,36 @@ def dedup_mineral_sites(
     return output
 
 
+@router.get("/document_count")
+def document_count():
+    return get_document_count(get_snapshot_id())
+
+
+@router.get("/inventory_count")
+def inventory_count():
+    return get_inventory_count(get_snapshot_id())
+
+
+@router.get("/mineralsites_count")
+def mineralsites_count():
+    return get_mineralsites_count(get_snapshot_id())
+
+
+@router.get("/inventory_by_commodity")
+def inventory_by_commodity():
+    return get_inventory_by_commodity(get_snapshot_id())
+
+
+@router.get("/mineralsites_by_commodity")
+def mineralsites_by_commodity():
+    return get_mineralsites_by_commodity(get_snapshot_id())
+
+
+@router.get("/documents_by_commodity")
+def documents_by_commodity():
+    return get_documents_by_commodity(get_snapshot_id())
+
+
 def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
     query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
     qres = run_sparql_query(query, endpoint)
@@ -881,6 +911,92 @@ def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
         mapping[site] = max_group_id + i
 
     return mapping
+
+
+@lru_cache(maxsize=1)
+def get_document_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+        SELECT (COUNT(DISTINCT ?doc) AS ?doc_count)
+        WHERE {
+            ?mi a :MineralInventory .
+            ?mi :reference ?ref .
+            ?ref :document ?doc .
+        }
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres[0]
+
+
+@lru_cache(maxsize=1)
+def get_inventory_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+       SELECT (COUNT(DISTINCT ?mi) AS ?inv_count)
+        WHERE {
+            ?mi a :MineralInventory .
+            ?mi :commodity ?comm_cand .
+            ?mi :commodity/:normalized_uri/rdfs:label ?comm .
+        }
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres[0]
+
+
+@lru_cache(maxsize=1)
+def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+       SELECT (COUNT(DISTINCT ?ms) AS ?site_count)
+            WHERE {
+                ?ms a :MineralSite .
+                ?ms :mineral_inventory ?mi .
+                ?mi :commodity/:normalized_uri/rdfs:label ?comm .
+            }
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres[0]
+
+
+@lru_cache(maxsize=1)
+def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+        SELECT DISTINCT ?commodity (COUNT(DISTINCT ?mi) AS ?inv_count)
+            WHERE {
+                ?mi a :MineralInventory .
+                ?mi :commodity/:normalized_uri/rdfs:label ?commodity .
+            }
+            GROUP BY ?commodity
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres
+
+
+@lru_cache(maxsize=1)
+def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+        SELECT ?commodity (COUNT(DISTINCT ?ms) AS ?site_count)
+            WHERE {
+                ?ms a :MineralSite .
+                ?ms :mineral_inventory ?mi .
+                ?mi :commodity/:normalized_uri/rdfs:label ?commodity .
+            }
+            GROUP BY ?commodity
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres
+
+
+@lru_cache(maxsize=1)
+def get_documents_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = """
+        SELECT ?commodity (COUNT(DISTINCT ?doc) AS ?doc_count)
+        WHERE {
+            ?mi a :MineralInventory .
+            ?mi :reference/:document ?doc . 
+            ?mi :commodity/:normalized_uri/rdfs:label ?commodity .
+        }
+        GROUP BY ?commodity
+    """
+    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    return qres
 
 
 def fmt_grade_tonnage(
