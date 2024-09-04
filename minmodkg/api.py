@@ -916,7 +916,7 @@ def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_document_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT (COUNT(?doc) AS ?doc_count)
+        SELECT (COUNT(?doc) AS ?total)
         WHERE {
             ?doc a :Document .
         }
@@ -928,7 +928,7 @@ def get_document_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_inventory_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT (COUNT(?mi) AS ?inv_count)
+        SELECT (COUNT(?mi) AS ?total)
         WHERE {
             ?mi a :MineralInventory .
         }
@@ -940,7 +940,7 @@ def get_inventory_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-       SELECT (COUNT(?ms) AS ?site_count)
+       SELECT (COUNT(?ms) AS ?total)
         WHERE {
             ?ms a :MineralSite .
         }
@@ -952,10 +952,10 @@ def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT  ?commodity_uri ?commodity_label ?inv_count
+        SELECT  ?commodity_uri ?commodity_label ?total
         WHERE {
             {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?inv_count)
+                SELECT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?total)
                 WHERE {
                     ?mi a :MineralInventory .
                     ?mi :commodity/:normalized_uri ?commodity_uri .
@@ -972,10 +972,10 @@ def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT  ?commodity_uri ?commodity_label ?site_count
+        SELECT  ?commodity_uri ?commodity_label ?total
         WHERE {
             {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?site_count)
+                SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?total)
                 WHERE {
                     ?ms a :MineralSite .
                     ?ms :mineral_inventory ?mi .
@@ -995,10 +995,10 @@ def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 def get_documents_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
 
-        SELECT  ?commodity_uri ?commodity_label ?doc_count
+        SELECT  ?commodity_uri ?commodity_label ?total
         WHERE {
             {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?doc_count)
+                SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?total)
                 WHERE {
                     ?mi :reference/:document ?doc . 
                     ?mi :commodity/:normalized_uri ?commodity_uri .
