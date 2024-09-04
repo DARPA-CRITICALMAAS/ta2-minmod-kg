@@ -921,7 +921,7 @@ def get_document_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
             ?doc a :Document .
         }
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres[0]
 
 
@@ -933,7 +933,7 @@ def get_inventory_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
             ?mi a :MineralInventory .
         }
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres[0]
 
 
@@ -945,7 +945,7 @@ def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
             ?ms a :MineralSite .
         }
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres[0]
 
 
@@ -962,10 +962,10 @@ def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
                 }
                 GROUP BY ?commodity_uri
             }
-                ?commodity_uri rdfs:label ?commodity_label .
+            ?commodity_uri rdfs:label ?commodity_label .
         }
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres
 
 
@@ -983,11 +983,11 @@ def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
                 }
                 GROUP BY ?commodity_uri
             }
-                ?commodity_uri rdfs:label ?commodity_label .
+            ?commodity_uri rdfs:label ?commodity_label .
         }
         
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres
 
 
@@ -1005,10 +1005,10 @@ def get_documents_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
                 }
                 GROUP BY ?commodity_uri
             }
-                ?commodity_uri rdfs:label ?commodity_label .
+            ?commodity_uri rdfs:label ?commodity_label .
         }
     """
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     return qres
 
 
