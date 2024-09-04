@@ -952,12 +952,18 @@ def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT DISTINCT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?inv_count)
-            WHERE {
-                ?mi a :MineralInventory .
-                ?mi :commodity/:normalized_uri ?commodity_uri .
+        SELECT  ?commodity_uri ?commodity_label ?inv_count
+        WHERE {
+            {
+                SELECT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?inv_count)
+                WHERE {
+                    ?mi a :MineralInventory .
+                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                }
+                GROUP BY ?commodity_uri
             }
-            GROUP BY ?commodity_uri
+                ?commodity_uri rdfs:label ?commodity_label .
+        }
     """
     qres = run_sparql_query(query, DEFAULT_ENDPOINT)
     return qres
@@ -966,13 +972,20 @@ def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?site_count)
-            WHERE {
-                ?ms a :MineralSite .
-                ?ms :mineral_inventory ?mi .
-                ?mi :commodity/:normalized_uri ?commodity_uri .
+        SELECT  ?commodity_uri ?commodity_label ?site_count
+        WHERE {
+            {
+                SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?site_count)
+                WHERE {
+                    ?ms a :MineralSite .
+                    ?ms :mineral_inventory ?mi .
+                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                }
+                GROUP BY ?commodity_uri
             }
-            GROUP BY ?commodity_uri
+                ?commodity_uri rdfs:label ?commodity_label .
+        }
+        
     """
     qres = run_sparql_query(query, DEFAULT_ENDPOINT)
     return qres
@@ -981,12 +994,19 @@ def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_documents_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     query = """
-        SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?doc_count)
+
+        SELECT  ?commodity_uri ?commodity_label ?doc_count
         WHERE {
-            ?mi :reference/:document ?doc . 
-            ?mi :commodity/:normalized_uri ?commodity_uri .
+            {
+                SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?doc_count)
+                WHERE {
+                    ?mi :reference/:document ?doc . 
+                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                }
+                GROUP BY ?commodity_uri
+            }
+                ?commodity_uri rdfs:label ?commodity_label .
         }
-        GROUP BY ?commodity_uri
     """
     qres = run_sparql_query(query, DEFAULT_ENDPOINT)
     return qres
