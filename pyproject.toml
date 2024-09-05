@@ -21,6 +21,8 @@ pyproj = "^3.6.1"
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"
 pydantic = "^2.7.4"
+pytest = "^8.3.2"
+jsonschema = "^4.23.0"
 
 [build-system]
 requires = ["poetry-core"]
