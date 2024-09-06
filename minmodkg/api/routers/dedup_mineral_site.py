@@ -1,262 +1,22 @@
 from __future__ import annotations
 
-import os
 from functools import lru_cache
 from typing import Annotated, Literal, Optional
 
-import htbuilder as H
 import networkx as nx
 import orjson
 import pandas as pd
-from fastapi import APIRouter, FastAPI, Header, HTTPException, Query, Response
-from fastapi.responses import HTMLResponse
-from minmodkg.grade_tonnage_model import (
-    GradeTonnageEstimate,
-    GradeTonnageModel,
-    ResourceCategory,
-    SiteGradeTonnage,
+from fastapi import APIRouter, Query, Response
+from minmodkg.api.dependencies import (
+    DEFAULT_ENDPOINT,
+    get_snapshot_id,
+    norm_commodity,
+    rank_source,
 )
-from minmodkg.misc import (
-    group_by_key,
-    merge_wkt,
-    reproject_wkt,
-    run_sparql_query,
-    send_sparql_query,
-)
-from minmodkg.transformations import make_site_uri
-from rdflib import RDFS, BNode, Graph
-from rdflib import Literal as RDFLiteral
-from rdflib import URIRef
+from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
+from minmodkg.misc import group_by_key, merge_wkts, run_sparql_query
 
-"""
-An endpoint to allow querying derived data from the Minmod knowledge graph.
-"""
-app = FastAPI(openapi_url="/api/v1/openapi.json", docs_url="/api/v1/docs")
-DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
-MNR_NS = "https://minmod.isi.edu/resource/"
-MNO_NS = "https://minmod.isi.edu/ontology/"
-
-rdf_view_router = APIRouter()
-router = APIRouter(
-    prefix="/api/v1",
-)
-
-
-def render_entity(subj: URIRef):
-    g = Graph()
-    resp = send_sparql_query(
-        """
-    CONSTRUCT { 
-        ?a ?b ?c . 
-        ?s ?p ?o . 
-        ?c rdfs:label ?cname .
-        ?o rdfs:label ?oname .
-        ?p rdfs:label ?pname .
-        ?b rdfs:label ?bname .
-    }
-    WHERE {
-        ?a ?b ?c .
-        OPTIONAL { ?c rdfs:label ?cname . }
-        OPTIONAL { ?b rdfs:label ?bname . }
-        OPTIONAL { 
-            ?a (<>|!<>)* ?s . 
-            FILTER (isBlank(?s)) .
-            ?s ?p ?o .
-            OPTIONAL { ?o rdfs:label ?oname . }
-            OPTIONAL { ?p rdfs:label ?pname .}
-        }
-        VALUES ?a { %s } 
-    }
-"""
-        % f"<{subj}>",
-        endpoint=DEFAULT_ENDPOINT,
-    )
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    g.parse(data=resp.text, format="turtle")
-
-    def label(g, subj: URIRef | BNode):
-        if (subj, RDFS.label, None) in g:
-            return next(g.objects(subj, RDFS.label))
-        return subj.n3(g.namespace_manager)
-
-    def make_tree(g, subj: URIRef | BNode | RDFLiteral, visited: set):
-        if isinstance(subj, RDFLiteral):
-            return H.p(subj)
-        if isinstance(subj, URIRef):
-            subj_name = subj.n3(g.namespace_manager)
-            if (subj, RDFS.label, None) in g:
-                subj_name = next(g.objects(subj, RDFS.label))
-
-            return H.a(href=subj)(subj_name)
-
-        if subj in visited:
-            return H.p(style="font-style: italic")("skiped as visited before")
-
-        visited.add(subj)
-        assert isinstance(subj, BNode)
-        children = []
-        for p, o in g.predicate_objects(subj):
-            if p != RDFS.label:
-                children.append((H.a(href=p)(label(g, p)), make_tree(g, o, visited)))
-
-        return (
-            H.table(_class="table")(
-                *[
-                    H.tr(
-                        H.td(p),
-                        H.td(o),
-                    )
-                    for p, o in children
-                ]
-            ),
-        )
-
-    subj_label = label(g, subj)
-
-    children = []
-    for p, o in g.predicate_objects(subj):
-        if p != RDFS.label:
-            children.append((H.a(href=p)(label(g, p)), make_tree(g, o, set())))
-
-    tree = H.div(_class="container-fluid")(
-        H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(
-            H.div(_class="col")(
-                H.h4(
-                    H.a(href=subj)(subj_label),
-                ),
-                H.small(_class="text-muted fw-semibold")(subj),
-            )
-        ),
-        H.table(_class="table table-striped")(
-            *[
-                H.tr(
-                    H.td(p),
-                    H.td(o),
-                )
-                for p, o in children
-            ]
-        ),
-    )
-    return HTMLResponse(
-        content=f"""
-<html>
-    <head>
-        <title>{subj_label}</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <style>a {{ text-decoration: none; }}</style>
-    </head>
-    <body>
-        {tree}
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-    </body>
-</html>
-                        """,
-        status_code=200,
-    )
-
-
-@rdf_view_router.get("/resource/{resource_id}")
-def get_resource(resource_id: str):
-    return render_entity(URIRef(MNR_NS + resource_id))
-
-
-@rdf_view_router.get("/ontology/{resource_id}")
-def get_ontology(resource_id: str):
-    return render_entity(URIRef(MNO_NS + resource_id))
-
-
-@router.get("/get_site_uri")
-def get_site_uri(source_id: str, record_id: str):
-    return make_site_uri(source_id, record_id)
-
-
-@router.get("/deposit_types")
-def deposit_types():
-    return get_deposit_types(get_snapshot_id())
-
-
-@router.get("/commodities")
-def commodities():
-    return get_commodities(get_snapshot_id())
-
-
-@router.get("/units")
-def units():
-    return get_units(get_snapshot_id())
-
-
-@router.get("/mineral_site_grade_and_tonnage/{commodity}")
-def mineral_site_grade_and_tonnage(
-    commodity: str,
-    norm_tonnage_unit: Optional[str] = None,
-    norm_grade_unit: Optional[str] = None,
-    date_precision: Literal["year", "month", "day"] = "month",
-    format: Annotated[str | None, Query()] = "json",
-    accept: Annotated[str | None, Header()] = None,
-):
-    commodity = norm_commodity(commodity)
-    output = get_grade_tonnage_inventory(
-        get_snapshot_id(),
-        commodity,
-        norm_tonnage_unit=norm_tonnage_unit,
-        norm_grade_unit=norm_grade_unit,
-        date_precision=date_precision,
-    )
-    if accept is not None and "text/csv" in accept:
-        format = "csv"
-
-    if format == "csv":
-        df = pd.DataFrame(output)
-        return Response(
-            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
-        )
-    return output
-
-
-@router.get("/mineral_site_deposit_types/{commodity}")
-def mineral_site_deposit_types(
-    commodity: str,
-    format: Annotated[str | None, Query()] = "json",
-    accept: Annotated[str | None, Header()] = None,
-):
-    commodity = norm_commodity(commodity)
-    output = get_deposit_type_classification(
-        get_snapshot_id(),
-        commodity,
-    )
-    if accept is not None and "text/csv" in accept:
-        format = "csv"
-
-    if format == "csv":
-        df = pd.DataFrame(output)
-        return Response(
-            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
-        )
-    return output
-
-
-@router.get("/mineral_site_location/{commodity}")
-def mineral_site_location(
-    commodity: str,
-    format: Annotated[str | None, Query()] = "json",
-    accept: Annotated[str | None, Header()] = None,
-):
-    commodity = norm_commodity(commodity)
-    output = get_mineral_site_location(
-        get_snapshot_id(),
-        commodity,
-    )
-    if accept is not None and "text/csv" in accept:
-        format = "csv"
-
-    if format == "csv":
-        df = pd.DataFrame(output)
-        return Response(
-            df.to_csv(index=False, float_format="%.5f"), media_type="text/csv"
-        )
-    return output
+router = APIRouter(tags=["mineral_sites"])
 
 
 @router.get("/dedup_mineral_sites/{commodity}")
@@ -265,7 +25,7 @@ def dedup_mineral_sites(
     norm_tonnage_unit: Optional[str] = None,
     norm_grade_unit: Optional[str] = None,
     date_precision: Literal["year", "month", "day"] = "month",
-    format: Annotated[str | None, Query()] = "json",
+    format: Annotated[Literal["csv", "json"], Query()] = "json",
 ):
     commodity = norm_commodity(commodity)
     output = get_dedup_mineral_site_data(
@@ -286,117 +46,6 @@ def dedup_mineral_sites(
     return output
 
 
-@router.get("/documents/count")
-def document_count():
-    return get_document_count(get_snapshot_id())
-
-
-@router.get("/mineral-inventories/count")
-def inventory_count():
-    return get_inventory_count(get_snapshot_id())
-
-
-@router.get("/mineral-sites/count")
-def mineralsites_count():
-    return get_mineralsites_count(get_snapshot_id())
-
-
-@router.get("/mineral-inventories/count-by-commodity")
-def inventory_by_commodity():
-    return get_inventory_by_commodity(get_snapshot_id())
-
-
-@router.get("/mineral-sites/count-by-commodity")
-def mineralsites_by_commodity():
-    return get_mineralsites_by_commodity(get_snapshot_id())
-
-
-@router.get("/documents/count-by-commodity")
-def documents_by_commodity():
-    return get_documents_by_commodity(get_snapshot_id())
-
-
-def get_snapshot_id(endpoint=DEFAULT_ENDPOINT):
-    query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
-    qres = run_sparql_query(query, endpoint)
-    return qres[0]["snapshot_id"]
-
-
-def is_minmod_id(text: str) -> bool:
-    return text.startswith("Q") and text[1:].isdigit()
-
-
-def norm_commodity(commodity: str) -> str:
-    if commodity.startswith("http"):
-        raise HTTPException(
-            status_code=404,
-            detail=f"Expect commodity to be either just an id (QXXX) or name. Get `{commodity}` instead",
-        )
-    if not is_minmod_id(commodity):
-        uri = get_commodity_by_name(commodity)
-        if uri is None:
-            raise HTTPException(
-                status_code=404, detail=f"Commodity `{commodity}` not found"
-            )
-        commodity = uri
-    return commodity
-
-
-def get_commodity_by_name(name: str) -> Optional[str]:
-    query = (
-        'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") }'
-        % name.lower()
-    )
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
-    if len(qres) == 0:
-        return None
-    uri = qres[0]["uri"]
-    assert uri.startswith(MNR_NS)
-    uri = uri[len(MNR_NS) :]
-    return uri
-
-
-@lru_cache(maxsize=1)
-def get_commodities(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-    SELECT ?uri ?name
-    WHERE {
-        ?uri a :Commodity ;
-            rdfs:label ?name .
-    }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
-@lru_cache(maxsize=1)
-def get_units(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-    SELECT ?uri ?name
-    WHERE {
-        ?uri a :Unit ;
-            rdfs:label ?name .
-    }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
-@lru_cache(maxsize=1)
-def get_deposit_types(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-    SELECT ?uri ?name ?environment ?group
-    WHERE {
-        ?uri a :DepositType ;
-            rdfs:label ?name ;
-            :environment ?environment ;
-            :group ?group .
-    }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
 @lru_cache(maxsize=32)
 def get_dedup_mineral_site_data(
     snapshot_id: str,
@@ -404,7 +53,7 @@ def get_dedup_mineral_site_data(
     norm_tonnage_unit=None,
     norm_grade_unit=None,
     date_precision: Literal["year", "month", "day"] = "month",
-    endpoint=DEFAULT_ENDPOINT,
+    endpoint: str = DEFAULT_ENDPOINT,
 ):
     """This new function is going to replace `get_hyper_mineral_site_data`"""
     site2group = get_site_group(snapshot_id, endpoint)
@@ -524,6 +173,29 @@ def get_dedup_mineral_site_data(
 
         output.append(record)
     return output
+
+
+@lru_cache(maxsize=1)
+def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+    query = "SELECT ?s1 ?s2 WHERE { ?s1 a :MineralSite . ?s2 a :MineralSite . ?s1 owl:sameAs ?s2 . }"
+    output = run_sparql_query(query, endpoint)
+    G = nx.from_edgelist([(row["s1"], row["s2"]) for row in output])
+    groups = nx.connected_components(G)
+
+    mapping = {}
+    for gid, group in enumerate(groups, start=1):
+        for node in group:
+            mapping[node] = gid
+
+    max_group_id = max(mapping.values())
+
+    query = "SELECT ?s1 WHERE { ?s1 a :MineralSite . FILTER NOT EXISTS { ?s1 owl:sameAs ?s2 . } }"
+    output = run_sparql_query(query, DEFAULT_ENDPOINT)
+    unlinked_sites = sorted(row["s1"] for row in output)
+    for i, site in enumerate(unlinked_sites, start=1):
+        mapping[site] = max_group_id + i
+
+    return mapping
 
 
 @lru_cache(maxsize=32)
@@ -890,128 +562,6 @@ def get_grade_tonnage_inventory(
     return output
 
 
-@lru_cache(maxsize=1)
-def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = "SELECT ?s1 ?s2 WHERE { ?s1 a :MineralSite . ?s2 a :MineralSite . ?s1 owl:sameAs ?s2 . }"
-    output = run_sparql_query(query, endpoint)
-    G = nx.from_edgelist([(row["s1"], row["s2"]) for row in output])
-    groups = nx.connected_components(G)
-
-    mapping = {}
-    for gid, group in enumerate(groups, start=1):
-        for node in group:
-            mapping[node] = gid
-
-    max_group_id = max(mapping.values())
-
-    query = "SELECT ?s1 WHERE { ?s1 a :MineralSite . FILTER NOT EXISTS { ?s1 owl:sameAs ?s2 . } }"
-    output = run_sparql_query(query, DEFAULT_ENDPOINT)
-    unlinked_sites = sorted(row["s1"] for row in output)
-    for i, site in enumerate(unlinked_sites, start=1):
-        mapping[site] = max_group_id + i
-
-    return mapping
-
-
-@lru_cache(maxsize=1)
-def get_document_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-        SELECT (COUNT(?doc) AS ?total)
-        WHERE {
-            ?doc a :Document .
-        }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres[0]
-
-
-@lru_cache(maxsize=1)
-def get_inventory_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-        SELECT (COUNT(?mi) AS ?total)
-        WHERE {
-            ?mi a :MineralInventory .
-        }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres[0]
-
-
-@lru_cache(maxsize=1)
-def get_mineralsites_count(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-       SELECT (COUNT(?ms) AS ?total)
-        WHERE {
-            ?ms a :MineralSite .
-        }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres[0]
-
-
-@lru_cache(maxsize=1)
-def get_inventory_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-        SELECT  ?commodity_uri ?commodity_label ?total
-        WHERE {
-            {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?total)
-                WHERE {
-                    ?mi a :MineralInventory .
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
-                }
-                GROUP BY ?commodity_uri
-            }
-            ?commodity_uri rdfs:label ?commodity_label .
-        }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
-@lru_cache(maxsize=1)
-def get_mineralsites_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-        SELECT  ?commodity_uri ?commodity_label ?total
-        WHERE {
-            {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?total)
-                WHERE {
-                    ?ms a :MineralSite .
-                    ?ms :mineral_inventory ?mi .
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
-                }
-                GROUP BY ?commodity_uri
-            }
-            ?commodity_uri rdfs:label ?commodity_label .
-        }
-        
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
-@lru_cache(maxsize=1)
-def get_documents_by_commodity(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
-    query = """
-
-        SELECT  ?commodity_uri ?commodity_label ?total
-        WHERE {
-            {
-                SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?total)
-                WHERE {
-                    ?mi :reference/:document ?doc . 
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
-                }
-                GROUP BY ?commodity_uri
-            }
-            ?commodity_uri rdfs:label ?commodity_label .
-        }
-    """
-    qres = run_sparql_query(query, endpoint)
-    return qres
-
-
 def fmt_grade_tonnage(
     grade_tonnage: Optional[SiteGradeTonnage], norm_grade_unit: Optional[str] = None
 ) -> dict:
@@ -1034,59 +584,3 @@ def fmt_grade_tonnage(
         record["total_grade"] = grade_tonnage.get_total_reserve_grade(norm_grade_unit)
 
     return record
-
-
-def merge_wkts(
-    lst: list[tuple[int, Optional[str], str]], min_rank: Optional[int] = None
-) -> tuple[str, str]:
-    """Merge a list of WKTS with potentially different CRS into a single WKT"""
-    if min_rank is None:
-        min_rank = max(x[0] for x in lst)
-    norm_lst: list[tuple[str, str]] = [
-        (crs or "EPSG:4326", wkt) for rank, crs, wkt in lst if rank >= min_rank
-    ]
-    all_crs = set(x[0] for x in norm_lst)
-    if len(all_crs) == 0:
-        norm_crs = ""
-    elif len(all_crs) == 1:
-        norm_crs = all_crs.pop()
-    else:
-        if "EPSG:4326" in all_crs:
-            norm_crs = "EPSG:4326"
-        else:
-            norm_crs = all_crs.pop()
-
-        # we convert everything to norm_crs
-        norm_lst = [(crs, reproject_wkt(wkt, crs, norm_crs)) for crs, wkt in norm_lst]
-
-    # all CRS are the same
-    wkts = sorted({x[1] for x in norm_lst})
-    if len(wkts) > 1:
-        wkt = merge_wkt(wkts)
-        if wkt is None:
-            wkt = ""
-    else:
-        wkt = wkts[0]
-    return norm_crs, wkt
-
-
-def rank_source(source_id: str) -> int:
-    """Get ranking of a source, higher is better"""
-    default_score = 5
-    order = [
-        ("https://api.cdr.land/v1/docs/documents", 10),
-        ("https://w3id.org/usgs", 10),
-        ("https://doi.org/", 10),
-        ("http://minmod.isi.edu/", 10),
-        ("https://mrdata.usgs.gov/deposit", 7),
-        ("https://mrdata.usgs.gov/mrds", 1),
-    ]
-
-    for prefix, score in order:
-        if source_id.startswith(prefix):
-            return score
-    return default_score
-
-
-app.include_router(rdf_view_router)
-app.include_router(router)
