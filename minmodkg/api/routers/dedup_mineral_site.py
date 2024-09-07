@@ -6,6 +6,7 @@ from typing import Annotated, Literal, Optional
 import networkx as nx
 import orjson
 import pandas as pd
+import shapely.wkt
 from fastapi import APIRouter, Query, Response
 from minmodkg.api.dependencies import (
     DEFAULT_ENDPOINT,
@@ -14,7 +15,7 @@ from minmodkg.api.dependencies import (
     rank_source,
 )
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
-from minmodkg.misc import group_by_key, merge_wkts, run_sparql_query
+from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, run_sparql_query
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -138,11 +139,20 @@ def get_dedup_mineral_site_data(
             record["loc_wkt"] = wkt
             record["best_loc_crs"] = best_crs
             record["best_loc_wkt"] = best_wkt
+
+            try:
+                geometry = shapely.wkt.loads(best_wkt)
+                centroid = shapely.wkt.dumps(shapely.centroid(geometry))
+                centroid = reproject_wkt(centroid, best_crs, "EPSG:4326")
+                record["best_loc_centroid_epsg_4326"] = centroid
+            except shapely.errors.GEOSException:
+                record["best_loc_centroid_epsg_4326"] = None
         else:
             record["loc_crs"] = None
             record["loc_wkt"] = None
             record["best_loc_crs"] = None
             record["best_loc_wkt"] = None
+            record["best_loc_centroid_epsg_4326"] = None
 
         for key in ["tot_contained_metal", "total_tonnage", "total_grade"]:
             if group_id not in group2best_gt:

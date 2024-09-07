@@ -76,16 +76,11 @@ def upload_ta2_output(
     for group in dedup_sites:
         if group["best_loc_wkt"] is not None:
             assert group["best_loc_wkt"] != ""
-            try:
-                geometry = shapely.wkt.loads(group["best_loc_wkt"])
-            except shapely.errors.GEOSException:
-                # attempt fixing error
-                print("Invalid WKT", group["best_loc_wkt"])
-                raise
-            centroid = shapely.wkt.dumps(shapely.centroid(geometry))
-            if group["best_loc_crs"] is not None:
-                assert group["best_loc_crs"] != ""
-                centroid = reproject_wkt(centroid, group["best_loc_crs"], "EPSG:4326")
+            assert group["best_loc_centroid_epsg_4326"] is not None, (
+                "Invalid WKT",
+                group["best_loc_wkt"],
+            )
+            centroid = group["best_loc_centroid_epsg_4326"]
         else:
             centroid = ""
 
