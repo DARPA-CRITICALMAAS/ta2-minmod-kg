@@ -955,6 +955,10 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                                     owl:cardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
                                   [ rdf:type owl:Restriction ;
+                                    owl:onProperty :contained_metal ;
+                                    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
                                     owl:onProperty :reference ;
                                     owl:cardinality "1"^^xsd:nonNegativeInteger
                                   ] ,
