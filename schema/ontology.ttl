@@ -9,7 +9,7 @@
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
                                     rdfs:comment "Ontology for Minmod Knowledge Graph"@en ;
-                                    owl:versionInfo "1.2.2" .
+                                    owl:versionInfo "2.0.0" .
 
 #################################################################
 #    Datatypes
@@ -112,6 +112,13 @@ geo:wktLiteral rdf:type rdfs:Datatype .
        rdfs:subPropertyOf :mineral_inventory_objectproperty ;
        rdfs:range :Measure ;
        rdfs:label "grade"@en .
+
+
+###  https://minmod.isi.edu/ontology/modified_at
+:modified_at rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf :mineral_site_dataproperty ;
+             rdfs:range xsd:dateTime ;
+             rdfs:label "modified at"@en .
 
 
 ###  https://minmod.isi.edu/ontology/location_info
@@ -227,6 +234,14 @@ geo:wktLiteral rdf:type rdfs:Datatype .
            rdfs:label "page info"@en .
 
 
+###  https://minmod.isi.edu/ontology/property
+:property rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf :reference_objectproperty ;
+           rdfs:range xsd:anyURI ;
+           rdfs:comment "The property that this reference is for"@en ;
+           rdfs:label "property"@en .
+
+
 ###  https://minmod.isi.edu/ontology/page_info_objectproperty
 :page_info_objectproperty rdf:type owl:ObjectProperty ;
                           rdfs:subPropertyOf owl:topObjectProperty ;
@@ -257,7 +272,11 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/reference
 :reference rdf:type owl:ObjectProperty ;
-           rdfs:subPropertyOf :mineral_inventory_objectproperty ;
+           rdfs:domain [ rdf:type owl:Class ;
+                         owl:unionOf ( :MineralSite
+                                       :MineralInventory
+                                     )
+                       ] ;
            rdfs:range :Reference ;
            rdfs:label "reference"@en .
 
@@ -846,15 +865,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 ###  https://minmod.isi.edu/ontology/LocationInfo
 :LocationInfo rdf:type owl:Class ;
               rdfs:subClassOf [ rdf:type owl:Restriction ;
-                                owl:onProperty :country ;
-                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
-                              ] ,
-                              [ rdf:type owl:Restriction ;
                                 owl:onProperty :crs ;
-                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
-                              ] ,
-                              [ rdf:type owl:Restriction ;
-                                owl:onProperty :state_or_province ;
                                 owl:maxCardinality "1"^^xsd:nonNegativeInteger
                               ] ,
                               [ rdf:type owl:Restriction ;
@@ -994,6 +1005,10 @@ geo:wktLiteral rdf:type rdfs:Datatype .
              rdfs:subClassOf :ThingHasLabel ,
                              :ThingMayHaveAltLabel ,
                              [ rdf:type owl:Restriction ;
+                               owl:onProperty :modified_at ;
+                               owl:cardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
                                owl:onProperty :location_info ;
                                owl:cardinality "1"^^xsd:nonNegativeInteger
                              ] ,
@@ -1012,7 +1027,15 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :site_type ;
                                owl:maxCardinality "1"^^xsd:nonNegativeInteger
-                             ] ;
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :reference ;
+                               owl:minCardinality "1"^^xsd:nonNegativeInteger
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty :mineral_inventory ;
+                               owl:minCardinality "1"^^xsd:nonNegativeInteger
+                             ];
              rdfs:label "Mineral Site"@en .
 
 
@@ -1040,9 +1063,14 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/Reference
 :Reference rdf:type owl:Class ;
-           rdfs:subClassOf [ rdf:type owl:Restriction ;
+           rdfs:subClassOf :ThingMayHaveComment ,
+                           [ rdf:type owl:Restriction ;
                              owl:onProperty :document ;
                              owl:cardinality "1"^^xsd:nonNegativeInteger
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty :property ;
+                             owl:maxCardinality "1"^^xsd:nonNegativeInteger
                            ] ;
            rdfs:label "Reference"@en .
 
@@ -1089,6 +1117,12 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 :ThingMayHaveAltLabel rdf:type owl:Class ;
                       rdfs:comment "Instance of this class may have aliases defined by skos:altLabel"@en ;
                       rdfs:label "Thing May Have Alt Label"@en .
+
+
+###  https://minmod.isi.edu/ontology/ThingMayHaveComment
+:ThingMayHaveComment rdf:type owl:Class ;
+                 rdfs:comment "Instance of this class may have rdfs:comment"@en ;
+                 rdfs:label "Thing May Have Comment"@en .
 
 
 ###  https://minmod.isi.edu/ontology/Unit

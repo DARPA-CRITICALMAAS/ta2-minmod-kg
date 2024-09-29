@@ -20,6 +20,9 @@ schema_dir = Path(__file__).parent.parent.parent / "schema"
 class URI(str): ...
 
 
+class NotEmptyList(list): ...
+
+
 def get_all_values(g: Graph, s: URIRef, p: URIRef, subItemOf: URIRef):
     output = list(g.objects(s, p, unique=True))
     for parent in g.objects(s, subItemOf):
@@ -171,6 +174,9 @@ def make_er_diagram(skip_empty_field: bool = True, skip_parent_class: bool = Tru
         if (subj, RDFS.subClassOf, mno.ThingMayHaveAltLabel) in g:
             fields.append(("aliases", Optional[list[str]]))
 
+        if (subj, RDFS.subClassOf, mno.ThingMayHaveComment) in g:
+            fields.append(("comment", Optional[str]))
+
         clsname = subj[len(mno) :]
         for prop in domain2props.get(subj, []):
             assert isinstance(prop, URIRef)
@@ -237,12 +243,12 @@ def get_field_type(
         elif obj in datatypes:
             norm_types.append(datatypes[obj])
         else:
-            raise NotImplementedError(obj)
+            raise NotImplementedError((types, obj))
 
     if len(norm_types) == 1:
         norm_type = norm_types[0]
     else:
-        assert len(norm_types) > 1
+        assert len(norm_types) > 1, (types, norm_types)
         norm_type = Union[tuple(norm_types)]  # type: ignore
 
     if restrictions is not None:
@@ -260,6 +266,11 @@ def get_field_type(
                     assert isinstance(cons_val, Literal)
                     assert cons_val.value == 1
                     norm_type = Optional[norm_type]  # type: ignore
+                    update = True
+                elif cons == OWL.minCardinality:
+                    assert isinstance(cons_val, Literal)
+                    assert cons_val.value == 1
+                    norm_type = NotEmptyList[norm_type]  # type: ignore
                     update = True
                 else:
                     raise NotImplementedError(cons)
