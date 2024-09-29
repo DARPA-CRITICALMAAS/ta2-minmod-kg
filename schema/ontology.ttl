@@ -121,13 +121,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
              rdfs:label "modified at"@en .
 
 
-###  https://minmod.isi.edu/ontology/created_by
-:created_by rdf:type owl:DatatypeProperty ;
-             rdfs:subPropertyOf :mineral_site_dataproperty ;
-             rdfs:range xsd:anyURI ;
-             rdfs:label "created by"@en .
-
-
 ###  https://minmod.isi.edu/ontology/location_info
 :location_info rdf:type owl:ObjectProperty ;
                rdfs:subPropertyOf :mineral_site_objectproperty ;
