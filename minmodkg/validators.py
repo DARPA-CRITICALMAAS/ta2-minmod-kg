@@ -45,7 +45,7 @@ class FilenameValidatorService(BaseFileService[FilenameValidatorServiceInvokeArg
         infiles = self.list_files(
             repo,
             args["input"],
-            unique_filename=False,
+            unique_filepath=False,
             optional=False,
             compute_missing_file_key=False,
         )

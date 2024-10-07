@@ -1,0 +1,29 @@
+version: 3
+resources: csv
+preprocessing:
+  - type: pmap
+    path: [1.., 0]
+    output: { attr: uri }
+    code: |
+      from slugify import slugify
+      return "https://minmod.isi.edu/resource/source_score__" + slugify(value)
+attributes:
+  id: [1.., 0]
+  name: [1.., 1]
+  description: [1.., 2]
+  score: [1.., 3]
+alignments:
+  - type: auto
+semantic_model:
+  mno:SourceScore:1:
+    properties:
+      - [drepr:uri, uri]
+      - [mno:prefixed_id, id]
+      - [rdfs:label, name, xsd:string]
+      - [rdfs:comment, description, xsd:string]
+      - [mno:score, score, xsd:float]
+  prefixes:
+    mnr: https://minmod.isi.edu/resource/
+    mno: https://minmod.isi.edu/ontology/
+    rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#

@@ -11,6 +11,7 @@ services:
         - ::CFG_DIR::extractors/unit.yml
         - ::CFG_DIR::extractors/country.yml
         - ::CFG_DIR::extractors/state_or_province.yml
+        - ::CFG_DIR::extractors/source_score.yml
         - ::CFG_DIR::extractors/epsg.yml
         - ::CFG_DIR::extractors/material_form.yml
       format: turtle
@@ -39,46 +40,74 @@ services:
   - name: load to fuseki
     classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
-      batch_size: 128
+      batch_size: 512
       capture_output: true
   - name: deploy fuseki
     classpath: minmodkg.fuseki_deployment.FusekiDeploymentService
   - name: validate filename
     classpath: minmodkg.validators.FilenameValidatorService
     args:
-      pattern: ^[a-zA-Z0-9_\-,]+$
+      pattern: ^[a-zA-Z0-9_\-,.]+$
+  - name: split mineral site
+    classpath: statickg.services.split.HashSplitService
+    args:
+      parallel: true
+  - name: filter mineral site
+    classpath: statickg.services.filter.HashFilterService
+    args:
+      parallel: true
 pipeline:
   - service: validate filename
     args:
       input:
         - ::REPO::data/entities/*.csv
-        - ::REPO::data/inferlink/extractions/*.json
-        - ::REPO::data/umn/*.json
-        - ::REPO::data/sri/*.json
-        - ::REPO::data/umn/sameas/*.csv
-        - ::REPO::data/sri/mappableCriteria/*.json
-        - ::REPO::data/usc/*.ttl
+        - ::REPO::data/mineral-sites/*/*/*.json
+        - ::REPO::data/same-as/umn/*.csv
+        - ::REPO::data/mappable-criteria/sri/*.json
+        - ::REPO::data/curated-mineral-sites/*/*/*.json
   - service: predefined entities
     args:
       input: ::REPO::data/entities/*.csv
       output: ::DATA_DIR::predefined-entities/
+  - service: split mineral site
+    args:
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::mineral-sites/split/
+        format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
+      key_prop: ["source_id", "record_id"]
+      num_buckets: 512
+  - service: split mineral site
+    args:
+      input: ::REPO::data/curated-mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::mineral-sites/curated/
+        format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
+      key_prop: ["source_id", "record_id"]
+      num_buckets: 512
+  - service: filter mineral site
+    args:
+      key_prop: ["source_id", "record_id"]
+      all_output: ::DATA_DIR::mineral-sites/split/
+      filter_output: ::DATA_DIR::mineral-sites/curated/
+      output: ::DATA_DIR::mineral-sites/non-curated/
   - service: mineral site
     args:
-      - input: ::REPO::data/inferlink/extractions/*.json
-        output: ::DATA_DIR::mineral-sites/inferlink/
-      - input: ::REPO::data/umn/*.json
-        output: ::DATA_DIR::mineral-sites/umn/
-      - input: ::REPO::data/sri/*.json
-        output: ::DATA_DIR::mineral-sites/sri/
-      - input: ::REPO::data/usc/*.json
-        output: ::DATA_DIR::mineral-sites/usc/
+      - input: ::DATA_DIR::mineral-sites/non-curated/*/*/*.json
+        output:
+          base: ::DATA_DIR::mineral-sites/mapped-non-curated/
+          format: "{filegrandparent}_{fileparent}_{filestem}.{fileext}"
+      - input: ::DATA_DIR::mineral-sites/curated/*/*/*.json
+        output:
+          base: ::DATA_DIR::mineral-sites/mapped-curated/
+          format: "{filegrandparent}__{fileparent}_{filestem}.{fileext}"
   - service: same as
     args:
-      input: ::REPO::data/umn/sameas/*.csv
+      input: ::REPO::data/same-as/umn/*.csv
       output: ::DATA_DIR::same-as/
   - service: mineral system
     args:
-      input: ::REPO::data/sri/mappableCriteria/*.json
+      input: ::REPO::data/mappable-criteria/sri/*.json
       output: ::DATA_DIR::mappable-criteria/
   - service: copy
     args:
@@ -109,8 +138,11 @@ pipeline:
   - service: load to fuseki
     args:
       input:
-        - ::DATA_DIR::*/**/*.ttl
         - ::DATA_DIR::ontology.ttl
+        - ::DATA_DIR::same-as/*.ttl
+        - ::DATA_DIR::mineral-sites/mapped-non-curated/*.ttl
+        - ::DATA_DIR::mineral-sites/mapped-curated/*.ttl
+        - ::DATA_DIR::mappable-criteria/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
         update: /minmod/update

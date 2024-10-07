@@ -2,18 +2,18 @@ version: 3
 resources: json
 preprocessing:
   - type: pmap
-    path: ["MineralSite", ..]
+    path: [..]
     output: { attr: site_uri }
     code: |
       from minmodkg.transformations import make_site_uri
       return make_site_uri(value['source_id'], value['record_id'])
   - type: pmap
-    path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"]]
+    path: [.., ["mineral_inventory"], .., ["reference"]]
     code: |
       value['id'] = str(context.get_index())
       return value
   - type: pmap
-    path: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document"]
+    path: [.., ["mineral_inventory"], .., ["reference"], "document"]
     code: |
       if "uri" in value:
         value["id"] = value["uri"]
@@ -21,105 +21,107 @@ preprocessing:
         value['id'] = str(context.get_index())
       return value
   - type: pmap
-    path: ["MineralSite", .., ["location_info"]]
+    path: [.., ["location_info"]]
     code: |
       value['id'] = str(context.get_index())
       return value
   - type: pmap
-    path: ["MineralSite", .., ["mineral_inventory"], ..]
+    path: [.., ["mineral_inventory"], ..]
     code: |
       index = context.get_index()
-      value['id'] = "inv" + str((index[1], index[3]))
+      value['id'] = "inv" + str((index[0], index[2]))
       return value
 attributes:
-  site_name: ["MineralSite", .., ["name"]]
-  site_aliases: ["MineralSite", .., ["aliases"], ..]
-  site_source_id: ["MineralSite", .., "source_id"]
-  site_record_id: ["MineralSite", .., "record_id"]
-  site_type: ["MineralSite", .., ["site_type"]]
-  site_rank: ["MineralSite", .., ["site_rank"]]
+  site_name: [.., ["name"]]
+  site_aliases: [.., ["aliases"], ..]
+  site_source_id: [.., "source_id"]
+  site_record_id: [.., "record_id"]
+  site_type: [.., ["site_type"]]
+  site_rank: [.., ["site_rank"]]
+  site_modified_at: [.., "modified_at"]
+  site_created_by: [.., "created_by"]
 
-  deposit_type_name: ["MineralSite", .., ["deposit_type_candidate"], .., "observed_name"]
-  deposit_type_source: ["MineralSite", .., ["deposit_type_candidate"], .., "source"]
-  deposit_type_confidence: ["MineralSite", .., ["deposit_type_candidate"], .., "confidence"]
-  deposit_type_normalized_uri: ["MineralSite", .., ["deposit_type_candidate"], .., ["normalized_uri"]]
+  deposit_type_name: [.., ["deposit_type_candidate"], .., "observed_name"]
+  deposit_type_source: [.., ["deposit_type_candidate"], .., "source"]
+  deposit_type_confidence: [.., ["deposit_type_candidate"], .., "confidence"]
+  deposit_type_normalized_uri: [.., ["deposit_type_candidate"], .., ["normalized_uri"]]
 
-  loc_id: ["MineralSite", .., ["location_info"], "id"]
-  location: ["MineralSite", .., ["location_info"], ["location"]]
-  crs_name: ["MineralSite", .., ["location_info"], ["crs"], ["observed_name"]]
-  crs_uri: ["MineralSite", .., ["location_info"], ["crs"], ["normalized_uri"]]
-  crs_source: ["MineralSite", .., ["location_info"], ["crs"], "source"]
-  crs_confidence: ["MineralSite", .., ["location_info"], ["crs"], "confidence"]
-  country_name: ["MineralSite", .., ["location_info"], ["country"], ["observed_name"]]
-  country_uri: ["MineralSite", .., ["location_info"], ["country"], ["normalized_uri"]]
-  country_source: ["MineralSite", .., ["location_info"], ["country"], "source"]
-  country_confidence: ["MineralSite", .., ["location_info"], ["country"], "confidence"]
-  state_or_province_name: ["MineralSite", .., ["location_info"], ["state_or_province"], ["observed_name"]]
-  state_or_province_uri: ["MineralSite", .., ["location_info"], ["state_or_province"], ["normalized_uri"]]
-  state_or_province_source: ["MineralSite", .., ["location_info"], ["state_or_province"], "source"]
-  state_or_province_confidence: ["MineralSite", .., ["location_info"], ["state_or_province"], "confidence"]
+  loc_id: [.., ["location_info"], "id"]
+  location: [.., ["location_info"], ["location"]]
+  crs_name: [.., ["location_info"], ["crs"], ["observed_name"]]
+  crs_uri: [.., ["location_info"], ["crs"], ["normalized_uri"]]
+  crs_source: [.., ["location_info"], ["crs"], "source"]
+  crs_confidence: [.., ["location_info"], ["crs"], "confidence"]
+  country_name: [.., ["location_info"], ["country"], .., ["observed_name"]]
+  country_uri: [.., ["location_info"], ["country"], .., ["normalized_uri"]]
+  country_source: [.., ["location_info"], ["country"], .., "source"]
+  country_confidence: [.., ["location_info"], ["country"], .., "confidence"]
+  state_or_province_name: [.., ["location_info"], ["state_or_province"], .., ["observed_name"]]
+  state_or_province_uri: [.., ["location_info"], ["state_or_province"], .., ["normalized_uri"]]
+  state_or_province_source: [.., ["location_info"], ["state_or_province"], .., "source"]
+  state_or_province_confidence: [.., ["location_info"], ["state_or_province"], .., "confidence"]
 
-  geology_info_age: ["MineralSite", .., ["geology_info"], ["age"]]
-  geology_info_unit_name: ["MineralSite", .., ["geology_info"], ["unit_name"]]
-  geology_info_description: ["MineralSite", .., ["geology_info"], ["description"]]
-  geology_info_lithology: ["MineralSite", .., ["geology_info"], ["lithology"]]
-  geology_info_process: ["MineralSite", .., ["geology_info"], ["process"]]
-  geology_info_environment: ["MineralSite", .., ["geology_info"], ["environment"]]
-  geology_info_comments: ["MineralSite", .., ["geology_info"], ["comments"]]
+  geology_info_age: [.., ["geology_info"], ["age"]]
+  geology_info_unit_name: [.., ["geology_info"], ["unit_name"]]
+  geology_info_description: [.., ["geology_info"], ["description"]]
+  geology_info_lithology: [.., ["geology_info"], ["lithology"]]
+  geology_info_process: [.., ["geology_info"], ["process"]]
+  geology_info_environment: [.., ["geology_info"], ["environment"]]
+  geology_info_comments: [.., ["geology_info"], ["comments"]]
 
-  inv_id: ["MineralSite", .., ["mineral_inventory"], .., "id"]
-  inv_zone: ["MineralSite", .., ["mineral_inventory"], .., ["zone"]]
-  inv_date: ["MineralSite", .., ["mineral_inventory"], .., ["date"]]
-  commodity_name: ["MineralSite", .., ["mineral_inventory"], .., "commodity", ["observed_name"]]
-  commodity_uri: ["MineralSite", .., ["mineral_inventory"], .., "commodity", ["normalized_uri"]]
-  commodity_source: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "source"]
-  commodity_confidence: ["MineralSite", .., ["mineral_inventory"], .., "commodity", "confidence"]
-  material_form_name: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], ["observed_name"]]
-  material_form_uri: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], ["normalized_uri"]]
-  material_form_source: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], "source"]
-  material_form_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["material_form"], "confidence"]
-  category_name: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["observed_name"]]
-  category_uri: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., ["normalized_uri"]]
-  category_source: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., "source"]
-  category_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["category"], .., "confidence"]
+  inv_id: [.., ["mineral_inventory"], .., "id"]
+  inv_zone: [.., ["mineral_inventory"], .., ["zone"]]
+  inv_date: [.., ["mineral_inventory"], .., ["date"]]
+  commodity_name: [.., ["mineral_inventory"], .., "commodity", ["observed_name"]]
+  commodity_uri: [.., ["mineral_inventory"], .., "commodity", ["normalized_uri"]]
+  commodity_source: [.., ["mineral_inventory"], .., "commodity", "source"]
+  commodity_confidence: [.., ["mineral_inventory"], .., "commodity", "confidence"]
+  material_form_name: [.., ["mineral_inventory"], .., ["material_form"], ["observed_name"]]
+  material_form_uri: [.., ["mineral_inventory"], .., ["material_form"], ["normalized_uri"]]
+  material_form_source: [.., ["mineral_inventory"], .., ["material_form"], "source"]
+  material_form_confidence: [.., ["mineral_inventory"], .., ["material_form"], "confidence"]
+  category_name: [.., ["mineral_inventory"], .., ["category"], .., ["observed_name"]]
+  category_uri: [.., ["mineral_inventory"], .., ["category"], .., ["normalized_uri"]]
+  category_source: [.., ["mineral_inventory"], .., ["category"], .., "source"]
+  category_confidence: [.., ["mineral_inventory"], .., ["category"], .., "confidence"]
 
-  ore_value: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["value"]]
-  ore_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], ["observed_name"]]
-  ore_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], ["normalized_uri"]]
-  ore_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], "source"]
-  ore_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["ore"], ["unit"], "confidence"]
+  ore_value: [.., ["mineral_inventory"], .., ["ore"], ["value"]]
+  ore_unit_name: [.., ["mineral_inventory"], .., ["ore"], ["unit"], ["observed_name"]]
+  ore_unit_uri: [.., ["mineral_inventory"], .., ["ore"], ["unit"], ["normalized_uri"]]
+  ore_unit_source: [.., ["mineral_inventory"], .., ["ore"], ["unit"], "source"]
+  ore_unit_confidence: [.., ["mineral_inventory"], .., ["ore"], ["unit"], "confidence"]
 
-  grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["value"]]
-  grade_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], ["observed_name"]]
-  grade_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], ["normalized_uri"]]
-  grade_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], "source"]
-  grade_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["grade"], ["unit"], "confidence"]
+  grade_value: [.., ["mineral_inventory"], .., ["grade"], ["value"]]
+  grade_unit_name: [.., ["mineral_inventory"], .., ["grade"], ["unit"], ["observed_name"]]
+  grade_unit_uri: [.., ["mineral_inventory"], .., ["grade"], ["unit"], ["normalized_uri"]]
+  grade_unit_source: [.., ["mineral_inventory"], .., ["grade"], ["unit"], "source"]
+  grade_unit_confidence: [.., ["mineral_inventory"], .., ["grade"], ["unit"], "confidence"]
 
-  cutoff_grade_value: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["value"]]
-  cutoff_grade_unit_name: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["observed_name"]]
-  cutoff_grade_unit_uri: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["normalized_uri"]]
-  cutoff_grade_unit_source: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "source"]
-  cutoff_grade_unit_confidence: ["MineralSite", .., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "confidence"]
+  cutoff_grade_value: [.., ["mineral_inventory"], .., ["cutoff_grade"], ["value"]]
+  cutoff_grade_unit_name: [.., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["observed_name"]]
+  cutoff_grade_unit_uri: [.., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], ["normalized_uri"]]
+  cutoff_grade_unit_source: [.., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "source"]
+  cutoff_grade_unit_confidence: [.., ["mineral_inventory"], .., ["cutoff_grade"], ["unit"], "confidence"]
 
-  refid: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "id"]
-  docid: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", "id"]
-  doc_uri: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["uri"]]
-  doi: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["doi"]]
-  volume: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["volume"]]
-  doc_issue: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["issue"]]
-  doc_year: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["year"]]
-  doc_month: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["month"]]
-  authors: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["authors"]]
-  journal: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["journal"]]
-  doc_desc: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["description"]]
-  doc_title: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], "document", ["title"]]
+  refid: [.., ["mineral_inventory"], .., ["reference"], "id"]
+  docid: [.., ["mineral_inventory"], .., ["reference"], "document", "id"]
+  doc_uri: [.., ["mineral_inventory"], .., ["reference"], "document", ["uri"]]
+  doi: [.., ["mineral_inventory"], .., ["reference"], "document", ["doi"]]
+  volume: [.., ["mineral_inventory"], .., ["reference"], "document", ["volume"]]
+  doc_issue: [.., ["mineral_inventory"], .., ["reference"], "document", ["issue"]]
+  doc_year: [.., ["mineral_inventory"], .., ["reference"], "document", ["year"]]
+  doc_month: [.., ["mineral_inventory"], .., ["reference"], "document", ["month"]]
+  authors: [.., ["mineral_inventory"], .., ["reference"], "document", ["authors"]]
+  journal: [.., ["mineral_inventory"], .., ["reference"], "document", ["journal"]]
+  doc_desc: [.., ["mineral_inventory"], .., ["reference"], "document", ["description"]]
+  doc_title: [.., ["mineral_inventory"], .., ["reference"], "document", ["title"]]
 
-  page_no: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["page"]]
+  page_no: [.., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["page"]]
 
-  x_min: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "x_min"]
-  x_max: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "x_max"]
-  y_min: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "y_min"]
-  y_max: ["MineralSite", .., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "y_max"]
+  x_min: [.., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "x_min"]
+  x_max: [.., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "x_max"]
+  y_min: [.., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "y_min"]
+  y_max: [.., ["mineral_inventory"], .., ["reference"], ["page_info"], .., ["bounding_box"], "y_max"]
 
 alignments:
   - type: auto
@@ -134,6 +136,8 @@ semantic_model:
       - [mno:record_id, site_record_id]
       - [mno:site_type, site_type]
       - [mno:site_rank, site_rank]
+      - [mno:modified_at, site_modified_at]
+      - [mno:created_by, site_created_by]
     links:
       - [mno:deposit_type_candidate, mno:DepositTypeCandidate:1]
       - [mno:location_info, mno:LocationInfo:1]
