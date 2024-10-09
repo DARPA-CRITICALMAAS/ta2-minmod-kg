@@ -271,7 +271,7 @@ def get_mineral_site_location(
     )
 
     site2group = get_site_group(snapshot_id, endpoint)
-    output = []
+    output = {}
 
     for row in qres:
         record = {
@@ -285,14 +285,19 @@ def get_mineral_site_location(
             "loc_wkt": row.get("loc_wkt", None),
         }
 
+        if record["ms"] in output:
+            continue
+
         if all(
             record[key] is None
             for key in ["country", "state_or_province", "loc_crs", "loc_wkt"]
         ):
             continue
+
         record["group_id"] = site2group[row["ms"]]
-        output.append(record)
-    return output
+        output[record["ms"]] = record
+
+    return list(output.values())
 
 
 @lru_cache(maxsize=32)

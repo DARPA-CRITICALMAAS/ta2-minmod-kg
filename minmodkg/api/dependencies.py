@@ -17,14 +17,14 @@ def get_snapshot_id(endpoint: str = DEFAULT_ENDPOINT):
     return qres[0]["snapshot_id"]
 
 
-def norm_commodity(commodity: str) -> str:
+def norm_commodity(commodity: str, endpoint: str = DEFAULT_ENDPOINT) -> str:
     if commodity.startswith("http"):
         raise HTTPException(
             status_code=404,
             detail=f"Expect commodity to be either just an id (QXXX) or name. Get `{commodity}` instead",
         )
     if not is_minmod_id(commodity):
-        uri = get_commodity_by_name(commodity)
+        uri = get_commodity_by_name(commodity, endpoint)
         if uri is None:
             raise HTTPException(
                 status_code=404, detail=f"Commodity `{commodity}` not found"
@@ -37,12 +37,12 @@ def is_minmod_id(text: str) -> bool:
     return text.startswith("Q") and text[1:].isdigit()
 
 
-def get_commodity_by_name(name: str) -> Optional[str]:
+def get_commodity_by_name(name: str, endpoint: str = DEFAULT_ENDPOINT) -> Optional[str]:
     query = (
         'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") }'
         % name.lower()
     )
-    qres = run_sparql_query(query, DEFAULT_ENDPOINT)
+    qres = run_sparql_query(query, endpoint)
     if len(qres) == 0:
         return None
     uri = qres[0]["uri"]
