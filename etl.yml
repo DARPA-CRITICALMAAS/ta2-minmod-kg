@@ -40,7 +40,7 @@ services:
   - name: load to fuseki
     classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
-      batch_size: 512
+      batch_size: 128
       capture_output: true
   - name: deploy fuseki
     classpath: minmodkg.fuseki_deployment.FusekiDeploymentService
@@ -76,7 +76,7 @@ pipeline:
         base: ::DATA_DIR::mineral-sites/split/
         format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
       key_prop: ["source_id", "record_id"]
-      num_buckets: 512
+      num_buckets: 64
   - service: split mineral site
     args:
       input: ::REPO::data/curated-mineral-sites/*/*/*.json
@@ -84,7 +84,7 @@ pipeline:
         base: ::DATA_DIR::mineral-sites/curated/
         format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
       key_prop: ["source_id", "record_id"]
-      num_buckets: 512
+      num_buckets: 64
   - service: filter mineral site
     args:
       key_prop: ["source_id", "record_id"]
@@ -139,6 +139,7 @@ pipeline:
     args:
       input:
         - ::DATA_DIR::ontology.ttl
+        - ::DATA_DIR::predefined-entities/*.ttl
         - ::DATA_DIR::same-as/*.ttl
         - ::DATA_DIR::mineral-sites/mapped-non-curated/*.ttl
         - ::DATA_DIR::mineral-sites/mapped-curated/*.ttl
