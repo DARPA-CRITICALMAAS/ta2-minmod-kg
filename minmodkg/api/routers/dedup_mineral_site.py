@@ -133,7 +133,11 @@ def get_dedup_mineral_site_data(
                 site["ms_type"] = "NotSpecified"
 
         crs_wkts = [
-            (rank_source(x["ms"], snapshot_id, endpoint), x["loc_crs"], x["loc_wkt"])
+            (
+                rank_source(x["ms_source"], snapshot_id, endpoint),
+                x["loc_crs"],
+                x["loc_wkt"],
+            )
             for x in lst
             if x["loc_wkt"] is not None
         ]
@@ -223,9 +227,10 @@ def get_mineral_site_location(
         """
     SELECT 
         ?ms 
-        ?ms_name 
+        ?ms_name
         ?ms_type 
         ?ms_rank
+        ?ms_source
         ?state_or_province
         ?state_or_province_name
         ?country
@@ -236,6 +241,8 @@ def get_mineral_site_location(
     WHERE {
         { SELECT DISTINCT ?ms WHERE { ?ms :mineral_inventory/:commodity/:normalized_uri %s . } }
         
+        ?ms :source_id ?ms_source .
+
         OPTIONAL { ?ms rdfs:label ?ms_name . }
         OPTIONAL { ?ms :site_type ?ms_type . }
         OPTIONAL { ?ms :site_rank ?ms_rank . }
@@ -279,6 +286,7 @@ def get_mineral_site_location(
             "ms_name": row["ms_name"],
             "ms_type": row["ms_type"],
             "ms_rank": row["ms_rank"],
+            "ms_source": row["ms_source"],
             "country": row.get("country_name", None),
             "state_or_province": row.get("state_or_province_name", None),
             "loc_crs": row.get("loc_crs_name", None),
