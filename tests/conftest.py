@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from minmodkg.api import app
+from minmodkg.api.main import app
 
 
 @pytest.fixture

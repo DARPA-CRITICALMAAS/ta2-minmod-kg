@@ -133,7 +133,7 @@ def get_dedup_mineral_site_data(
                 site["ms_type"] = "NotSpecified"
 
         crs_wkts = [
-            (rank_source(x["ms"]), x["loc_crs"], x["loc_wkt"])
+            (rank_source(x["ms"], snapshot_id, endpoint), x["loc_crs"], x["loc_wkt"])
             for x in lst
             if x["loc_wkt"] is not None
         ]
@@ -357,7 +357,11 @@ def get_deposit_type_classification(
     """ % (
         f"mnr:{commodity}"
     )
-    qres = run_sparql_query(query, endpoint)
+    qres = run_sparql_query(query, endpoint, ["ms", "deposit_type"])
+
+    if len(qres) == 0:
+        return []
+
     # Old code copy from `generate_ta2_outputs.py`
     deposits_data = pd.DataFrame(
         [
@@ -377,9 +381,8 @@ def get_deposit_type_classification(
                 "deposit_classification_source": row.get("deposit_source", None),
             }
             for row in qres
-        ]
+        ],
     )
-
     deposits_df = deposits_data.drop_duplicates()
     deposits_df.reset_index(drop=True, inplace=True)
     deposits_df.set_index(["ms", "deposit_type"], inplace=True)

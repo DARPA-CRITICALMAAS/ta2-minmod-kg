@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
+from functools import lru_cache
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
-from minmodkg.misc import run_sparql_query
+from minmodkg.misc import LongestPrefixIndex, run_sparql_query
 
 DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
 MNR_NS = "https://minmod.isi.edu/resource/"
@@ -51,19 +53,41 @@ def get_commodity_by_name(name: str, endpoint: str = DEFAULT_ENDPOINT) -> Option
     return uri
 
 
-def rank_source(source_id: str) -> int:
+def rank_source(
+    source_id: str, snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT
+) -> int:
     """Get ranking of a source, higher is better"""
     default_score = 5
-    order = [
-        ("https://api.cdr.land/v1/docs/documents", 10),
-        ("https://w3id.org/usgs", 10),
-        ("https://doi.org/", 10),
-        ("http://minmod.isi.edu/", 10),
-        ("https://mrdata.usgs.gov/deposit", 7),
-        ("https://mrdata.usgs.gov/mrds", 1),
-    ]
+    score = get_source_scores(snapshot_id, endpoint).get_score(source_id)
+    if score is None:
+        print("Unknown source id:", source_id)
+        return default_score
+    return score
 
-    for prefix, score in order:
-        if source_id.startswith(prefix):
-            return score
-    return default_score
+
+@dataclass
+class SourceScore:
+    source2score: dict[str, int]
+    index: LongestPrefixIndex
+
+    def get_score(self, source_id: str) -> Optional[int]:
+        prefix = self.index.get(source_id)
+        if prefix is not None:
+            return self.source2score[prefix]
+        return None
+
+
+@lru_cache(maxsize=1)
+def get_source_scores(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
+    query = """
+    SELECT ?uri ?prefixed_id ?score
+    WHERE {
+        ?uri a :SourceScore ;
+            :prefixed_id ?prefixed_id ;
+            :score ?score
+    }
+    """
+    qres = run_sparql_query(query, endpoint)
+    source2score = {record["prefixed_id"]: record["score"] for record in qres}
+    index = LongestPrefixIndex.create(list(source2score.keys()))
+    return SourceScore(source2score, index)
