@@ -129,42 +129,23 @@ def upload_ta2_output(
     CDRHelper.upload_collection(CDRHelper.DedupSites, inputs)
 
 
+def get_critical_commodities():
+    resp = httpx.get(
+        f"{MINMOD_API}/commodities?is_critical=1",
+        verify=False,
+        timeout=None,
+    )
+    resp.raise_for_status()
+    return [r["name"] for r in resp.json()]
+
+
 if __name__ == "__main__":
     # replace_deposit_types()
     # CDRHelper.truncate(CDRHelper.DedupSites)
+    commodities = sorted(get_critical_commodities())
+    # commodities = ["Promethium"]
 
-    commodities = [
-        "Zinc",
-        "Nickel",
-        "Cobalt",
-        "Lithium",
-        "Copper",
-        "Tungsten",
-        "Scandium",
-        "Lanthanum",
-        "Cerium",
-        "Yttrium",
-        "Praseodymium",
-        "Neodymium",
-        "Samarium",
-        "Europium",
-        "Terbium",
-        "Gadolinium",
-        "Ytterbium",
-        "Dysprosium",
-        "Thulium",
-        "Lutetium",
-        "Holmium",
-        "Erbium",
-        "Germanium",
-        "Gallium",
-        "Indium",
-        "Silver",
-        "Rhenium",
-        "Molybdenum",
-        "Tellurium",
-        "Gold",
-    ]
+    print(commodities)
 
     for commodity in tqdm(commodities):
         upload_ta2_output(
@@ -174,12 +155,12 @@ if __name__ == "__main__":
             no_upload=True,
         )
 
-    CDRHelper.truncate(CDRHelper.DedupSites)
+    # CDRHelper.truncate(CDRHelper.DedupSites)
 
-    for commodity in tqdm(commodities):
-        upload_ta2_output(
-            commodity,
-            norm_tonnage_unit=Mt_unit,
-            norm_grade_unit=percent_unit,
-            no_upload=False,
-        )
+    # for commodity in tqdm(commodities):
+    #     upload_ta2_output(
+    #         commodity,
+    #         norm_tonnage_unit=Mt_unit,
+    #         norm_grade_unit=percent_unit,
+    #         no_upload=False,
+    #     )
