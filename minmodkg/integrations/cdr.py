@@ -155,12 +155,12 @@ if __name__ == "__main__":
             no_upload=True,
         )
 
-    # CDRHelper.truncate(CDRHelper.DedupSites)
+    CDRHelper.truncate(CDRHelper.DedupSites)
 
-    # for commodity in tqdm(commodities):
-    #     upload_ta2_output(
-    #         commodity,
-    #         norm_tonnage_unit=Mt_unit,
-    #         norm_grade_unit=percent_unit,
-    #         no_upload=False,
-    #     )
+    for commodity in tqdm(commodities):
+        upload_ta2_output(
+            commodity,
+            norm_tonnage_unit=Mt_unit,
+            norm_grade_unit=percent_unit,
+            no_upload=False,
+        )
