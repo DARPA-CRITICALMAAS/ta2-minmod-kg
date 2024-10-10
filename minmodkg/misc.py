@@ -152,6 +152,7 @@ def run_sparql_query(
             elif val["datatype"] in {
                 "http://www.w3.org/2001/XMLSchema#decimal",
                 "http://www.w3.org/2001/XMLSchema#double",
+                "http://www.w3.org/2001/XMLSchema#float",
             }:
                 for i, row in enumerate(qres):
                     if key in row:
