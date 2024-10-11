@@ -66,7 +66,7 @@ class MinmodHelper:
         for record in r.json():
             id = record["uri"][len(MNR_NS) :]
             name = record["name"]
-            assert id not in id2name
+            assert id not in id2name, (id, id2name)
             id2name[id] = name
         return id2name
 

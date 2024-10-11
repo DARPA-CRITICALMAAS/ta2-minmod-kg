@@ -8,6 +8,18 @@ MNR_NS = "https://minmod.isi.edu/resource/"
 
 
 def make_site_uri(source_id: str, record_id: str, namespace: str = MNR_NS) -> str:
+    if source_id.find("::") != -1:
+        # we need to remove the category from the source_id
+        category, source_id = source_id.split("::")
+        assert category in {
+            "mining-report",
+            "article",
+            "database",
+            "curated-mining-report",
+            "curated-article",
+            "curated-database",
+        }
+
     if source_id.startswith("http://"):
         if source_id.startswith("http://"):
             source_id = source_id[7:]

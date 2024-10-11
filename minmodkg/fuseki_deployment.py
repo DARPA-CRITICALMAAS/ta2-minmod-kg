@@ -77,6 +77,9 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
                 # remove old databases
                 for old_db in dbinfo.get_older_versions():
                     shutil.rmtree(old_db.dir)
+        else:
+            for old_db in dbinfo.get_older_versions():
+                shutil.rmtree(old_db.dir)
 
         return
 

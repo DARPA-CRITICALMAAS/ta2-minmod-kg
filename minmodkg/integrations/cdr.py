@@ -74,7 +74,10 @@ def upload_ta2_output(
 
     inputs = []
     for group in dedup_sites:
-        if group["best_loc_wkt"] is not None:
+        if (
+            group["best_loc_wkt"] is not None
+            and group["best_loc_wkt"] != "MULTIPOINT()"
+        ):
             assert group["best_loc_wkt"] != ""
             assert group["best_loc_centroid_epsg_4326"] is not None, (
                 "Invalid WKT",
