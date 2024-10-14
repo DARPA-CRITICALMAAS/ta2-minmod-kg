@@ -40,7 +40,7 @@ services:
   - name: load to fuseki
     classpath: statickg.services.fuseki.FusekiDataLoaderService
     args:
-      batch_size: 128
+      batch_size: 102400
       capture_output: true
   - name: deploy fuseki
     classpath: minmodkg.fuseki_deployment.FusekiDeploymentService
@@ -76,7 +76,7 @@ pipeline:
         base: ::DATA_DIR::mineral-sites/split/
         format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
       key_prop: ["source_id", "record_id"]
-      num_buckets: 64
+      num_buckets: 512
   - service: split mineral site
     args:
       input: ::REPO::data/curated-mineral-sites/*/*/*.json
@@ -84,7 +84,7 @@ pipeline:
         base: ::DATA_DIR::mineral-sites/curated/
         format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
       key_prop: ["source_id", "record_id"]
-      num_buckets: 64
+      num_buckets: 512
   - service: filter mineral site
     args:
       key_prop: ["source_id", "record_id"]
@@ -96,11 +96,11 @@ pipeline:
       - input: ::DATA_DIR::mineral-sites/non-curated/*/*/*.json
         output:
           base: ::DATA_DIR::mineral-sites/mapped-non-curated/
-          format: "{filegrandparent}_{fileparent}_{filestem}.{fileext}"
+          format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
       - input: ::DATA_DIR::mineral-sites/curated/*/*/*.json
         output:
           base: ::DATA_DIR::mineral-sites/mapped-curated/
-          format: "{filegrandparent}__{fileparent}_{filestem}.{fileext}"
+          format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
   - service: same as
     args:
       input: ::REPO::data/same-as/umn/*.csv
@@ -118,23 +118,6 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  # # test incremental loading
-  # - service: load to fuseki
-  #   args:
-  #     input: ::DATA_DIR::*/**/*.ttl
-  #     replaceable_input: ::DATA_DIR::version.ttl
-  #     endpoint:
-  #       update: /minmod/update
-  #       gsp: /minmod/data
-  #       start: >-
-  #         echo 'start {ID}'
-  #       stop: echo 'stop {ID}'
-  #       find_by_id: echo ''
-  #     load:
-  #       command: >-
-  #         echo 'load {FILES}'
-  #       basedir: "::DATA_DIR::"
-  #       dbdir: "::DB_DIR::"
   - service: load to fuseki
     args:
       input:
@@ -163,7 +146,7 @@ pipeline:
           docker run --rm -w /data
           -v {DB_DIR}:/databases
           -v ::DATA_DIR::{}:/data
-          minmod-fuseki tdb2.tdbloader --loc /databases {FILES}
+          minmod-fuseki mytdbloader --loc /databases {FILES}
         basedir: "::DATA_DIR::"
         dbdir: "::DB_DIR::"
   - service: deploy fuseki

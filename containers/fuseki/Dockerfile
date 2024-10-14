@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jdk
 
 ARG UID=1000
 ARG GID=1000
@@ -20,6 +20,10 @@ RUN cd /tmp && \
     rm apache-jena-fuseki-5.1.0.tar.gz && \
     mv apache-jena-fuseki-5.1.0 $FUSEKI_HOME
 
-ADD config.ttl ${FUSEKI_HOME}/config.ttl
+ADD --chown=criticalmaas:criticalmaas config.ttl ${FUSEKI_HOME}/config.ttl
 
-ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/:$PATH
+ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/:${FUSEKI_HOME}/mytdb:$PATH
+
+COPY --chown=criticalmaas:criticalmaas mytdb ${FUSEKI_HOME}/mytdb
+
+RUN cd ${FUSEKI_HOME}/mytdb && chmod +x mytdbloader && bash compile.sh
