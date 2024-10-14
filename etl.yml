@@ -124,8 +124,8 @@ pipeline:
         - ::DATA_DIR::ontology.ttl
         - ::DATA_DIR::predefined-entities/*.ttl
         - ::DATA_DIR::same-as/*.ttl
-        - ::DATA_DIR::mineral-sites/mapped-non-curated/*.ttl
-        - ::DATA_DIR::mineral-sites/mapped-curated/*.ttl
+        - ::DATA_DIR::mineral-sites/mapped-non-curated/*/*.ttl
+        - ::DATA_DIR::mineral-sites/mapped-curated/*/*.ttl
         - ::DATA_DIR::mappable-criteria/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
