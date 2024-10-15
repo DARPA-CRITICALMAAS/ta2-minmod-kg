@@ -25,6 +25,7 @@ services:
     args:
       path: ::CFG_DIR::extractors/mineral_site.yml
       format: turtle
+      parallel: true
   - name: mineral system
     classpath: statickg.services.drepr.DReprService
     ext: ttl
