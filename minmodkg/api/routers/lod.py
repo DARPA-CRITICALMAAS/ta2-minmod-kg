@@ -39,6 +39,10 @@ def get_ontology(
 
 
 def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
+    # https://stackoverflow.com/questions/37186530/how-do-i-construct-get-the-whole-sub-graph-from-a-given-resource-in-rdf-graph/37213209#37213209
+    # adapt from this answer to fit our need
+    # we do not blindly follow all paths (<>|!<>)* and filter out the URI nodes because it follows
+    # the sameAs path, which leads to explosive results
     g = Graph()
     resp = send_sparql_query(
         """
@@ -55,7 +59,7 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         OPTIONAL { ?c rdfs:label ?cname . }
         OPTIONAL { ?b rdfs:label ?bname . }
         OPTIONAL { 
-            ?a (<>|!<>)* ?s . 
+            ?a (!owl:sameAs)* ?s . 
             FILTER (isBlank(?s)) .
             ?s ?p ?o .
             OPTIONAL { ?o rdfs:label ?oname . }
