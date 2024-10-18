@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from uuid import uuid4
 
 from slugify import slugify
 
@@ -41,3 +42,7 @@ def make_site_uri(source_id: str, record_id: str, namespace: str = MNR_NS) -> st
     if len(path) > 120:
         path = path[:120] + "__" + hashlib.sha256(path.encode()).hexdigest()[:8]
     return f"{namespace}site__{path}"
+
+
+def get_uuid4(prefix: str = "B", namespace: str = MNR_NS):
+    return f"{namespace}{prefix}_{str(uuid4()).replace('-', '')}"

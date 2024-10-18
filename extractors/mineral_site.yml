@@ -10,26 +10,29 @@ preprocessing:
   - type: pmap
     path: [.., ["mineral_inventory"], .., ["reference"]]
     code: |
-      value['id'] = str(context.get_index())
+      from minmodkg.transformations import get_uuid4
+      value['id'] = get_uuid4("BIR")
       return value
   - type: pmap
     path: [.., ["mineral_inventory"], .., ["reference"], "document"]
     code: |
+      from minmodkg.transformations import get_uuid4
       if "uri" in value:
         value["id"] = value["uri"]
       else:
-        value['id'] = str(context.get_index())
+        value['id'] = get_uuid4("BIRD")
       return value
   - type: pmap
     path: [.., ["location_info"]]
     code: |
-      value['id'] = str(context.get_index())
+      from minmodkg.transformations import get_uuid4
+      value['id'] = get_uuid4("BL")
       return value
   - type: pmap
     path: [.., ["mineral_inventory"], ..]
     code: |
-      index = context.get_index()
-      value['id'] = "inv" + str((index[0], index[2]))
+      from minmodkg.transformations import get_uuid4
+      value['id'] = get_uuid4("BI")
       return value
 attributes:
   site_name: [.., ["name"]]
@@ -155,7 +158,7 @@ semantic_model:
   # LocationInfo
   mno:LocationInfo:1:
     properties:
-      - [drepr:blank, loc_id]
+      - [drepr:uri, loc_id]
       - [mno:location, location, geo:wktLiteral]
     links:
       - [mno:crs, mno:CoordinateReferenceSystemCandidate:crs]
@@ -196,7 +199,7 @@ semantic_model:
   # MineralInventory
   mno:MineralInventory:1:
     properties:
-      - [drepr:blank, inv_id]
+      - [drepr:uri, inv_id]
       - [mno:date, inv_date, xsd:date]
       - [mno:zone, inv_zone]
     links:
@@ -262,7 +265,7 @@ semantic_model:
 
   mno:Reference:1:
     properties:
-      - [drepr:blank, refid]
+      - [drepr:uri, refid]
     links:
       - [mno:document, mno:Document:1]
       - [mno:page_info, mno:PageInfo:1]
@@ -282,7 +285,7 @@ semantic_model:
 
   mno:Document:1:
     properties:
-      - [drepr:blank, docid]
+      - [drepr:uri, docid]
       - [mno:uri, doc_uri]
       - [mno:doi, doi]
       - [mno:journal, journal]
