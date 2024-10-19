@@ -2,18 +2,16 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Generic, Mapping, Optional, TypeVar, Union
+from typing import Any, Generic, Optional, TypeVar, Union
 
 import pandas as pd
 import requests
 import shapely.ops
+from minmodkg.config import DEFAULT_ENDPOINT
 from pyproj import Transformer
-from shapely.errors import WKTReadingError
 from shapely.geometry import GeometryCollection
 from shapely.wkt import dumps, loads
 
-DEFAULT_ENDPOINT = "https://minmod.isi.edu/sparql"
-MNR_NS = "https://minmod.isi.edu/resource/"
 V = TypeVar("V")
 
 

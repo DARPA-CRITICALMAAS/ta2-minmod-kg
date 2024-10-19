@@ -7,7 +7,8 @@ import rdflib
 import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
-from minmodkg.api.dependencies import DEFAULT_ENDPOINT, MNO_NS, MNR_NS
+from minmodkg.api.dependencies import DEFAULT_ENDPOINT
+from minmodkg.config import MNO_NS, MNR_NS
 from minmodkg.misc import send_sparql_query
 from rdflib import RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral

@@ -166,3 +166,4 @@ data*
 .env
 .myenv
 env
+config.yml

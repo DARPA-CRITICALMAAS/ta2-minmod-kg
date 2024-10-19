@@ -2,15 +2,50 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from functools import lru_cache
-from typing import Optional
+from pathlib import Path
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import APIKeyCookie
+from minmodkg.api.models.db import SessionDep
+from minmodkg.api.models.user import User
+from minmodkg.config import DEFAULT_ENDPOINT, JWT_ALGORITHM, MNR_NS, SECRET_KEY
 from minmodkg.misc import LongestPrefixIndex, run_sparql_query
 
-DEFAULT_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "https://minmod.isi.edu/sparql")
-MNR_NS = "https://minmod.isi.edu/resource/"
-MNO_NS = "https://minmod.isi.edu/ontology/"
+# for login/security
+token_from_cookie = APIKeyCookie(name="session")
+TokenDep = Annotated[str, Depends(token_from_cookie)]
+
+
+async def get_current_user(session: SessionDep, token: TokenDep):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        expired_at = datetime.fromtimestamp(payload.get("exp"), timezone.utc)
+        if expired_at < datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Credentials expired",
+            )
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+
+    user = session.get(User, username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
 def get_snapshot_id(endpoint: str = DEFAULT_ENDPOINT):

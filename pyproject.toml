@@ -17,6 +17,8 @@ htbuilder = "^0.6.2"
 pandas = "^2.2.2"
 shapely = "^2.0.5"
 pyproj = "^3.6.1"
+pyjwt = "^2.9.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

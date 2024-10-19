@@ -8,13 +8,8 @@ from enum import Enum
 from functools import cached_property, cmp_to_key, lru_cache
 from typing import Iterable, Optional, Union
 
-from minmodkg.misc import (
-    MNR_NS,
-    UnconvertibleUnitError,
-    V,
-    assert_isinstance,
-    group_by_attr,
-)
+from minmodkg.config import MNR_NS
+from minmodkg.misc import UnconvertibleUnitError, V, assert_isinstance, group_by_attr
 
 
 class ResourceCategory(str, Enum):

@@ -1,0 +1,5 @@
+sparql_endpoint: https://minmod.isi.edu/sparql
+mnr_ns: https://minmod.isi.edu/resource/
+mno_ns: https://minmod.isi.edu/ontology/
+dbfile: minmod.db
+secret_key: 4a7bc742a82cf193b20b3a017a73cd58e6fa00d3eeb052bba4ba31d767eaf8c0
