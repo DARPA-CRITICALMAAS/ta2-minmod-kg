@@ -9,13 +9,13 @@ import pandas as pd
 import shapely.wkt
 from fastapi import APIRouter, Query, Response
 from minmodkg.api.dependencies import (
-    DEFAULT_ENDPOINT,
+    SPARQL_ENDPOINT,
     get_snapshot_id,
     norm_commodity,
     rank_source,
 )
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
-from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, run_sparql_query
+from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, sparql_query
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -59,7 +59,7 @@ def get_dedup_mineral_site_data(
     norm_tonnage_unit=None,
     norm_grade_unit=None,
     date_precision: Literal["year", "month", "day"] = "month",
-    endpoint: str = DEFAULT_ENDPOINT,
+    endpoint: str = SPARQL_ENDPOINT,
 ):
     """This new function is going to replace `get_hyper_mineral_site_data`"""
     site2group = get_site_group(snapshot_id, endpoint)
@@ -195,9 +195,9 @@ def get_dedup_mineral_site_data(
 
 
 @lru_cache(maxsize=1)
-def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
+def get_site_group(snapshot_id: str, endpoint=SPARQL_ENDPOINT):
     query = "SELECT ?s1 ?s2 WHERE { ?s1 a :MineralSite . ?s2 a :MineralSite . ?s1 owl:sameAs ?s2 . }"
-    output = run_sparql_query(query, endpoint)
+    output = sparql_query(query, endpoint)
     G = nx.from_edgelist([(row["s1"], row["s2"]) for row in output])
     groups = nx.connected_components(G)
 
@@ -209,7 +209,7 @@ def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
     max_group_id = max(mapping.values())
 
     query = "SELECT ?s1 WHERE { ?s1 a :MineralSite . FILTER NOT EXISTS { ?s1 owl:sameAs ?s2 . } }"
-    output = run_sparql_query(query, DEFAULT_ENDPOINT)
+    output = sparql_query(query, SPARQL_ENDPOINT)
     unlinked_sites = sorted(row["s1"] for row in output)
     for i, site in enumerate(unlinked_sites, start=1):
         mapping[site] = max_group_id + i
@@ -221,7 +221,7 @@ def get_site_group(snapshot_id: str, endpoint=DEFAULT_ENDPOINT):
 def get_mineral_site_location(
     snapshot_id: str,
     commodity: str,
-    endpoint=DEFAULT_ENDPOINT,
+    endpoint=SPARQL_ENDPOINT,
 ) -> list[dict]:
     query = (
         """
@@ -267,7 +267,7 @@ def get_mineral_site_location(
     """
         % f"mnr:{commodity}"
     )
-    qres = run_sparql_query(
+    qres = sparql_query(
         query,
         endpoint,
         [
@@ -312,7 +312,7 @@ def get_mineral_site_location(
 def get_deposit_type_classification(
     snapshot_id: str,
     commodity: str,
-    endpoint=DEFAULT_ENDPOINT,
+    endpoint=SPARQL_ENDPOINT,
 ):
     query = """
     SELECT
@@ -365,7 +365,7 @@ def get_deposit_type_classification(
     """ % (
         f"mnr:{commodity}"
     )
-    qres = run_sparql_query(query, endpoint, ["ms", "deposit_type"])
+    qres = sparql_query(query, endpoint, ["ms", "deposit_type"])
 
     if len(qres) == 0:
         return []
@@ -469,7 +469,7 @@ def get_grade_tonnage_inventory(
     norm_tonnage_unit=None,
     norm_grade_unit=None,
     date_precision: Literal["year", "month", "day"] = "month",
-    endpoint=DEFAULT_ENDPOINT,
+    endpoint=SPARQL_ENDPOINT,
 ):
     query = """
     SELECT 
@@ -536,7 +536,7 @@ def get_grade_tonnage_inventory(
     """ % (
         f"mnr:{commodity}"
     )
-    qres = run_sparql_query(
+    qres = sparql_query(
         query,
         endpoint,
         [

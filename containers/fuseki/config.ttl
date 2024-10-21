@@ -27,4 +27,4 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
   .
 
 :dataset rdf:type  tdb2:DatasetTDB2 ;
-    tdb2:location "/databases" .
+    tdb2:location "/home/criticalmaas/databases" .

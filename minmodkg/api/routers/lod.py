@@ -7,9 +7,9 @@ import rdflib
 import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
-from minmodkg.api.dependencies import DEFAULT_ENDPOINT
+from minmodkg.api.dependencies import SPARQL_ENDPOINT
 from minmodkg.config import MNO_NS, MNR_NS
-from minmodkg.misc import send_sparql_query
+from minmodkg.misc import sparql
 from rdflib import RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -22,9 +22,9 @@ def get_resource(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):
     if format == "html":
-        return render_entity_html(URIRef(MNR_NS + resource_id), DEFAULT_ENDPOINT)
+        return render_entity_html(URIRef(MNR_NS + resource_id), SPARQL_ENDPOINT)
     if format == "json":
-        return render_entity_json(URIRef(MNR_NS + resource_id), DEFAULT_ENDPOINT)
+        return render_entity_json(URIRef(MNR_NS + resource_id), SPARQL_ENDPOINT)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
@@ -33,9 +33,9 @@ def get_ontology(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):
     if format == "html":
-        return render_entity_html(URIRef(MNO_NS + resource_id), DEFAULT_ENDPOINT)
+        return render_entity_html(URIRef(MNO_NS + resource_id), SPARQL_ENDPOINT)
     if format == "json":
-        return render_entity_json(URIRef(MNO_NS + resource_id), DEFAULT_ENDPOINT)
+        return render_entity_json(URIRef(MNO_NS + resource_id), SPARQL_ENDPOINT)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
@@ -45,7 +45,7 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
     # we do not blindly follow all paths (<>|!<>)* and filter out the URI nodes because it follows
     # the sameAs path, which leads to explosive results
     g = Graph()
-    resp = send_sparql_query(
+    resp = sparql(
         """
     CONSTRUCT { 
         ?a ?b ?c . 
@@ -60,7 +60,7 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         OPTIONAL { ?c rdfs:label ?cname . }
         OPTIONAL { ?b rdfs:label ?bname . }
         OPTIONAL { 
-            ?a (!owl:sameAs)* ?s . 
+            ?a (!owl:sameAs)+ ?s . 
             FILTER (isBlank(?s)) .
             ?s ?p ?o .
             OPTIONAL { ?o rdfs:label ?oname . }
@@ -86,11 +86,8 @@ def render_entity_json(subj: URIRef, endpoint: str):
             return "@label"
         if obj == RDF.type:
             return "@type"
-
-        if (obj, RDFS.label, None) in g:
-            return next(g.objects(obj, RDFS.label))
         assert isinstance(obj, (URIRef, RDFLiteral))
-        return obj.n3(g.namespace_manager)
+        return obj.n3(g.namespace_manager).rsplit(":", 1)[-1]
 
     def make_tree(obj: rdflib.term.Node, visited: set):
         if isinstance(obj, RDFLiteral):

@@ -4,8 +4,8 @@ from functools import lru_cache
 from typing import Optional
 
 from fastapi import APIRouter
-from minmodkg.api.dependencies import DEFAULT_ENDPOINT, get_snapshot_id
-from minmodkg.misc import run_sparql_query
+from minmodkg.api.dependencies import SPARQL_ENDPOINT, get_snapshot_id
+from minmodkg.misc import sparql_query
 
 router = APIRouter(tags=["deposit_types"])
 
@@ -22,7 +22,7 @@ def commodities(is_critical: Optional[bool] = None):
 
 
 @lru_cache(maxsize=1)
-def get_commodities(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
+def get_commodities(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
     query = """
     SELECT ?uri ?name ?is_critical
     WHERE {
@@ -31,5 +31,5 @@ def get_commodities(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
             :is_critical_commodity ?is_critical
     }
     """
-    qres = run_sparql_query(query, endpoint)
+    qres = sparql_query(query, endpoint)
     return qres

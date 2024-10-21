@@ -1,5 +1,4 @@
-from jsonschema import validate, ValidationError
-import pytest
+from jsonschema import validate
 
 count_schema = {
     "type": "object",

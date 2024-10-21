@@ -24,6 +24,8 @@ RUN cd /tmp && \
 
 ADD --chown=criticalmaas:criticalmaas config.ttl ${FUSEKI_HOME}/config.ttl
 
+RUN mkdir /home/criticalmaas/databases
+
 ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/:${FUSEKI_HOME}/mytdb2:$PATH
 
 COPY --chown=criticalmaas:criticalmaas mytdb2 ${FUSEKI_HOME}/mytdb2

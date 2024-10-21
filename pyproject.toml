@@ -18,13 +18,15 @@ pandas = "^2.2.2"
 shapely = "^2.0.5"
 pyproj = "^3.6.1"
 pyjwt = "^2.9.0"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"
 pydantic = "^2.7.4"
 pytest = "^8.3.2"
 jsonschema = "^4.23.0"
+pytest-dotenv = "^0.5.2"
+
 
 [build-system]
 requires = ["poetry-core"]

@@ -70,37 +70,33 @@ pipeline:
     args:
       input: ::REPO::data/entities/*.csv
       output: ::DATA_DIR::predefined-entities/
-  - service: split mineral site
-    args:
-      input: ::REPO::data/mineral-sites/*/*/*.json
-      output:
-        base: ::DATA_DIR::mineral-sites/split/
-        format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
-      key_prop: ["source_id", "record_id"]
-      num_buckets: 512
-  - service: split mineral site
-    args:
-      input: ::REPO::data/curated-mineral-sites/*/*/*.json
-      output:
-        base: ::DATA_DIR::mineral-sites/curated/
-        format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
-      key_prop: ["source_id", "record_id"]
-      num_buckets: 512
-  - service: filter mineral site
-    args:
-      key_prop: ["source_id", "record_id"]
-      all_output: ::DATA_DIR::mineral-sites/split/
-      filter_output: ::DATA_DIR::mineral-sites/curated/
-      output: ::DATA_DIR::mineral-sites/non-curated/
+  # - service: split mineral site
+  #   args:
+  #     input: ::REPO::data/mineral-sites/*/*/*.json
+  #     output:
+  #       base: ::DATA_DIR::mineral-sites/split/
+  #       format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
+  #     key_prop: ["source_id", "record_id"]
+  #     num_buckets: 512
+  # - service: split mineral site
+  #   args:
+  #     input: ::REPO::data/curated-mineral-sites/*/*/*.json
+  #     output:
+  #       base: ::DATA_DIR::mineral-sites/curated/
+  #       format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
+  #     key_prop: ["source_id", "record_id"]
+  #     num_buckets: 512
+  # - service: filter mineral site
+  #   args:
+  #     key_prop: ["source_id", "record_id"]
+  #     all_output: ::DATA_DIR::mineral-sites/split/
+  #     filter_output: ::DATA_DIR::mineral-sites/curated/
+  #     output: ::DATA_DIR::mineral-sites/non-curated/
   - service: mineral site
     args:
-      - input: ::DATA_DIR::mineral-sites/non-curated/*/*/*.json
+      - input: ::REPO::data/mineral-sites/*/*/*.json
         output:
-          base: ::DATA_DIR::mineral-sites/mapped-non-curated/
-          format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
-      - input: ::DATA_DIR::mineral-sites/curated/*/*/*.json
-        output:
-          base: ::DATA_DIR::mineral-sites/mapped-curated/
+          base: ::DATA_DIR::mineral-sites
           format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
   - service: same as
     args:
@@ -125,8 +121,7 @@ pipeline:
         - ::DATA_DIR::ontology.ttl
         - ::DATA_DIR::predefined-entities/*.ttl
         - ::DATA_DIR::same-as/*.ttl
-        - ::DATA_DIR::mineral-sites/mapped-non-curated/*/*.ttl
-        - ::DATA_DIR::mineral-sites/mapped-curated/*/*.ttl
+        - ::DATA_DIR::mineral-sites/*/*.ttl
         - ::DATA_DIR::mappable-criteria/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
@@ -135,7 +130,7 @@ pipeline:
         start: >-
           docker run --name {ID}
           -d -p {PORT}:3030
-          -v {DB_DIR}:/databases
+          -v {DB_DIR}:/home/criticalmaas/databases
           -v ::DATA_DIR::{}:/data
           --network=minmod
           --network-alias=kg
@@ -145,9 +140,9 @@ pipeline:
       load:
         command: >-
           docker run --rm -w /data
-          -v {DB_DIR}:/databases
+          -v {DB_DIR}:/home/criticalmaas/databases
           -v ::DATA_DIR::{}:/data
-          minmod-fuseki mytdbloader --loc /databases {FILES}
+          minmod-fuseki mytdbloader --loc /home/criticalmaas/databases {FILES}
         basedir: "::DATA_DIR::"
         dbdir: "::DB_DIR::"
   - service: deploy fuseki
@@ -155,7 +150,7 @@ pipeline:
       start: >-
         docker run --name {ID}
         -d -p {PORT}:3030
-        -v {DB_DIR}:/databases
+        -v {DB_DIR}:/home/criticalmaas/databases
         -v ::DATA_DIR::{}:/data
         --network=minmod
         --network-alias=kg

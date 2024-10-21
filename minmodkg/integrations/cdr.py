@@ -146,19 +146,19 @@ if __name__ == "__main__":
     # replace_deposit_types()
     # CDRHelper.truncate(CDRHelper.DedupSites)
     commodities = sorted(get_critical_commodities())
-    # commodities = ["Promethium"]
+    commodities = ["Mica"]
 
     print(commodities)
 
-    for commodity in tqdm(commodities):
-        upload_ta2_output(
-            commodity,
-            norm_tonnage_unit=Mt_unit,
-            norm_grade_unit=percent_unit,
-            no_upload=True,
-        )
+    # for commodity in tqdm(commodities):
+    #     upload_ta2_output(
+    #         commodity,
+    #         norm_tonnage_unit=Mt_unit,
+    #         norm_grade_unit=percent_unit,
+    #         no_upload=True,
+    #     )
 
-    CDRHelper.truncate(CDRHelper.DedupSites)
+    # CDRHelper.truncate(CDRHelper.DedupSites)
 
     for commodity in tqdm(commodities):
         upload_ta2_output(

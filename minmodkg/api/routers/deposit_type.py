@@ -3,8 +3,8 @@ from __future__ import annotations
 from functools import lru_cache
 
 from fastapi import APIRouter
-from minmodkg.api.dependencies import DEFAULT_ENDPOINT, get_snapshot_id
-from minmodkg.misc import run_sparql_query
+from minmodkg.api.dependencies import SPARQL_ENDPOINT, get_snapshot_id
+from minmodkg.misc import sparql_query
 from minmodkg.transformations import make_site_uri
 
 router = APIRouter(tags=["deposit_types"])
@@ -16,7 +16,7 @@ def deposit_types():
 
 
 @lru_cache(maxsize=1)
-def get_deposit_types(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
+def get_deposit_types(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
     query = """
     SELECT ?uri ?name ?environment ?group
     WHERE {
@@ -26,5 +26,5 @@ def get_deposit_types(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
             :group ?group .
     }
     """
-    qres = run_sparql_query(query, endpoint)
+    qres = sparql_query(query, endpoint)
     return qres

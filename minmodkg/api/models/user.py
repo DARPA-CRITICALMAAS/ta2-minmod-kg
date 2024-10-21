@@ -17,6 +17,9 @@ class UserBase(SQLModel):
     name: str
     email: str
 
+    def is_system(self):
+        return self.username in ("inferlink", "sri", "umn", "usc")
+
 
 class User(UserBase, table=True):
     salt: str = Field(default_factory=lambda: str(uuid4()))

@@ -71,7 +71,10 @@ def create_user(user: UserCreate, session: SessionDep, current_user: CurrentUser
     """Create a new user"""
     if current_user.scope != "admin":
         raise HTTPException(403, "You do not have permission to create a new user")
+    return create_user_priv(user, session)
 
+
+def create_user_priv(user: UserCreate, session: SessionDep):
     exist_user = session.get(User, user.username)
     if exist_user is not None:
         raise HTTPException(400, "Username already exists")

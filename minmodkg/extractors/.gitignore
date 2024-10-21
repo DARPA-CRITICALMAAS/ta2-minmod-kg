@@ -1,0 +1,5 @@
+# we intend to ignore all files in this directory as it's
+# reserved for the drepr models defined in `extractors/*.yml`
+*
+!__init__.py
+!.gitignore

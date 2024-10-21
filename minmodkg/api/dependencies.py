@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
-from pathlib import Path
 from typing import Annotated, Optional
 
 import jwt
@@ -12,8 +10,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from minmodkg.api.models.db import SessionDep
 from minmodkg.api.models.user import User
-from minmodkg.config import DEFAULT_ENDPOINT, JWT_ALGORITHM, MNR_NS, SECRET_KEY
-from minmodkg.misc import LongestPrefixIndex, run_sparql_query
+from minmodkg.config import JWT_ALGORITHM, MNR_NS, SECRET_KEY, SPARQL_ENDPOINT
+from minmodkg.misc import LongestPrefixIndex, sparql_query
 
 # for login/security
 token_from_cookie = APIKeyCookie(name="session")
@@ -48,13 +46,13 @@ async def get_current_user(session: SessionDep, token: TokenDep):
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
-def get_snapshot_id(endpoint: str = DEFAULT_ENDPOINT):
+def get_snapshot_id(endpoint: str = SPARQL_ENDPOINT):
     query = "SELECT ?snapshot_id WHERE { mnr:kg dcterms:hasVersion ?snapshot_id }"
-    qres = run_sparql_query(query, endpoint)
+    qres = sparql_query(query, endpoint)
     return qres[0]["snapshot_id"]
 
 
-def norm_commodity(commodity: str, endpoint: str = DEFAULT_ENDPOINT) -> str:
+def norm_commodity(commodity: str, endpoint: str = SPARQL_ENDPOINT) -> str:
     if commodity.startswith("http"):
         raise HTTPException(
             status_code=404,
@@ -74,12 +72,12 @@ def is_minmod_id(text: str) -> bool:
     return text.startswith("Q") and text[1:].isdigit()
 
 
-def get_commodity_by_name(name: str, endpoint: str = DEFAULT_ENDPOINT) -> Optional[str]:
+def get_commodity_by_name(name: str, endpoint: str = SPARQL_ENDPOINT) -> Optional[str]:
     query = (
-        'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") }'
+        'SELECT ?uri WHERE { ?uri a :Commodity ; rdfs:label ?name . FILTER(LCASE(STR(?name)) = "%s") } LIMIT 1'
         % name.lower()
     )
-    qres = run_sparql_query(query, endpoint)
+    qres = sparql_query(query, endpoint)
     if len(qres) == 0:
         return None
     uri = qres[0]["uri"]
@@ -89,7 +87,7 @@ def get_commodity_by_name(name: str, endpoint: str = DEFAULT_ENDPOINT) -> Option
 
 
 def rank_source(
-    source_id: str, snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT
+    source_id: str, snapshot_id: str, endpoint: str = SPARQL_ENDPOINT
 ) -> int:
     """Get ranking of a source, higher is better"""
     default_score = 5
@@ -113,7 +111,7 @@ class SourceScore:
 
 
 @lru_cache(maxsize=1)
-def get_source_scores(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
+def get_source_scores(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
     query = """
     SELECT ?uri ?prefixed_id ?score
     WHERE {
@@ -122,7 +120,7 @@ def get_source_scores(snapshot_id: str, endpoint: str = DEFAULT_ENDPOINT):
             :score ?score
     }
     """
-    qres = run_sparql_query(query, endpoint)
+    qres = sparql_query(query, endpoint)
     source2score = {record["prefixed_id"]: record["score"] for record in qres}
     index = LongestPrefixIndex.create(list(source2score.keys()))
     return SourceScore(source2score, index)
