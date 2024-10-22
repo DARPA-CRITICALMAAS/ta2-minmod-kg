@@ -13,14 +13,14 @@ ENV JENA_HOME=/home/criticalmaas/jena
 ENV FUSEKI_HOME=/home/criticalmaas/fuseki
 
 RUN cd /tmp && \
-    wget https://dlcdn.apache.org/jena/binaries/apache-jena-5.1.0.tar.gz && \
-    wget https://dlcdn.apache.org/jena/binaries/apache-jena-fuseki-5.1.0.tar.gz && \
-    tar -xzf apache-jena-5.1.0.tar.gz && \
-    rm apache-jena-5.1.0.tar.gz && \
-    mv apache-jena-5.1.0 $JENA_HOME && \
-    tar -xzf apache-jena-fuseki-5.1.0.tar.gz && \
-    rm apache-jena-fuseki-5.1.0.tar.gz && \
-    mv apache-jena-fuseki-5.1.0 $FUSEKI_HOME
+    wget https://archive.apache.org/dist/jena/binaries/apache-jena-5.2.0.tar.gz && \
+    wget https://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-5.2.0.tar.gz && \
+    tar -xzf apache-jena-5.2.0.tar.gz && \
+    rm apache-jena-5.2.0.tar.gz && \
+    mv apache-jena-5.2.0 $JENA_HOME && \
+    tar -xzf apache-jena-fuseki-5.2.0.tar.gz && \
+    rm apache-jena-fuseki-5.2.0.tar.gz && \
+    mv apache-jena-fuseki-5.2.0 $FUSEKI_HOME
 
 ADD --chown=criticalmaas:criticalmaas config.ttl ${FUSEKI_HOME}/config.ttl
 
