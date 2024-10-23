@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from copy import deepcopy
@@ -49,6 +50,7 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
         self.args = args
         self.hostname = args.get("hostname", "http://localhost")
         self.current_dbinfo = None
+        self.starting_port = int(os.environ.get("FUSEKI_PORT", "3030"))
 
     def forward(
         self,
@@ -61,15 +63,17 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
         (dbinfo,) = lst
 
         if not dbinfo.has_running_service():
-            if not is_port_available(self.hostname, 3030):
+            if not is_port_available(self.hostname, self.starting_port):
                 subprocess.check_call(self.get_stop_all_command(args), shell=True)
 
-            if not wait_till_port_available(self.hostname, 3030, timeout=10):
+            if not wait_till_port_available(
+                self.hostname, self.starting_port, timeout=10
+            ):
                 self.logger.error(
-                    "After stopping all fuseki services, port 3030 is still not available."
+                    f"After stopping all fuseki services, port {self.starting_port} is still not available."
                 )
                 raise Exception(
-                    "Another one started a service on port 3030 that is not managed by this service"
+                    f"Another one started a service on port {self.starting_port} that is not managed by this service"
                 )
 
             # only deploy the service when there is no running service for the directory
@@ -88,7 +92,7 @@ class FusekiDeploymentService(BaseService[FusekiDeploymentServiceInvokeArgs]):
             return False
 
         name = f"fuseki-{dbinfo.dir.name}"
-        port = find_available_port(self.hostname, 3030)
+        port = find_available_port(self.hostname, self.starting_port)
         try:
             subprocess.check_call(
                 self.get_start_command(args).format(

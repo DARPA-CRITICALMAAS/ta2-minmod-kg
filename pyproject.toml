@@ -20,6 +20,7 @@ pyproj = "^3.6.1"
 pyjwt = "^2.9.0"
 passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 sqlmodel = "^0.0.22"
+drepr-v2 = "^1.6.0"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

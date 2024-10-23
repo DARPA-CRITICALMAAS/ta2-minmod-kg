@@ -348,13 +348,13 @@ wmi = ["wmi (>=1.5.1)"]
 
 [[package]]
 name = "drepr-v2"
-version = "1.5.5"
+version = "1.6.0"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "drepr_v2-1.5.5-py3-none-any.whl", hash = "sha256:79efa47ac601caf1723237088627077de6465b7f623dfb662bc8174faea28aa7"},
-    {file = "drepr_v2-1.5.5.tar.gz", hash = "sha256:25340d2dd0af42fc89abeb7f997579114451d7679ef2970d6aff51dba6837787"},
+    {file = "drepr_v2-1.6.0-py3-none-any.whl", hash = "sha256:6edb16aa38c9dc1b88a3f2a2b98814b3861187fa9200be772b5d4ecd7899b65a"},
+    {file = "drepr_v2-1.6.0.tar.gz", hash = "sha256:14b306e7ce845aa416c7ff9fb8c15abaf261a376b36710aa96f1eed1efe4c490"},
 ]
 
 [package.dependencies]
@@ -2919,4 +2919,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "b461ee3e621471b0265ad593b18f1a3cbc1c2bfe2ddcdf0c5adf61653fb16c72"
+content-hash = "6e8582d4fa90dd980e2963073efe80b4f164e3e44fa719b969ba38f0f39f4fc5"
