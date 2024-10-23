@@ -42,6 +42,7 @@ def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/sparql-results+json",  # Requesting JSON format
         },
+        verify=False,
     ).raise_for_status()
     return response
 
