@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import httpx
 import orjson
-import shapely
 import shapely.wkt
 from minmodkg.grade_tonnage_model import Mt_unit, percent_unit
 from minmodkg.integrations.cdr_helper import (
@@ -17,9 +16,8 @@ from minmodkg.integrations.cdr_schemas import (
     DepositType,
     DepositTypeCandidate,
 )
-from minmodkg.misc import MNR_NS, reproject_wkt
 from tqdm import tqdm
-
+from minmodkg.config import MNR_NS
 
 def replace_deposit_types():
     deposit_type_resp = httpx.get(
@@ -146,19 +144,19 @@ if __name__ == "__main__":
     # replace_deposit_types()
     # CDRHelper.truncate(CDRHelper.DedupSites)
     commodities = sorted(get_critical_commodities())
-    commodities = ["Mica"]
+    commodities += ["Mica"]
 
     print(commodities)
 
-    # for commodity in tqdm(commodities):
-    #     upload_ta2_output(
-    #         commodity,
-    #         norm_tonnage_unit=Mt_unit,
-    #         norm_grade_unit=percent_unit,
-    #         no_upload=True,
-    #     )
+    for commodity in tqdm(commodities):
+        upload_ta2_output(
+            commodity,
+            norm_tonnage_unit=Mt_unit,
+            norm_grade_unit=percent_unit,
+            no_upload=True,
+        )
 
-    # CDRHelper.truncate(CDRHelper.DedupSites)
+    CDRHelper.truncate(CDRHelper.DedupSites)
 
     for commodity in tqdm(commodities):
         upload_ta2_output(
