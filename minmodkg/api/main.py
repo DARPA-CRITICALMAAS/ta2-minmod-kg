@@ -10,6 +10,7 @@ from minmodkg.api.routers import (
     dedup_mineral_site,
     deposit_type,
     lod,
+    login,
     mineral_site,
     stats,
     unit,
@@ -30,6 +31,7 @@ app.include_router(commodity.router, prefix="/api/v1")
 app.include_router(dedup_mineral_site.router, prefix="/api/v1")
 app.include_router(deposit_type.router, prefix="/api/v1")
 app.include_router(lod.router)
+app.include_router(login.router, prefix="/api/v1")
 app.include_router(mineral_site.router, prefix="/api/v1")
 app.include_router(stats.router, prefix="/api/v1")
 app.include_router(unit.router, prefix="/api/v1")

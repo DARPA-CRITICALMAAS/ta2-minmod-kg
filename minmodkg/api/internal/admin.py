@@ -18,42 +18,6 @@ from sqlmodel import select
 router = APIRouter(tags=["admin"])
 
 
-@router.post("/login")
-async def login(
-    session: SessionDep,
-    response: Response,
-    username: str,
-    password: str,
-):
-    # authenticate user
-    user = session.get(User, username)
-    if user is None or not user.verify_password(password):
-        # validate password
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
-
-    expired_at = datetime.now(timezone.utc) + timedelta(
-        minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    access_token = jwt.encode(
-        {"sub": user.username, "exp": expired_at.timestamp()},
-        SECRET_KEY,
-        algorithm=JWT_ALGORITHM,
-    )
-    response.set_cookie(
-        key="session",
-        value=access_token,
-    )
-    return "Logged in"
-
-
-@router.get("/whoami", response_model=UserPublic)
-def whoami(user: CurrentUserDep):
-    return user
-
-
 @router.get("/users", response_model=list[UserPublic])
 def get_users(
     session: SessionDep,
