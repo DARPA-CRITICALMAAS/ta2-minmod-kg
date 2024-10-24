@@ -16,6 +16,7 @@ from minmodkg.api.routers import (
     stats,
     unit,
 )
+from minmodkg.config import API_PREFIX
 
 
 @asynccontextmanager
@@ -24,20 +25,18 @@ async def lifespan(app: FastAPI):
     yield
 
 
-API_ENDPOINT = os.environ.get("MINMOD_API_ENDPOINT", "/api/v1")
-
 app = FastAPI(
-    openapi_url="/api/v1/openapi.json",
-    docs_url=f"{API_ENDPOINT}/docs",
+    openapi_url=f"{API_PREFIX}/openapi.json",
+    docs_url=f"{API_PREFIX}/docs",
     lifespan=lifespan,
 )
 
-app.include_router(commodity.router, prefix=API_ENDPOINT)
-app.include_router(dedup_mineral_site.router, prefix=API_ENDPOINT)
-app.include_router(deposit_type.router, prefix=API_ENDPOINT)
+app.include_router(commodity.router, prefix=API_PREFIX)
+app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)
+app.include_router(deposit_type.router, prefix=API_PREFIX)
 app.include_router(lod.router)
-app.include_router(login.router, prefix=API_ENDPOINT)
-app.include_router(mineral_site.router, prefix=API_ENDPOINT)
-app.include_router(stats.router, prefix=API_ENDPOINT)
-app.include_router(unit.router, prefix=API_ENDPOINT)
-app.include_router(admin.router, prefix=f"{API_ENDPOINT}/admin")
+app.include_router(login.router, prefix=API_PREFIX)
+app.include_router(mineral_site.router, prefix=API_PREFIX)
+app.include_router(stats.router, prefix=API_PREFIX)
+app.include_router(unit.router, prefix=API_PREFIX)
+app.include_router(admin.router, prefix=f"{API_PREFIX}/admin")
