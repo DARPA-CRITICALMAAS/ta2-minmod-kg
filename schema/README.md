@@ -14,6 +14,7 @@
 - [MineralSite](https://minmod.isi.edu/ontology/MineralSite):
     + [modified_at](https://minmod.isi.edu/ontology/modified_at): This property records the time when the entity was last modified. The value of this property is a UTC datetime in the ISO format `YYYY-MM-DDTHH:MM:SSZ` (e.g., 2024-10-23T14:30:00Z).
     + [created_by](https://minmod.isi.edu/ontology/created_by): This property indicates the user who originally created the entity. The format for this property is a URL in the form `https://minmod.isi.edu/users/{username}`, where `{username}` is replaced by the specific user’s identifier.
+    + [reference](https://minmod.isi.edu/ontology/reference): This property contains a list of references, indicating the sources from which the information for the site is derived. It is a list because each reference can be for each individual field of the site, allowing for more granular source of information.
 
 ### Changed
 
