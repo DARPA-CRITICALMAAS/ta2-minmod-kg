@@ -23,6 +23,7 @@ RUN cd /tmp && \
     mv apache-jena-fuseki-5.2.0 $FUSEKI_HOME
 
 ADD --chown=criticalmaas:criticalmaas config.ttl ${FUSEKI_HOME}/config.ttl
+ADD --chown=criticalmaas:criticalmaas test_config.ttl ${FUSEKI_HOME}/test_config.ttl
 
 RUN mkdir /home/criticalmaas/databases
 

@@ -1,0 +1,6 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://minmod.isi.edu/resource/kg> a <https://minmod.isi.edu/ontology/KnowledgeGraph> ;
+    dcterms:created "2024-10-12T00:09:39"^^xsd:dateTime ;
+    dcterms:hasVersion "e454ac80dc43fc2ca686265a20c0896c52306a79" .

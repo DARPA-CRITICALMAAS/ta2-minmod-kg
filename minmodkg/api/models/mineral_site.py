@@ -14,8 +14,8 @@ class CandidateExtractedEntity(BaseModel):
 
 
 class LocationInfo(BaseModel):
-    country: Optional[CandidateExtractedEntity] = None
-    crs: Optional[CandidateExtractedEntity] = None
+    country: Optional[list[CandidateExtractedEntity]] = None
+    crs: Optional[list[CandidateExtractedEntity]] = None
     location: Optional[str] = None
 
 
@@ -64,6 +64,17 @@ class MineralSite(MineralSiteBase):
 
 class MineralSiteCreate(MineralSiteBase):
     same_as: list[str] = Field(default_factory=list)
+
+
+class MineralSiteUpdate(MineralSiteBase):
+    same_as: list[str] = Field(default_factory=list)
+
+
+# class MineralSiteUpdate(BaseModel):
+#     source: Optional[str] = None
+#     source_prop: Optional[str] = None
+#     prop: str
+#     object: str
 
 
 # def get_site_uri(source_id: str, record_id)

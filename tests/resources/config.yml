@@ -8,5 +8,6 @@ mno_ns: https://minmod.isi.edu/ontology/
 # 1. https://www.sqlite.org/inmemorydb.html
 # 2. https://docs.python.org/3/library/sqlite3.html
 # 3. https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#uri-connections
+api_prefix: /api/v1
 dbfile: "file::memory:?cache=shared&uri=true"
 secret_key: 4a7bc742a82cf193b20b3a017a73cd58e6fa00d3eeb052bba4ba31d767eaf8c0
