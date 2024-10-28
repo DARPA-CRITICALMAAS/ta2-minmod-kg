@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field
 class CandidateExtractedEntity(BaseModel):
     source: str
     confidence: float
-    observed_name: Optional[str]
-    normalized_uri: str
+    observed_name: Optional[str] = None
+    normalized_uri: Optional[str] = None
 
 
 class LocationInfo(BaseModel):
