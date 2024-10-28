@@ -15,7 +15,8 @@ class CandidateExtractedEntity(BaseModel):
 
 class LocationInfo(BaseModel):
     country: Optional[list[CandidateExtractedEntity]] = None
-    crs: Optional[list[CandidateExtractedEntity]] = None
+    state_or_province: Optional[list[CandidateExtractedEntity]] = None
+    crs: Optional[CandidateExtractedEntity] = None
     location: Optional[str] = None
 
 
