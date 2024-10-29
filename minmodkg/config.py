@@ -19,8 +19,13 @@ MNR_NS = cfg["mnr_ns"]
 MNO_NS = cfg["mno_ns"]
 
 API_PREFIX = cfg["api_prefix"]
+LOD_PREFIX = cfg["lod_prefix"]
+
 while API_PREFIX.endswith("/"):
     API_PREFIX = API_PREFIX[:-1]
+
+while LOD_PREFIX.endswith("/"):
+    LOD_PREFIX = LOD_PREFIX[:-1]
 
 # for databases
 DBFILE = Path(cfg["dbfile"])
