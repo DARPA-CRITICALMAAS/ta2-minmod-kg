@@ -55,7 +55,7 @@ def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"
 def sparql_construct(query: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
     resp = sparql(query, endpoint, type="query")
     g = Graph()
-    g.parse(resp.text, format="turtle")
+    g.parse(data=resp.text, format="turtle")
     return g
 
 
