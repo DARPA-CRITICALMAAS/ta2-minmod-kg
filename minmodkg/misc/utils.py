@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TypeVar
+from typing import Any, Optional, TypeVar
 
 V = TypeVar("V")
 
@@ -23,13 +23,22 @@ def batch(size: int, *vars, return_tuple: bool = False):
     return output
 
 
-def group_by_key(output: list[dict], key: str) -> dict[str, list[dict]]:
+def group_by_key(
+    output: list[dict], key: str, value: Optional[str] = None
+) -> dict[str, list]:
     groups = {}
-    for row in output:
-        val = row[key]
-        if val not in groups:
-            groups[val] = []
-        groups[val].append(row)
+    if value is None:
+        for row in output:
+            val = row[key]
+            if val not in groups:
+                groups[val] = []
+            groups[val].append(row)
+    else:
+        for row in output:
+            val = row[key]
+            if val not in groups:
+                groups[val] = []
+            groups[val].append(row[value])
     return groups
 
 

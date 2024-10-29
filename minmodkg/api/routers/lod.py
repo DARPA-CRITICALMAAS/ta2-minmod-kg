@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from minmodkg.api.dependencies import SPARQL_ENDPOINT
 from minmodkg.config import MNO_NS, MNR_NS
-from minmodkg.misc import sparql
+from minmodkg.misc import sparql_construct
 from rdflib import RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -44,8 +44,7 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
     # adapt from this answer to fit our need
     # we do not blindly follow all paths (<>|!<>)* and filter out the URI nodes because it follows
     # the sameAs path, which leads to explosive results
-    g = Graph()
-    resp = sparql(
+    return sparql_construct(
         """
     CONSTRUCT { 
         ?a ?b ?c . 
@@ -72,10 +71,6 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         % f"<{subj}>",
         endpoint=endpoint,
     )
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    g.parse(data=resp.text, format="turtle")
-    return g
 
 
 def render_entity_json(subj: URIRef, endpoint: str):

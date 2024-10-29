@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import time
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import httpx
 import jwt
@@ -13,10 +14,20 @@ from loguru import logger
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
+from minmodkg.misc.sparql import sparql_insert
+from rdflib import Graph
+
+
+@pytest.fixture(scope="session")
+def resource_dir():
+    return Path(__file__).parent / "resources"
 
 
 @pytest.fixture(scope="session")
 def db():
+    import os
+
+    os.environ["CFG_FILE"] = "tests/config.yml"
     create_db_and_tables()
     with Session(engine) as session:
         create_user_priv(
@@ -31,9 +42,9 @@ def db():
 
 
 @pytest.fixture(scope="class")
-def kg(db):
+def kg(resource_dir: Path, db):
     subprocess.check_output(
-        "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/config.ttl",
+        "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
         shell=True,
     )
     print("\nWaiting for Fuseki to start ", end="", flush=True)
@@ -46,12 +57,19 @@ def kg(db):
             print(".", end="", flush=True)
             time.sleep(0.1)
     print(" DONE!", flush=True)
+
+    # insert basic KG info
+    g = Graph()
+    g.parse(resource_dir / "kgversion.ttl", format="ttl")
+    sparql_insert(g)
+
     yield None
+
     subprocess.check_output("docker container rm -f test-kg", shell=True)
 
 
 @pytest.fixture(scope="class")
-def client():
+def client(kg):
     with TestClient(app) as client:
         yield client
 

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from time import time
 from typing import Literal, Optional, Sequence
+from uuid import uuid4
 
 import httpx
-from minmodkg.config import SPARQL_ENDPOINT, SPARQL_UPDATE_ENDPOINT
+from minmodkg.config import MNO_NS, MNR_NS, SPARQL_ENDPOINT, SPARQL_UPDATE_ENDPOINT
+from minmodkg.misc.utils import group_by_key
 from rdflib import Graph
 
 Triple = tuple[str, str, str]
@@ -43,13 +47,59 @@ def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"
             "Accept": "application/sparql-results+json",  # Requesting JSON format
         },
         verify=False,
-        timeout=None
+        timeout=None,
     ).raise_for_status()
     return response
 
 
-def sparql_construct(query: str) -> Graph:
-    raise NotImplementedError()
+def sparql_construct(query: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
+    resp = sparql(query, endpoint, type="query")
+    g = Graph()
+    g.parse(resp.text, format="turtle")
+    return g
+
+
+# def sparql_delete_insert(
+#     delete: str | Graph | Triples | Sequence[Triples | Graph],
+#     insert: str | Graph | Triples | Sequence[Triples | Graph],
+#     where: Optional[str] = None,
+#     endpoint: str = SPARQL_UPDATE_ENDPOINT,
+# ):
+#     if not isinstance(query, str):
+#         query_parts = ["DELETE {", "INSERT {"]
+#         ...
+
+#     return sparql(query, endpoint, type="update")
+
+
+def sparql_delete(
+    query: str | Graph | Triples | Sequence[Triples | Graph],
+    endpoint: str = SPARQL_UPDATE_ENDPOINT,
+):
+    if not isinstance(query, str):
+        query_parts = ["DELETE DATA {"]
+
+        if isinstance(query, Graph):
+            for s, p, o in query:
+                query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
+        elif isinstance(query, Triples):
+            for s, p, o in query.triples:
+                query_parts.append(f"\n{s} {p} {o} .")
+        else:
+            assert isinstance(query, Sequence)
+            for g in query:
+                if isinstance(g, Graph):
+                    for s, p, o in g:
+                        query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
+                else:
+                    assert isinstance(g, Triples)
+                    for s, p, o in g.triples:
+                        query_parts.append(f"\n{s} {p} {o} .")
+
+        query_parts.append("\n}")
+        query = "".join(query_parts)
+
+    return sparql(query, endpoint, type="update")
 
 
 def sparql_insert(
@@ -172,3 +222,98 @@ def sparql_query(
             else:
                 raise NotImplementedError(val)
     return output
+
+
+class Transaction:
+    """Steps to perform a transaction:
+
+    t10 -> insert the lock
+    t20 -> check if there is another lock.
+    t30 -> perform the query/update (update query can only be done once -- because no rollback)
+    t40 -> release the lcok
+    """
+
+    def __init__(
+        self,
+        objects: list[str],
+        query_endpoint: str = SPARQL_ENDPOINT,
+        update_endpoint: str = SPARQL_UPDATE_ENDPOINT,
+        timeout_sec: float = 300,
+    ):
+        self.objects = []
+        value_filter_parts = []
+
+        for obj in objects:
+            if obj.startswith("http://") or obj.startswith("https://"):
+                self.objects.append(obj)
+                value_filter_parts.append(f"<{obj}>")
+            elif obj.startswith("mnr:"):
+                self.objects.append(MNR_NS + obj[4:])
+                value_filter_parts.append(obj)
+            elif obj.startswith("mno:"):
+                self.objects.append(MNO_NS + obj[4:])
+                value_filter_parts.append(obj)
+            else:
+                raise ValueError("Invalid object " + obj)
+
+        self.value_query = " ".join(value_filter_parts)
+        self.query_endpoint = query_endpoint
+        self.update_endpoint = update_endpoint
+        self.timeout_sec = timeout_sec
+        self.lock = None
+
+    @contextmanager
+    def transaction(self):
+        self.insert_lock()
+        if not self.does_lock_success():
+            raise Exception(
+                "The objects are being edited by another one. Please try again later."
+            )
+        # yield so the caller can perform the transaction
+        yield
+        self.remove_lock()
+
+    def insert_lock(self):
+        assert self.lock is None
+        self.lock = f"{str(uuid4())}::{time() + self.timeout_sec}"
+        sparql_insert(
+            Triples([(f"<{obj}>", ":lock", f'"{self.lock}"') for obj in self.objects]),
+            endpoint=self.update_endpoint,
+        )
+
+    def does_lock_success(self):
+        lst = sparql_query(
+            """
+    SELECT ?source ?lock
+    WHERE {
+        ?source :lock ?lock 
+        VALUES ?source { %s }
+    }"""
+            % self.value_query,
+            keys=["source", "lock"],
+            endpoint=self.query_endpoint,
+        )
+
+        obj2locks: dict[str, list[str]] = group_by_key(lst, key="source", value="lock")
+        if len(obj2locks) != len(self.objects):
+            return False
+
+        now = time()
+        for obj in self.objects:
+            if obj not in obj2locks:
+                return False
+            locks = [
+                lock
+                for lock in obj2locks[obj]
+                if lock == self.lock or float(lock.split("::")[1]) >= now
+            ]
+            if len(locks) != 1 or locks[0] != self.lock:
+                return False
+
+        return True
+
+    def remove_lock(self):
+        sparql_delete(
+            Triples([(f"<{obj}>", ":lock", f'"{self.lock}"') for obj in self.objects]),
+            endpoint=self.update_endpoint,
+        )
