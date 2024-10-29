@@ -16,7 +16,7 @@ from minmodkg.api.routers import (
     stats,
     unit,
 )
-from minmodkg.config import API_PREFIX
+from minmodkg.config import API_PREFIX, LOD_PREFIX
 
 
 @asynccontextmanager
@@ -34,7 +34,7 @@ app = FastAPI(
 app.include_router(commodity.router, prefix=API_PREFIX)
 app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)
 app.include_router(deposit_type.router, prefix=API_PREFIX)
-app.include_router(lod.router)
+app.include_router(lod.router, prefix=LOD_PREFIX)
 app.include_router(login.router, prefix=API_PREFIX)
 app.include_router(mineral_site.router, prefix=API_PREFIX)
 app.include_router(stats.router, prefix=API_PREFIX)
