@@ -30,11 +30,11 @@ mnos:LocationInfoShape a sh:NodeShape ;
     sh:property [ sh:class :CoordinateReferenceSystemCandidate ;
             sh:path :crs ;
             sh:severity sh:Violation ],
-        [ sh:class :CountryCandidate ;
-            sh:path :country ;
-            sh:severity sh:Violation ],
         [ sh:class :StateOrProvinceCandidate ;
             sh:path :state_or_province ;
+            sh:severity sh:Violation ],
+        [ sh:class :CountryCandidate ;
+            sh:path :country ;
             sh:severity sh:Violation ] ;
     sh:targetClass :LocationInfo .
 
@@ -60,41 +60,41 @@ mnos:MeasureShape a sh:NodeShape ;
     sh:targetClass :Measure .
 
 mnos:MineralInventoryShape a sh:NodeShape ;
-    sh:property [ sh:class :Measure ;
-            sh:path :ore ;
-            sh:severity sh:Violation ],
-        [ sh:class :ResourceReserveCategoryCandidate ;
-            sh:path :category ;
-            sh:severity sh:Violation ],
-        [ sh:class :Reference ;
+    sh:property [ sh:class :Reference ;
             sh:path :reference ;
-            sh:severity sh:Violation ],
-        [ sh:class :Measure ;
-            sh:path :grade ;
             sh:severity sh:Violation ],
         [ sh:class :Measure ;
             sh:path :cutoff_grade ;
             sh:severity sh:Violation ],
-        [ sh:class :CommodityCandidate ;
-            sh:path :commodity ;
-            sh:severity sh:Violation ],
         [ sh:class :MaterialFormCandidate ;
             sh:path :material_form ;
+            sh:severity sh:Violation ],
+        [ sh:class :ResourceReserveCategoryCandidate ;
+            sh:path :category ;
+            sh:severity sh:Violation ],
+        [ sh:class :Measure ;
+            sh:path :ore ;
+            sh:severity sh:Violation ],
+        [ sh:class :Measure ;
+            sh:path :grade ;
+            sh:severity sh:Violation ],
+        [ sh:class :CommodityCandidate ;
+            sh:path :commodity ;
             sh:severity sh:Violation ] ;
     sh:targetClass :MineralInventory .
 
 mnos:MineralSiteShape a sh:NodeShape ;
-    sh:property [ sh:class :DepositTypeCandidate ;
+    sh:property [ sh:class :MineralInventory ;
+            sh:path :mineral_inventory ;
+            sh:severity sh:Violation ],
+        [ sh:class :DepositTypeCandidate ;
             sh:path :deposit_type_candidate ;
+            sh:severity sh:Violation ],
+        [ sh:class :Reference ;
+            sh:path :reference ;
             sh:severity sh:Violation ],
         [ sh:class :LocationInfo ;
             sh:path :location_info ;
-            sh:severity sh:Violation ],
-        [ sh:class :MineralInventory ;
-            sh:path :mineral_inventory ;
-            sh:severity sh:Violation ],
-        [ sh:class :GeologyInfo ;
-            sh:path :geology_info ;
             sh:severity sh:Violation ] ;
     sh:targetClass :MineralSite .
 
@@ -103,19 +103,19 @@ mnos:MineralSystemShape a sh:NodeShape ;
             sh:path :outflow ;
             sh:severity sh:Violation ],
         [ sh:class :MappableCriteria ;
+            sh:path :trap ;
+            sh:severity sh:Violation ],
+        [ sh:class :MappableCriteria ;
             sh:path :energy ;
             sh:severity sh:Violation ],
         [ sh:class :MappableCriteria ;
-            sh:path :pathway ;
+            sh:path :preservation ;
             sh:severity sh:Violation ],
         [ sh:class :DepositType ;
             sh:path :deposit_type ;
             sh:severity sh:Violation ],
         [ sh:class :MappableCriteria ;
-            sh:path :trap ;
-            sh:severity sh:Violation ],
-        [ sh:class :MappableCriteria ;
-            sh:path :preservation ;
+            sh:path :pathway ;
             sh:severity sh:Violation ],
         [ sh:class :MappableCriteria ;
             sh:path :source ;
@@ -129,11 +129,11 @@ mnos:PageInfoShape a sh:NodeShape ;
     sh:targetClass :PageInfo .
 
 mnos:ReferenceShape a sh:NodeShape ;
-    sh:property [ sh:class :Document ;
-            sh:path :document ;
-            sh:severity sh:Violation ],
-        [ sh:class :PageInfo ;
+    sh:property [ sh:class :PageInfo ;
             sh:path :page_info ;
+            sh:severity sh:Violation ],
+        [ sh:class :Document ;
+            sh:path :document ;
             sh:severity sh:Violation ] ;
     sh:targetClass :Reference .
 

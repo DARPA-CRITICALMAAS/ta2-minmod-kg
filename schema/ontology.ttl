@@ -9,7 +9,7 @@
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
                                     rdfs:comment "Ontology for Minmod Knowledge Graph"@en ;
-                                    owl:versionInfo "2.0.0" .
+                                    owl:versionInfo "2.1.0" .
 
 #################################################################
 #    Datatypes
@@ -102,7 +102,6 @@ geo:wktLiteral rdf:type rdfs:Datatype .
 
 ###  https://minmod.isi.edu/ontology/geology_info
 :geology_info rdf:type owl:ObjectProperty ;
-              rdfs:subPropertyOf :mineral_site_objectproperty ;
               rdfs:range :GeologyInfo ;
               rdfs:label "geology info"@en .
 
