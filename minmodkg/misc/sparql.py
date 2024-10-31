@@ -224,6 +224,20 @@ def sparql_query(
     return output
 
 
+def has_uri(uri: str, endpoint: str = SPARQL_ENDPOINT) -> bool:
+    query = (
+        """
+    SELECT ?uri WHERE { 
+        ?uri ?p ?o 
+        VALUES ?uri { <%s> }
+    }
+    LIMIT 1"""
+        % uri
+    )
+    qres = sparql_query(query, endpoint)
+    return len(qres) > 0
+
+
 class Transaction:
     """Steps to perform a transaction:
 

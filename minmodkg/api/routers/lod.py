@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from minmodkg.api.dependencies import SPARQL_ENDPOINT
 from minmodkg.config import MNO_NS, MNR_NS
 from minmodkg.misc import sparql_construct
+from minmodkg.misc.sparql import has_uri
 from rdflib import RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -21,21 +22,29 @@ router = APIRouter(tags=["lod"])
 def get_resource(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):
+    uri = URIRef(MNR_NS + resource_id)
+    if not has_uri(uri):
+        raise HTTPException(status_code=404, detail="Resource not found")
+
     if format == "html":
-        return render_entity_html(URIRef(MNR_NS + resource_id), SPARQL_ENDPOINT)
+        return render_entity_html(uri, SPARQL_ENDPOINT)
     if format == "json":
-        return render_entity_json(URIRef(MNR_NS + resource_id), SPARQL_ENDPOINT)
+        return render_entity_json(uri, SPARQL_ENDPOINT)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
 @router.get("/ontology/{resource_id}")
 def get_ontology(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
-):
+):  # -> HTMLResponse | dict[Any, Any]:
+    uri = URIRef(MNO_NS + resource_id)
+    if not has_uri(uri):
+        raise HTTPException(status_code=404, detail="Resource not found")
+
     if format == "html":
-        return render_entity_html(URIRef(MNO_NS + resource_id), SPARQL_ENDPOINT)
+        return render_entity_html(uri, SPARQL_ENDPOINT)
     if format == "json":
-        return render_entity_json(URIRef(MNO_NS + resource_id), SPARQL_ENDPOINT)
+        return render_entity_json(uri, SPARQL_ENDPOINT)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
@@ -59,8 +68,7 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         OPTIONAL { ?c rdfs:label ?cname . }
         OPTIONAL { ?b rdfs:label ?bname . }
         OPTIONAL { 
-            ?a (!owl:sameAs)+ ?s . 
-            # FILTER (isBlank(?s)) .
+            ?a (!(owl:sameAs|rdf:type))+ ?s . 
             ?s ?p ?o .
             OPTIONAL { ?o rdfs:label ?oname . }
             OPTIONAL { ?p rdfs:label ?pname .}
@@ -92,6 +100,13 @@ def render_entity_json(subj: URIRef, endpoint: str):
         else:
             assert isinstance(obj, BNode)
             out = {}
+
+        if obj in visited:
+            # skip visited nodes
+            if (obj, RDFS.label, None) in g:
+                out["@label"] = next(g.objects(obj, RDFS.label))
+            return out
+        visited.add(obj)
 
         for p in g.predicates(obj):
             plabel = label(p)
