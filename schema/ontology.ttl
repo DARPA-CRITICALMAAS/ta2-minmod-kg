@@ -9,7 +9,7 @@
 
 <https://minmod.isi.edu/ontology/> rdf:type owl:Ontology ;
                                     rdfs:comment "Ontology for Minmod Knowledge Graph"@en ;
-                                    owl:versionInfo "2.1.0" .
+                                    owl:versionInfo "2.1.1" .
 
 #################################################################
 #    Datatypes
@@ -1030,11 +1030,7 @@ geo:wktLiteral rdf:type rdfs:Datatype .
                              [ rdf:type owl:Restriction ;
                                owl:onProperty :reference ;
                                owl:minCardinality "1"^^xsd:nonNegativeInteger
-                             ] ,
-                             [ rdf:type owl:Restriction ;
-                               owl:onProperty :mineral_inventory ;
-                               owl:minCardinality "1"^^xsd:nonNegativeInteger
-                             ];
+                             ] ;
              rdfs:label "Mineral Site"@en .
 
 

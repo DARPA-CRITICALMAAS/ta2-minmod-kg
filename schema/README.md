@@ -2,7 +2,16 @@
 
 ![KG ontology summary](./er_diagram.png)
 
+To update the diagram and shape files, run [update.sh](./update.sh).
+
 # Changelog
+
+## [2.1.1] - 2024-10-30
+
+### Changed
+
+- [MineralSite](https://minmod.isi.edu/ontology/MineralSite) class:
+  - [mineral_inventory](https://minmod.isi.edu/ontology/mineral_inventory): The `mineral_inventory` field now optional. This change allows for cases where SRI predicts deposit type information and they don't provide mineral inventory information.
 
 ## [2.1.0] - 2024-10-29
 

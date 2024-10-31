@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from hashlib import sha256
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -32,10 +33,18 @@ class BoundingBox(BaseModel):
     y_max: float
     y_min: float
 
+    def to_enc_str(self):
+        return f"BB:{self.x_max:.3f}_{self.x_min:.3f}_{self.y_max:.3f}_{self.y_min:.3f}"
+
 
 class PageInfo(BaseModel):
-    bounding_box: Optional[BoundingBox]
+    bounding_box: Optional[BoundingBox] = None
     page: int
+
+    def to_enc_str(self):
+        if self.bounding_box is None:
+            return str(self.page)
+        return f"PI:{self.page}|{self.bounding_box.to_enc_str()}"
 
 
 class Reference(BaseModel):

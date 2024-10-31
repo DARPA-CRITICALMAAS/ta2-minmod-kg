@@ -55,7 +55,7 @@
             "reference": {
               "document": {
                 "title": "NI 43-101 Technical Report for the Hakkira Project in Middle East, Turkey dated April 2011",
-                "doi": "https://w3id.org/usgs/z/4530692/7NZZ8XII",
+                "uri": "https://w3id.org/usgs/z/4530692/7NZZ8XII",
                 "authors": [
                   "Mike Robertson",
                   "Mike Hall"
