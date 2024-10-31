@@ -17,7 +17,7 @@ Triple = tuple[str, str, str]
 
 @dataclass
 class Triples:
-    triples: list[Triple]
+    triples: Sequence[Triple] | set[Triple]
 
 
 def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"):
@@ -59,17 +59,26 @@ def sparql_construct(query: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
     return g
 
 
-# def sparql_delete_insert(
-#     delete: str | Graph | Triples | Sequence[Triples | Graph],
-#     insert: str | Graph | Triples | Sequence[Triples | Graph],
-#     where: Optional[str] = None,
-#     endpoint: str = SPARQL_UPDATE_ENDPOINT,
-# ):
-#     if not isinstance(query, str):
-#         query_parts = ["DELETE {", "INSERT {"]
-#         ...
+def sparql_delete_insert(
+    delete: str | Graph | Triples | Sequence[Triples | Graph],
+    insert: str | Graph | Triples | Sequence[Triples | Graph],
+    endpoint: str = SPARQL_UPDATE_ENDPOINT,
+):
+    parts = ["DELETE {"]
+    if not isinstance(delete, str):
+        sub = serialize_triples(delete)
+        parts.extend(sub)
+    else:
+        parts.append(delete)
+    parts.append("\n} INSERT {")
 
-#     return sparql(query, endpoint, type="update")
+    if not isinstance(insert, str):
+        sub = serialize_triples(insert)
+        parts.extend(sub)
+    else:
+        parts.append(insert)
+    parts.append("\n} WHERE {}")
+    return sparql("".join(parts), endpoint, type="update")
 
 
 def sparql_delete(
@@ -78,24 +87,7 @@ def sparql_delete(
 ):
     if not isinstance(query, str):
         query_parts = ["DELETE DATA {"]
-
-        if isinstance(query, Graph):
-            for s, p, o in query:
-                query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
-        elif isinstance(query, Triples):
-            for s, p, o in query.triples:
-                query_parts.append(f"\n{s} {p} {o} .")
-        else:
-            assert isinstance(query, Sequence)
-            for g in query:
-                if isinstance(g, Graph):
-                    for s, p, o in g:
-                        query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
-                else:
-                    assert isinstance(g, Triples)
-                    for s, p, o in g.triples:
-                        query_parts.append(f"\n{s} {p} {o} .")
-
+        query_parts.extend(serialize_triples(query))
         query_parts.append("\n}")
         query = "".join(query_parts)
 
@@ -108,24 +100,7 @@ def sparql_insert(
 ):
     if not isinstance(query, str):
         query_parts = ["INSERT DATA {"]
-
-        if isinstance(query, Graph):
-            for s, p, o in query:
-                query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
-        elif isinstance(query, Triples):
-            for s, p, o in query.triples:
-                query_parts.append(f"\n{s} {p} {o} .")
-        else:
-            assert isinstance(query, Sequence)
-            for g in query:
-                if isinstance(g, Graph):
-                    for s, p, o in g:
-                        query_parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
-                else:
-                    assert isinstance(g, Triples)
-                    for s, p, o in g.triples:
-                        query_parts.append(f"\n{s} {p} {o} .")
-
+        query_parts.extend(serialize_triples(query))
         query_parts.append("\n}")
         query = "".join(query_parts)
 
@@ -222,6 +197,27 @@ def sparql_query(
             else:
                 raise NotImplementedError(val)
     return output
+
+
+def serialize_triples(query: Graph | Triples | Sequence[Triples | Graph]) -> list[str]:
+    parts = []
+    if isinstance(query, Graph):
+        for s, p, o in query:
+            parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
+    elif isinstance(query, Triples):
+        for s, p, o in query.triples:
+            parts.append(f"\n{s} {p} {o} .")
+    elif not isinstance(query, str):
+        assert isinstance(query, Sequence)
+        for g in query:
+            if isinstance(g, Graph):
+                for s, p, o in g:
+                    parts.append(f"\n{s.n3()} {p.n3()} {o.n3()} .")
+            else:
+                assert isinstance(g, Triples)
+                for s, p, o in g.triples:
+                    parts.append(f"\n{s} {p} {o} .")
+    return parts
 
 
 def has_uri(uri: str, endpoint: str = SPARQL_ENDPOINT) -> bool:

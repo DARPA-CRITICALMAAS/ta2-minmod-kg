@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from time import sleep
+
 import pytest
 from minmodkg.api.models.mineral_site import LocationInfo, MineralSiteCreate
 from minmodkg.api.routers.mineral_site import get_site
@@ -111,3 +113,43 @@ class TestMineralSite:
             gold_triples.add((siteref, MNO[key], RDFLiteral(resp[key])))
 
         assert triples == gold_triples
+
+    def test_update_site(self, auth_client, kg):
+        sleep(1.0)  # to ensure the modified_at is different
+        self.site1.name = "Frog Mine"
+        resp = (
+            auth_client.post(
+                f"/api/v1/mineral-sites/{self.site1_id}",
+                json=self.site1.model_dump(exclude_none=True),
+            )
+            .raise_for_status()
+            .json()
+        )
+        assert resp == {
+            "status": "success",
+            "uri": self.site1_uri,
+        }
+
+        resp = (
+            auth_client.get(
+                f"/resource/{self.site1_id}",
+                params={"format": "json"},
+            )
+            .raise_for_status()
+            .json()
+        )
+
+        assert resp == {
+            "@id": self.site1_uri,
+            "@type": {"@id": "https://minmod.isi.edu/ontology/MineralSite"},
+            "@label": "Frog Mine",
+            "created_by": "https://minmod.isi.edu/resource/users/admin",
+            "location_info": {
+                "@id": f"{self.site1_uri}__location_info",
+                "@type": {"@id": "https://minmod.isi.edu/ontology/LocationInfo"},
+                "location": "POINT (-87.1 46.9)",
+            },
+            "modified_at": resp["modified_at"],
+            "record_id": "10014570",
+            "source_id": "database::https://mrdata.usgs.gov/mrds",
+        }

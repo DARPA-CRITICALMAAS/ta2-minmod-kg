@@ -17,6 +17,12 @@ SPARQL_ENDPOINT = cfg["triplestore"]["query"]
 SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
 MNR_NS = cfg["mnr_ns"]
 MNO_NS = cfg["mno_ns"]
+assert MNR_NS.endswith("/") or MNR_NS.endswith(
+    "#"
+), f"MNR_NS {MNR_NS} must end with / or #"
+assert MNO_NS.endswith("/") or MNO_NS.endswith(
+    "#"
+), f"MNO_NS {MNO_NS} must end with / or #"
 
 API_PREFIX = cfg["api_prefix"]
 LOD_PREFIX = cfg["lod_prefix"]

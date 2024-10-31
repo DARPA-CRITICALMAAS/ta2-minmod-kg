@@ -4,8 +4,10 @@ from minmodkg.misc.prefix_index import LongestPrefixIndex
 from minmodkg.misc.sparql import (
     Transaction,
     Triples,
+    has_uri,
     sparql,
     sparql_construct,
+    sparql_delete_insert,
     sparql_insert,
     sparql_query,
 )
@@ -29,4 +31,6 @@ __all__ = [
     "sparql",
     "Triples",
     "Transaction",
+    "has_uri",
+    "sparql_delete_insert",
 ]

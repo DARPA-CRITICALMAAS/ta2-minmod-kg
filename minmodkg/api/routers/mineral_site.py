@@ -26,13 +26,15 @@ from minmodkg.misc import (
     Transaction,
     TransactionError,
     Triples,
+    has_uri,
     sparql,
     sparql_construct,
+    sparql_delete_insert,
     sparql_insert,
     sparql_query,
 )
 from minmodkg.transformations import make_site_uri
-from rdflib import Graph
+from rdflib import Graph, URIRef
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -54,7 +56,7 @@ def create_site(site: MineralSiteCreate, user: CurrentUserDep):
     #      a custom lock mechanism. We will revisit this later.
     uri = make_site_uri(site.source_id, site.record_id)
 
-    if has_site(uri):
+    if has_uri(uri):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
@@ -99,7 +101,7 @@ def create_site(site: MineralSiteCreate, user: CurrentUserDep):
 @router.post("/mineral-sites/{site_id}")
 def update_site(site_id: str, site: MineralSiteUpdate, user: CurrentUserDep):
     uri = MNR_NS + site_id
-    if not has_site(uri):
+    if not has_uri(uri):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The site does not exist.",
@@ -120,41 +122,15 @@ def update_site(site_id: str, site: MineralSiteUpdate, user: CurrentUserDep):
     ng = get_mineral_site_model()(
         ResourceDataObject([full_site.model_dump(exclude_none=True)])
     )
-
-    return {"status": "success"}
-
-    # ng_triples = {(str(s), str(p), str(o)) for s, p, o in ng}
-
     # the site must have no blank nodes as we want a fast way to compute the delta.
 
     # start the transaction, we can only have one update at a time
-    with Transaction(uri).transaction():
+    with Transaction([uri]).transaction():
         og = get_site(uri)
-        og_triples = {(str(s), str(p), str(o)) for s, p, o in og}
-
-        # compute the delta
-        # og_triples.difference(ng_triples)
-
-    # if update.source is not None:
-    #     pass
-    # else:
-    #     # we directly update the site
+        del_triples, add_triples = get_site_changes(og, ng)
+        sparql_delete_insert(del_triples, add_triples)
 
     return {"status": "success", "uri": uri}
-
-
-def has_site(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> bool:
-    query = (
-        """
-    SELECT ?uri WHERE { 
-        ?uri ?p ?o 
-        VALUES ?uri { <%s> }
-    }
-    LIMIT 1"""
-        % site_uri
-    )
-    qres = sparql_query(query, endpoint)
-    return len(qres) > 0
 
 
 def get_site(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
@@ -169,7 +145,7 @@ WHERE {
     OPTIONAL {
         ?s (!(owl:sameAs|rdf:type))+ ?u .
         ?u ?e ?v .
-        FILTER (?e NOT IN (owl:sameAs))
+        # FILTER (?e NOT IN (owl:sameAs))
     }
     VALUES ?s { <%s> }
 }
@@ -177,6 +153,28 @@ WHERE {
         % site_uri
     )
     return sparql_construct(query, endpoint)
+
+
+def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Triples]:
+    current_triples = set(current_site)
+    new_triples = set(new_site)
+
+    lock_pred = URIRef(MNO_NS + "lock")
+    del_triples = Triples(
+        triples=[
+            (s.n3(), p.n3(), o.n3())
+            for s, p, o in current_triples.difference(new_triples)
+            if p != lock_pred
+        ]
+    )
+    add_triples = Triples(
+        triples=[
+            (s.n3(), p.n3(), o.n3())
+            for s, p, o in new_triples.difference(current_triples)
+            if p != lock_pred
+        ]
+    )
+    return del_triples, add_triples
 
 
 @lru_cache()
