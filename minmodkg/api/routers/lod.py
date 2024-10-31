@@ -60,15 +60,15 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         OPTIONAL { ?b rdfs:label ?bname . }
         OPTIONAL { 
             ?a (!owl:sameAs)+ ?s . 
-            FILTER (isBlank(?s)) .
+            # FILTER (isBlank(?s)) .
             ?s ?p ?o .
             OPTIONAL { ?o rdfs:label ?oname . }
             OPTIONAL { ?p rdfs:label ?pname .}
         }
-        VALUES ?a { %s } 
+        VALUES ?a { <%s> } 
     }
 """
-        % f"<{subj}>",
+        % subj,
         endpoint=endpoint,
     )
 
@@ -89,11 +89,10 @@ def render_entity_json(subj: URIRef, endpoint: str):
             return obj
         if isinstance(obj, URIRef):
             out: dict = {"@id": obj}
-            if (obj, RDFS.label, None) in g:
-                out["@label"] = next(g.objects(obj, RDFS.label))
-            return out
-        assert isinstance(obj, BNode)
-        out = {}
+        else:
+            assert isinstance(obj, BNode)
+            out = {}
+
         for p in g.predicates(obj):
             plabel = label(p)
             subobjs = list(g.objects(obj, p))
