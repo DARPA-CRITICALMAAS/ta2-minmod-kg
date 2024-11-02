@@ -63,9 +63,19 @@ def make_inventory_ids(
 
 def make_reference_ids(ref: dict, site_id: str, namespace: str = MNR_NS):
     ref["document"]["id"] = make_document_uri(ref["document"], site_id, namespace)
-    ref["id"] = make_reference_uri(ref, ref["document"]["id"], namespace)
+
+    docid = ref["document"]["id"]
+    if docid.startswith(namespace):
+        docid = docid[len(namespace) :]
+    elif docid.startswith("https://"):
+        docid = docid[8:]
+    elif docid.startswith("http://"):
+        docid = docid[7:]
+    docid = slugify(docid)
+
+    ref["id"] = make_reference_uri(ref, slugify(docid), namespace)
     for i, pageinfo in enumerate(ref.get("page_info", [])):
-        pageinfo["id"] = f"{namespace}{ref['id']}__pageinfo__{i}"
+        pageinfo["id"] = f"{ref['id']}__pageinfo__{i}"
 
 
 def make_site_uri(source_id: str, record_id: str, namespace: str = MNR_NS) -> str:
@@ -144,9 +154,9 @@ def make_reference_uri(ref: dict, doc_id: str, namespace: str = MNR_NS):
 
     constraintinfo = property + "_" + pageinfo_id
     if len(constraintinfo) == 1:
-        return doc_id + "__ref"
+        return namespace + doc_id + "__ref"
     else:
-        return doc_id + "__ref__" + shorten_id(slugify(constraintinfo), 120)
+        return namespace + doc_id + "__ref__" + shorten_id(slugify(constraintinfo), 120)
 
 
 def get_uuid4(prefix: str = "B", namespace: str = MNR_NS):
