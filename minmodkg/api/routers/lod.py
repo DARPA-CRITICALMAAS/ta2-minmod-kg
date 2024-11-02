@@ -99,16 +99,16 @@ def render_entity_json(subj: URIRef, endpoint: str):
             out: dict = {"@id": obj}
         else:
             assert isinstance(obj, BNode)
-            out = {}
+            out: dict = {}
 
         if obj in visited:
             # skip visited nodes
             if (obj, RDFS.label, None) in g:
                 out["@label"] = next(g.objects(obj, RDFS.label))
             return out
-        visited.add(obj)
 
-        for p in g.predicates(obj):
+        visited.add(obj)
+        for p in g.predicates(obj, unique=True):
             plabel = label(p)
             subobjs = list(g.objects(obj, p))
             fmtsubobjs = [make_tree(subobj, visited) for subobj in subobjs]
@@ -116,11 +116,12 @@ def render_entity_json(subj: URIRef, endpoint: str):
                 out[plabel] = fmtsubobjs[0]
             else:
                 out[plabel] = fmtsubobjs
+
         return out
 
     out: dict = {"@id": subj}
-    visited = set()
-    for p in g.predicates(subj):
+    visited = {subj}
+    for p in g.predicates(subj, unique=True):
         plabel = label(p)
         objs = list(g.objects(subj, p))
         fmtobjs = [make_tree(obj, visited) for obj in objs]
