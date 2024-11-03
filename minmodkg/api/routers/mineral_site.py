@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from functools import lru_cache
 from hashlib import sha256
 from importlib.metadata import version
 from pathlib import Path
-from time import time
-from typing import Callable, Optional
-from uuid import uuid4
+from typing import Callable
 
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
@@ -16,22 +13,16 @@ from fastapi import APIRouter, HTTPException, status
 from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep
-from minmodkg.api.models.mineral_site import (
-    MineralSite,
-    MineralSiteCreate,
-    MineralSiteUpdate,
-)
-from minmodkg.config import MNO_NS, MNR_NS, SPARQL_ENDPOINT, SPARQL_UPDATE_ENDPOINT
+from minmodkg.api.models.mineral_site import MineralSite
+from minmodkg.api.routers.lod import get_entity_data
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNR, SPARQL_ENDPOINT
 from minmodkg.misc import (
     Transaction,
-    TransactionError,
     Triples,
     has_uri,
-    sparql,
     sparql_construct,
     sparql_delete_insert,
     sparql_insert,
-    sparql_query,
 )
 from minmodkg.transformations import make_site_uri
 from rdflib import Graph, URIRef
@@ -44,8 +35,16 @@ def get_site_uri(source_id: str, record_id: str):
     return make_site_uri(source_id, record_id)
 
 
+@router.get("/mineral-sites/{site_id}")
+def get_site(site_id: str):
+    uri = NS_MNR[site_id]
+    g = get_site_as_graph(uri)
+    # convert the graph into MineralSite
+    return MineralSite.from_graph(uri, g).model_dump(exclude_none=True)
+
+
 @router.post("/mineral-sites")
-def create_site(site: MineralSiteCreate, user: CurrentUserDep):
+def create_site(site: MineralSite, user: CurrentUserDep):
     """Create a mineral site."""
     # To safely update the data, we need to do it in a transaction
     # There are two places where we update the data:
@@ -62,14 +61,11 @@ def create_site(site: MineralSiteCreate, user: CurrentUserDep):
             detail="The site already exists.",
         )
 
-    # convert the site to TTL
-    full_site = MineralSite(
-        **site.model_dump(exclude={"same_as", "modified_at"}),
-        modified_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        created_by=MNR_NS + f"users/{user.username}",
-    )
+    # update controlled fields and convert the site to TTL
+    site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    site.created_by = MNR_NS + f"users/{user.username}"
     g = get_mineral_site_model()(
-        ResourceDataObject([full_site.model_dump(exclude_none=True)])
+        ResourceDataObject([site.model_dump(exclude_none=True, exclude={"same_as"})])
     )
     reluri = uri.replace(MNR_NS, "mnr:")
 
@@ -99,7 +95,7 @@ def create_site(site: MineralSiteCreate, user: CurrentUserDep):
 
 
 @router.post("/mineral-sites/{site_id}")
-def update_site(site_id: str, site: MineralSiteUpdate, user: CurrentUserDep):
+def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     uri = MNR_NS + site_id
     if not has_uri(uri):
         raise HTTPException(
@@ -113,27 +109,24 @@ def update_site(site_id: str, site: MineralSiteUpdate, user: CurrentUserDep):
             detail="Automated system is not allowed to update the site.",
         )
 
-    # transform the site to TTL
-    full_site = MineralSite(
-        **site.model_dump(exclude={"same_as", "modified_at"}),
-        modified_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        created_by=MNR_NS + f"users/{user.username}",
-    )
-    ng = get_mineral_site_model()(
-        ResourceDataObject([full_site.model_dump(exclude_none=True)])
-    )
+    # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
+    site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    site.created_by = MNR_NS + f"users/{user.username}"
+    ng = get_mineral_site_model()(
+        ResourceDataObject([site.model_dump(exclude_none=True, exclude={"same_as"})])
+    )
 
     # start the transaction, we can only have one update at a time
     with Transaction([uri]).transaction():
-        og = get_site(uri)
+        og = get_site_as_graph(uri)
         del_triples, add_triples = get_site_changes(og, ng)
         sparql_delete_insert(del_triples, add_triples)
 
     return {"status": "success", "uri": uri}
 
 
-def get_site(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
+def get_site_as_graph(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
     query = (
         """
 CONSTRUCT {

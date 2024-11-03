@@ -12,8 +12,10 @@ from slugify import slugify
 
 def make_site_ids(value: dict, namespace: str = MNR_NS):
     """Make all ids for a mineral site"""
+    assert value["created_by"].startswith("https://minmod.isi.edu/users/")
+    username = value["created_by"][len("https://minmod.isi.edu/users/") :]
     site_uri = make_site_uri(value["source_id"], value["record_id"], namespace)
-    site_id = site_uri[len(namespace) :]
+    site_id = site_uri[len(namespace) :] + "__user_" + slugify(username) + "__"
 
     # we create id for each reference as it is likely to be the same or re-ordered
     value["id"] = site_uri

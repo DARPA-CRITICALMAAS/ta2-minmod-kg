@@ -207,7 +207,9 @@ semantic_model:
   mno:MineralInventory:1:
     properties:
       - [drepr:uri, inv_id]
-      - [mno:date, inv_date, xsd:date]
+      # TODO: make inv_date xsd:date
+      # - [mno:date, inv_date, xsd:date]
+      - [mno:date, inv_date]
       - [mno:zone, inv_zone]
     links:
       - [mno:commodity, mno:CommodityCandidate:commodity]

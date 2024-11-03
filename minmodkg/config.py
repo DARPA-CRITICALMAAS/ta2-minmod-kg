@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import serde.yaml
+from rdflib import Namespace
 
 if "CFG_FILE" not in os.environ:
     CFG_FILE = Path(__file__).parent.parent / "config.yml"
@@ -24,6 +25,11 @@ assert MNO_NS.endswith("/") or MNO_NS.endswith(
     "#"
 ), f"MNO_NS {MNO_NS} must end with / or #"
 
+# shortcuts to generate URIRef
+NS_MNR = Namespace(MNR_NS)
+NS_MNO = Namespace(MNO_NS)
+
+# for API prefixes
 API_PREFIX = cfg["api_prefix"]
 LOD_PREFIX = cfg["lod_prefix"]
 

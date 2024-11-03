@@ -3,9 +3,9 @@ from __future__ import annotations
 from time import sleep
 
 import pytest
-from minmodkg.api.models.mineral_site import LocationInfo, MineralSiteCreate
-from minmodkg.api.routers.mineral_site import get_site
-from minmodkg.config import MNO_NS, MNR_NS
+from minmodkg.api.models.mineral_site import LocationInfo, MineralSite
+from minmodkg.api.routers.mineral_site import get_site_as_graph
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNO
 from minmodkg.transformations import make_site_uri
 from rdflib import RDF, RDFS
 from rdflib import Literal as RDFLiteral
@@ -16,13 +16,14 @@ class TestMineralSite:
 
     @pytest.fixture(autouse=True)
     def site1_(self):
-        self.site1 = MineralSiteCreate(
+        self.site1 = MineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
             record_id="10014570",
             name="Eagle Mine",
             location_info=LocationInfo(
                 location="POINT (-87.1 46.9)",
             ),
+            created_by="https://minmod.isi.edu/users/admin",
         )
         self.site1_id = make_site_uri(
             self.site1.source_id, self.site1.record_id, namespace=""
@@ -78,10 +79,8 @@ class TestMineralSite:
 
     def test_get_site_data(self, auth_client, kg):
         uri = make_site_uri(self.site1.source_id, self.site1.record_id)
-        g = get_site(uri)
+        g = get_site_as_graph(uri)
         triples = set(g)
-
-        MNO = Namespace(MNO_NS)
 
         resp = (
             auth_client.get(
@@ -96,13 +95,13 @@ class TestMineralSite:
         locref = URIRef(f"{uri}__location_info")
 
         gold_triples = {
-            (siteref, RDF.type, MNO.MineralSite),
+            (siteref, RDF.type, NS_MNO.MineralSite),
             (siteref, RDFS.label, RDFLiteral(resp["@label"])),
-            (siteref, MNO.location_info, locref),
-            (locref, RDF.type, MNO.LocationInfo),
+            (siteref, NS_MNO.location_info, locref),
+            (locref, RDF.type, NS_MNO.LocationInfo),
             (
                 locref,
-                MNO.location,
+                NS_MNO.location,
                 RDFLiteral(
                     resp["location_info"]["location"],
                     datatype=URIRef("http://www.opengis.net/ont/geosparql#wktLiteral"),
@@ -110,7 +109,7 @@ class TestMineralSite:
             ),
         }
         for key in ["created_by", "modified_at", "record_id", "source_id"]:
-            gold_triples.add((siteref, MNO[key], RDFLiteral(resp[key])))
+            gold_triples.add((siteref, NS_MNO[key], RDFLiteral(resp[key])))
 
         assert triples == gold_triples
 
