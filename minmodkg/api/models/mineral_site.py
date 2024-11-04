@@ -183,7 +183,7 @@ class MineralInventory(BaseModel):
     material_form: Optional[CandidateEntity] = None
     ore: Optional[Measure] = None
     reference: Reference = Field()
-    zone: Optional[str] = None
+    zone: Optional[str | int] = None
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
@@ -231,7 +231,7 @@ def norm_uri(val: Any) -> Any:
 
 
 def norm_literal(val: Any) -> Any:
-    return None if val is None else val.value
+    return None if val is None else (val.value or str(val))
 
 
 def norm_object(cls: Any, id: Any, g: Graph) -> Any:
