@@ -14,7 +14,6 @@ from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep
 from minmodkg.api.models.mineral_site import MineralSite
-from minmodkg.api.routers.lod import get_entity_data
 from minmodkg.config import MNO_NS, MNR_NS, NS_MNR, SPARQL_ENDPOINT
 from minmodkg.misc import (
     Transaction,
