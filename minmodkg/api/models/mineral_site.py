@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from minmodkg.config import NS_MNO
 from pydantic import BaseModel, Field
-from rdflib import OWL, SKOS, Graph
+from rdflib import OWL, RDFS, SKOS, Graph
 from rdflib.term import Node
 
 
@@ -148,7 +148,7 @@ class MineralSite(BaseModel):
         return MineralSite(
             source_id=norm_literal(next(g.objects(id, NS_MNO.source_id))),
             record_id=norm_literal(next(g.objects(id, NS_MNO.record_id))),
-            name=norm_literal(next(g.objects(id, NS_MNO.name), None)),
+            name=norm_literal(next(g.objects(id, RDFS.label), None)),
             created_by=[norm_literal(val) for val in g.objects(id, NS_MNO.created_by)],
             aliases=[norm_literal(alias) for alias in g.objects(id, SKOS.altLabel)],
             site_rank=norm_literal(next(g.objects(id, NS_MNO.site_rank), None)),
