@@ -49,14 +49,14 @@ class LocationInfo(BaseModel):
 class Document(BaseModel):
 
     doi: Optional[str]
-    uri: str
+    uri: Optional[str]
     title: Optional[str]
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
         return Document(
             doi=norm_literal(next(g.objects(id, NS_MNO.doi), None)),
-            uri=norm_literal(next(g.objects(id, NS_MNO.uri))),
+            uri=norm_literal(next(g.objects(id, NS_MNO.uri), None)),
             title=norm_literal(next(g.objects(id, NS_MNO.title), None)),
         )
 
