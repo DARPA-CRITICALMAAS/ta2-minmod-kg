@@ -48,9 +48,9 @@ class LocationInfo(BaseModel):
 
 class Document(BaseModel):
 
-    doi: Optional[str]
-    uri: Optional[str]
-    title: Optional[str]
+    doi: Optional[str] = None
+    uri: Optional[str] = None
+    title: Optional[str] = None
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
@@ -101,9 +101,9 @@ class PageInfo(BaseModel):
 
 class Reference(BaseModel):
     document: Document
-    page_info: list[PageInfo]
-    comment: Optional[str]
-    property: Optional[str]
+    page_info: list[PageInfo] = Field(default_factory=list)
+    comment: Optional[str] = None
+    property: Optional[str] = None
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
@@ -123,8 +123,8 @@ class Reference(BaseModel):
 class MineralSite(BaseModel):
     source_id: str
     record_id: str
-    name: Optional[str]
-    created_by: list[str]
+    name: Optional[str] = None
+    created_by: list[str] = Field(default_factory=list)
     aliases: list[str] = Field(default_factory=list)
     site_rank: Optional[str] = None
     site_type: Optional[str] = None

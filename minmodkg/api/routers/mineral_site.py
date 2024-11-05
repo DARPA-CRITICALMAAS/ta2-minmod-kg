@@ -62,10 +62,11 @@ def create_site(site: MineralSite, user: CurrentUserDep):
 
     # update controlled fields and convert the site to TTL
     site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    site.created_by = MNR_NS + f"users/{user.username}"
-    g = get_mineral_site_model()(
-        ResourceDataObject([site.model_dump(exclude_none=True, exclude={"same_as"})])
-    )
+    site.created_by = [f"https://minmod.isi.edu/users/{user.username}"]
+    site_data = site.model_dump(exclude_none=True, exclude={"same_as"})
+    site_data["created_by"] = site.created_by[0]
+
+    g = get_mineral_site_model()(ResourceDataObject([site_data]))
     reluri = uri.replace(MNR_NS, "mnr:")
 
     # send the query
@@ -111,10 +112,11 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
     site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    site.created_by = MNR_NS + f"users/{user.username}"
-    ng = get_mineral_site_model()(
-        ResourceDataObject([site.model_dump(exclude_none=True, exclude={"same_as"})])
-    )
+    site.created_by = [f"https://minmod.isi.edu/users/{user.username}"]
+    site_data = site.model_dump(exclude_none=True, exclude={"same_as"})
+    site_data["created_by"] = site.created_by[0]
+
+    ng = get_mineral_site_model()(ResourceDataObject([site_data]))
 
     # start the transaction, we can only have one update at a time
     with Transaction([uri]).transaction():
