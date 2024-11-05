@@ -32,11 +32,11 @@ app = FastAPI(
 )
 
 app.include_router(commodity.router, prefix=API_PREFIX)
+app.include_router(stats.router, prefix=API_PREFIX)
 app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)
 app.include_router(deposit_type.router, prefix=API_PREFIX)
 app.include_router(lod.router, prefix=LOD_PREFIX)
 app.include_router(login.router, prefix=API_PREFIX)
 app.include_router(mineral_site.router, prefix=API_PREFIX)
-app.include_router(stats.router, prefix=API_PREFIX)
 app.include_router(unit.router, prefix=API_PREFIX)
 app.include_router(admin.router, prefix=f"{API_PREFIX}/admin")
