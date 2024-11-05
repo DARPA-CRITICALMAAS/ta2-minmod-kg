@@ -25,7 +25,7 @@ mkdir kgdata
 The directory will look like this
 
     <WORKDIR>
-      ├── data                      # for storing databases
+      ├── kgdata                    # for storing databases
       ├── ta2-minmod-data           # ta2-minmod-data repository
       └── ta2-minmod-kg             # code to setup TA2 KG
 

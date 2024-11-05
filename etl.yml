@@ -16,10 +16,7 @@ services:
         - ::CFG_DIR::extractors/material_form.yml
       format: turtle
   - name: same as
-    classpath: statickg.services.drepr.DReprService
-    args:
-      path: ::CFG_DIR::extractors/same_as.yml
-      format: turtle
+    classpath: minmodkg.etl.same_as.SameAsService
   - name: mineral site
     classpath: statickg.services.drepr.DReprService
     args:
@@ -44,7 +41,7 @@ services:
       batch_size: 102400
       capture_output: true
   - name: deploy fuseki
-    classpath: minmodkg.fuseki_deployment.FusekiDeploymentService
+    classpath: minmodkg.etl.fuseki_deployment.FusekiDeploymentService
   - name: validate filename
     classpath: minmodkg.validators.FilenameValidatorService
     args:
@@ -70,28 +67,6 @@ pipeline:
     args:
       input: ::REPO::data/entities/*.csv
       output: ::DATA_DIR::predefined-entities/
-  # - service: split mineral site
-  #   args:
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::mineral-sites/split/
-  #       format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
-  #     key_prop: ["source_id", "record_id"]
-  #     num_buckets: 512
-  # - service: split mineral site
-  #   args:
-  #     input: ::REPO::data/curated-mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::mineral-sites/curated/
-  #       format: "{fileparent}/{bucketno:05d}/{filegrandparent}_{filename}"
-  #     key_prop: ["source_id", "record_id"]
-  #     num_buckets: 512
-  # - service: filter mineral site
-  #   args:
-  #     key_prop: ["source_id", "record_id"]
-  #     all_output: ::DATA_DIR::mineral-sites/split/
-  #     filter_output: ::DATA_DIR::mineral-sites/curated/
-  #     output: ::DATA_DIR::mineral-sites/non-curated/
   - service: mineral site
     args:
       - input: ::REPO::data/mineral-sites/*/*/*.json
@@ -101,11 +76,10 @@ pipeline:
   - service: same as
     args:
       input: ::REPO::data/same-as/umn/*.csv
-      output: ::DATA_DIR::same-as/
-  - service: mineral system
-    args:
-      input: ::REPO::data/mappable-criteria/sri/*.json
-      output: ::DATA_DIR::mappable-criteria/
+      curated_input: ::REPO::data/curated-same-as/*/*.json
+      output:
+        base: ::DATA_DIR::same-as/
+        format: "{fileparent}_{filestem}.json"
   - service: copy
     args:
       input: ::CFG_DIR::schema/ontology.ttl

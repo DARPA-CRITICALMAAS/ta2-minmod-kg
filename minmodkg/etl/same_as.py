@@ -9,8 +9,12 @@ import networkx as nx
 import orjson
 import serde.csv
 import serde.json
+from drepr.writers.turtle_writer import TurtleWriter
 from joblib import Parallel, delayed
 from libactor.cache import cache
+from minmodkg.config import MNO_NS, MNR_NS
+from rdflib import OWL
+from slugify import slugify
 from tqdm import tqdm
 
 from statickg.helper import FileSqliteBackend, Fn, logger_helper
@@ -43,6 +47,7 @@ class SameAsServiceConstructArgs(TypedDict):
 
 class SameAsServiceInvokeArgs(TypedDict):
     input: RelPath | list[RelPath]
+    curated_input: RelPath | list[RelPath]
     output: RelPath | FormatOutputPath
     optional: NotRequired[bool]
     compute_missing_file_key: NotRequired[bool]
@@ -64,6 +69,15 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
     def forward(
         self, repo: Repository, args: SameAsServiceInvokeArgs, tracker: ETLOutput
     ):
+        subgroup_files = self.step1_compute_subgroup(repo, args)
+        graphlink = self.step2_resolve_final_group(subgroup_files, args)
+        graphlink = self.step3_update_group(graphlink, args)
+
+        # finally, we generate the same-as and dedup link
+        self.step4_gen_same_as(graphlink, args)
+
+    def step1_compute_subgroup(self, repo: Repository, args: SameAsServiceInvokeArgs):
+        """Compute subgroup for each same as file"""
         infiles = self.list_files(
             repo,
             args["input"],
@@ -72,24 +86,35 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
             compute_missing_file_key=args.get("compute_missing_file_key", True),
         )
         output_fmter = FormatOutputPathModel.init(args["output"])
+        output_fmter.outdir = output_fmter.outdir / "step_1"
 
         jobs = []
         for infile in infiles:
             outfile = output_fmter.get_outfile(infile.path)
             outfile.parent.mkdir(parents=True, exist_ok=True)
             group_prefix = outfile.parent / outfile.stem
-            jobs.append((group_prefix, infile, outfile))
+            jobs.append(
+                (
+                    slugify(str(group_prefix.relative_to(output_fmter.outdir))),
+                    infile,
+                    outfile,
+                )
+            )
 
         readable_ptns = self.get_readable_patterns(args["input"])
 
         if self.parallel:
             it: Iterable = self.parallel_executor(
-                delayed(step1_exec)(self.workdir, group_prefix, infile, outfile)
+                delayed(Step1ComputingSubGroupFn.exec)(
+                    self.workdir, prefix=group_prefix, infile=infile, outfile=outfile
+                )
                 for group_prefix, infile, outfile in jobs
             )
         else:
             it: Iterable = (
-                step1_exec(self.workdir, group_prefix, infile, outfile)
+                Step1ComputingSubGroupFn.exec(
+                    self.workdir, prefix=group_prefix, infile=infile, outfile=outfile
+                )
                 for group_prefix, infile, outfile in jobs
             )
 
@@ -100,25 +125,79 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
             outfiles.add(outfile.relative_to(output_fmter.outdir))
 
         self.remove_unknown_files(outfiles, output_fmter.outdir)
+        return [output_fmter.outdir / outfile for outfile in outfiles]
 
-        # after getting step 1, we need to read all of the files and generate the final dedup group
+    def step2_resolve_final_group(
+        self, subgroup_files: list[Path], args: SameAsServiceInvokeArgs
+    ):
+        site2subgroups = defaultdict(list)
+        id2subgroups = defaultdict(list)
+        for file in subgroup_files:
+            subgrp = orjson.loads(file.read_bytes())
+            id2subgroups.update(subgrp)
+            for grpid, grp in subgrp.items():
+                for site_id in grp:
+                    site2subgroups[site_id].append(grpid)
 
-    def step2(self, infiles: list[Path]):
-        # get all site that are the same as each other
-        mapping = defaultdict(list)
-        for file in infiles:
-            for site, group in orjson.loads(file.read_bytes()).items():
-                mapping[site].append(group)
-
+        # create a mapping from subgroup -> final group
         G = nx.from_edgelist(
             [
-                (groups[0], groups[i])
-                for site, groups in mapping.items()
-                if len(groups) > 1
-                for i in range(1, len(groups))
+                (subgrps[0], subgrps[i])
+                for site, subgrps in site2subgroups.items()
+                if len(subgrps) > 1
+                for i in range(1, len(subgrps))
             ]
         )
-        final_dedup_groups = nx.connected_components(G)
+        final_grps = nx.connected_components(G)
+        sub2final_grp = {}
+        for i, grps in enumerate(final_grps, start=1):
+            final_grp_id = f"grp2__{i}"
+            for sub_grp_id in grps:
+                sub2final_grp[sub_grp_id] = final_grp_id
+
+        site2groups = {}
+        id2groups = defaultdict(list)
+
+        for site, subgrps in site2subgroups.items():
+            if len(subgrps) == 1:
+                id2groups[subgrps[0]].append(site)
+                site2groups[site] = subgrps[0]
+
+        for sub_grp_id, final_grp_id in sub2final_grp.items():
+            for site in id2subgroups[sub_grp_id]:
+                id2groups[final_grp_id].append(site)
+                site2groups[site] = final_grp_id
+
+        return GraphLink(site2groups, id2groups)
+
+    def step3_update_group(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
+        return graph_link
+
+    def step4_gen_same_as(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
+        output_fmter = FormatOutputPathModel.init(args["output"])
+        outfile = output_fmter.outdir / "final/same_as.ttl"
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(outfile, "w") as f:
+            f.write(f"@prefix : <{MNR_NS}> .\n")
+            f.write(f"@prefix mno: <{MNO_NS}> .\n")
+            f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
+
+            for group, nodes in graph_link.groups.items():
+                f.write(f":{group} mno:dup :{nodes[0]}")
+                for i in range(1, len(nodes)):
+                    f.write(f" ;\n\tmno:dup :{nodes[i]}")
+                f.write(" .\n")
+
+            f.write(" .\n")
+            for group, nodes in graph_link.groups.items():
+                f.write(f":{nodes[0]} mno:dedup :{group}")
+                for i in range(1, len(nodes)):
+                    f.write(f" ;\n\towl:sameAs :{nodes[i]}")
+                f.write(" .\n")
+                for i in range(1, len(nodes)):
+                    f.write(f":{nodes[i]} mno:dedup :{group} .\n")
+                f.write("\n")
 
 
 @dataclass
@@ -126,16 +205,26 @@ class GraphLink:
     node2group: dict[str, str]
     groups: dict[str, list[str]]
 
+    @staticmethod
+    def from_connected_components(components: list[list[str]]):
+        node2group = {}
+        groups: dict[str, list[str]] = {}
+        for grp in components:
+            grp_id = GraphLink.get_group_id(grp)
+            groups[grp_id] = grp
+            node2group.update((u, grp_id) for u in grp)
+        return GraphLink(node2group, groups)
+
     def replace_group(self, new_groups: list[list[str]]):
         """Update the linking by deleting existing groups and add them back"""
         affected_groups = {}
-        affected_nodes  = set()
+        affected_nodes = set()
         for grp in new_groups:
             for u in grp:
                 affected_nodes.add(u)
                 grp_id = self.node2group[u]
                 affected_groups[grp_id] = self.groups[grp_id]
-                
+
         # the affected groups need to be updated -- first step is to remove all of them.
         for grp_id in affected_groups.keys():
             del self.groups[grp_id]
@@ -152,54 +241,35 @@ class GraphLink:
                 self.node2group[u] = grp_id
             self.groups[grp_id] = grp
 
-    
-    def get_group_id(self, nodes: list[str]) -> str:
-        raise NotImplementedError()
-        
-
-    def remove_link(self, u: str, v: str, edits: dict[str, set[str]]):
-        """Remove a link from source u to target t from the graph"""
-        u_grp = self.node2group[u]
-        v_grp = self.node2group[v]
-
-        if u_grp != v_grp:
-            # nothing to do
-            return
-
-        nodes = self.groups[u_grp]
-        if len(nodes) == 2:
-            # we need to create two separate groups.
-            ...
-        else:
-            # if things work correctly, we must have another node t same as u or v, so we can decide that we remove u or v
-            # from the existing group.
-            if edits[u].isdisjoint(nodes):
-                if edits[v].isdisjoint(nodes)
+    @staticmethod
+    def get_group_id(nodes: list[str]) -> str:
+        return "grp_" + min(nodes)
 
 
-def apply_group_edits(
-    groups: dict[str, list[str]], edits: dict[str, list[tuple[str, str]]]
-): ...
+class Step1ComputingSubGroupFn(Fn):
 
-
-def step1_exec(workdir: Path, prefix: str, infile: InputFile, outfile: Path):
-    return Step1Fn.get_instance(workdir).same_as_step1_exec(prefix, infile, outfile)
-
-
-class Step1Fn(Fn):
     @cache(
-        backend=FileSqliteBackend.factory(filename="same_as_step1_exec.v100.sqlite"),
+        backend=FileSqliteBackend.factory(filename="step_1_v104.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
     )
-    def same_as_step1_exec(self, prefix: str, infile: InputFile, outfile: Path):
-        edges = serde.csv.deser(infile.path)
-        G = nx.from_edgelist(edges[1:])
+    def invoke(self, prefix: str, infile: InputFile, outfile: Path):
+        lst = serde.csv.deser(infile.path)
+        it = iter(lst)
+        next(it)
+        edges = []
+        for u, v in it:
+            assert u.startswith(MNR_NS)
+            assert v.startswith(MNR_NS)
+            edges.append((u[len(MNR_NS) :], v[len(MNR_NS) :]))
+
+        G = nx.from_edgelist(edges)
         groups = nx.connected_components(G)
 
         mapping = {
-            f"{prefix}:{gid}": list(group) for gid, group in enumerate(groups, start=1)
+            f"grp1__{prefix}__{gid}": list(group)
+            for gid, group in enumerate(groups, start=1)
         }
         serde.json.ser(mapping, outfile)
         return outfile

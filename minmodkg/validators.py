@@ -19,7 +19,7 @@ from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
 
 from statickg.helper import CacheProcess, import_func
-from statickg.models.input_file import BaseType, RelPath
+from statickg.models.file_and_path import BaseType, RelPath
 from statickg.models.prelude import ETLOutput, RelPath, Repository
 from statickg.services.interface import BaseFileService
 
