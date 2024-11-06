@@ -189,7 +189,8 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
                     f.write(f" ;\n\tmno:dup :{nodes[i]}")
                 f.write(" .\n")
 
-            f.write(" .\n")
+            f.write("\n")
+
             for group, nodes in graph_link.groups.items():
                 f.write(f":{nodes[0]} mno:dedup :{group}")
                 for i in range(1, len(nodes)):
