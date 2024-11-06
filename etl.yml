@@ -23,6 +23,10 @@ services:
       path: ::CFG_DIR::extractors/mineral_site.yml
       format: turtle
       parallel: true
+  - name: dedup mineral site
+    classpath: minmodkg.etl.dedup_site.DedupSiteService
+    args:
+      parallel: true
   - name: mineral system
     classpath: statickg.services.drepr.DReprService
     ext: ttl
@@ -46,14 +50,6 @@ services:
     classpath: minmodkg.validators.FilenameValidatorService
     args:
       pattern: ^[a-zA-Z0-9_\-,.]+$
-  - name: split mineral site
-    classpath: statickg.services.split.HashSplitService
-    args:
-      parallel: true
-  - name: filter mineral site
-    classpath: statickg.services.filter.HashFilterService
-    args:
-      parallel: true
 pipeline:
   - service: validate filename
     args:
@@ -80,6 +76,14 @@ pipeline:
       output:
         base: ::DATA_DIR::same-as/
         format: "{fileparent}_{filestem}.json"
+  - service: dedup mineral site
+    args:
+      predefined_entities: ::DATA_DIR::predefined-entities/
+      same_as_group: ::DATA_DIR::same-as/final/groups.json
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::dedup-mineral-sites/
+        format: "{filegrandparent}/{fileparent}_{filestem}.json"
   - service: copy
     args:
       input: ::CFG_DIR::schema/ontology.ttl
@@ -96,6 +100,7 @@ pipeline:
         - ::DATA_DIR::predefined-entities/*.ttl
         - ::DATA_DIR::same-as/final/*.ttl
         - ::DATA_DIR::mineral-sites/*/*.ttl
+        - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
         - ::DATA_DIR::mappable-criteria/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:

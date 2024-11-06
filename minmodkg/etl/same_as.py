@@ -15,6 +15,7 @@ from libactor.cache import cache
 from minmodkg.config import MNO_NS, MNR_NS
 from rdflib import OWL
 from slugify import slugify
+from timer import Timer
 from tqdm import tqdm
 
 from statickg.helper import FileSqliteBackend, Fn, logger_helper
@@ -69,12 +70,20 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
     def forward(
         self, repo: Repository, args: SameAsServiceInvokeArgs, tracker: ETLOutput
     ):
-        subgroup_files = self.step1_compute_subgroup(repo, args)
-        graphlink = self.step2_resolve_final_group(subgroup_files, args)
-        graphlink = self.step3_update_group(graphlink, args)
+        timer = Timer()
 
-        # finally, we generate the same-as and dedup link
-        self.step4_gen_same_as(graphlink, args)
+        with timer.watch("[same-as] resolve dedup group"):
+            subgroup_files = self.step1_compute_subgroup(repo, args)
+            graphlink = self.step2_resolve_final_group(subgroup_files, args)
+
+        with timer.watch("[same-as] update dedup group"):
+            graphlink = self.step3_update_group(graphlink, args)
+
+        with timer.watch("[same-as] save dedup group"):
+            # finally, we save the group and generate same-as link.
+            self.step4_save(graphlink, args)
+
+        timer.report(self.logger.info)
 
     def step1_compute_subgroup(self, repo: Repository, args: SameAsServiceInvokeArgs):
         """Compute subgroup for each same as file"""
@@ -120,7 +129,10 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
 
         outfiles = set()
         for outfile in tqdm(
-            it, desc=f"Generating same-as for {readable_ptns}", disable=self.verbose < 1
+            it,
+            total=len(jobs),
+            desc=f"Generating same-as for {readable_ptns}",
+            disable=self.verbose < 1,
         ):
             outfiles.add(outfile.relative_to(output_fmter.outdir))
 
@@ -132,7 +144,7 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
     ):
         site2subgroups = defaultdict(list)
         id2subgroups = defaultdict(list)
-        for file in subgroup_files:
+        for file in sorted(subgroup_files):
             subgrp = orjson.loads(file.read_bytes())
             id2subgroups.update(subgrp)
             for grpid, grp in subgrp.items():
@@ -173,35 +185,55 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
     def step3_update_group(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
         return graph_link
 
-    def step4_gen_same_as(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
+    def step4_save(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
         output_fmter = FormatOutputPathModel.init(args["output"])
-        outfile = output_fmter.outdir / "final/same_as.ttl"
-        outfile.parent.mkdir(parents=True, exist_ok=True)
+        output_fmter.outdir = output_fmter.outdir / "final"
+        output_fmter.outdir.mkdir(parents=True, exist_ok=True)
 
-        with open(outfile, "w") as f:
+        serde.json.ser(
+            list(graph_link.groups.values()), output_fmter.outdir / "groups.json"
+        )
+
+        with open(output_fmter.outdir / "same_as.ttl", "w") as f:
             f.write(f"@prefix : <{MNR_NS}> .\n")
-            f.write(f"@prefix mno: <{MNO_NS}> .\n")
             f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
 
             for group, nodes in graph_link.groups.items():
-                f.write(f":{group} mno:dup :{nodes[0]}")
-                for i in range(1, len(nodes)):
-                    f.write(f" ;\n\tmno:dup :{nodes[i]}")
-                f.write(" .\n")
-
-            f.write("\n")
-
-            for group, nodes in graph_link.groups.items():
-                f.write(f":{nodes[0]} mno:dedup :{group}")
                 if len(nodes) == 1:
-                    f.write(f" ;\n\towl:sameAs :{nodes[0]}")
+                    f.write(f":{nodes[0]} owl:sameAs :{nodes[0]} .\n")
                 else:
                     for i in range(1, len(nodes)):
-                        f.write(f" ;\n\towl:sameAs :{nodes[i]}")
-                f.write(" .\n")
-                for i in range(1, len(nodes)):
-                    f.write(f":{nodes[i]} mno:dedup :{group} .\n")
-                f.write("\n")
+                        f.write(f":{nodes[0]} owl:sameAs :{nodes[1]} .\n")
+
+    # def step4_gen_same_as(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
+    #     output_fmter = FormatOutputPathModel.init(args["output"])
+    #     outfile = output_fmter.outdir / "final/same_as.ttl"
+    #     outfile.parent.mkdir(parents=True, exist_ok=True)
+
+    #     with open(outfile, "w") as f:
+    #         f.write(f"@prefix : <{MNR_NS}> .\n")
+    #         f.write(f"@prefix mno: <{MNO_NS}> .\n")
+    #         f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
+
+    #         for group, nodes in graph_link.groups.items():
+    #             f.write(f":{group} mno:dup :{nodes[0]}")
+    #             for i in range(1, len(nodes)):
+    #                 f.write(f" ;\n\tmno:dup :{nodes[i]}")
+    #             f.write(" .\n")
+
+    #         f.write("\n")
+
+    #         for group, nodes in graph_link.groups.items():
+    #             f.write(f":{nodes[0]} mno:dedup :{group}")
+    #             if len(nodes) == 1:
+    #                 f.write(f" ;\n\towl:sameAs :{nodes[0]}")
+    #             else:
+    #                 for i in range(1, len(nodes)):
+    #                     f.write(f" ;\n\towl:sameAs :{nodes[i]}")
+    #             f.write(" .\n")
+    #             for i in range(1, len(nodes)):
+    #                 f.write(f":{nodes[i]} mno:dedup :{group} .\n")
+    #             f.write("\n")
 
 
 @dataclass

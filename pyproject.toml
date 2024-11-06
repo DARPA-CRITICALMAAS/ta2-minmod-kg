@@ -22,6 +22,7 @@ passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 sqlmodel = "^0.0.22"
 drepr-v2 = "^1.6.0"
 serde2 = "^1.8.3"
+timer4 = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"
