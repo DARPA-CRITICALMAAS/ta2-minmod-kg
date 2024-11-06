@@ -193,8 +193,11 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
 
             for group, nodes in graph_link.groups.items():
                 f.write(f":{nodes[0]} mno:dedup :{group}")
-                for i in range(1, len(nodes)):
-                    f.write(f" ;\n\towl:sameAs :{nodes[i]}")
+                if len(nodes) == 1:
+                    f.write(f" ;\n\towl:sameAs :{nodes[0]}")
+                else:
+                    for i in range(1, len(nodes)):
+                        f.write(f" ;\n\towl:sameAs :{nodes[i]}")
                 f.write(" .\n")
                 for i in range(1, len(nodes)):
                     f.write(f":{nodes[i]} mno:dedup :{group} .\n")
