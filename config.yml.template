@@ -1,6 +1,6 @@
 triplestore:
-  query: https://minmod.isi.edu/sparql
-  update: https://kg:3030/minmod/update
+  query: http://kg:3030/minmod/sparql
+  update: http://kg:3030/minmod/update
 mnr_ns: https://minmod.isi.edu/resource/
 mno_ns: https://minmod.isi.edu/ontology/
 dbfile: /home/criticalmaas/criticalmaas/minmod.db

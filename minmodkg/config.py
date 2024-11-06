@@ -47,3 +47,17 @@ DBFILE.parent.mkdir(parents=True, exist_ok=True)
 SECRET_KEY = cfg["secret_key"]
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 3  # 3 days
+
+
+if __name__ == "__main__":
+    import typer
+
+    app = typer.Typer(pretty_exceptions_short=True, pretty_exceptions_enable=False)
+
+    @app.command()
+    def update_config(key: str, value: str):
+        cfg = serde.yaml.deser(CFG_FILE)
+        cfg[key] = value
+        serde.yaml.ser(cfg, CFG_FILE)
+
+    app()

@@ -32,10 +32,12 @@ services:
     image: minmod
     ports:
       - "8000:8000"
-    environment:
-      SPARQL_ENDPOINT: http://kg:3030/minmod/sparql
     networks:
       - minmod
+    environment:
+      - CFG_FILE=/home/criticalmaas/config/config.yml
+    volumes:
+      - ../config:/home/criticalmaas/config
     command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
   dashboard:
     image: toan2/minmod-dashboard
