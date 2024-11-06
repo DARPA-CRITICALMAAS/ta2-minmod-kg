@@ -231,9 +231,10 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
             f.write("\n")
 
             for dedup_id, dedup_site in dedup_sites.items():
-                f.write(f":{dedup_id} rdf:type mno:DedupMineralSite ;\n")
+                f.write(f":{dedup_id} rdf:type mno:DedupMineralSite")
                 for site_id in dedup_site["sites"]:
-                    f.write(f"\t mno:site :{site_id};\n")
+                    f.write(f";\n\t mno:site :{site_id}")
+                f.write(" .\n")
 
     def get_dedup_id(self, site_ids: list[str]):
         return "dedup_" + min(site_ids)
