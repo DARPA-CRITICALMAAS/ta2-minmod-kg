@@ -36,7 +36,7 @@ services:
       SPARQL_ENDPOINT: http://kg:3030/minmod/sparql
     networks:
       - minmod
-    command: fastapi run /home/criticalmaas/kg/minmodkg/api.py
+    command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
   dashboard:
     image: toan2/minmod-dashboard
     ports:
