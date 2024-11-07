@@ -180,12 +180,17 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                             for comm, comm_val in sites[site_id]["commodities"].items()
                         }
                     },
-                    "commodities": list(site["commodities"].keys()),
+                    "commodities": {comm: 1 for comm in site["commodities"]},
                 }
 
         # make dedup sites for sites that are linked
         for grp in groups:
             dedup_id = self.get_dedup_id(grp)
+            comm_count = {}
+            for site_id in grp:
+                for comm in sites[site_id]["commodities"]:
+                    comm_count[comm] = comm_count.get(comm, 0) + 1
+
             dedup_sites[dedup_id] = {
                 "id": dedup_id,
                 "sites": {
@@ -195,9 +200,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                     }
                     for site_id in grp
                 },
-                "commodities": sorted(
-                    {comm for site_id in grp for comm in sites[site_id]["commodities"]}
-                ),
+                "commodities": comm_count,
             }
         return dedup_sites
 

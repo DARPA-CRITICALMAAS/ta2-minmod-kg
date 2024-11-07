@@ -175,7 +175,7 @@ class GradeTonnageModel:
         date: Optional[
             str
         ]  # %YYYY-%MM-%DD: this allow us to group by and sort by date without parsing it
-        zone: Optional[str]
+        zone: Optional[str | int]
         category: list[str]
         # if available, is a factor that helps to convert data from the material form to the original form
         material_form_conversion: Optional[float]

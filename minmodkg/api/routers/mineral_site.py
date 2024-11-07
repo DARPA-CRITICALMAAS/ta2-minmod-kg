@@ -14,7 +14,7 @@ from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep
 from minmodkg.api.models.mineral_site import MineralSite
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNR, SPARQL_ENDPOINT
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR, SPARQL_ENDPOINT
 from minmodkg.misc import (
     Transaction,
     Triples,
@@ -24,7 +24,9 @@ from minmodkg.misc import (
     sparql_insert,
 )
 from minmodkg.transformations import make_site_uri
-from rdflib import Graph, URIRef
+from rdflib import RDF, Graph
+from rdflib import Literal as RDFLiteral
+from rdflib import URIRef
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -60,27 +62,19 @@ def create_site(site: MineralSite, user: CurrentUserDep):
             detail="The site already exists.",
         )
 
-    # update controlled fields and convert the site to TTL
-    site_data = site.update_derived_data(user.username).get_drepr_resource()
-    site_data = site.model_dump(exclude_none=True, exclude={"same_as"})
+    # when inferlink/sri create a site, the dedup site is not created yet
+    if site.dedup_site_uri is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Creating dedup site is not supported yet.",
+        )
 
-    g = get_mineral_site_model()(ResourceDataObject([site_data]))
-    reluri = uri.replace(MNR_NS, "mnr:")
-    triples = [
-        (reluri, "owl:sameAs", same_as.replace(MNR_NS, "mnr:"))
-        for same_as in site.same_as
-    ]
-    triples.append((reluri, ":dedup_site", site.dedup_site_id))
-    for gtcom in site.grade_tonnage:
-        triples.append((site.dedup_site_id, ":commodity", gtcom.commodity))
+    # update controlled fields and convert the site to TTL
+    site.update_derived_data(user.username)
+    g = get_mineral_site_model()(site)
 
     # send the query
-    resp = sparql_insert(
-        [
-            g,
-            Triples(triples),
-        ],
-    )
+    resp = sparql_insert(g)
     if resp.status_code != 200:
         logger.error(
             "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response Code: {}\n\t- Response Message{}",
@@ -109,13 +103,14 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
             detail="Automated system is not allowed to update the site.",
         )
 
+    assert site.dedup_site_uri is not None
+
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
-    site_data = site.update_derived_data(user.username).get_drepr_resource()
+    site.update_derived_data(user.username)
+    ng = get_mineral_site_model()(site)
 
-    ng = get_mineral_site_model()(ResourceDataObject([site_data]))
-
-    # start the transaction, we can only have one update at a time
+    # start the transaction, we can read as much as we want but we can only write once
     with Transaction([uri]).transaction():
         og = get_site_as_graph(uri)
         del_triples, add_triples = get_site_changes(og, ng)
@@ -146,6 +141,24 @@ WHERE {
     return sparql_construct(query, endpoint)
 
 
+def get_dedup_site_as_graph(
+    dedup_site_uri: str, endpoint: str = SPARQL_ENDPOINT
+) -> Graph:
+    query = (
+        """
+CONSTRUCT {
+    ?s ?p ?o .
+}
+WHERE {
+    ?s ?p ?o .
+    VALUES ?s { <%s> }
+}
+"""
+        % dedup_site_uri
+    )
+    return sparql_construct(query, endpoint)
+
+
 def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Triples]:
     current_triples = set(current_site)
     new_triples = set(new_site)
@@ -169,7 +182,7 @@ def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Tri
 
 
 @lru_cache()
-def get_mineral_site_model() -> Callable[[ResourceDataObject], Graph]:
+def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
     pkg_dir = Path(__file__).parent.parent.parent
     drepr_version = version("drepr-v2").strip()
 
@@ -196,13 +209,67 @@ def get_mineral_site_model() -> Callable[[ResourceDataObject], Graph]:
     )
     from minmodkg.extractors.mineral_site import main  # type: ignore
 
-    def map(resource: ResourceDataObject) -> Graph:
-        ttl_data = main(resource)
+    def map(site: MineralSite) -> Graph:
+        ttl_data = main(ResourceDataObject([site.get_drepr_resource()]))
         g = Graph()
         g.parse(data=ttl_data, format="turtle")
+        derive_data(g, site)
         return g
 
     return map
+
+
+def derive_data(g: Graph, site: MineralSite):
+    assert site.dedup_site_uri is not None
+
+    # manually parse same as and dedup site
+    site_uri = next(g.subjects(RDF.type, NS_MNO.MineralSite))
+    dedup_site_uri = URIRef(site.dedup_site_uri)
+    site_gtcom_uri_prefix = str(site_uri) + "__gt__"
+    print(">>>", site.grade_tonnage)
+
+    # add link to dedup site
+    g.add((site_uri, NS_MNO.dedup_site, dedup_site_uri))
+    # add same as links
+    for same_as in site.same_as:
+        g.add((site_uri, NS_MNR.same_as, URIRef(same_as)))
+    # add grade tonnage
+    for gtcom in site.grade_tonnage:
+        assert gtcom.commodity.startswith(MNR_NS), gtcom.commodity
+        gtnode_uri = URIRef(site_gtcom_uri_prefix + gtcom.commodity[len(MNR_NS) :])
+
+        g.add((site_uri, NS_MNO.grade_tonnage, gtnode_uri))
+        g.add((gtnode_uri, NS_MNO.commodity, URIRef(gtcom.commodity)))
+        if gtcom.total_contained_metal is not None:
+            g.add(
+                (
+                    gtnode_uri,
+                    NS_MNO.total_contained_metal,
+                    RDFLiteral(gtcom.total_contained_metal),
+                )
+            )
+            g.add(
+                (
+                    gtnode_uri,
+                    NS_MNO.total_tonnage,
+                    RDFLiteral(gtcom.total_tonnage),
+                )
+            )
+            g.add(
+                (
+                    gtnode_uri,
+                    NS_MNO.total_grade,
+                    RDFLiteral(gtcom.total_grade),
+                )
+            )
+
+    # for the dedup site, we need to add back the site link and the commodity
+    # TODO: fix me!!
+    g.add((dedup_site_uri, RDF.type, NS_MNO.DedupMineralSite))
+    g.add((dedup_site_uri, NS_MNO.site, site_uri))
+    for gtcom in site.grade_tonnage:
+        g.add((dedup_site_uri, NS_MNO.commodity, URIRef(gtcom.commodity)))
+    return None
 
 
 def file_ident(file: str | Path):

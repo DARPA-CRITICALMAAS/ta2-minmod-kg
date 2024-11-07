@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from minmodkg.config import NS_MNO
+from fastapi import HTTPException
+from minmodkg.config import MNR_NS, NS_MNO
+from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from pydantic import BaseModel, Field
 from rdflib import OWL, RDFS, SKOS, Graph
 from rdflib.term import Node
@@ -121,7 +124,7 @@ class Reference(BaseModel):
 
 
 class GradeTonnageOfCommodity(BaseModel):
-    commodity: str
+    commodity: str  # uri of the commodity
     total_contained_metal: Optional[float] = None
     total_tonnage: Optional[float] = None
     total_grade: Optional[float] = None
@@ -141,7 +144,7 @@ class GradeTonnageOfCommodity(BaseModel):
 class MineralSite(BaseModel):
     source_id: str
     record_id: str
-    dedup_site_id: str
+    dedup_site_uri: Optional[str] = None
     name: Optional[str] = None
     created_by: list[str] = Field(default_factory=list)
     aliases: list[str] = Field(default_factory=list)
@@ -168,7 +171,7 @@ class MineralSite(BaseModel):
         return MineralSite(
             source_id=norm_literal(next(g.objects(id, NS_MNO.source_id))),
             record_id=norm_literal(next(g.objects(id, NS_MNO.record_id))),
-            dedup_site_id=norm_uri(next(g.objects(id, NS_MNO.dedup_site))),
+            dedup_site_uri=norm_uri(next(g.objects(id, NS_MNO.dedup_site))),
             name=norm_literal(next(g.objects(id, RDFS.label), None)),
             created_by=[norm_literal(val) for val in g.objects(id, NS_MNO.created_by)],
             aliases=[norm_literal(alias) for alias in g.objects(id, SKOS.altLabel)],
@@ -200,7 +203,7 @@ class MineralSite(BaseModel):
     def update_derived_data(self, username: str):
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.created_by = [f"https://minmod.isi.edu/users/{username}"]
-        self.grade_tonnage = []
+        self.grade_tonnage = self.get_grade_tonnage()
         return self
 
     def get_drepr_resource(self):
@@ -210,10 +213,85 @@ class MineralSite(BaseModel):
         obj["created_by"] = self.created_by[0]
         return obj
 
+    def get_grade_tonnage(self) -> list[GradeTonnageOfCommodity]:
+        invs: dict[str, list] = defaultdict(list)
+        grade_tonnage_model = GradeTonnageModel()
+        commodities = set()
+
+        for inv_id, inv in enumerate(self.mineral_inventory):
+            if inv.commodity.normalized_uri is None:
+                continue
+
+            commodity = inv.commodity.normalized_uri
+            commodities.add(commodity)
+
+            if (
+                inv.ore is None
+                or inv.ore.is_missing()
+                or inv.grade is None
+                or inv.grade.is_missing()
+                or len(inv.category) == 0
+            ):
+                continue
+
+            # TODO: fix me
+            mi_form_conversion = None
+            if inv.material_form is not None:
+                raise HTTPException(
+                    status_code=404, detail="material form conversion is needed"
+                )
+
+            invs[commodity].append(
+                GradeTonnageModel.MineralInventory(
+                    id=str(inv_id),
+                    date=inv.date,
+                    zone=inv.zone,
+                    category=[
+                        cat.normalized_uri
+                        for cat in inv.category
+                        if cat.normalized_uri is not None
+                    ],
+                    material_form_conversion=mi_form_conversion,
+                    ore_value=inv.ore.value,
+                    ore_unit=inv.ore.unit.normalized_uri,
+                    grade_value=inv.grade.value,
+                    grade_unit=inv.grade.unit.normalized_uri,
+                )
+            )
+
+        site_comms = []
+        for commodity, gt_invs in invs.items():
+            grade_tonnage = grade_tonnage_model(gt_invs) or SiteGradeTonnage()
+            if grade_tonnage.total_reserve_tonnage is not None and (
+                grade_tonnage.total_resource_tonnage is None
+                or grade_tonnage.total_reserve_tonnage
+                > grade_tonnage.total_resource_tonnage
+            ):
+                total_grade = grade_tonnage.get_total_reserve_grade()
+                total_tonnage = grade_tonnage.total_reserve_tonnage
+                total_contained_metal = grade_tonnage.total_reserve_contained_metal
+            else:
+                total_grade = grade_tonnage.get_total_resource_grade()
+                total_tonnage = grade_tonnage.total_resource_tonnage
+                total_contained_metal = grade_tonnage.total_resource_contained_metal
+
+            site_comms.append(
+                GradeTonnageOfCommodity(
+                    commodity=commodity,
+                    total_contained_metal=total_contained_metal,
+                    total_tonnage=total_tonnage,
+                    total_grade=total_grade,
+                )
+            )
+        for comm in commodities:
+            if comm not in invs:
+                site_comms.append(GradeTonnageOfCommodity(commodity=comm))
+        return site_comms
+
 
 class MineralInventory(BaseModel):
     category: list[CandidateEntity] = Field(default_factory=list)
-    commodity: Optional[CandidateEntity] = None
+    commodity: CandidateEntity
     contained_metal: Optional[float] = None
     cutoff_grade: Optional[Measure] = None
     date: Optional[str] = None
@@ -261,6 +339,11 @@ class Measure(BaseModel):
             unit=norm_object(
                 CandidateEntity, next(g.objects(id, NS_MNO.unit), None), g
             ),
+        )
+
+    def is_missing(self) -> bool:
+        return (
+            self.value is None or self.unit is None or self.unit.normalized_uri is None
         )
 
 
