@@ -8,7 +8,7 @@ import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from minmodkg.api.dependencies import SPARQL_ENDPOINT
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR
 from minmodkg.misc import sparql_construct
 from minmodkg.misc.sparql import has_uri
 from rdflib import OWL, RDF, RDFS, BNode, Graph
@@ -22,6 +22,9 @@ DO_NOT_FOLLOW_PREDICATE = {
     RDF.type,
     NS_MNO.normalized_uri,
     NS_MNO.dedup_site,
+}
+DO_NOT_FOLLOW_PREDICATE_OBJECT = {
+    NS_MNO.commodity: NS_MNO.Commodity,
 }
 
 
@@ -152,11 +155,22 @@ def render_entity_html(subj: URIRef, endpoint: str):
         if isinstance(subj, RDFLiteral):
             return H.p(subj)
 
-        if p in DO_NOT_FOLLOW_PREDICATE:
-            subj_name = subj.n3(g.namespace_manager)
-            if (subj, RDFS.label, None) in g:
-                subj_name = next(g.objects(subj, RDFS.label))
-            return H.a(href=subj)(subj_name)
+        if isinstance(subj, URIRef):
+            if p in DO_NOT_FOLLOW_PREDICATE:
+                subj_name = subj.n3(g.namespace_manager)
+                if (subj, RDFS.label, None) in g:
+                    subj_name = next(g.objects(subj, RDFS.label))
+                return H.a(href=subj)(subj_name)
+
+            if p in DO_NOT_FOLLOW_PREDICATE_OBJECT:
+                if any(
+                    obj in DO_NOT_FOLLOW_PREDICATE_OBJECT[p]
+                    for obj in g.objects(subj, RDF.type)
+                ):
+                    subj_name = subj.n3(g.namespace_manager)
+                    if (subj, RDFS.label, None) in g:
+                        subj_name = next(g.objects(subj, RDFS.label))
+                    return H.a(href=subj)(subj_name)
 
         if subj in visited:
             return H.p(style="font-style: italic")("skiped as visited before")

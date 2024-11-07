@@ -14,6 +14,7 @@ from minmodkg.api.dependencies import (
     norm_commodity,
     rank_source,
 )
+from minmodkg.config import MNR_NS
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, sparql_query
 
@@ -170,7 +171,7 @@ def get_dedup_mineral_site_data_v2(
         sid2sites = group_by_key(dupsites, "ms")
         record = {
             "id": dms,
-            "commodity": commodity,
+            "commodity": MNR_NS + commodity,
             "sites": [
                 {
                     "id": sites[0]["ms"],
