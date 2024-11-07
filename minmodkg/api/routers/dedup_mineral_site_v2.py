@@ -21,7 +21,7 @@ from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, sparql_query
 router = APIRouter(tags=["mineral_sites"])
 
 
-@router.get("/dedup_mineral_sites/{commodity}")
+@router.get("/dedup-mineral-sites/{commodity}")
 def dedup_mineral_sites_v2(
     commodity: str,
     limit: int = -1,

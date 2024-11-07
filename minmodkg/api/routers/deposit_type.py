@@ -10,7 +10,7 @@ from minmodkg.transformations import make_site_uri
 router = APIRouter(tags=["deposit_types"])
 
 
-@router.get("/deposit_types")
+@router.get("/deposit-types")
 def deposit_types():
     return get_deposit_types(get_snapshot_id())
 
