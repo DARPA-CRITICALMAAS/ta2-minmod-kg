@@ -24,9 +24,10 @@ USER criticalmaas
 ENV PATH="/home/criticalmaas/.local/bin:${PATH}"
 
 # install libraries
-RUN mkdir /home/criticalmaas/kg/minmodkg && \
+RUN mkdir -p /home/criticalmaas/kg/minmodkg && \
     touch /home/criticalmaas/kg/minmodkg/__init__.py
 ADD pyproject.toml /home/criticalmaas/kg/
+ADD poetry.lock /home/criticalmaas/kg/
 ADD README.md /home/criticalmaas/kg/
 
 RUN cd /home/criticalmaas/kg && pip install .
