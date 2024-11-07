@@ -197,6 +197,19 @@ class MineralSite(BaseModel):
             ),
         )
 
+    def update_derived_data(self, username: str):
+        self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        self.created_by = [f"https://minmod.isi.edu/users/{username}"]
+        self.grade_tonnage = []
+        return self
+
+    def get_drepr_resource(self):
+        obj = self.model_dump(
+            exclude_none=True, exclude={"same_as", "dedup_site_id", "grade_tonnage"}
+        )
+        obj["created_by"] = self.created_by[0]
+        return obj
+
 
 class MineralInventory(BaseModel):
     category: list[CandidateEntity] = Field(default_factory=list)

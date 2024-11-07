@@ -61,24 +61,24 @@ def create_site(site: MineralSite, user: CurrentUserDep):
         )
 
     # update controlled fields and convert the site to TTL
-    site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    site.created_by = [f"https://minmod.isi.edu/users/{user.username}"]
+    site_data = site.update_derived_data(user.username).get_drepr_resource()
     site_data = site.model_dump(exclude_none=True, exclude={"same_as"})
-    site_data["created_by"] = site.created_by[0]
 
     g = get_mineral_site_model()(ResourceDataObject([site_data]))
     reluri = uri.replace(MNR_NS, "mnr:")
+    triples = [
+        (reluri, "owl:sameAs", same_as.replace(MNR_NS, "mnr:"))
+        for same_as in site.same_as
+    ]
+    triples.append((reluri, ":dedup_site", site.dedup_site_id))
+    for gtcom in site.grade_tonnage:
+        triples.append((site.dedup_site_id, ":commodity", gtcom.commodity))
 
     # send the query
     resp = sparql_insert(
         [
             g,
-            Triples(
-                [
-                    (reluri, "owl:sameAs", same_as.replace(MNR_NS, "mnr:"))
-                    for same_as in site.same_as
-                ]
-            ),
+            Triples(triples),
         ],
     )
     if resp.status_code != 200:
@@ -111,10 +111,7 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
 
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
-    site.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    site.created_by = [f"https://minmod.isi.edu/users/{user.username}"]
-    site_data = site.model_dump(exclude_none=True, exclude={"same_as"})
-    site_data["created_by"] = site.created_by[0]
+    site_data = site.update_derived_data(user.username).get_drepr_resource()
 
     ng = get_mineral_site_model()(ResourceDataObject([site_data]))
 
