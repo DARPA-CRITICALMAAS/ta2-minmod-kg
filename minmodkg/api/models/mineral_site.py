@@ -123,6 +123,7 @@ class Reference(BaseModel):
 class MineralSite(BaseModel):
     source_id: str
     record_id: str
+    dedup_site_id: str
     name: Optional[str] = None
     created_by: list[str] = Field(default_factory=list)
     aliases: list[str] = Field(default_factory=list)
@@ -148,6 +149,7 @@ class MineralSite(BaseModel):
         return MineralSite(
             source_id=norm_literal(next(g.objects(id, NS_MNO.source_id))),
             record_id=norm_literal(next(g.objects(id, NS_MNO.record_id))),
+            dedup_site_id=norm_literal(next(g.objects(id, NS_MNO.dedup_site_id))),
             name=norm_literal(next(g.objects(id, RDFS.label), None)),
             created_by=[norm_literal(val) for val in g.objects(id, NS_MNO.created_by)],
             aliases=[norm_literal(alias) for alias in g.objects(id, SKOS.altLabel)],
