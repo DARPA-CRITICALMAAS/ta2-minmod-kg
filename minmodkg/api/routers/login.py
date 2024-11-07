@@ -6,7 +6,7 @@ from typing import Annotated
 from uuid import uuid4
 
 import jwt
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from jwt.exceptions import InvalidTokenError
 from minmodkg.api.dependencies import CurrentUserDep, TokenDep
 from minmodkg.api.models.db import SessionDep
@@ -22,8 +22,8 @@ router = APIRouter(tags=["login"])
 async def login(
     session: SessionDep,
     response: Response,
-    username: str,
-    password: str,
+    username: Annotated[str, Body()],
+    password: Annotated[str, Body()],
 ):
     # authenticate user
     user = session.get(User, username)
