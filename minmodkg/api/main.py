@@ -9,6 +9,7 @@ from minmodkg.api.models.db import create_db_and_tables
 from minmodkg.api.routers import (
     commodity,
     dedup_mineral_site,
+    dedup_mineral_site_v2,
     deposit_type,
     lod,
     login,
@@ -34,6 +35,7 @@ app = FastAPI(
 app.include_router(commodity.router, prefix=API_PREFIX)
 app.include_router(stats.router, prefix=API_PREFIX)
 app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)
+app.include_router(dedup_mineral_site_v2.router, prefix=API_PREFIX)
 app.include_router(deposit_type.router, prefix=API_PREFIX)
 app.include_router(lod.router, prefix=LOD_PREFIX)
 app.include_router(login.router, prefix=API_PREFIX)

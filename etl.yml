@@ -98,10 +98,9 @@ pipeline:
       input:
         - ::DATA_DIR::ontology.ttl
         - ::DATA_DIR::predefined-entities/*.ttl
-        - ::DATA_DIR::same-as/final/*.ttl
         - ::DATA_DIR::mineral-sites/*/*.ttl
+        - ::DATA_DIR::same-as/final/*.ttl
         - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
-        - ::DATA_DIR::mappable-criteria/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
         update: /minmod/update

@@ -48,7 +48,7 @@ def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"
         },
         verify=False,
         timeout=None,
-    ).raise_for_status()
+    )
     return response
 
 

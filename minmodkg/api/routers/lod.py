@@ -8,14 +8,21 @@ import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from minmodkg.api.dependencies import SPARQL_ENDPOINT
-from minmodkg.config import MNO_NS, MNR_NS
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNO
 from minmodkg.misc import sparql_construct
 from minmodkg.misc.sparql import has_uri
-from rdflib import RDF, RDFS, BNode, Graph
+from rdflib import OWL, RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
 
 router = APIRouter(tags=["lod"])
+
+DO_NOT_FOLLOW_PREDICATE = {
+    OWL.sameAs,
+    RDF.type,
+    NS_MNO.normalized_uri,
+    NS_MNO.dedup_site,
+}
 
 
 @router.get("/resource/{resource_id}")
@@ -141,44 +148,41 @@ def render_entity_html(subj: URIRef, endpoint: str):
         assert isinstance(subj, (URIRef, RDFLiteral))
         return subj.n3(g.namespace_manager)
 
-    def make_tree(g, subj: rdflib.term.Node, visited: set):
+    def make_tree(g, p: rdflib.term.Node, subj: rdflib.term.Node, visited: set):
         if isinstance(subj, RDFLiteral):
             return H.p(subj)
-        if isinstance(subj, URIRef):
+
+        if p in DO_NOT_FOLLOW_PREDICATE:
             subj_name = subj.n3(g.namespace_manager)
             if (subj, RDFS.label, None) in g:
                 subj_name = next(g.objects(subj, RDFS.label))
-
             return H.a(href=subj)(subj_name)
 
         if subj in visited:
             return H.p(style="font-style: italic")("skiped as visited before")
 
         visited.add(subj)
-        assert isinstance(subj, BNode)
-        children = []
-        for p, o in g.predicate_objects(subj):
-            if p != RDFS.label:
-                children.append((H.a(href=p)(label(g, p)), make_tree(g, o, visited)))
 
-        return (
-            H.table(_class="table")(
-                *[
-                    H.tr(
-                        H.td(p),
-                        H.td(o),
-                    )
-                    for p, o in children
-                ]
-            ),
-        )
+        children = []
+        if isinstance(subj, URIRef):
+            subj_name = subj.n3(g.namespace_manager)
+            if (subj, RDFS.label, None) in g:
+                subj_name = next(g.objects(subj, RDFS.label))
+            children.append(H.tr(H.td(colspan=2)(H.a(href=subj)(subj_name))))
+
+        for p, o in g.predicate_objects(subj):
+            children.append(
+                H.tr(H.td(H.a(href=p)(label(g, p))), H.td(make_tree(g, p, o, visited)))
+            )
+
+        return H.table(_class="table")(*children)
 
     subj_label = label(g, subj)
-
+    visited = {subj}
     children = []
     for p, o in g.predicate_objects(subj):
         if p != RDFS.label:
-            children.append((H.a(href=p)(label(g, p)), make_tree(g, o, set())))
+            children.append((H.a(href=p)(label(g, p)), make_tree(g, p, o, visited)))
 
     tree = H.div(_class="container-fluid")(
         H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(

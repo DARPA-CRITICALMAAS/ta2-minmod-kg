@@ -177,7 +177,6 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                         site_id: {
                             comm: comm_val
                             for comm, comm_val in sites[site_id]["commodities"].items()
-                            if comm_val["contained_metal"] is not None
                         }
                     },
                     "commodities": list(site["commodities"].keys()),
@@ -192,13 +191,12 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                     site_id: {
                         comm: comm_val
                         for comm, comm_val in sites[site_id]["commodities"].items()
-                        if comm_val["contained_metal"] is not None
                     }
                     for site_id in grp
                 },
-                "commodities": {
-                    comm for site_id in grp for comm in sites[site_id]["commodities"]
-                },
+                "commodities": sorted(
+                    {comm for site_id in grp for comm in sites[site_id]["commodities"]}
+                ),
             }
         return dedup_sites
 
@@ -219,13 +217,18 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                 for site_id, site_comms in dedup_site["sites"].items():
                     f.write(f":{site_id} mno:dedup_site :{dedup_id}")
                     for comm, comm_val in site_comms.items():
-                        f.write(
-                            f";\n\t mno:grade_tonnage ["
-                            f"\n\t\t mno:commodity :{comm} ;"
-                            f"\n\t\t mno:contained_metal {comm_val['contained_metal']} ;"
-                            f"\n\t\t mno:grade {comm_val['grade']} ;"
-                            f"\n\t\t mno:tonnage {comm_val['tonnage']} ]"
-                        )
+                        if comm_val["contained_metal"] is not None:
+                            f.write(
+                                f";\n\t mno:grade_tonnage ["
+                                f"\n\t\t mno:commodity :{comm} ;"
+                                f"\n\t\t mno:total_contained_metal {comm_val['contained_metal']} ;"
+                                f"\n\t\t mno:total_grade {comm_val['grade']} ;"
+                                f"\n\t\t mno:total_tonnage {comm_val['tonnage']} ]"
+                            )
+                        else:
+                            f.write(
+                                f";\n\t mno:grade_tonnage [ mno:commodity :{comm} ]"
+                            )
                     f.write(" .\n")
 
             f.write("\n")
@@ -234,6 +237,8 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                 f.write(f":{dedup_id} rdf:type mno:DedupMineralSite")
                 for site_id in dedup_site["sites"]:
                     f.write(f";\n\t mno:site :{site_id}")
+                for comm in dedup_site["commodities"]:
+                    f.write(f";\n\t mno:commodity :{comm}")
                 f.write(" .\n")
 
     def get_dedup_id(self, site_ids: list[str]):
@@ -267,7 +272,7 @@ class ComputingSiteInfo:
         return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="compute_fn_v101.sqlite"),
+        backend=FileSqliteBackend.factory(filename="compute_fn_v102.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
@@ -352,6 +357,14 @@ class ComputingSiteInfo:
                     "grade": total_grade,
                     "tonnage": total_tonnage,
                 }
+
+            for comm in commodities:
+                if comm not in site_comms:
+                    site_comms[comm] = {
+                        "contained_metal": None,
+                        "grade": None,
+                        "tonnage": None,
+                    }
 
             output.append({"id": site_id, "commodities": site_comms})
 
