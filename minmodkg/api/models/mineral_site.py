@@ -120,6 +120,24 @@ class Reference(BaseModel):
         )
 
 
+class GradeTonnageOfCommodity(BaseModel):
+    commodity: str
+    total_contained_metal: Optional[float] = None
+    total_tonnage: Optional[float] = None
+    total_grade: Optional[float] = None
+
+    @staticmethod
+    def from_graph(id: Node, g: Graph):
+        return GradeTonnageOfCommodity(
+            commodity=norm_uri(next(g.objects(id, NS_MNO.commodity))),
+            total_contained_metal=norm_literal(
+                next(g.objects(id, NS_MNO.total_contained_metal), None)
+            ),
+            total_tonnage=norm_literal(next(g.objects(id, NS_MNO.total_tonnage), None)),
+            total_grade=norm_literal(next(g.objects(id, NS_MNO.total_grade), None)),
+        )
+
+
 class MineralSite(BaseModel):
     source_id: str
     record_id: str
@@ -133,6 +151,7 @@ class MineralSite(BaseModel):
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = Field(default_factory=list)
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
+    grade_tonnage: list[GradeTonnageOfCommodity] = Field(default_factory=list)
     reference: list[Reference] = Field(default_factory=list)
     modified_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(
@@ -164,6 +183,10 @@ class MineralSite(BaseModel):
             mineral_inventory=[
                 MineralInventory.from_graph(inv, g)
                 for inv in g.objects(id, NS_MNO.mineral_inventory)
+            ],
+            grade_tonnage=[
+                GradeTonnageOfCommodity.from_graph(gt, g)
+                for gt in g.objects(id, NS_MNO.grade_tonnage)
             ],
             reference=[
                 Reference.from_graph(ref, g) for ref in g.objects(id, NS_MNO.reference)

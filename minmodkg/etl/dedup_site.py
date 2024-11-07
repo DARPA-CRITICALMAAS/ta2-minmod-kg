@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from pathlib import Path
 from typing import Iterable, Mapping, NotRequired, TypedDict
+from uuid import uuid4
 
 import serde.csv
 import serde.json
@@ -216,20 +217,23 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
             for dedup_id, dedup_site in dedup_sites.items():
                 for site_id, site_comms in dedup_site["sites"].items():
                     f.write(f":{site_id} mno:dedup_site :{dedup_id}")
+                    comm_nodes = []
                     for comm, comm_val in site_comms.items():
+                        gtnode_id = site_id + f"__gt__{comm}"
+                        comm_nodes.append((gtnode_id, comm_val))
+                        f.write(f" ;\n\t mno:grade_tonnage :{gtnode_id}")
+                    f.write(" .\n")
+
+                    for gtnode_id, comm_val in comm_nodes:
+                        f.write(f":{gtnode_id} mno:commodity :{comm}")
                         if comm_val["contained_metal"] is not None:
                             f.write(
-                                f";\n\t mno:grade_tonnage ["
-                                f"\n\t\t mno:commodity :{comm} ;"
-                                f"\n\t\t mno:total_contained_metal {comm_val['contained_metal']} ;"
-                                f"\n\t\t mno:total_grade {comm_val['grade']} ;"
-                                f"\n\t\t mno:total_tonnage {comm_val['tonnage']} ]"
+                                f" ;\n\t mno:total_contained_metal {comm_val['contained_metal']}"
+                                f" ;\n\t mno:total_grade {comm_val['grade']}"
+                                f" ;\n\t mno:total_tonnage {comm_val['tonnage']} .\n"
                             )
                         else:
-                            f.write(
-                                f";\n\t mno:grade_tonnage [ mno:commodity :{comm} ]"
-                            )
-                    f.write(" .\n")
+                            f.write(" .\n")
 
             f.write("\n")
 
