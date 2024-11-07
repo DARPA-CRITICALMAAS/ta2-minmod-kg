@@ -24,8 +24,11 @@ USER criticalmaas
 ENV PATH="/home/criticalmaas/.local/bin:${PATH}"
 
 # install libraries
-ADD minmodkg /home/criticalmaas/kg/minmodkg
+RUN mkdir /home/criticalmaas/kg/minmodkg && \
+    touch /home/criticalmaas/kg/minmodkg/__init__.py
 ADD pyproject.toml /home/criticalmaas/kg/
 ADD README.md /home/criticalmaas/kg/
 
 RUN cd /home/criticalmaas/kg && pip install .
+
+ADD minmodkg /home/criticalmaas/kg/minmodkg
