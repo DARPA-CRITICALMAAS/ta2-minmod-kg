@@ -33,3 +33,4 @@ ADD README.md /home/criticalmaas/kg/
 RUN cd /home/criticalmaas/kg && pip install .
 
 ADD --chown=criticalmaas:criticalmaas minmodkg /home/criticalmaas/kg/minmodkg
+ADD --chown=criticalmaas:criticalmaas extractors /home/criticalmaas/kg/extractors
