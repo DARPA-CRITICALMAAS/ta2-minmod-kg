@@ -184,6 +184,7 @@ def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Tri
 @lru_cache()
 def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
     pkg_dir = Path(__file__).parent.parent.parent
+    print((pkg_dir / "extractors"), (pkg_dir / "extractors").exists())
     drepr_version = version("drepr-v2").strip()
 
     @cache(
