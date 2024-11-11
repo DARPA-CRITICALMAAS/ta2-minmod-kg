@@ -17,11 +17,12 @@ from minmodkg.api.dependencies import (
 from minmodkg.config import MNR_NS
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, sparql_query
+from pydantic import BaseModel
 
 router = APIRouter(tags=["mineral_sites"])
 
 
-@router.get("/dedup-mineral-sites/{commodity}")
+@router.get("/dedup-mineral-sites")
 def dedup_mineral_sites_v2(
     commodity: str,
     limit: int = -1,
@@ -30,6 +31,17 @@ def dedup_mineral_sites_v2(
     commodity = norm_commodity(commodity)
     output = get_dedup_mineral_site_data_v2(get_snapshot_id(), commodity, limit, offset)
     return output
+
+
+# @router.get("/dedup-mineral-sites/{dedup_site_id}")
+# def dedup_mineral_sites_v2(
+#     commodity: str,
+#     limit: int = -1,
+#     offset: int = 0,
+# ):
+#     commodity = norm_commodity(commodity)
+#     output = get_dedup_mineral_site_data_v2(get_snapshot_id(), commodity, limit, offset)
+#     return output
 
 
 def get_dedup_mineral_site_data_v2(
@@ -169,23 +181,43 @@ def get_dedup_mineral_site_data_v2(
 
     for dms, dupsites in dms2sites.items():
         sid2sites = group_by_key(dupsites, "ms")
-        record = {
-            "id": dms,
-            "commodity": MNR_NS + commodity,
-            "sites": [
-                {
-                    "id": sites[0]["ms"],
-                    "name": sites[0]["ms_name"],
-                    "type": sites[0].get("ms_type") or "NotSpecified",
-                    "rank": sites[0].get("ms_rank") or "U",
-                    "country": list({site["country"] for site in sites}),
-                    "state_or_province": list(
-                        {site["state_or_province"] for site in sites}
+        deposit_types: list[DepositTypeResp] = []
+        for site_id, sites in sid2sites.items():
+            dt: dict[str, DepositTypeResp] = {}
+            for site in sites:
+                if site["dt_name"] is not None and (
+                    site["dt_name"] not in dt
+                    or site["dt_confidence"] > dt[site["dt_name"]].confidence
+                ):
+                    dt[site["dt_name"]] = DepositTypeResp(
+                        name=site["dt_name"],
+                        source=site["dt_source"],
+                        confidence=site["dt_confidence"],
+                        group=site["dt_group"],
+                        environment=site["dt_env"],
+                    )
+            deposit_types.extend(dt.values())
+
+        out_dedup_site = DedupMineralSiteResp(
+            id=dms,
+            commodity=commodity,
+            sites=[
+                MineralSiteResp(
+                    id=sites[0]["ms"],
+                    name=sites[0]["ms_name"],
+                    type=sites[0].get("ms_type") or "NotSpecified",
+                    rank=sites[0].get("ms_rank") or "U",
+                    country=list({site["country"] for site in sites} - {None}),
+                    state_or_province=list(
+                        {site["state_or_province"] for site in sites} - {None}
                     ),
-                }
+                )
                 for site_id, sites in sid2sites.items()
             ],
-        }
+            deposit_types=sorted(
+                deposit_types, key=lambda x: x.confidence, reverse=True
+            )[:5],
+        )
 
         crs_wkts = [
             (
@@ -200,59 +232,61 @@ def get_dedup_mineral_site_data_v2(
         if len(crs_wkts) > 0:
             best_crs, best_wkt = merge_wkts(crs_wkts)
             crs, wkt = merge_wkts(crs_wkts, min_rank=-1)
-            record["loc_crs"] = crs
-            record["loc_wkt"] = wkt
-            record["best_loc_crs"] = best_crs
-            record["best_loc_wkt"] = best_wkt
+            out_dedup_site.loc_crs = crs
+            out_dedup_site.loc_wkt = wkt
+            out_dedup_site.best_loc_crs = best_crs
+            out_dedup_site.best_loc_wkt = best_wkt
 
             try:
                 geometry = shapely.wkt.loads(best_wkt)
                 centroid = shapely.wkt.dumps(shapely.centroid(geometry))
                 centroid = reproject_wkt(centroid, best_crs, "EPSG:4326")
-                record["best_loc_centroid_epsg_4326"] = centroid
+                out_dedup_site.best_loc_centroid_epsg_4326 = centroid
             except shapely.errors.GEOSException:
-                record["best_loc_centroid_epsg_4326"] = None
-        else:
-            record["loc_crs"] = None
-            record["loc_wkt"] = None
-            record["best_loc_crs"] = None
-            record["best_loc_wkt"] = None
-            record["best_loc_centroid_epsg_4326"] = None
+                out_dedup_site.best_loc_centroid_epsg_4326 = None
 
         gt_sites = [s for s in dupsites if s["total_contained_metal"] is not None]
-        if len(gt_sites) == 0:
-            record["total_contained_metal"] = None
-            record["total_tonnage"] = None
-            record["total_grade"] = None
-        else:
+        if len(gt_sites) > 0:
             gtsite = max(
                 (s for s in dupsites if s["total_contained_metal"] is not None),
                 key=lambda x: x["total_contained_metal"],
             )
-            record["total_contained_metal"] = gtsite["total_contained_metal"]
-            record["total_tonnage"] = gtsite["total_tonnage"]
-            record["total_grade"] = gtsite["total_grade"]
+            out_dedup_site.total_contained_metal = gtsite["total_contained_metal"]
+            out_dedup_site.total_tonnage = gtsite["total_tonnage"]
+            out_dedup_site.total_grade = gtsite["total_grade"]
 
-        deposit_types = []
-        for site_id, sites in sid2sites.items():
-            dt = {}
-            for site in sites:
-                if site["dt_name"] is not None and (
-                    site["dt_name"] not in dt
-                    or site["dt_confidence"] > dt[site["dt_name"]]["confidence"]
-                ):
-                    dt[site["dt_name"]] = {
-                        "name": site["dt_name"],
-                        "source": site["dt_source"],
-                        "confidence": site["dt_confidence"],
-                        "group": site["dt_group"],
-                        "environment": site["dt_env"],
-                    }
-            deposit_types.extend(dt.values())
-
-        record["deposit_types"] = sorted(
-            deposit_types, key=lambda x: x["confidence"], reverse=True
-        )[:5]
-        output.append(record)
+        output.append(out_dedup_site)
 
     return output
+
+
+class MineralSiteResp(BaseModel):
+    id: str
+    name: Optional[str]
+    type: str
+    rank: str
+    country: list[str]
+    state_or_province: list[str]
+
+
+class DepositTypeResp(BaseModel):
+    name: str
+    source: str
+    confidence: float
+    group: str
+    environment: str
+
+
+class DedupMineralSiteResp(BaseModel):
+    id: str
+    commodity: str
+    sites: list[MineralSiteResp]
+    deposit_types: list[DepositTypeResp]
+    loc_crs: Optional[str] = None
+    loc_wkt: Optional[str] = None
+    best_loc_crs: Optional[str] = None
+    best_loc_wkt: Optional[str] = None
+    best_loc_centroid_epsg_4326: Optional[str] = None
+    total_contained_metal: Optional[float] = None
+    total_tonnage: Optional[float] = None
+    total_grade: Optional[float] = None

@@ -5,11 +5,11 @@ from functools import lru_cache
 from hashlib import sha256
 from importlib.metadata import version
 from pathlib import Path
-from typing import Callable
+from typing import Annotated, Callable
 
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep
@@ -36,12 +36,26 @@ def get_site_uri(source_id: str, record_id: str):
     return make_site_uri(source_id, record_id)
 
 
+@router.post("/mineral-sites/find_by_ids")
+def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
+    sites = []
+    for uri in uris:
+        g = get_site_as_graph(uri)
+        # convert the graph into MineralSite
+        site = MineralSite.from_graph(URIRef(uri), g).model_dump(exclude_none=True)
+        site["uri"] = uri
+        sites.append(site)
+    return sites
+
+
 @router.get("/mineral-sites/{site_id}")
 def get_site(site_id: str):
     uri = NS_MNR[site_id]
     g = get_site_as_graph(uri)
     # convert the graph into MineralSite
-    return MineralSite.from_graph(uri, g).model_dump(exclude_none=True)
+    site = MineralSite.from_graph(uri, g).model_dump(exclude_none=True)
+    site["id"] = site_id
+    return site
 
 
 @router.post("/mineral-sites")
