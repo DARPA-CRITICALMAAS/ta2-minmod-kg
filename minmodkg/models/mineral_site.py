@@ -1,18 +1,25 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Optional
+from typing import Optional
 
-from fastapi import HTTPException
-from minmodkg.config import MNR_NS, NS_MNO
-from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
+from minmodkg.config import NS_MNO
+from minmodkg.misc.sparql import (
+    rdflib_optional_literal_to_python,
+    rdflib_optional_object_to_python,
+    rdflib_optional_uriref_to_python,
+)
+from minmodkg.models.page_info import PageInfo
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import IRI
 from pydantic import BaseModel, Field
 from rdflib import OWL, RDFS, SKOS, Graph
 from rdflib.term import Node
+
+norm_literal = rdflib_optional_literal_to_python
+norm_uri = rdflib_optional_uriref_to_python
+norm_object = rdflib_optional_object_to_python
 
 
 class CandidateEntity(BaseModel):
@@ -67,44 +74,6 @@ class Document(BaseModel):
         )
 
 
-class BoundingBox(BaseModel):
-    x_max: float
-    x_min: float
-    y_max: float
-    y_min: float
-
-    def to_enc_str(self):
-        return f"BB:{self.x_max:.3f}_{self.x_min:.3f}_{self.y_max:.3f}_{self.y_min:.3f}"
-
-    @staticmethod
-    def from_graph(id: Node, g: Graph):
-        return BoundingBox(
-            x_max=norm_literal(next(g.objects(id, NS_MNO.x_max))),
-            x_min=norm_literal(next(g.objects(id, NS_MNO.x_min))),
-            y_max=norm_literal(next(g.objects(id, NS_MNO.y_max))),
-            y_min=norm_literal(next(g.objects(id, NS_MNO.y_min))),
-        )
-
-
-class PageInfo(BaseModel):
-    bounding_box: Optional[BoundingBox] = None
-    page: int
-
-    def to_enc_str(self):
-        if self.bounding_box is None:
-            return str(self.page)
-        return f"PI:{self.page}|{self.bounding_box.to_enc_str()}"
-
-    @staticmethod
-    def from_graph(id: Node, g: Graph):
-        return PageInfo(
-            bounding_box=norm_object(
-                BoundingBox, next(g.objects(id, NS_MNO.bounding_box), None), g
-            ),
-            page=norm_literal(next(g.objects(id, NS_MNO.page))),
-        )
-
-
 class Reference(BaseModel):
     document: Document
     page_info: list[PageInfo] = Field(default_factory=list)
@@ -148,6 +117,7 @@ class MineralSite(BaseModel):
 
     @cached_property
     def uri(self) -> IRI:
+        print(">>>", self)
         return make_site_uri(self.source_id, self.record_id)
 
     @staticmethod
@@ -253,15 +223,3 @@ class Measure(BaseModel):
         return (
             self.value is None or self.unit is None or self.unit.normalized_uri is None
         )
-
-
-def norm_uri(val: Any) -> Any:
-    return None if val is None else str(val)
-
-
-def norm_literal(val: Any) -> Any:
-    return None if val is None else (val.value or str(val))
-
-
-def norm_object(cls: Any, id: Any, g: Graph) -> Any:
-    return None if id is None else cls.from_graph(id, g)

@@ -78,7 +78,7 @@ def get_deposit_types(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
 @lru_cache(maxsize=1)
 def get_material_forms(
     snapshot_id: str, endpoint: str = SPARQL_ENDPOINT
-) -> dict[str, MaterialForm]:
+) -> list[MaterialForm]:
     query = """
     SELECT *
     WHERE {
@@ -90,8 +90,8 @@ def get_material_forms(
     }
     """
     qres = sparql_query(query, endpoint)
-    return {
-        x["uri"]: MaterialForm(
+    return [
+        MaterialForm(
             uri=x["uri"],
             name=x["name"],
             formula=x["formula"],
@@ -99,11 +99,11 @@ def get_material_forms(
             conversion=x["conversion"],
         )
         for x in qres
-    }
+    ]
 
 
 @lru_cache(maxsize=1)
-def get_crs(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT) -> dict[str, CRS]:
+def get_crs(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT) -> list[CRS]:
     query = """
     SELECT ?uri ?name
     WHERE {
@@ -112,4 +112,4 @@ def get_crs(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT) -> dict[str, CRS]
     }
     """
     qres = sparql_query(query, endpoint)
-    return {x["uri"]: CRS(uri=x["uri"], name=x["name"]) for x in qres}
+    return [CRS(uri=x["uri"], name=x["name"]) for x in qres]

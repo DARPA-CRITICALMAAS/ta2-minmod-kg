@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic.networks import HttpUrl
-
 IRI = Annotated[str, "Internationalized Resource Identifier"]
 InternalID = Annotated[
     str,

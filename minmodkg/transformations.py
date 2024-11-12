@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Callable
 from uuid import uuid4
 
-from drepr.models.preprocessing import Context
 from minmodkg.config import MNO_NS, MNR_NS
-from minmodkg.models.mineral_site import PageInfo
+from minmodkg.models.page_info import PageInfo
 from slugify import slugify
 
 

@@ -2,21 +2,17 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Annotated, Any, Optional
+from functools import cached_property
+from typing import Annotated, Optional
 
 import shapely.wkt
-from fastapi import HTTPException
 from minmodkg.config import MNR_NS, NS_MNO
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
-from minmodkg.misc.sparql import Triples
-from minmodkg.models.crs import CRS
-from minmodkg.models.material_form import MaterialForm
 from minmodkg.models.mineral_site import MineralSite, norm_literal, norm_uri
 from minmodkg.typing import IRI, InternalID, Triple
-from pydantic import BaseModel, Field
-from rdflib import OWL, RDFS, SKOS, Graph
+from pydantic import BaseModel
+from rdflib import Graph
 from rdflib.term import Node
 
 
@@ -51,18 +47,23 @@ class DerivedMineralSite(BaseModel):
     coordinates: Optional[Coordinates]
     grade_tonnage: list[GradeTonnage]
 
+    @cached_property
+    def id(self) -> InternalID:
+        assert self.uri.startswith(MNR_NS), self.uri
+        return self.uri[len(MNR_NS) :]
+
     @staticmethod
     def from_mineral_site(
         site: MineralSite,
-        material_form: dict[str, MaterialForm],
-        crss: dict[str, CRS],
+        material_form: dict[str, float],
+        crss: dict[str, str],
     ):
         if site.location_info is not None and site.location_info.location is not None:
             if site.location_info.crs is not None:
                 if site.location_info.crs.normalized_uri is None:
                     crs = "EPSG:4326"
                 else:
-                    crs = crss[site.location_info.crs.normalized_uri].name
+                    crs = crss[site.location_info.crs.normalized_uri]
 
             geometry = shapely.wkt.loads(site.location_info.location)
             centroid = shapely.wkt.dumps(shapely.centroid(geometry))
@@ -109,9 +110,7 @@ class DerivedMineralSite(BaseModel):
                 inv.material_form is not None
                 and inv.material_form.normalized_uri is not None
             ):
-                mi_form_conversion = material_form[
-                    inv.material_form.normalized_uri
-                ].conversion
+                mi_form_conversion = material_form[inv.material_form.normalized_uri]
 
             invs[commodity].append(
                 GradeTonnageModel.MineralInventory(
@@ -165,6 +164,27 @@ class DerivedMineralSite(BaseModel):
             grade_tonnage=site_comms,
         )
 
+    def merge(self, other: DerivedMineralSite):
+        """Merge two derived mineral sites together.
+
+        For location, we shouldn't have two different locations of the same records
+        as each team is not supposed to work on separate records or separate infomration.
+        """
+        if self.coordinates is None and other.coordinates is not None:
+            self.coordinates = other.coordinates
+
+        com2idx = {gt.commodity: idx for idx, gt in enumerate(self.grade_tonnage)}
+        for gt in other.grade_tonnage:
+            if gt.commodity not in com2idx:
+                self.grade_tonnage.append(gt)
+            elif gt.total_contained_metal is not None:
+                mgt = self.grade_tonnage[com2idx[gt.commodity]]
+                if (
+                    mgt.total_contained_metal is None
+                    or gt.total_contained_metal > mgt.total_contained_metal
+                ):
+                    self.grade_tonnage[com2idx[gt.commodity]] = gt
+
     def get_shorten_triples(self) -> list[Triple]:
         """Get triples shorten with the following prefixes:
 
@@ -174,8 +194,7 @@ class DerivedMineralSite(BaseModel):
         mnr: MNR_NS
         owl: OWL
         """
-        assert self.uri.startswith(MNR_NS), self.uri
-        site_id = f"mnr:{self.uri[len(MNR_NS) :]}"
+        site_id = f"mnr:{self.id}"
         triples = []
 
         if self.coordinates is not None:

@@ -24,6 +24,7 @@ from minmodkg.misc import (
     sparql_insert,
 )
 from minmodkg.models.crs import CRS
+from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.material_form import MaterialForm
 from minmodkg.models.mineral_site import MineralSite
@@ -93,8 +94,8 @@ def create_site(site: MineralSite, user: CurrentUserDep):
     snapshot_id = get_snapshot_id()
     g, triples = get_mineral_site_model()(
         site,
-        get_material_forms(snapshot_id),
-        get_crs(snapshot_id),
+        material_form_uri_to_conversion(snapshot_id),
+        crs_uri_to_name(snapshot_id),
     )
 
     # send the query
@@ -135,10 +136,12 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     snapshot_id = get_snapshot_id()
     ng, ng_triples = get_mineral_site_model()(
         site,
-        get_material_forms(snapshot_id),
-        get_crs(snapshot_id),
+        material_form_uri_to_conversion(snapshot_id),
+        crs_uri_to_name(snapshot_id),
     )
     ng = ng_triples.to_graph(ng)
+
+    # TODO: update the derived graph
 
     # start the transaction, we can read as much as we want but we can only write once
     with Transaction([uri]).transaction():
@@ -213,9 +216,7 @@ def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Tri
 
 @lru_cache()
 def get_mineral_site_model() -> (
-    Callable[
-        [MineralSite, dict[str, MaterialForm], dict[str, CRS]], tuple[Graph, Triples]
-    ]
+    Callable[[MineralSite, dict[str, float], dict[str, str]], tuple[Graph, Triples]]
 ):
     pkg_dir = Path(__file__).parent.parent.parent
     drepr_version = version("drepr-v2").strip()
@@ -245,13 +246,13 @@ def get_mineral_site_model() -> (
 
     def map(
         site: MineralSite,
-        material_forms: dict[str, MaterialForm],
-        crss: dict[str, CRS],
+        material_form_conversion: dict[str, float],
+        crss: dict[str, str],
     ) -> tuple[Graph, Triples]:
         ttl_data = main(ResourceDataObject([site.get_drepr_resource()]))
         g = Graph()
         g.parse(data=ttl_data, format="turtle")
-        triples = derive_data(site, material_forms, crss)
+        triples = derive_data(site, material_form_conversion, crss)
         return g, triples
 
     return map
@@ -259,40 +260,29 @@ def get_mineral_site_model() -> (
 
 def derive_data(
     site: MineralSite,
-    material_forms: dict[str, MaterialForm],
-    crss: dict[str, CRS],
+    material_form_conversion: dict[str, float],
+    crss: dict[str, str],
 ) -> Triples:
     assert site.dedup_site_uri is not None
 
-    mnr_ns_len = len(MNR_NS)
-
     # get derived data
-    derived_site = DerivedMineralSite.from_mineral_site(site, material_forms, crss)
-    site_id = f"mnr:{derived_site.uri[mnr_ns_len :]}"
+    derived_site = DerivedMineralSite.from_mineral_site(
+        site, material_form_conversion, crss
+    )
     triples = derived_site.get_shorten_triples()
 
-    # add same as and dedup site
-    assert site.dedup_site_uri.startswith(MNR_NS), site.dedup_site_uri
-    dedup_site_uri = f"mnr:{site.dedup_site_uri[mnr_ns_len:]}"
-    triples.append((site_id, ":dedup_site", dedup_site_uri))
+    # add same as
+    site_id = f"mnr:{derived_site.id}"
+    mnr_ns_len = len(MNR_NS)
     for same_as in site.same_as:
         assert same_as.startswith(MNR_NS), same_as
         triples.append((site_id, ":same_as", f"mnr:{same_as[mnr_ns_len:]}"))
 
-    # for the dedup site, we need to add back the site link and the commodity
-    # and instead of relying on a counter, we rely on the `{commodity}__{site_id}`
-    # because it's easier to implement
-    triples.append((dedup_site_uri, "rdf:type", ":DedupMineralSite"))
-    triples.append((dedup_site_uri, ":site", site_id))
-
-    for gt in derived_site.grade_tonnage:
-        triples.append((dedup_site_uri, ":commodity", NS_MNR[gt.commodity]))
-    triples.append(
-        (
-            dedup_site_uri,
-            ":site_commodity",
-            f'{",".join(gt.commodity for gt in derived_site.grade_tonnage)}',
-        )
+    # add dedup site information
+    triples.extend(
+        DedupMineralSite.from_derived_sites(
+            [derived_site], site.dedup_site_uri
+        ).get_shorten_triples()
     )
     return Triples(triples)
 
@@ -301,3 +291,13 @@ def file_ident(file: str | Path):
     file = Path(file).resolve()
     filehash = sha256(file.read_bytes()).hexdigest()
     return f"{file}::{filehash}"
+
+
+@lru_cache(maxsize=1)
+def crs_uri_to_name(snapshot_id: str):
+    return {crs.uri: crs.name for crs in get_crs(snapshot_id)}
+
+
+@lru_cache(maxsize=1)
+def material_form_uri_to_conversion(snapshot_id: str):
+    return {mf.uri: mf.conversion for mf in get_material_forms(snapshot_id)}

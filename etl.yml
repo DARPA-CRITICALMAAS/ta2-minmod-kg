@@ -26,7 +26,7 @@ services:
   - name: dedup mineral site
     classpath: minmodkg.etl.dedup_site.DedupSiteService
     args:
-      parallel: true
+      parallel: false
   - name: mineral system
     classpath: statickg.services.drepr.DReprService
     ext: ttl

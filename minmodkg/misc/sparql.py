@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from time import time
-from typing import Literal, Optional, Sequence
+from typing import Annotated, Any, Literal, Optional, Protocol, Self, Sequence
 from uuid import uuid4
 
 import httpx
@@ -20,6 +20,7 @@ from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import Triple
 from rdflib import RDF, Graph
 from rdflib import Literal as RDFLiteral
+from rdflib import URIRef
 
 
 @dataclass
@@ -360,3 +361,20 @@ class Transaction:
             Triples([(f"<{obj}>", ":lock", f'"{self.lock}"') for obj in self.objects]),
             endpoint=self.update_endpoint,
         )
+
+
+def rdflib_optional_uriref_to_python(value: Annotated[Any, URIRef]) -> Any:
+    return None if value is None else str(value)
+
+
+def rdflib_optional_literal_to_python(value: Annotated[Any, RDFLiteral]) -> Any:
+    return None if value is None else (value.value or str(value))
+
+
+class FromGraphTrait(Protocol):
+    @classmethod
+    def from_graph(cls, id, g: Graph) -> Self: ...
+
+
+def rdflib_optional_object_to_python(cls: type[FromGraphTrait], id, g: Graph) -> Any:
+    return None if id is None else cls.from_graph(id, g)

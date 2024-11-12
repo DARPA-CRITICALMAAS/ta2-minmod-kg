@@ -15,6 +15,7 @@ import orjson
 import typer
 from drepr.main import convert
 from loguru import logger
+from minmodkg.models.mineral_site import MineralSite
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
 
@@ -209,7 +210,11 @@ class ContentValidator:
         outfile = self.workdir / "mineral-sites" / (site_file.stem + ".ttl")
 
         # ------- schema check - pass 1 -------
-        logger.info("Check if the data is valid with D-REPR (part 1)...")
+        logger.info("Check if the data is complied with JSON schema (part 1)...")
+        MineralSite.model_validate_json(site_file.get_path().read_bytes())
+
+        # ------- schema check - pass 2 -------
+        logger.info("Check if the data is valid with D-REPR (part 2)...")
 
         # ------- convert the site file to ttl -------
         logger.info("Check if the data can be converted to TTL...")
@@ -217,7 +222,7 @@ class ContentValidator:
         logger.info("Check if the data can be converted to TTL... Success!")
 
         # ------- validate again using SHACL to ensure all references are correct -------
-        logger.info("Check if the data is valid with SHACL (part 2)...")
+        logger.info("Check if the data is valid with SHACL (part 3)...")
         # prepare a graph
         full_graph = self.workdir / "mineral-sites" / (site_file.stem + ".full.ttl")
         with open(full_graph, "w") as f:
