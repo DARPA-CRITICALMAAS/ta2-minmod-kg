@@ -227,7 +227,7 @@ class ComputingDerivedSiteInfo:
         return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="compute_fn_v103.sqlite"),
+        backend=FileSqliteBackend.factory(filename="compute_fn_v104.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },

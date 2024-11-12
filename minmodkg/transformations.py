@@ -78,7 +78,7 @@ def make_reference_ids(ref: dict, site_id: str, namespace: str = MNR_NS):
         pageinfo["id"] = f"{ref['id']}__pageinfo__{i}"
 
 
-def make_site_uri(source_id: str, record_id: str, namespace: str = MNR_NS) -> str:
+def make_site_uri(source_id: str, record_id: str | int, namespace: str = MNR_NS) -> str:
     if source_id.find("::") != -1:
         # we need to remove the category from the source_id
         category, source_id = source_id.split("::", 1)

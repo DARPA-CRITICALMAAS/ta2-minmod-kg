@@ -29,7 +29,7 @@ from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.material_form import MaterialForm
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
-from minmodkg.typing import Triple
+from minmodkg.typing import IRI, Triple
 from rdflib import RDF, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -46,21 +46,20 @@ def get_site_uri(source_id: str, record_id: str):
 def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
     sites = []
     for uri in uris:
-        g = get_site_as_graph(uri)
-        # convert the graph into MineralSite
-        site = MineralSite.from_graph(URIRef(uri), g).model_dump(exclude_none=True)
-        site["uri"] = uri
-        sites.append(site)
+        sites.append(get_site_by_uri(URIRef(uri)))
     return sites
 
 
 @router.get("/mineral-sites/{site_id}")
 def get_site(site_id: str):
-    uri = NS_MNR[site_id]
+    return get_site_by_uri(NS_MNR[site_id])
+
+
+def get_site_by_uri(uri: URIRef) -> dict:
     g = get_site_as_graph(uri)
     # convert the graph into MineralSite
     site = MineralSite.from_graph(uri, g).model_dump(exclude_none=True)
-    site["id"] = site_id
+    site.update(DerivedMineralSite.from_graph(uri, g).model_dump(exclude_none=True))
     return site
 
 
@@ -110,7 +109,7 @@ def create_site(site: MineralSite, user: CurrentUserDep):
         )
         raise HTTPException(status_code=500, detail="Failed to create the site.")
 
-    return {"status": "success", "uri": uri}
+    return get_site_by_uri(URIRef(uri))
 
 
 @router.post("/mineral-sites/{site_id}")

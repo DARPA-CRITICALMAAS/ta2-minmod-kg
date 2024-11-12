@@ -17,6 +17,13 @@ from minmodkg.api.dependencies import (
 from minmodkg.config import MNR_NS
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc import group_by_key, merge_wkts, reproject_wkt, sparql_query
+from minmodkg.models.dedup_mineral_site import (
+    DedupMineralSiteDepositType,
+    DedupMineralSiteLocation,
+    DedupMineralSitePublic,
+)
+from minmodkg.models.derived_mineral_site import GradeTonnage
+from minmodkg.typing import InternalID
 from pydantic import BaseModel
 
 router = APIRouter(tags=["mineral_sites"])
@@ -30,7 +37,7 @@ def dedup_mineral_sites_v2(
 ):
     commodity = norm_commodity(commodity)
     output = get_dedup_mineral_site_data_v2(get_snapshot_id(), commodity, limit, offset)
-    return output
+    return [x.model_dump(exclude_none=True) for x in output]
 
 
 # @router.get("/dedup-mineral-sites/{dedup_site_id}")
@@ -46,11 +53,11 @@ def dedup_mineral_sites_v2(
 
 def get_dedup_mineral_site_data_v2(
     snapshot_id: str,
-    commodity: str,
+    commodity: InternalID,
     limit: int = -1,
     offset: int = 0,
     endpoint: str = SPARQL_ENDPOINT,
-):
+) -> list[DedupMineralSitePublic]:
     if limit > 0:
         dm_query_part = """
         {
@@ -82,13 +89,11 @@ def get_dedup_mineral_site_data_v2(
         ?ms_name
         ?ms_type
         ?ms_rank
-        ?dt_name
+        ?dt_id
         ?dt_source
         ?dt_confidence
-        ?dt_group
-        ?dt_env
-        ?loc_wkt
-        ?loc_crs
+        ?lat
+        ?lon
         ?country
         ?state_or_province
         ?total_contained_metal
@@ -104,11 +109,7 @@ def get_dedup_mineral_site_data_v2(
             ?ms :deposit_type_candidate [
                 :source ?dt_source ;
                 :confidence ?dt_confidence ;
-                :normalized_uri [
-                    rdfs:label ?dt_name ;
-                    :group ?dt_group ;
-                    :environment ?dt_env ;
-                ]
+                :normalized_uri ?dt_id ;
             ]
         }
         
@@ -120,21 +121,22 @@ def get_dedup_mineral_site_data_v2(
 
         OPTIONAL {
             ?ms :location_info ?loc .
-
             OPTIONAL { 
-                ?loc :country/:normalized_uri/rdfs:label ?country .
+                ?loc :country/:normalized_uri ?country .
             }
             OPTIONAL {
-                ?loc :state_or_province/:normalized_uri/rdfs:label ?state_or_province . 
+                ?loc :state_or_province/:normalized_uri ?state_or_province . 
             }
-            OPTIONAL {
-                ?loc :crs/:normalized_uri/rdfs:label ?loc_crs .
-            }
-            OPTIONAL { ?loc :location ?loc_wkt . }
+        }
+
+        OPTIONAL {
+            ?ms :lat ?lat ;
+                :lon ?lon .
         }
 
         OPTIONAL {
             ?ms :grade_tonnage [
+                # when save grade tonnage, we convert commodity to full uri
                 :commodity mnr:%s ;
                 :total_contained_metal ?total_contained_metal ;
                 :total_tonnage ?total_tonnage ;
@@ -158,14 +160,12 @@ def get_dedup_mineral_site_data_v2(
             "ms_name",
             "ms_type",
             "ms_rank",
-            "dt_name",
+            "dt_id",
             "dt_source",
             "dt_confidence",
-            "dt_group",
-            "dt_env",
+            "lat",
+            "lon",
             "country",
-            "loc_crs",
-            "loc_wkt",
             "state_or_province",
             "total_contained_metal",
             "total_tonnage",
@@ -181,69 +181,105 @@ def get_dedup_mineral_site_data_v2(
 
     for dms, dupsites in dms2sites.items():
         sid2sites = group_by_key(dupsites, "ms")
-        deposit_types: list[DepositTypeResp] = []
-        for site_id, sites in sid2sites.items():
-            dt: dict[str, DepositTypeResp] = {}
-            for site in sites:
-                if site["dt_name"] is not None and (
-                    site["dt_name"] not in dt
-                    or site["dt_confidence"] > dt[site["dt_name"]].confidence
-                ):
-                    dt[site["dt_name"]] = DepositTypeResp(
-                        name=site["dt_name"],
-                        source=site["dt_source"],
-                        confidence=site["dt_confidence"],
-                        group=site["dt_group"],
-                        environment=site["dt_env"],
-                    )
-            deposit_types.extend(dt.values())
-
-        out_dedup_site = DedupMineralSiteResp(
-            id=dms,
-            commodity=commodity,
-            sites=[
-                MineralSiteResp(
-                    id=sites[0]["ms"],
-                    name=sites[0]["ms_name"],
-                    type=sites[0].get("ms_type") or "NotSpecified",
-                    rank=sites[0].get("ms_rank") or "U",
-                    country=list({site["country"] for site in sites} - {None}),
-                    state_or_province=list(
-                        {site["state_or_province"] for site in sites} - {None}
-                    ),
+        _tmp_deposit_types: dict[str, DedupMineralSiteDepositType] = {}
+        for site in dupsites:
+            if site["dt_id"] is not None and (
+                site["dt_id"] not in _tmp_deposit_types
+                or site["dt_confidence"] > _tmp_deposit_types[site["dt_id"]].confidence
+            ):
+                _tmp_deposit_types[site["dt_id"]] = DedupMineralSiteDepositType(
+                    uri=site["dt_id"],
+                    source=site["dt_source"],
+                    confidence=site["dt_confidence"],
                 )
-                for site_id, sites in sid2sites.items()
-            ],
-            deposit_types=sorted(
-                deposit_types, key=lambda x: x.confidence, reverse=True
-            )[:5],
+        deposit_types: list[DedupMineralSiteDepositType] = list(
+            _tmp_deposit_types.values()
         )
 
-        crs_wkts = [
-            (
-                rank_source(x["ms_source"], snapshot_id, endpoint),
-                x["loc_crs"],
-                x["loc_wkt"],
+        ranked_site_ids = [
+            site_id
+            for site_id, _ in sorted(
+                (
+                    (site_id, rank_source(sites[0]["ms_source"], snapshot_id, endpoint))
+                    for site_id, sites in sid2sites.items()
+                ),
+                key=lambda x: x[1],
+                reverse=True,
             )
-            for x in dupsites
-            if x["loc_wkt"] is not None
         ]
 
-        if len(crs_wkts) > 0:
-            best_crs, best_wkt = merge_wkts(crs_wkts)
-            crs, wkt = merge_wkts(crs_wkts, min_rank=-1)
-            out_dedup_site.loc_crs = crs
-            out_dedup_site.loc_wkt = wkt
-            out_dedup_site.best_loc_crs = best_crs
-            out_dedup_site.best_loc_wkt = best_wkt
+        site_name: str = next(
+            (
+                (site := sid2sites[site_id][0])["ms_name"]
+                for site_id in ranked_site_ids
+                if site["ms_name"] is not None
+            ),
+            "",
+        )
+        site_type = next(
+            (
+                (site := sid2sites[site_id][0])["ms_type"]
+                for site_id in ranked_site_ids
+                if site["ms_type"] is not None
+            ),
+            "NotSpecified",
+        )
+        site_rank = next(
+            (
+                (site := sid2sites[site_id][0])["ms_rank"]
+                for site_id in ranked_site_ids
+                if site["ms_rank"] is not None
+            ),
+            "U",
+        )
+        country = []
+        state_or_province = []
+        lat = None
+        long = None
+        for site_id in ranked_site_ids:
+            _tmp_country = {site["country"] for site in sid2sites[site_id]}
+            if len(_tmp_country) > 0:
+                country = list(_tmp_country)
+                break
+        for site_id in ranked_site_ids:
+            if (
+                len(
+                    (
+                        _tmp_sp := {
+                            site["state_or_province"] for site in sid2sites[site_id]
+                        }
+                    )
+                )
+                > 0
+            ):
+                state_or_province = list(_tmp_sp)
+                break
+        has_loc_site_id = next(
+            (
+                site_id
+                for site_id in ranked_site_ids
+                if sid2sites[site_id][0]["lat"] is not None
+            ),
+            None,
+        )
+        if has_loc_site_id is not None:
+            lat = sid2sites[has_loc_site_id][0]["lat"]
+            long = sid2sites[has_loc_site_id][0]["lon"]
 
-            try:
-                geometry = shapely.wkt.loads(best_wkt)
-                centroid = shapely.wkt.dumps(shapely.centroid(geometry))
-                centroid = reproject_wkt(centroid, best_crs, "EPSG:4326")
-                out_dedup_site.best_loc_centroid_epsg_4326 = centroid
-            except shapely.errors.GEOSException:
-                out_dedup_site.best_loc_centroid_epsg_4326 = None
+        if (
+            len(country) == 0
+            and len(state_or_province) == 0
+            and lat is not None
+            and long is not None
+        ):
+            location = DedupMineralSiteLocation(
+                lat=lat,
+                long=long,
+                country=country,
+                state_or_province=state_or_province,
+            )
+        else:
+            location = None
 
         gt_sites = [s for s in dupsites if s["total_contained_metal"] is not None]
         if len(gt_sites) > 0:
@@ -251,10 +287,29 @@ def get_dedup_mineral_site_data_v2(
                 (s for s in dupsites if s["total_contained_metal"] is not None),
                 key=lambda x: x["total_contained_metal"],
             )
-            out_dedup_site.total_contained_metal = gtsite["total_contained_metal"]
-            out_dedup_site.total_tonnage = gtsite["total_tonnage"]
-            out_dedup_site.total_grade = gtsite["total_grade"]
+            gt = GradeTonnage(
+                commodity=commodity,
+                total_contained_metal=gtsite["total_contained_metal"],
+                total_tonnage=gtsite["total_tonnage"],
+                total_grade=gtsite["total_grade"],
+            )
+        else:
+            gt = GradeTonnage(
+                commodity=commodity,
+            )
 
+        out_dedup_site = DedupMineralSitePublic(
+            uri=dms,
+            name=site_name,
+            type=site_type,
+            rank=site_rank,
+            sites=ranked_site_ids,
+            deposit_types=sorted(
+                deposit_types, key=lambda x: x.confidence, reverse=True
+            )[:5],
+            location=location,
+            grade_tonnage=gt,
+        )
         output.append(out_dedup_site)
 
     return output

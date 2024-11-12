@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Iterable, Optional
+from typing import Annotated, Iterable, Optional
 
 from minmodkg.config import MNR_NS
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
@@ -10,9 +10,9 @@ from pydantic import BaseModel
 
 
 class DedupMineralSiteDepositType(BaseModel):
+    uri: IRI
     source: str
     confidence: float
-    id: IRI
 
 
 class DedupMineralSiteLocation(BaseModel):
@@ -23,8 +23,10 @@ class DedupMineralSiteLocation(BaseModel):
 
 
 class DedupMineralSitePublic(BaseModel):
-    id: str
+    uri: IRI
     name: str
+    type: str
+    rank: str
     sites: list[IRI]
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]

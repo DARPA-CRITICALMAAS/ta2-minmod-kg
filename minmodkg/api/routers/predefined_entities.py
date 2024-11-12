@@ -33,6 +33,16 @@ def deposit_types():
     return get_deposit_types(get_snapshot_id())
 
 
+@router.get("/countries")
+def countries():
+    return get_countries(get_snapshot_id())
+
+
+@router.get("/state-or-provinces")
+def state_or_provinces():
+    return get_state_or_provinces(get_snapshot_id())
+
+
 @lru_cache(maxsize=1)
 def get_commodities(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
     query = """
@@ -69,6 +79,32 @@ def get_deposit_types(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
             rdfs:label ?name ;
             :environment ?environment ;
             :group ?group .
+    }
+    """
+    qres = sparql_query(query, endpoint)
+    return qres
+
+
+@lru_cache(maxsize=1)
+def get_countries(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+    query = """
+    SELECT ?uri ?name
+    WHERE {
+        ?uri a :Country ;
+            rdfs:label ?name .
+    }
+    """
+    qres = sparql_query(query, endpoint)
+    return qres
+
+
+@lru_cache(maxsize=1)
+def get_state_or_provinces(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+    query = """
+    SELECT ?uri ?name
+    WHERE {
+        ?uri a :StateOrProvince ;
+            rdfs:label ?name .
     }
     """
     qres = sparql_query(query, endpoint)

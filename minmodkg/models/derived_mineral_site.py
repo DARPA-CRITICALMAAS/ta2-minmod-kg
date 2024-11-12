@@ -58,6 +58,7 @@ class DerivedMineralSite(BaseModel):
         material_form: dict[str, float],
         crss: dict[str, str],
     ):
+        mnr_ns_len = len(MNR_NS)
         if site.location_info is not None and site.location_info.location is not None:
             if (
                 site.location_info.crs is None
@@ -93,7 +94,7 @@ class DerivedMineralSite(BaseModel):
         else:
             coordinates = None
 
-        invs: dict[str, list] = defaultdict(list)
+        invs: dict[InternalID, list] = defaultdict(list)
         grade_tonnage_model = GradeTonnageModel()
         commodities = set()
 
@@ -101,7 +102,7 @@ class DerivedMineralSite(BaseModel):
             if inv.commodity.normalized_uri is None:
                 continue
 
-            commodity = inv.commodity.normalized_uri
+            commodity = inv.commodity.normalized_uri[mnr_ns_len:]
             commodities.add(commodity)
 
             if (
@@ -176,6 +177,26 @@ class DerivedMineralSite(BaseModel):
             grade_tonnage=site_comms,
         )
 
+    @staticmethod
+    def from_graph(id: Node, g: Graph):
+        lat = norm_literal(next(g.objects(id, NS_MNO.lat), None))
+        lon = norm_literal(next(g.objects(id, NS_MNO.lon), None))
+
+        if lat is None or lon is None:
+            coordinates = None
+        else:
+            coordinates = Coordinates(lat=lat, lon=lon)
+
+        grade_tonnage = [
+            GradeTonnage.from_graph(gt, g) for gt in g.objects(id, NS_MNO.grade_tonnage)
+        ]
+
+        return DerivedMineralSite(
+            uri=str(id),
+            coordinates=coordinates,
+            grade_tonnage=grade_tonnage,
+        )
+
     def merge(self, other: DerivedMineralSite):
         """Merge two derived mineral sites together.
 
@@ -228,6 +249,7 @@ class DerivedMineralSite(BaseModel):
         gtnode_id_prefix = f"mnr:{site_id}__gt__"
         for gt in self.grade_tonnage:
             gtnode_id = gtnode_id_prefix + gt.commodity
+            triples.append((site_id, ":grade_tonnage", gtnode_id))
             triples.append((gtnode_id, ":commodity", f"mnr:{gt.commodity}"))
             if gt.total_contained_metal is not None:
                 triples.append(

@@ -97,7 +97,7 @@ def rank_source(
     default_score = 5
     score = get_source_scores(snapshot_id, endpoint).get_score(source_id)
     if score is None:
-        print("Unknown source id:", source_id)
+        # print("Unknown source id:", source_id)
         return default_score
     return score
 
