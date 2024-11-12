@@ -146,7 +146,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
             for raw_derived_site in serde.json.deser(
                 infile,
             ):
-                site = DerivedMineralSite.model_construct(raw_derived_site)
+                site = DerivedMineralSite.model_validate(raw_derived_site)
                 if site.id not in sites:
                     sites[site.id] = site
                 else:
@@ -235,18 +235,13 @@ class ComputingDerivedSiteInfo:
     def invoke(self, infile: InputFile, outfile: Path):
         lst = serde.json.deser(infile.path)
         output = []
-        try:
-            for raw_site in lst:
-                raw_site["created_by"] = [raw_site["created_by"]]
-                output.append(
-                    DerivedMineralSite.from_mineral_site(
-                        MineralSite.model_validate(raw_site),
-                        self.material_form_conversion,
-                        self.epsg_name,
-                    ).model_dump(exclude_none=True)
-                )
-        except Exception as e:
-            print(">>>", infile)
-            raise
+        for raw_site in lst:
+            output.append(
+                DerivedMineralSite.from_mineral_site(
+                    MineralSite.from_raw_site(raw_site),
+                    self.material_form_conversion,
+                    self.epsg_name,
+                ).model_dump(exclude_none=True)
+            )
         serde.json.ser(output, outfile)
         return outfile

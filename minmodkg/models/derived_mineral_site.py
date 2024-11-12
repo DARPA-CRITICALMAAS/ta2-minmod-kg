@@ -11,7 +11,7 @@ from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
 from minmodkg.models.mineral_site import MineralSite, norm_literal, norm_uri
 from minmodkg.typing import IRI, InternalID, Triple
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from rdflib import Graph
 from rdflib.term import Node
 
@@ -44,8 +44,8 @@ class Coordinates(BaseModel):
 
 class DerivedMineralSite(BaseModel):
     uri: IRI
-    coordinates: Optional[Coordinates]
-    grade_tonnage: list[GradeTonnage]
+    coordinates: Optional[Coordinates] = None
+    grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
 
     @cached_property
     def id(self) -> InternalID:
@@ -59,25 +59,37 @@ class DerivedMineralSite(BaseModel):
         crss: dict[str, str],
     ):
         if site.location_info is not None and site.location_info.location is not None:
-            if site.location_info.crs is not None:
-                if site.location_info.crs.normalized_uri is None:
-                    crs = "EPSG:4326"
-                else:
-                    crs = crss[site.location_info.crs.normalized_uri]
+            if (
+                site.location_info.crs is None
+                or site.location_info.crs.normalized_uri is None
+            ):
+                crs = "EPSG:4326"
+            else:
+                crs = crss[site.location_info.crs.normalized_uri]
 
-            geometry = shapely.wkt.loads(site.location_info.location)
-            centroid = shapely.wkt.dumps(shapely.centroid(geometry))
-            centroid = reproject_wkt(centroid, crs, "EPSG:4326")
+            # TODO: fix this nan
+            if "nan" in site.location_info.location.lower():
+                centroid = None
+            else:
+                try:
+                    geometry = shapely.wkt.loads(site.location_info.location)
+                    centroid = shapely.wkt.dumps(shapely.centroid(geometry))
+                    centroid = reproject_wkt(centroid, crs, "EPSG:4326")
+                except shapely.errors.GEOSException:
+                    centroid = None
 
-            m = re.match(
-                r"POINT \(([+-]?(?:[0-9]*[.])?[0-9]+) ([+-]?(?:[0-9]*[.])?[0-9]+)\)",
-                centroid,
-            )
-            assert m is not None, centroid
-            coordinates = Coordinates(
-                lat=float(m.group(2)),
-                lon=float(m.group(1)),
-            )
+            if centroid is not None:
+                m = re.match(
+                    r"POINT \(([+-]?(?:[0-9]*[.])?[0-9]+) ([+-]?(?:[0-9]*[.])?[0-9]+)\)",
+                    centroid,
+                )
+                assert m is not None, (centroid, site.source_id, site.record_id)
+                coordinates = Coordinates(
+                    lat=float(m.group(2)),
+                    lon=float(m.group(1)),
+                )
+            else:
+                coordinates = None
         else:
             coordinates = None
 

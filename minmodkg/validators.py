@@ -211,7 +211,8 @@ class ContentValidator:
 
         # ------- schema check - pass 1 -------
         logger.info("Check if the data is complied with JSON schema (part 1)...")
-        MineralSite.model_validate_json(site_file.get_path().read_bytes())
+        for site in orjson.loads(site_file.get_path().read_bytes()):
+            MineralSite.from_raw_site(site)
 
         # ------- schema check - pass 2 -------
         logger.info("Check if the data is valid with D-REPR (part 2)...")

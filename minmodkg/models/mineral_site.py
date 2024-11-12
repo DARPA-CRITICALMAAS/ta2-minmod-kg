@@ -97,7 +97,7 @@ class Reference(BaseModel):
 
 class MineralSite(BaseModel):
     source_id: str
-    record_id: str
+    record_id: str | int
     dedup_site_uri: Optional[str] = None
     name: Optional[str] = None
     created_by: list[str] = Field(default_factory=list)
@@ -117,8 +117,15 @@ class MineralSite(BaseModel):
 
     @cached_property
     def uri(self) -> IRI:
-        print(">>>", self)
         return make_site_uri(self.source_id, self.record_id)
+
+    @staticmethod
+    def from_raw_site(raw_site: dict) -> MineralSite:
+        """Convert raw mineral site stored in the Github Repository to MineralSite object.
+        The input argument is not supposed to be reused after this function.
+        """
+        raw_site["created_by"] = [raw_site["created_by"]]
+        return MineralSite.model_validate(raw_site)
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
@@ -170,7 +177,6 @@ class MineralSite(BaseModel):
 class MineralInventory(BaseModel):
     category: list[CandidateEntity] = Field(default_factory=list)
     commodity: CandidateEntity
-    contained_metal: Optional[float] = None
     cutoff_grade: Optional[Measure] = None
     date: Optional[str] = None
     grade: Optional[Measure] = None

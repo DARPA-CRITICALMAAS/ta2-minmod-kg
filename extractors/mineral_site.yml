@@ -149,7 +149,7 @@ semantic_model:
       - [rdfs:label, site_name]
       - [skos:altLabel, site_aliases]
       - [mno:source_id, site_source_id]
-      - [mno:record_id, site_record_id, xsd:string]
+      - [mno:record_id, site_record_id]
       - [mno:site_type, site_type]
       - [mno:site_rank, site_rank]
       - [mno:modified_at, site_modified_at]
