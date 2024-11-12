@@ -12,8 +12,8 @@ from drepr.models.resource import ResourceDataObject
 from fastapi import APIRouter, Body, HTTPException, status
 from libactor.cache import BackendFactory, cache
 from loguru import logger
-from minmodkg.api.dependencies import CurrentUserDep
-from minmodkg.api.models.mineral_site import MineralSite
+from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
+from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
 from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR, SPARQL_ENDPOINT
 from minmodkg.misc import (
     Transaction,
@@ -23,7 +23,12 @@ from minmodkg.misc import (
     sparql_delete_insert,
     sparql_insert,
 )
+from minmodkg.models.crs import CRS
+from minmodkg.models.derived_mineral_site import DerivedMineralSite
+from minmodkg.models.material_form import MaterialForm
+from minmodkg.models.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
+from minmodkg.typing import Triple
 from rdflib import RDF, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -85,10 +90,15 @@ def create_site(site: MineralSite, user: CurrentUserDep):
 
     # update controlled fields and convert the site to TTL
     site.update_derived_data(user.username)
-    g = get_mineral_site_model()(site)
+    snapshot_id = get_snapshot_id()
+    g, triples = get_mineral_site_model()(
+        site,
+        get_material_forms(snapshot_id),
+        get_crs(snapshot_id),
+    )
 
     # send the query
-    resp = sparql_insert(g)
+    resp = sparql_insert([g, triples])
     if resp.status_code != 200:
         logger.error(
             "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response Code: {}\n\t- Response Message{}",
@@ -122,7 +132,13 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
     site.update_derived_data(user.username)
-    ng = get_mineral_site_model()(site)
+    snapshot_id = get_snapshot_id()
+    ng, ng_triples = get_mineral_site_model()(
+        site,
+        get_material_forms(snapshot_id),
+        get_crs(snapshot_id),
+    )
+    ng = ng_triples.to_graph(ng)
 
     # start the transaction, we can read as much as we want but we can only write once
     with Transaction([uri]).transaction():
@@ -196,7 +212,11 @@ def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Tri
 
 
 @lru_cache()
-def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
+def get_mineral_site_model() -> (
+    Callable[
+        [MineralSite, dict[str, MaterialForm], dict[str, CRS]], tuple[Graph, Triples]
+    ]
+):
     pkg_dir = Path(__file__).parent.parent.parent
     drepr_version = version("drepr-v2").strip()
 
@@ -223,67 +243,58 @@ def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
     )
     from minmodkg.extractors.mineral_site import main  # type: ignore
 
-    def map(site: MineralSite) -> Graph:
+    def map(
+        site: MineralSite,
+        material_forms: dict[str, MaterialForm],
+        crss: dict[str, CRS],
+    ) -> tuple[Graph, Triples]:
         ttl_data = main(ResourceDataObject([site.get_drepr_resource()]))
         g = Graph()
         g.parse(data=ttl_data, format="turtle")
-        derive_data(g, site)
-        return g
+        triples = derive_data(site, material_forms, crss)
+        return g, triples
 
     return map
 
 
-def derive_data(g: Graph, site: MineralSite):
+def derive_data(
+    site: MineralSite,
+    material_forms: dict[str, MaterialForm],
+    crss: dict[str, CRS],
+) -> Triples:
     assert site.dedup_site_uri is not None
 
-    # manually parse same as and dedup site
-    site_uri = next(g.subjects(RDF.type, NS_MNO.MineralSite))
-    dedup_site_uri = URIRef(site.dedup_site_uri)
-    site_gtcom_uri_prefix = str(site_uri) + "__gt__"
-    print(">>>", site.grade_tonnage)
+    mnr_ns_len = len(MNR_NS)
 
-    # add link to dedup site
-    g.add((site_uri, NS_MNO.dedup_site, dedup_site_uri))
-    # add same as links
+    # get derived data
+    derived_site = DerivedMineralSite.from_mineral_site(site, material_forms, crss)
+    site_id = f"mnr:{derived_site.uri[mnr_ns_len :]}"
+    triples = derived_site.get_shorten_triples()
+
+    # add same as and dedup site
+    assert site.dedup_site_uri.startswith(MNR_NS), site.dedup_site_uri
+    dedup_site_uri = f"mnr:{site.dedup_site_uri[mnr_ns_len:]}"
+    triples.append((site_id, ":dedup_site", dedup_site_uri))
     for same_as in site.same_as:
-        g.add((site_uri, NS_MNR.same_as, URIRef(same_as)))
-    # add grade tonnage
-    for gtcom in site.grade_tonnage:
-        assert gtcom.commodity.startswith(MNR_NS), gtcom.commodity
-        gtnode_uri = URIRef(site_gtcom_uri_prefix + gtcom.commodity[len(MNR_NS) :])
-
-        g.add((site_uri, NS_MNO.grade_tonnage, gtnode_uri))
-        g.add((gtnode_uri, NS_MNO.commodity, URIRef(gtcom.commodity)))
-        if gtcom.total_contained_metal is not None:
-            g.add(
-                (
-                    gtnode_uri,
-                    NS_MNO.total_contained_metal,
-                    RDFLiteral(gtcom.total_contained_metal),
-                )
-            )
-            g.add(
-                (
-                    gtnode_uri,
-                    NS_MNO.total_tonnage,
-                    RDFLiteral(gtcom.total_tonnage),
-                )
-            )
-            g.add(
-                (
-                    gtnode_uri,
-                    NS_MNO.total_grade,
-                    RDFLiteral(gtcom.total_grade),
-                )
-            )
+        assert same_as.startswith(MNR_NS), same_as
+        triples.append((site_id, ":same_as", f"mnr:{same_as[mnr_ns_len:]}"))
 
     # for the dedup site, we need to add back the site link and the commodity
-    # TODO: fix me!!
-    g.add((dedup_site_uri, RDF.type, NS_MNO.DedupMineralSite))
-    g.add((dedup_site_uri, NS_MNO.site, site_uri))
-    for gtcom in site.grade_tonnage:
-        g.add((dedup_site_uri, NS_MNO.commodity, URIRef(gtcom.commodity)))
-    return None
+    # and instead of relying on a counter, we rely on the `{commodity}__{site_id}`
+    # because it's easier to implement
+    triples.append((dedup_site_uri, "rdf:type", ":DedupMineralSite"))
+    triples.append((dedup_site_uri, ":site", site_id))
+
+    for gt in derived_site.grade_tonnage:
+        triples.append((dedup_site_uri, ":commodity", NS_MNR[gt.commodity]))
+    triples.append(
+        (
+            dedup_site_uri,
+            ":site_commodity",
+            f'{",".join(gt.commodity for gt in derived_site.grade_tonnage)}',
+        )
+    )
+    return Triples(triples)
 
 
 def file_ident(file: str | Path):

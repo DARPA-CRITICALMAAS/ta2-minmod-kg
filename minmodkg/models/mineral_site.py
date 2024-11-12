@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
+from functools import cached_property
 from typing import Any, Optional
 
 from fastapi import HTTPException
 from minmodkg.config import MNR_NS, NS_MNO
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
+from minmodkg.transformations import make_site_uri
+from minmodkg.typing import IRI
 from pydantic import BaseModel, Field
 from rdflib import OWL, RDFS, SKOS, Graph
 from rdflib.term import Node
@@ -123,24 +126,6 @@ class Reference(BaseModel):
         )
 
 
-class GradeTonnageOfCommodity(BaseModel):
-    commodity: str  # uri of the commodity
-    total_contained_metal: Optional[float] = None
-    total_tonnage: Optional[float] = None
-    total_grade: Optional[float] = None
-
-    @staticmethod
-    def from_graph(id: Node, g: Graph):
-        return GradeTonnageOfCommodity(
-            commodity=norm_uri(next(g.objects(id, NS_MNO.commodity))),
-            total_contained_metal=norm_literal(
-                next(g.objects(id, NS_MNO.total_contained_metal), None)
-            ),
-            total_tonnage=norm_literal(next(g.objects(id, NS_MNO.total_tonnage), None)),
-            total_grade=norm_literal(next(g.objects(id, NS_MNO.total_grade), None)),
-        )
-
-
 class MineralSite(BaseModel):
     source_id: str
     record_id: str
@@ -154,13 +139,16 @@ class MineralSite(BaseModel):
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = Field(default_factory=list)
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
-    grade_tonnage: list[GradeTonnageOfCommodity] = Field(default_factory=list)
     reference: list[Reference] = Field(default_factory=list)
     modified_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
     )
+
+    @cached_property
+    def uri(self) -> IRI:
+        return make_site_uri(self.source_id, self.record_id)
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
@@ -187,10 +175,6 @@ class MineralSite(BaseModel):
                 MineralInventory.from_graph(inv, g)
                 for inv in g.objects(id, NS_MNO.mineral_inventory)
             ],
-            grade_tonnage=[
-                GradeTonnageOfCommodity.from_graph(gt, g)
-                for gt in g.objects(id, NS_MNO.grade_tonnage)
-            ],
             reference=[
                 Reference.from_graph(ref, g) for ref in g.objects(id, NS_MNO.reference)
             ],
@@ -203,7 +187,6 @@ class MineralSite(BaseModel):
     def update_derived_data(self, username: str):
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.created_by = [f"https://minmod.isi.edu/users/{username}"]
-        self.grade_tonnage = self.get_grade_tonnage()
         return self
 
     def get_drepr_resource(self):
@@ -212,81 +195,6 @@ class MineralSite(BaseModel):
         )
         obj["created_by"] = self.created_by[0]
         return obj
-
-    def get_grade_tonnage(self) -> list[GradeTonnageOfCommodity]:
-        invs: dict[str, list] = defaultdict(list)
-        grade_tonnage_model = GradeTonnageModel()
-        commodities = set()
-
-        for inv_id, inv in enumerate(self.mineral_inventory):
-            if inv.commodity.normalized_uri is None:
-                continue
-
-            commodity = inv.commodity.normalized_uri
-            commodities.add(commodity)
-
-            if (
-                inv.ore is None
-                or inv.ore.is_missing()
-                or inv.grade is None
-                or inv.grade.is_missing()
-                or len(inv.category) == 0
-            ):
-                continue
-
-            # TODO: fix me
-            mi_form_conversion = None
-            if inv.material_form is not None:
-                raise HTTPException(
-                    status_code=404, detail="material form conversion is needed"
-                )
-
-            invs[commodity].append(
-                GradeTonnageModel.MineralInventory(
-                    id=str(inv_id),
-                    date=inv.date,
-                    zone=inv.zone,
-                    category=[
-                        cat.normalized_uri
-                        for cat in inv.category
-                        if cat.normalized_uri is not None
-                    ],
-                    material_form_conversion=mi_form_conversion,
-                    ore_value=inv.ore.value,
-                    ore_unit=inv.ore.unit.normalized_uri,
-                    grade_value=inv.grade.value,
-                    grade_unit=inv.grade.unit.normalized_uri,
-                )
-            )
-
-        site_comms = []
-        for commodity, gt_invs in invs.items():
-            grade_tonnage = grade_tonnage_model(gt_invs) or SiteGradeTonnage()
-            if grade_tonnage.total_reserve_tonnage is not None and (
-                grade_tonnage.total_resource_tonnage is None
-                or grade_tonnage.total_reserve_tonnage
-                > grade_tonnage.total_resource_tonnage
-            ):
-                total_grade = grade_tonnage.get_total_reserve_grade()
-                total_tonnage = grade_tonnage.total_reserve_tonnage
-                total_contained_metal = grade_tonnage.total_reserve_contained_metal
-            else:
-                total_grade = grade_tonnage.get_total_resource_grade()
-                total_tonnage = grade_tonnage.total_resource_tonnage
-                total_contained_metal = grade_tonnage.total_resource_contained_metal
-
-            site_comms.append(
-                GradeTonnageOfCommodity(
-                    commodity=commodity,
-                    total_contained_metal=total_contained_metal,
-                    total_tonnage=total_tonnage,
-                    total_grade=total_grade,
-                )
-            )
-        for comm in commodities:
-            if comm not in invs:
-                site_comms.append(GradeTonnageOfCommodity(commodity=comm))
-        return site_comms
 
 
 class MineralInventory(BaseModel):

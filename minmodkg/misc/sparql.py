@@ -8,16 +8,49 @@ from typing import Literal, Optional, Sequence
 from uuid import uuid4
 
 import httpx
-from minmodkg.config import MNO_NS, MNR_NS, SPARQL_ENDPOINT, SPARQL_UPDATE_ENDPOINT
+from minmodkg.config import (
+    MNO_NS,
+    MNR_NS,
+    NS_MNO,
+    NS_MNR,
+    SPARQL_ENDPOINT,
+    SPARQL_UPDATE_ENDPOINT,
+)
 from minmodkg.misc.utils import group_by_key
-from rdflib import Graph
-
-Triple = tuple[str, str, str]
+from minmodkg.typing import Triple
+from rdflib import RDF, Graph
+from rdflib import Literal as RDFLiteral
 
 
 @dataclass
 class Triples:
     triples: Sequence[Triple] | set[Triple]
+
+    def to_graph(self, g: Optional[Graph] = None) -> Graph:
+        if g is None:
+            g = Graph()
+        for s, p, o in self.triples:
+            assert s.startswith("mnr:")
+            s = NS_MNR[s[4:]]
+
+            if p[0] == ":":
+                p = NS_MNR[p[1:]]
+            else:
+                assert p == "rdf:type"
+                p = RDF.type
+
+            if o.find(":") != -1:
+                if o.startswith("mnr:"):
+                    o = NS_MNR[o[4:]]
+                elif o[0] == ":":
+                    o = NS_MNO[o[1:]]
+                else:
+                    assert False, o
+            else:
+                o = RDFLiteral(o)
+
+            g.add((s, p, o))
+        return g
 
 
 def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"):

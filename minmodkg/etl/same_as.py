@@ -205,36 +205,6 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
                     for i in range(1, len(nodes)):
                         f.write(f":{nodes[0]} owl:sameAs :{nodes[1]} .\n")
 
-    # def step4_gen_same_as(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
-    #     output_fmter = FormatOutputPathModel.init(args["output"])
-    #     outfile = output_fmter.outdir / "final/same_as.ttl"
-    #     outfile.parent.mkdir(parents=True, exist_ok=True)
-
-    #     with open(outfile, "w") as f:
-    #         f.write(f"@prefix : <{MNR_NS}> .\n")
-    #         f.write(f"@prefix mno: <{MNO_NS}> .\n")
-    #         f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
-
-    #         for group, nodes in graph_link.groups.items():
-    #             f.write(f":{group} mno:dup :{nodes[0]}")
-    #             for i in range(1, len(nodes)):
-    #                 f.write(f" ;\n\tmno:dup :{nodes[i]}")
-    #             f.write(" .\n")
-
-    #         f.write("\n")
-
-    #         for group, nodes in graph_link.groups.items():
-    #             f.write(f":{nodes[0]} mno:dedup :{group}")
-    #             if len(nodes) == 1:
-    #                 f.write(f" ;\n\towl:sameAs :{nodes[0]}")
-    #             else:
-    #                 for i in range(1, len(nodes)):
-    #                     f.write(f" ;\n\towl:sameAs :{nodes[i]}")
-    #             f.write(" .\n")
-    #             for i in range(1, len(nodes)):
-    #                 f.write(f":{nodes[i]} mno:dedup :{group} .\n")
-    #             f.write("\n")
-
 
 @dataclass
 class GraphLink:

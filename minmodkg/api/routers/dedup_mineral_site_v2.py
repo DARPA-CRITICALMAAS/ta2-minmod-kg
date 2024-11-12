@@ -258,35 +258,3 @@ def get_dedup_mineral_site_data_v2(
         output.append(out_dedup_site)
 
     return output
-
-
-class MineralSiteResp(BaseModel):
-    id: str
-    name: Optional[str]
-    type: str
-    rank: str
-    country: list[str]
-    state_or_province: list[str]
-
-
-class DepositTypeResp(BaseModel):
-    name: str
-    source: str
-    confidence: float
-    group: str
-    environment: str
-
-
-class DedupMineralSiteResp(BaseModel):
-    id: str
-    commodity: str
-    sites: list[MineralSiteResp]
-    deposit_types: list[DepositTypeResp]
-    loc_crs: Optional[str] = None
-    loc_wkt: Optional[str] = None
-    best_loc_crs: Optional[str] = None
-    best_loc_wkt: Optional[str] = None
-    best_loc_centroid_epsg_4326: Optional[str] = None
-    total_contained_metal: Optional[float] = None
-    total_tonnage: Optional[float] = None
-    total_grade: Optional[float] = None

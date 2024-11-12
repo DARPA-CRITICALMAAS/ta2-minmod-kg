@@ -3,9 +3,9 @@ from __future__ import annotations
 from time import sleep
 
 import pytest
-from minmodkg.api.models.mineral_site import LocationInfo, MineralSite
 from minmodkg.api.routers.mineral_site import get_site_as_graph
 from minmodkg.config import MNO_NS, MNR_NS, NS_MNO
+from minmodkg.models.mineral_site import LocationInfo, MineralSite
 from minmodkg.transformations import make_site_uri
 from rdflib import RDF, RDFS
 from rdflib import Literal as RDFLiteral
@@ -23,7 +23,7 @@ class TestMineralSite:
             location_info=LocationInfo(
                 location="POINT (-87.1 46.9)",
             ),
-            created_by="https://minmod.isi.edu/users/admin",
+            created_by=["https://minmod.isi.edu/users/admin"],
         )
         self.site1_id = make_site_uri(
             self.site1.source_id, self.site1.record_id, namespace=""
