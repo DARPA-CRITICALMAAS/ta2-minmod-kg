@@ -17,7 +17,7 @@ class DedupMineralSiteDepositType(BaseModel):
 
 class DedupMineralSiteLocation(BaseModel):
     lat: Optional[float]
-    long: Optional[float]
+    lon: Optional[float]
     country: list[IRI]
     state_or_province: list[IRI]
 

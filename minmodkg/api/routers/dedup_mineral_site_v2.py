@@ -352,7 +352,7 @@ def make_dedup_site(
     country = []
     state_or_province = []
     lat = None
-    long = None
+    lon = None
     for site_id in ranked_site_ids:
         _tmp_country = {
             site["country"]
@@ -381,19 +381,19 @@ def make_dedup_site(
     )
     if has_loc_site_id is not None:
         lat = sid2sites[has_loc_site_id][0]["lat"]
-        long = sid2sites[has_loc_site_id][0]["lon"]
+        lon = sid2sites[has_loc_site_id][0]["lon"]
 
     if (
         len(country) == 0
         and len(state_or_province) == 0
         and lat is None
-        and long is None
+        and lon is None
     ):
         location = None
     else:
         location = DedupMineralSiteLocation(
             lat=lat,
-            long=long,
+            lon=lon,
             country=country,
             state_or_province=state_or_province,
         )
