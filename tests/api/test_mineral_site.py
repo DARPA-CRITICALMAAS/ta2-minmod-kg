@@ -207,18 +207,19 @@ class TestMineralSite:
         gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
         assert resp == gold_resp
 
-        resp = check_req(
-            lambda: auth_client_2.get(
-                f"/api/v1/dedup-mineral-sites/{self.site1_dedup_uri[len(MNR_NS):]}",
-                params={"commodity": self.site2_commodity},
-            )
-        ).json()
-        assert resp == {
-            "uri": self.site1_dedup_uri,
-            "name": "Frog Mine",
-            "type": "NotSpecified",
-            "rank": "U",
-            "sites": [self.site1_uri, self.site2_uri],
-            "deposit_types": [],
-            "grade_tonnage": {"commodity": self.site2_commodity},
-        }
+        for commodity in [self.site1_commodity, self.site2_commodity]:
+            resp = check_req(
+                lambda: auth_client_2.get(
+                    f"/api/v1/dedup-mineral-sites/{self.site1_dedup_uri[len(MNR_NS):]}",
+                    params={"commodity": commodity},
+                )
+            ).json()
+            assert resp == {
+                "uri": self.site1_dedup_uri,
+                "name": "Frog Mine",
+                "type": "NotSpecified",
+                "rank": "U",
+                "sites": [self.site1_uri, self.site2_uri],
+                "deposit_types": [],
+                "grade_tonnage": {"commodity": commodity},
+            }

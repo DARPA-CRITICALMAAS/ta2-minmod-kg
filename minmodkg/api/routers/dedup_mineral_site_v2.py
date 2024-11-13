@@ -238,7 +238,6 @@ def get_dedup_mineral_sites(
     """ % (
         dm_query_part,
         commodity,
-        commodity,
     )
 
     qres = sparql_query(
