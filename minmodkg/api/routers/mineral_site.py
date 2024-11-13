@@ -81,13 +81,6 @@ def create_site(site: MineralSite, user: CurrentUserDep):
             detail="The site already exists.",
         )
 
-    # when inferlink/sri create a site, the dedup site is not created yet
-    if site.dedup_site_uri is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Creating dedup site is not supported yet.",
-        )
-
     # update controlled fields and convert the site to TTL
     site.update_derived_data(user.username)
     snapshot_id = get_snapshot_id()
@@ -121,13 +114,11 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
             detail="The site does not exist.",
         )
 
-    if user.is_system():
+    if site.dedup_site_uri is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Automated system is not allowed to update the site.",
         )
-
-    assert site.dedup_site_uri is not None
 
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
@@ -140,15 +131,13 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     )
     ng = ng_triples.to_graph(ng)
 
-    # TODO: update the derived graph
-
     # start the transaction, we can read as much as we want but we can only write once
     with Transaction([uri]).transaction():
         og = get_site_as_graph(uri)
         del_triples, add_triples = get_site_changes(og, ng)
         sparql_delete_insert(del_triples, add_triples)
 
-    return {"status": "success", "uri": uri}
+    return get_site_by_uri(URIRef(uri))
 
 
 def get_site_as_graph(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
@@ -262,7 +251,10 @@ def derive_data(
     material_form_conversion: dict[str, float],
     crss: dict[str, str],
 ) -> Triples:
-    assert site.dedup_site_uri is not None
+    mnr_ns_len = len(MNR_NS)
+
+    if site.dedup_site_uri is None:
+        site.dedup_site_uri = MNR_NS + DedupMineralSite.get_id([site.uri[mnr_ns_len:]])
 
     # get derived data
     derived_site = DerivedMineralSite.from_mineral_site(
@@ -272,10 +264,9 @@ def derive_data(
 
     # add same as
     site_id = f"mnr:{derived_site.id}"
-    mnr_ns_len = len(MNR_NS)
     for same_as in site.same_as:
         assert same_as.startswith(MNR_NS), same_as
-        triples.append((site_id, ":same_as", f"mnr:{same_as[mnr_ns_len:]}"))
+        triples.append((site_id, "owl:sameAs", f"mnr:{same_as[mnr_ns_len:]}"))
 
     # add dedup site information
     triples.extend(

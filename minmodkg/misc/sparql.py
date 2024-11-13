@@ -35,7 +35,7 @@ class Triples:
             s = NS_MNR[s[4:]]
 
             if p[0] == ":":
-                p = NS_MNR[p[1:]]
+                p = NS_MNO[p[1:]]
             else:
                 assert p == "rdf:type"
                 p = RDF.type

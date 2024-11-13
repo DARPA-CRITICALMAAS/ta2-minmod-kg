@@ -30,7 +30,7 @@ class DedupMineralSitePublic(BaseModel):
     sites: list[IRI]
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]
-    grade_tonnage: GradeTonnage
+    grade_tonnage: Optional[GradeTonnage]
 
 
 class DedupMineralSite(BaseModel):

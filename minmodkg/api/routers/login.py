@@ -1,19 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from hashlib import sha256
 from typing import Annotated
-from uuid import uuid4
 
 import jwt
-from fastapi import APIRouter, Body, HTTPException, Query, Response, status
-from jwt.exceptions import InvalidTokenError
-from minmodkg.api.dependencies import CurrentUserDep, TokenDep
+from fastapi import APIRouter, Body, HTTPException, Response, status
+from minmodkg.api.dependencies import CurrentUserDep
 from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User, UserCreate, UserPublic
+from minmodkg.api.models.user import User, UserPublic
 from minmodkg.config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, SECRET_KEY
-from passlib.context import CryptContext
-from sqlmodel import select
 
 router = APIRouter(tags=["login"])
 
@@ -38,7 +33,7 @@ async def login(
         minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     )
     access_token = jwt.encode(
-        {"sub": user.username, "exp": expired_at.timestamp()},
+        {"username": user.username, "exp": expired_at.timestamp()},
         SECRET_KEY,
         algorithm=JWT_ALGORITHM,
     )

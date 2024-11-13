@@ -10,7 +10,6 @@ import jwt
 import minmodkg.config as config
 import pytest
 from fastapi.testclient import TestClient
-from loguru import logger
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
@@ -24,19 +23,48 @@ def resource_dir():
 
 
 @pytest.fixture(scope="session")
-def db():
+def user1() -> UserCreate:
+    return UserCreate(
+        username="admin",
+        name="Administrator",
+        email="admin@example.com",
+        password="admin123@!",
+    )
+
+
+@pytest.fixture(scope="session")
+def user2() -> UserCreate:
+    return UserCreate(
+        username="tester",
+        name="Tester",
+        email="tester@example.com",
+        password="tester123@!",
+    )
+
+
+@pytest.fixture(scope="session")
+def user1_uri(user1: UserCreate):
+    return f"https://minmod.isi.edu/users/{user1.username}"
+
+
+@pytest.fixture(scope="session")
+def user2_uri(user2: UserCreate):
+    return f"https://minmod.isi.edu/users/{user2.username}"
+
+
+@pytest.fixture(scope="session")
+def db(user1: UserCreate, user2: UserCreate):
     import os
 
     os.environ["CFG_FILE"] = "tests/config.yml"
     create_db_and_tables()
     with Session(engine) as session:
         create_user_priv(
-            UserCreate(
-                username="admin",
-                name="Administrator",
-                email="admin@example.com",
-                password="admin123@!",
-            ),
+            user1,
+            session,
+        )
+        create_user_priv(
+            user2,
             session,
         )
 
@@ -61,6 +89,7 @@ def kg(resource_dir: Path, db):
     # insert basic KG info
     g = Graph()
     g.parse(resource_dir / "kgversion.ttl", format="ttl")
+    g.parse(resource_dir / "source_score.ttl", format="ttl")
     sparql_insert(g)
 
     yield None
@@ -75,10 +104,27 @@ def client(kg):
 
 
 @pytest.fixture(scope="class")
-def auth_client(db):
+def auth_client(db, user1):
     access_token = jwt.encode(
         {
-            "sub": "admin",
+            "username": user1.username,
+            "exp": (
+                datetime.now(timezone.utc)
+                + timedelta(minutes=config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+            ).timestamp(),
+        },
+        config.SECRET_KEY,
+        algorithm=config.JWT_ALGORITHM,
+    )
+    with TestClient(app, cookies={"session": access_token}) as client:
+        yield client
+
+
+@pytest.fixture(scope="class")
+def auth_client_2(db, user2):
+    access_token = jwt.encode(
+        {
+            "username": user2.username,
             "exp": (
                 datetime.now(timezone.utc)
                 + timedelta(minutes=config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)

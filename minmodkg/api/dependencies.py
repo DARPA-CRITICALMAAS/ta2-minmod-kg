@@ -26,7 +26,7 @@ async def get_current_user(session: SessionDep, token: TokenDep):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        username: str = payload.get("sub")
+        username: str = payload.get("username")
         if username is None:
             raise credentials_exception
         expired_at = datetime.fromtimestamp(payload.get("exp"), timezone.utc)

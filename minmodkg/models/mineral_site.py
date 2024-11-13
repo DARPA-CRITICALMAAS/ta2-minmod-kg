@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from functools import cached_property
 from typing import Optional
 
-from minmodkg.config import NS_MNO
+from minmodkg.config import MNR_NS, NS_MNO
 from minmodkg.misc.sparql import (
     rdflib_optional_literal_to_python,
     rdflib_optional_object_to_python,
@@ -39,8 +39,8 @@ class CandidateEntity(BaseModel):
 
 
 class LocationInfo(BaseModel):
-    country: Optional[list[CandidateEntity]] = None
-    state_or_province: Optional[list[CandidateEntity]] = None
+    country: list[CandidateEntity] = Field(default_factory=list)
+    state_or_province: list[CandidateEntity] = Field(default_factory=list)
     crs: Optional[CandidateEntity] = None
     location: Optional[str] = None
 

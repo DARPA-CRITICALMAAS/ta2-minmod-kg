@@ -6,10 +6,14 @@ from hashlib import sha256
 from typing import Literal, Optional
 from uuid import uuid4
 
-from passlib.context import CryptContext
+import bcrypt
 from sqlmodel import Field, SQLModel, String
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class Role(str, Enum):
+    admin = "admin"
+    user = "user"
+    system = "system"
 
 
 class UserBase(SQLModel):
@@ -17,20 +21,19 @@ class UserBase(SQLModel):
     name: str
     email: str
 
-    def is_system(self):
-        return self.username in ("inferlink", "sri", "umn", "usc")
-
 
 class User(UserBase, table=True):
-    salt: str = Field(default_factory=lambda: str(uuid4()))
-    password: str = Field(max_length=64)
-    scope: Literal["admin", "user"] = Field(default="user", sa_type=String)
+    password: bytes = Field(max_length=64)
+    role: Literal["admin", "user", "system"] = Field(default="user", sa_type=String)
+
+    def is_system(self):
+        return self.role == Role.system
 
     def encrypt_password(self):
-        self.password = pwd_context.hash(self.salt + self.password)
+        self.password = bcrypt.hashpw(self.password, bcrypt.gensalt())
 
     def verify_password(self, password: str):
-        return pwd_context.verify(self.salt + password, self.password)
+        return bcrypt.checkpw(password.encode(), self.password)
 
 
 class UserPublic(UserBase): ...

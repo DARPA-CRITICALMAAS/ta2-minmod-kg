@@ -18,11 +18,11 @@ pandas = "^2.2.2"
 shapely = "^2.0.5"
 pyproj = "^3.6.1"
 pyjwt = "^2.9.0"
-passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 sqlmodel = "^0.0.22"
 drepr-v2 = "^1.6.0"
 serde2 = "^1.8.3"
 timer4 = "^1.1.0"
+bcrypt = "^4.2.0"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

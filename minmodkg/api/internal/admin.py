@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from hashlib import sha256
 from typing import Annotated
-from uuid import uuid4
 
-import jwt
-from fastapi import APIRouter, HTTPException, Query, Response, status
-from jwt.exceptions import InvalidTokenError
-from minmodkg.api.dependencies import CurrentUserDep, TokenDep
+from fastapi import APIRouter, HTTPException, Query
+from minmodkg.api.dependencies import CurrentUserDep
 from minmodkg.api.models.db import SessionDep
 from minmodkg.api.models.user import User, UserCreate, UserPublic
-from minmodkg.config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, SECRET_KEY
-from passlib.context import CryptContext
 from sqlmodel import select
 
 router = APIRouter(tags=["admin"])
@@ -33,7 +26,7 @@ def get_users(
 @router.post("/users", response_model=UserPublic)
 def create_user(user: UserCreate, session: SessionDep, current_user: CurrentUserDep):
     """Create a new user"""
-    if current_user.scope != "admin":
+    if current_user.role != "admin":
         raise HTTPException(403, "You do not have permission to create a new user")
     return create_user_priv(user, session)
 
