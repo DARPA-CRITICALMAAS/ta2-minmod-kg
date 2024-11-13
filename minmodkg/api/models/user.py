@@ -47,3 +47,14 @@ class UserUpdate(UserBase):
     name: Optional[str]
     email: Optional[str]
     password: Optional[str]
+
+
+system_users = {
+    "https://minmod.isi.edu/users/inferlink",
+    "https://minmod.isi.edu/users/usc",
+    "https://minmod.isi.edu/users/sri",
+}
+
+
+def is_system_user(created_by: str):
+    return created_by in system_users

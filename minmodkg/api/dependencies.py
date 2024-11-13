@@ -9,7 +9,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User
+from minmodkg.api.models.user import User, is_system_user
 from minmodkg.config import JWT_ALGORITHM, MNR_NS, SECRET_KEY, SPARQL_ENDPOINT
 from minmodkg.misc import LongestPrefixIndex, sparql_query
 from minmodkg.typing import InternalID
@@ -91,9 +91,16 @@ def get_commodity_by_name(
 
 
 def rank_source(
-    source_id: str, snapshot_id: str, endpoint: str = SPARQL_ENDPOINT
+    source_id: str,
+    created_by: str,
+    snapshot_id: str,
+    endpoint: str = SPARQL_ENDPOINT,
 ) -> int:
     """Get ranking of a source, higher is better"""
+    # TODO: fix me!!!
+    if is_system_user(created_by):
+        return 1000
+
     default_score = 5
     score = get_source_scores(snapshot_id, endpoint).get_score(source_id)
     if score is None:

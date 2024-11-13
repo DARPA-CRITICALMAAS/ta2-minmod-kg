@@ -66,6 +66,8 @@ def get_dedup_mineral_site(
         ?ms_name
         ?ms_type
         ?ms_rank
+        ?created_by
+        ?modified_at
         ?dt_id
         ?dt_source
         ?dt_confidence
@@ -87,7 +89,9 @@ def get_dedup_mineral_site(
             ]
         }
         
-        ?ms :source_id ?ms_source .
+        ?ms :source_id ?ms_source ;
+            :created_by ?created_by ;
+            :modified_at ?modified_at .
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
         OPTIONAL { ?ms :site_type ?ms_type . }
@@ -130,6 +134,8 @@ def get_dedup_mineral_site(
             "ms_name",
             "ms_type",
             "ms_rank",
+            "created_by",
+            "modified_at",
             "dt_id",
             "dt_source",
             "dt_confidence",
@@ -182,6 +188,8 @@ def get_dedup_mineral_sites(
         ?ms_name
         ?ms_type
         ?ms_rank
+        ?created_by
+        ?modified_at
         ?dt_id
         ?dt_source
         ?dt_confidence
@@ -204,7 +212,9 @@ def get_dedup_mineral_sites(
             ]
         }
         
-        ?ms :source_id ?ms_source .
+        ?ms :source_id ?ms_source ;
+            :created_by ?created_by ;
+            :modified_at ?modified_at .
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
         OPTIONAL { ?ms :site_type ?ms_type . }
@@ -249,6 +259,8 @@ def get_dedup_mineral_sites(
             "ms_name",
             "ms_type",
             "ms_rank",
+            "created_by",
+            "modified_at",
             "dt_id",
             "dt_source",
             "dt_confidence",
@@ -295,7 +307,17 @@ def make_dedup_site(
         site_id
         for site_id, _ in sorted(
             (
-                (site_id, rank_source(sites[0]["ms_source"], snapshot_id))
+                (
+                    site_id,
+                    (
+                        rank_source(
+                            sites[0]["ms_source"],
+                            sites[0]["created_by"],
+                            snapshot_id,
+                        ),
+                        sites[0]["modified_at"],
+                    ),
+                )
                 for site_id, sites in sid2sites.items()
             ),
             key=lambda x: x[1],
@@ -332,16 +354,22 @@ def make_dedup_site(
     lat = None
     long = None
     for site_id in ranked_site_ids:
-        _tmp_country = {site["country"] for site in sid2sites[site_id]}
+        _tmp_country = {
+            site["country"]
+            for site in sid2sites[site_id]
+            if site["country"] is not None
+        }
         if len(_tmp_country) > 0:
             country = list(_tmp_country)
             break
     for site_id in ranked_site_ids:
-        if (
-            len((_tmp_sp := {site["state_or_province"] for site in sid2sites[site_id]}))
-            > 0
-        ):
-            state_or_province = list(_tmp_sp)
+        _tmp_province = {
+            site["state_or_province"]
+            for site in sid2sites[site_id]
+            if site["state_or_province"] is not None
+        }
+        if len(_tmp_province) > 0:
+            state_or_province = list(_tmp_province)
             break
     has_loc_site_id = next(
         (
@@ -358,17 +386,17 @@ def make_dedup_site(
     if (
         len(country) == 0
         and len(state_or_province) == 0
-        and lat is not None
-        and long is not None
+        and lat is None
+        and long is None
     ):
+        location = None
+    else:
         location = DedupMineralSiteLocation(
             lat=lat,
             long=long,
             country=country,
             state_or_province=state_or_province,
         )
-    else:
-        location = None
 
     gt_sites = [s for s in dupsites if s["total_contained_metal"] is not None]
     if len(gt_sites) > 0:

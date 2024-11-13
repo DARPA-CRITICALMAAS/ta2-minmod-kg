@@ -22,6 +22,7 @@ DO_NOT_FOLLOW_PREDICATE = {
     RDF.type,
     NS_MNO.normalized_uri,
     NS_MNO.dedup_site,
+    NS_MNO.site,
 }
 DO_NOT_FOLLOW_PREDICATE_OBJECT = {
     NS_MNO.commodity: NS_MNO.Commodity,
