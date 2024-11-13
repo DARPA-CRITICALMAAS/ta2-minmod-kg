@@ -38,7 +38,7 @@ def countries():
     return get_countries(get_snapshot_id())
 
 
-@router.get("/state-or-provinces")
+@router.get("/states-or-provinces")
 def state_or_provinces():
     return get_state_or_provinces(get_snapshot_id())
 
