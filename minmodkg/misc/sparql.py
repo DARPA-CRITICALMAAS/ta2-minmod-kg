@@ -18,7 +18,7 @@ from minmodkg.config import (
 )
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import Triple
-from rdflib import RDF, Graph
+from rdflib import OWL, RDF, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
 
@@ -36,9 +36,12 @@ class Triples:
 
             if p[0] == ":":
                 p = NS_MNO[p[1:]]
+            elif p.startswith("rdf:"):
+                p = RDF[p[4:]]
+            elif p.startswith("owl:"):
+                p = OWL[p[4:]]
             else:
-                assert p == "rdf:type"
-                p = RDF.type
+                assert False, p
 
             if o.find(":") != -1:
                 if o.startswith("mnr:"):

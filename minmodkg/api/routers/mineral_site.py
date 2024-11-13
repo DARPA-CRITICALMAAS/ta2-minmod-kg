@@ -105,7 +105,7 @@ def create_site(site: MineralSite, user: CurrentUserDep):
     return get_site_by_uri(URIRef(uri))
 
 
-@router.post("/mineral-sites/{site_id}")
+@router.put("/mineral-sites/{site_id}")
 def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     uri = MNR_NS + site_id
     if not has_uri(uri):
