@@ -161,7 +161,7 @@ CONSTRUCT {
 WHERE {
     ?s ?p ?o .
     OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type|:normalized_uri|mnd:commodity))+ ?u .
+        ?s (!(owl:sameAs|rdf:type|:normalized_uri|mnd:dedup_site))+ ?u .
         ?u ?e ?v .
     }
     VALUES ?s { <%s> }

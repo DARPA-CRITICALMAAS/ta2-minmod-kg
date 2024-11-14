@@ -39,7 +39,7 @@ class Triples:
             if p[0] == ":":
                 p = NS_MNO[p[1:]]
             elif p.startswith("mnd:"):
-                p = NS_MND[p[1:]]
+                p = NS_MND[p[4:]]
             elif p.startswith("rdf:"):
                 p = RDF[p[4:]]
             elif p.startswith("owl:"):
