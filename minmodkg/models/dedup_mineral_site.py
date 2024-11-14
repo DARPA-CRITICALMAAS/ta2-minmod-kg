@@ -67,6 +67,7 @@ class DedupMineralSite(BaseModel):
         rdf: RDF
         rdfs: RDFS
         mnr: MNR_NS
+        mnd: MND_NS
         owl: OWL
         """
         mnr_ns_len = len(MNR_NS)
@@ -76,12 +77,12 @@ class DedupMineralSite(BaseModel):
         ]
         for site in self.sites:
             site_id = f"mnr:{site[mnr_ns_len:]}"
-            triples.append((dedup_id, ":site", site_id))
-            triples.append((site_id, ":dedup_site", dedup_id))
+            triples.append((dedup_id, "mnd:site", site_id))
+            triples.append((site_id, "mnd:dedup_site", dedup_id))
         for commodity in self.commodities:
-            triples.append((dedup_id, ":commodity", f"mnr:{commodity[mnr_ns_len:]}"))
+            triples.append((dedup_id, "mnd:commodity", f"mnr:{commodity[mnr_ns_len:]}"))
         for site_commodity in self.site_commodities:
-            triples.append((dedup_id, ":site_commodity", f'"{site_commodity}"'))
+            triples.append((dedup_id, "mnd:site_commodity", f'"{site_commodity}"'))
         return triples
 
     @staticmethod

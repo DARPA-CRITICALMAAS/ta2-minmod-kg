@@ -9,8 +9,10 @@ from uuid import uuid4
 
 import httpx
 from minmodkg.config import (
+    MND_NS,
     MNO_NS,
     MNR_NS,
+    NS_MND,
     NS_MNO,
     NS_MNR,
     SPARQL_ENDPOINT,
@@ -36,6 +38,8 @@ class Triples:
 
             if p[0] == ":":
                 p = NS_MNO[p[1:]]
+            elif p.startswith("mnd:"):
+                p = NS_MND[p[1:]]
             elif p.startswith("rdf:"):
                 p = RDF[p[4:]]
             elif p.startswith("owl:"):
@@ -60,12 +64,13 @@ class Triples:
 def sparql(query: str, endpoint: str, type: Literal["query", "update"] = "query"):
     """Run SPARQL query/update on the given endpoint. This function has been tested on Apache Jena Fuseki"""
     final_query = (
-        """
+        f"""
     PREFIX dcterms: <http://purl.org/dc/terms/>
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX : <https://minmod.isi.edu/ontology/>
-    PREFIX mnr: <https://minmod.isi.edu/resource/>
+    PREFIX : <{MNO_NS}>
+    PREFIX mnr: <{MNR_NS}>
+    PREFIX mnd: <{MND_NS}>
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX owl: <http://www.w3.org/2002/07/owl#>
     PREFIX gkbi: <https://geokb.wikibase.cloud/entity/>

@@ -79,7 +79,7 @@ def get_dedup_mineral_site(
         ?total_tonnage
         ?total_grade
     WHERE {
-        <%s> :site ?ms .
+        <%s> mnd:site ?ms .
 
         OPTIONAL {
             ?ms :deposit_type_candidate [
@@ -108,17 +108,17 @@ def get_dedup_mineral_site(
         }
 
         OPTIONAL {
-            ?ms :lat ?lat ;
-                :lon ?lon .
+            ?ms mnd:lat ?lat ;
+                mnd:lon ?lon .
         }
 
         OPTIONAL {
-            ?ms :grade_tonnage [
+            ?ms mnd:grade_tonnage [
                 # when save grade tonnage, we convert commodity to full uri
-                :commodity mnr:%s ;
-                :total_contained_metal ?total_contained_metal ;
-                :total_tonnage ?total_tonnage ;
-                :total_grade ?total_grade ;
+                mnd:commodity mnr:%s ;
+                mnd:total_contained_metal ?total_contained_metal ;
+                mnd:total_tonnage ?total_tonnage ;
+                mnd:total_grade ?total_grade ;
             ]
         }
     }
@@ -163,7 +163,7 @@ def get_dedup_mineral_sites(
             SELECT ?dms
             WHERE {
                 ?dms a :DedupMineralSite ;
-                    :commodity mnr:%s .
+                    mnd:commodity mnr:%s .
             }
             LIMIT %d OFFSET %d
         }
@@ -175,7 +175,7 @@ def get_dedup_mineral_sites(
     else:
         dm_query_part = """
         ?dms a :DedupMineralSite ;
-            :commodity mnr:%s .
+            mnd:commodity mnr:%s .
 """ % (
             commodity,
         )
@@ -202,7 +202,7 @@ def get_dedup_mineral_sites(
         ?total_grade
     WHERE {
         %s
-        ?dms :site ?ms .
+        ?dms mnd:site ?ms .
 
         OPTIONAL {
             ?ms :deposit_type_candidate [
@@ -231,17 +231,17 @@ def get_dedup_mineral_sites(
         }
 
         OPTIONAL {
-            ?ms :lat ?lat ;
-                :lon ?lon .
+            ?ms mnd:lat ?lat ;
+                mnd:lon ?lon .
         }
 
         OPTIONAL {
-            ?ms :grade_tonnage [
+            ?ms mnd:grade_tonnage [
                 # when save grade tonnage, we convert commodity to full uri
-                :commodity mnr:%s ;
-                :total_contained_metal ?total_contained_metal ;
-                :total_tonnage ?total_tonnage ;
-                :total_grade ?total_grade ;
+                mnd:commodity mnr:%s ;
+                mnd:total_contained_metal ?total_contained_metal ;
+                mnd:total_tonnage ?total_tonnage ;
+                mnd:total_grade ?total_grade ;
             ]
         }
     }

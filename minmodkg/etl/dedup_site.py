@@ -7,7 +7,7 @@ import serde.csv
 import serde.json
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO
+from minmodkg.config import MND_NS, MNO_NS, MNR_NS, NS_MNO
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.mineral_site import MineralSite
@@ -182,6 +182,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
         with open(output_fmter.outdir / "dedup_sites.ttl", "w") as f:
             f.write(f"@prefix : <{MNO_NS}> .\n")
             f.write(f"@prefix mnr: <{MNR_NS}> .\n")
+            f.write(f"@prefix mnd: <{MND_NS}> .\n")
             f.write(f"@prefix rdf: <{str(RDF)}> .\n")
             f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
 

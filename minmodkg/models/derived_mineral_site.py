@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import Annotated, Optional
 
 import shapely.wkt
-from minmodkg.config import MNR_NS, NS_MNO
+from minmodkg.config import MNR_NS, NS_MND, NS_MNO
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
 from minmodkg.models.mineral_site import MineralSite, norm_literal, norm_uri
@@ -24,16 +24,16 @@ class GradeTonnage(BaseModel):
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
-        commodity = norm_uri(next(g.objects(id, NS_MNO.commodity)))
+        commodity = norm_uri(next(g.objects(id, NS_MND.commodity)))
         assert commodity.startswith(MNR_NS), commodity
         commodity = commodity[len(MNR_NS) :]
         return GradeTonnage(
             commodity=commodity,
             total_contained_metal=norm_literal(
-                next(g.objects(id, NS_MNO.total_contained_metal), None)
+                next(g.objects(id, NS_MND.total_contained_metal), None)
             ),
-            total_tonnage=norm_literal(next(g.objects(id, NS_MNO.total_tonnage), None)),
-            total_grade=norm_literal(next(g.objects(id, NS_MNO.total_grade), None)),
+            total_tonnage=norm_literal(next(g.objects(id, NS_MND.total_tonnage), None)),
+            total_grade=norm_literal(next(g.objects(id, NS_MND.total_grade), None)),
         )
 
 
@@ -179,8 +179,8 @@ class DerivedMineralSite(BaseModel):
 
     @staticmethod
     def from_graph(id: Node, g: Graph):
-        lat = norm_literal(next(g.objects(id, NS_MNO.lat), None))
-        lon = norm_literal(next(g.objects(id, NS_MNO.lon), None))
+        lat = norm_literal(next(g.objects(id, NS_MND.lat), None))
+        lon = norm_literal(next(g.objects(id, NS_MND.lon), None))
 
         if lat is None or lon is None:
             coordinates = None
@@ -188,7 +188,7 @@ class DerivedMineralSite(BaseModel):
             coordinates = Coordinates(lat=lat, lon=lon)
 
         grade_tonnage = [
-            GradeTonnage.from_graph(gt, g) for gt in g.objects(id, NS_MNO.grade_tonnage)
+            GradeTonnage.from_graph(gt, g) for gt in g.objects(id, NS_MND.grade_tonnage)
         ]
 
         return DerivedMineralSite(
@@ -222,6 +222,7 @@ class DerivedMineralSite(BaseModel):
         """Get triples shorten with the following prefixes:
 
         `:`: MNO_NS
+        mnd: MND_NS
         rdf: RDF
         rdfs: RDFS
         mnr: MNR_NS
@@ -234,14 +235,14 @@ class DerivedMineralSite(BaseModel):
             triples.append(
                 (
                     site_id,
-                    ":lat",
+                    "mnd:lat",
                     str(self.coordinates.lat),
                 )
             )
             triples.append(
                 (
                     site_id,
-                    ":lon",
+                    "mnd:lon",
                     str(self.coordinates.lon),
                 )
             )
@@ -249,27 +250,27 @@ class DerivedMineralSite(BaseModel):
         gtnode_id_prefix = f"mnr:{site_id}__gt__"
         for gt in self.grade_tonnage:
             gtnode_id = gtnode_id_prefix + gt.commodity
-            triples.append((site_id, ":grade_tonnage", gtnode_id))
-            triples.append((gtnode_id, ":commodity", f"mnr:{gt.commodity}"))
+            triples.append((site_id, "mnd:grade_tonnage", gtnode_id))
+            triples.append((gtnode_id, "mnd:commodity", f"mnr:{gt.commodity}"))
             if gt.total_contained_metal is not None:
                 triples.append(
                     (
                         gtnode_id,
-                        ":total_contained_metal",
+                        "mnd:total_contained_metal",
                         str(gt.total_contained_metal),
                     )
                 )
                 triples.append(
                     (
                         gtnode_id,
-                        ":total_tonnage",
+                        "mnd:total_tonnage",
                         str(gt.total_tonnage),
                     )
                 )
                 triples.append(
                     (
                         gtnode_id,
-                        ":total_grade",
+                        "mnd:total_grade",
                         str(gt.total_grade),
                     )
                 )

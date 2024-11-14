@@ -5,11 +5,11 @@ from functools import lru_cache
 from hashlib import sha256
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Callable
+from typing import Annotated, Callable, Literal
 
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, Response, status
 from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
@@ -51,8 +51,19 @@ def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
 
 
 @router.get("/mineral-sites/{site_id}")
-def get_site(site_id: str):
-    return get_site_by_uri(NS_MNR[site_id])
+def get_site(site_id: str, format: Literal["json", "ttl"] = "json"):
+    if format == "json":
+        return get_site_by_uri(NS_MNR[site_id])
+    elif format == "ttl":
+        return Response(
+            content=get_site_as_graph(NS_MNR[site_id]).serialize(format="ttl"),
+            media_type="text/turtle",
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid format.",
+        )
 
 
 def get_site_by_uri(uri: URIRef) -> dict:
@@ -150,9 +161,8 @@ CONSTRUCT {
 WHERE {
     ?s ?p ?o .
     OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type))+ ?u .
+        ?s (!(owl:sameAs|rdf:type|:normalized_uri|mnd:commodity))+ ?u .
         ?u ?e ?v .
-        # FILTER (?e NOT IN (owl:sameAs))
     }
     VALUES ?s { <%s> }
 }
