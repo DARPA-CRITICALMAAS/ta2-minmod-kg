@@ -3,7 +3,7 @@ triplestore:
   update: http://kg:3030/minmod/update
 mnr_ns: https://minmod.isi.edu/resource/
 mno_ns: https://minmod.isi.edu/ontology/
-dbfile: /home/criticalmaas/criticalmaas/minmod.db
+dbfile: /tmp/minmod.db
 api_prefix: /api/v1
 lod_prefix: ""
 # openssl rand -hex 32
