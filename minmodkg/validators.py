@@ -139,6 +139,7 @@ class ContentValidator:
                 "state_or_province",
                 "epsg",
                 "material_form",
+                "source_score",
             ]
         }
 
