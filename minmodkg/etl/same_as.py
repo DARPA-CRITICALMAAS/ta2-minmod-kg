@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import pickle
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -160,7 +162,9 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
                 for i in range(1, len(subgrps))
             ]
         )
-        final_grps = nx.connected_components(G)
+        final_grps: list[list[str]] = nx.connected_components(G)
+        final_grps = sorted((sorted(grp) for grp in final_grps), key=lambda grp: grp[0])
+
         sub2final_grp = {}
         for i, grps in enumerate(final_grps, start=1):
             final_grp_id = f"grp2__{i}"
