@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from functools import cached_property
 from typing import Annotated, Iterable, Optional
 
-from minmodkg.config import MNR_NS
+from minmodkg.misc.rdf_store import BaseRDFModel
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
-from minmodkg.typing import IRI, InternalID, Triple
+from minmodkg.typing import InternalID, Triple
 from pydantic import BaseModel
 
 
 class DedupMineralSiteDepositType(BaseModel):
-    uri: IRI
+    id: InternalID
     source: str
     confidence: float
 
@@ -18,72 +17,57 @@ class DedupMineralSiteDepositType(BaseModel):
 class DedupMineralSiteLocation(BaseModel):
     lat: Optional[float]
     lon: Optional[float]
-    country: list[IRI]
-    state_or_province: list[IRI]
+    country: list[InternalID]
+    state_or_province: list[InternalID]
 
 
 class DedupMineralSitePublic(BaseModel):
-    uri: IRI
+    id: InternalID
     name: str
     type: str
     rank: str
-    sites: list[IRI]
+    sites: list[InternalID]
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: Optional[GradeTonnage]
 
 
-class DedupMineralSite(BaseModel):
-    uri: IRI
-    sites: list[IRI]
-    commodities: list[IRI]
-    site_commodities: list[str]
+class DedupMineralSite(BaseRDFModel):
+    id: InternalID
+    sites: list[InternalID]
+    commodities: list[InternalID]
+    site_commodities: list[Annotated[str, "Encoded <site_id>@<list of commodities>"]]
 
-    @cached_property
-    def id(self) -> InternalID:
-        assert self.uri.startswith(MNR_NS), self.uri
-        return self.uri[len(MNR_NS) :]
+    def to_triples(self) -> list[Triple]:
+        ns = self.rdfdata.ns
+        md = ns.md
+        mr = ns.mr
+        uri = mr[self.id]
+        triples = [(uri, ns.rdf.type, ns.mo.DedupMineralSite)]
+        for site in self.sites:
+            triples.append((uri, md.site, mr[site]))
+            triples.append((mr[site], md.dedup_site, uri))
+        for commodity in self.commodities:
+            triples.append((uri, md.commodity, mr[commodity]))
+        for site_commodity in self.site_commodities:
+            triples.append((uri, md.site_commodity, f'"{site_commodity}"'))
+        return triples
 
     @staticmethod
-    def from_derived_sites(sites: list[DerivedMineralSite], uri: Optional[IRI] = None):
+    def from_derived_sites(
+        sites: list[DerivedMineralSite], id: Optional[InternalID] = None
+    ):
         return DedupMineralSite(
-            uri=uri or (MNR_NS + DedupMineralSite.get_id((site.id for site in sites))),
-            sites=[site.uri for site in sites],
+            id=id or DedupMineralSite.get_id(site.id for site in sites),
+            sites=[site.id for site in sites],
             commodities=list(
-                set(
-                    MNR_NS + gt.commodity for site in sites for gt in site.grade_tonnage
-                )
+                set(gt.commodity for site in sites for gt in site.grade_tonnage)
             ),
             site_commodities=[
                 site.id + "@" + ",".join(gt.commodity for gt in site.grade_tonnage)
                 for site in sites
             ],
         )
-
-    def get_shorten_triples(self) -> list[Triple]:
-        """Get triples shorten with the following prefixes:
-
-        `:`: MNO_NS
-        rdf: RDF
-        rdfs: RDFS
-        mnr: MNR_NS
-        mnd: MND_NS
-        owl: OWL
-        """
-        mnr_ns_len = len(MNR_NS)
-        dedup_id = f"mnr:{self.id}"
-        triples = [
-            (dedup_id, "rdf:type", ":DedupMineralSite"),
-        ]
-        for site in self.sites:
-            site_id = f"mnr:{site[mnr_ns_len:]}"
-            triples.append((dedup_id, "mnd:site", site_id))
-            triples.append((site_id, "mnd:dedup_site", dedup_id))
-        for commodity in self.commodities:
-            triples.append((dedup_id, "mnd:commodity", f"mnr:{commodity[mnr_ns_len:]}"))
-        for site_commodity in self.site_commodities:
-            triples.append((dedup_id, "mnd:site_commodity", f'"{site_commodity}"'))
-        return triples
 
     @staticmethod
     def get_id(site_ids: Iterable[InternalID]):

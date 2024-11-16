@@ -7,10 +7,7 @@ import rdflib
 import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
-from minmodkg.api.dependencies import SPARQL_ENDPOINT
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR
-from minmodkg.misc import sparql_construct
-from minmodkg.misc.sparql import has_uri
+from minmodkg.config import MINMOD_KG, MINMOD_NS
 from rdflib import OWL, RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
@@ -20,27 +17,26 @@ router = APIRouter(tags=["lod"])
 DO_NOT_FOLLOW_PREDICATE = {
     OWL.sameAs,
     RDF.type,
-    NS_MNO.normalized_uri,
-    NS_MNO.dedup_site,
-    NS_MNO.site,
+    MINMOD_NS.mo.uri("normalized_uri"),
+    MINMOD_NS.md.uri("commodity"),
+    MINMOD_NS.md.uri("dedup_site"),
+    MINMOD_NS.md.uri("site"),
 }
-DO_NOT_FOLLOW_PREDICATE_OBJECT = {
-    NS_MNO.commodity: NS_MNO.Commodity,
-}
+DO_NOT_FOLLOW_PREDICATE_OBJECT = {}
 
 
 @router.get("/resource/{resource_id}")
 def get_resource(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):
-    uri = URIRef(MNR_NS + resource_id)
-    if not has_uri(uri):
+    uri = MINMOD_NS.mr.uri(resource_id)
+    if not MINMOD_KG.has(MINMOD_NS.mr[uri]):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
-        return render_entity_html(uri, SPARQL_ENDPOINT)
+        return render_entity_html(uri)
     if format == "json":
-        return render_entity_json(uri, SPARQL_ENDPOINT)
+        return render_entity_json(uri)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
@@ -48,23 +44,23 @@ def get_resource(
 def get_ontology(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):  # -> HTMLResponse | dict[Any, Any]:
-    uri = URIRef(MNO_NS + resource_id)
-    if not has_uri(uri):
+    uri = MINMOD_NS.mo.uri(resource_id)
+    if not MINMOD_KG.has(MINMOD_NS.mo[uri]):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
-        return render_entity_html(uri, SPARQL_ENDPOINT)
+        return render_entity_html(uri)
     if format == "json":
-        return render_entity_json(uri, SPARQL_ENDPOINT)
+        return render_entity_json(uri)
     raise HTTPException(status_code=400, detail="Invalid format")
 
 
-def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
+def get_entity_data(subj: URIRef) -> Graph:
     # https://stackoverflow.com/questions/37186530/how-do-i-construct-get-the-whole-sub-graph-from-a-given-resource-in-rdf-graph/37213209#37213209
     # adapt from this answer to fit our need
     # we do not blindly follow all paths (<>|!<>)* and filter out the URI nodes because it follows
     # the sameAs path, which leads to explosive results
-    return sparql_construct(
+    return MINMOD_KG.construct(
         """
     CONSTRUCT { 
         ?a ?b ?c . 
@@ -87,13 +83,12 @@ def get_entity_data(subj: URIRef, endpoint: str) -> Graph:
         VALUES ?a { <%s> } 
     }
 """
-        % subj,
-        endpoint=endpoint,
+        % subj
     )
 
 
-def render_entity_json(subj: URIRef, endpoint: str):
-    g = get_entity_data(subj, endpoint)
+def render_entity_json(subj: URIRef):
+    g = get_entity_data(subj)
 
     def label(obj: rdflib.term.Node):
         if obj == RDFS.label:
@@ -143,8 +138,8 @@ def render_entity_json(subj: URIRef, endpoint: str):
     return out
 
 
-def render_entity_html(subj: URIRef, endpoint: str):
-    g = get_entity_data(subj, endpoint)
+def render_entity_html(subj: URIRef):
+    g = get_entity_data(subj)
 
     def label(g, subj: rdflib.term.Node):
         if (subj, RDFS.label, None) in g:

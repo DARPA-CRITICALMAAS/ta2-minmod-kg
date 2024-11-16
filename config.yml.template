@@ -1,9 +1,10 @@
 triplestore:
   query: http://kg:3030/minmod/sparql
   update: http://kg:3030/minmod/update
-mnr_ns: https://minmod.isi.edu/resource/
-mno_ns: https://minmod.isi.edu/ontology/
-mnd_ns: https://minmod.isi.edu/ontology-derived/
+namespace:
+  mr: https://minmod.isi.edu/resource/
+  mo: https://minmod.isi.edu/ontology/
+  mr-derived: https://minmod.isi.edu/resource-derived/
 dbfile: /tmp/minmod.db
 api_prefix: /api/v1
 lod_prefix: ""

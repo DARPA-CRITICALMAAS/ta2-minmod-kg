@@ -2,63 +2,138 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from functools import cached_property
 from typing import Annotated, Optional
 
 import shapely.wkt
-from minmodkg.config import MNR_NS, NS_MND, NS_MNO
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
-from minmodkg.models.mineral_site import MineralSite, norm_literal, norm_uri
-from minmodkg.typing import IRI, InternalID, Triple
-from pydantic import BaseModel, Field
-from rdflib import Graph
+from minmodkg.misc.rdf_store import BaseRDFModel, norm_literal
+from minmodkg.misc.utils import assert_isinstance
+from minmodkg.models.mineral_site import MineralSite
+from minmodkg.typing import InternalID, Triple
+from pydantic import Field
+from rdflib import Graph, URIRef
 from rdflib.term import Node
 
 
-class GradeTonnage(BaseModel):
+class GradeTonnage(BaseRDFModel):
     commodity: InternalID
     total_contained_metal: Optional[float] = None
     total_tonnage: Optional[float] = None
     total_grade: Optional[float] = None
 
-    @staticmethod
-    def from_graph(id: Node, g: Graph):
-        commodity = norm_uri(next(g.objects(id, NS_MND.commodity)))
-        assert commodity.startswith(MNR_NS), commodity
-        commodity = commodity[len(MNR_NS) :]
+    def __post_init__(self):
+        if self.total_grade is not None and self.total_tonnage is not None:
+            self.total_contained_metal = self.total_grade * self.total_tonnage
+
+    @classmethod
+    def from_graph(cls, uid: Node, g: Graph):
+        mr = cls.rdfdata.ns.mr
+        md = cls.rdfdata.ns.md
+        commodity = assert_isinstance(next(g.objects(uid, md.uri("commodity"))), URIRef)
         return GradeTonnage(
-            commodity=commodity,
-            total_contained_metal=norm_literal(
-                next(g.objects(id, NS_MND.total_contained_metal), None)
+            commodity=mr.id(commodity),
+            total_tonnage=norm_literal(
+                next(g.objects(uid, md.uri("total_tonnage")), None)
             ),
-            total_tonnage=norm_literal(next(g.objects(id, NS_MND.total_tonnage), None)),
-            total_grade=norm_literal(next(g.objects(id, NS_MND.total_grade), None)),
+            total_grade=norm_literal(next(g.objects(uid, md.uri("total_grade")), None)),
         )
 
 
-class Coordinates(BaseModel):
+class Coordinates(BaseRDFModel):
     lat: Annotated[float, "Latitude"]
     lon: Annotated[float, "Longitude"]
 
 
-class DerivedMineralSite(BaseModel):
-    uri: IRI
+class DerivedMineralSite(BaseRDFModel):
+    id: InternalID
     coordinates: Optional[Coordinates] = None
     grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
 
-    @cached_property
-    def id(self) -> InternalID:
-        assert self.uri.startswith(MNR_NS), self.uri
-        return self.uri[len(MNR_NS) :]
+    @classmethod
+    def from_graph(cls, uid: URIRef, g: Graph):
+        md = cls.rdfdata.ns.md
+        mr = cls.rdfdata.ns.mr
 
-    @staticmethod
+        lat = norm_literal(next(g.objects(uid, md.uri("lat")), None))
+        lon = norm_literal(next(g.objects(uid, md.uri("lon")), None))
+        if lat is None or lon is None:
+            coors = None
+        else:
+            coors = Coordinates(lat=lat, lon=lon)
+
+        return DerivedMineralSite(
+            id=mr.id(uid),
+            coordinates=coors,
+            grade_tonnage=[
+                GradeTonnage.from_graph(gt, g)
+                for gt in g.objects(uid, md.uri("grade_tonnage"))
+            ],
+        )
+
+    def to_triples(self) -> list[Triple]:
+        ns = self.rdfdata.ns
+        md = ns.md
+        mr = ns.mr
+        mo = ns.mo
+
+        site_uri = mr[self.id]
+        triples = [(site_uri, ns.rdf.type, mo.MineralSite)]
+
+        if self.coordinates is not None:
+            triples.append(
+                (
+                    site_uri,
+                    md.lat,
+                    str(self.coordinates.lat),
+                )
+            )
+            triples.append(
+                (
+                    site_uri,
+                    md.lon,
+                    str(self.coordinates.lon),
+                )
+            )
+
+        gtnode_uri_prefix = mr[f"{self.id}__gt__"]
+        for gt in self.grade_tonnage:
+            gtnode_uri = gtnode_uri_prefix + gt.commodity
+            triples.append((site_uri, md.grade_tonnage, gtnode_uri))
+            triples.append((gtnode_uri, md.commodity, ns.mr[gt.commodity]))
+            if gt.total_contained_metal is not None:
+                triples.append(
+                    (
+                        gtnode_uri,
+                        md.total_contained_metal,
+                        str(gt.total_contained_metal),
+                    )
+                )
+                triples.append(
+                    (
+                        gtnode_uri,
+                        md.total_tonnage,
+                        str(gt.total_tonnage),
+                    )
+                )
+                triples.append(
+                    (
+                        gtnode_uri,
+                        md.total_grade,
+                        str(gt.total_grade),
+                    )
+                )
+
+        return triples
+
+    @classmethod
     def from_mineral_site(
+        cls,
         site: MineralSite,
         material_form: dict[str, float],
         crss: dict[str, str],
     ):
-        mnr_ns_len = len(MNR_NS)
+        mr = cls.rdfdata.ns.mr
         if site.location_info is not None and site.location_info.location is not None:
             if (
                 site.location_info.crs is None
@@ -102,7 +177,7 @@ class DerivedMineralSite(BaseModel):
             if inv.commodity.normalized_uri is None:
                 continue
 
-            commodity = inv.commodity.normalized_uri[mnr_ns_len:]
+            commodity = mr.id(inv.commodity.normalized_uri)
             commodities.add(commodity)
 
             if (
@@ -172,29 +247,9 @@ class DerivedMineralSite(BaseModel):
                 site_comms.append(GradeTonnage(commodity=comm))
 
         return DerivedMineralSite(
-            uri=site.uri,
+            id=site.uri,
             coordinates=coordinates,
             grade_tonnage=site_comms,
-        )
-
-    @staticmethod
-    def from_graph(id: Node, g: Graph):
-        lat = norm_literal(next(g.objects(id, NS_MND.lat), None))
-        lon = norm_literal(next(g.objects(id, NS_MND.lon), None))
-
-        if lat is None or lon is None:
-            coordinates = None
-        else:
-            coordinates = Coordinates(lat=lat, lon=lon)
-
-        grade_tonnage = [
-            GradeTonnage.from_graph(gt, g) for gt in g.objects(id, NS_MND.grade_tonnage)
-        ]
-
-        return DerivedMineralSite(
-            uri=str(id),
-            coordinates=coordinates,
-            grade_tonnage=grade_tonnage,
         )
 
     def merge(self, other: DerivedMineralSite):
@@ -217,62 +272,3 @@ class DerivedMineralSite(BaseModel):
                     or gt.total_contained_metal > mgt.total_contained_metal
                 ):
                     self.grade_tonnage[com2idx[gt.commodity]] = gt
-
-    def get_shorten_triples(self) -> list[Triple]:
-        """Get triples shorten with the following prefixes:
-
-        `:`: MNO_NS
-        mnd: MND_NS
-        rdf: RDF
-        rdfs: RDFS
-        mnr: MNR_NS
-        owl: OWL
-        """
-        site_id = f"mnr:{self.id}"
-        triples = []
-
-        if self.coordinates is not None:
-            triples.append(
-                (
-                    site_id,
-                    "mnd:lat",
-                    str(self.coordinates.lat),
-                )
-            )
-            triples.append(
-                (
-                    site_id,
-                    "mnd:lon",
-                    str(self.coordinates.lon),
-                )
-            )
-
-        gtnode_id_prefix = f"mnr:{site_id}__gt__"
-        for gt in self.grade_tonnage:
-            gtnode_id = gtnode_id_prefix + gt.commodity
-            triples.append((site_id, "mnd:grade_tonnage", gtnode_id))
-            triples.append((gtnode_id, "mnd:commodity", f"mnr:{gt.commodity}"))
-            if gt.total_contained_metal is not None:
-                triples.append(
-                    (
-                        gtnode_id,
-                        "mnd:total_contained_metal",
-                        str(gt.total_contained_metal),
-                    )
-                )
-                triples.append(
-                    (
-                        gtnode_id,
-                        "mnd:total_tonnage",
-                        str(gt.total_tonnage),
-                    )
-                )
-                triples.append(
-                    (
-                        gtnode_id,
-                        "mnd:total_grade",
-                        str(gt.total_grade),
-                    )
-                )
-
-        return triples

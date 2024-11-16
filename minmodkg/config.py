@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 import serde.yaml
-from rdflib import Namespace
+from minmodkg.misc.rdf_store import BaseRDFModel, Namespace, RDFMetadata, RDFStore
 
 if "CFG_FILE" not in os.environ:
     CFG_FILE = Path(__file__).parent.parent / "config.yml"
@@ -13,21 +13,13 @@ else:
 assert CFG_FILE.exists(), f"Config file {CFG_FILE} does not exist"
 cfg = serde.yaml.deser(CFG_FILE)
 
-# for sparql/ontology
-SPARQL_ENDPOINT = cfg["triplestore"]["query"]
+# for minmod KG
+SPARQL_QUERY_ENDPOINT = cfg["triplestore"]["query"]
 SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
-MNR_NS = cfg["mnr_ns"]
-MNO_NS = cfg["mno_ns"]
-MND_NS = cfg["mnd_ns"]
 
-for ns in [MNR_NS, MNO_NS, MND_NS]:
-    assert ns.endswith("/") or ns.endswith("#"), f"namespace {ns} must end with / or #"
-
-
-# shortcuts to generate URIRef
-NS_MNR = Namespace(MNR_NS)
-NS_MNO = Namespace(MNO_NS)
-NS_MND = Namespace(MND_NS)
+MINMOD_NS = Namespace(cfg["namespace"])
+MINMOD_KG = RDFStore(MINMOD_NS, SPARQL_QUERY_ENDPOINT, SPARQL_UPDATE_ENDPOINT)
+BaseRDFModel.rdfdata = RDFMetadata(MINMOD_NS, MINMOD_KG)
 
 # for API prefixes
 API_PREFIX = cfg["api_prefix"]
