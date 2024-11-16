@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from time import time
 from typing import (
     Annotated,
     Any,
@@ -13,9 +15,12 @@ from typing import (
     Self,
     TypeVar,
 )
+from uuid import uuid4
 
 import httpx
-from minmodkg.typing import SPARQLMainQuery, T, Triple, Triples, V
+from minmodkg.config import MINMOD_KG
+from minmodkg.misc.utils import group_by_key
+from minmodkg.typing import IRI, SPARQLMainQuery, T, Triple, Triples, V
 from pydantic import BaseModel
 from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
 from rdflib.term import Literal as RDFLiteral
@@ -108,8 +113,9 @@ class RDFStore:
         self.update_endpoint = update_endpoint
 
         # parts needed to make SPARQL queries
-        self.prefix_part = "\n".join(
-            f"PREFIX {x.alias}: <{x.namespace}>" for x in self.ns.iter()
+        self.prefix_part = (
+            "\n".join(f"PREFIX {x.alias}: <{x.namespace}>" for x in self.ns.iter())
+            + "\n\n"
         )
 
     def has(self, rel_uri: str):
@@ -276,7 +282,87 @@ class RDFStore:
         return response
 
 
-class Transaction: ...
+class Transaction:
+    """Steps to perform a transaction:
+
+    t10 -> insert the lock
+    t20 -> check if there is another lock.
+    t30 -> perform the query/update (update query can only be done once -- because no rollback)
+    t40 -> release the lcok
+    """
+
+    def __init__(
+        self,
+        objects: list[IRI],
+        timeout_sec: float = 300,
+    ):
+        self.objects = []
+        value_filter_parts = []
+
+        for obj in objects:
+            assert obj.startswith("http://") or obj.startswith("https://"), obj
+            self.objects.append(obj)
+            value_filter_parts.append(f"<{obj}>")
+
+        self.value_query = " ".join(value_filter_parts)
+        self.timeout_sec = timeout_sec
+        self.lock = None
+
+        self.kg = MINMOD_KG
+        assert self.kg.ns.mo.alias == "mo", "Our query assume mo has alias `mo`"
+
+    @contextmanager
+    def transaction(self):
+        self.insert_lock()
+        if not self.does_lock_success():
+            raise Exception(
+                "The objects are being edited by another one. Please try again later."
+            )
+        # yield so the caller can perform the transaction
+        yield
+        self.remove_lock()
+
+    def insert_lock(self):
+        assert self.lock is None
+        self.lock = f"{str(uuid4())}::{time() + self.timeout_sec}"
+        self.kg.insert(
+            [(f"<{obj}>", "mo:lock", f'"{self.lock}"') for obj in self.objects],
+        )
+
+    def does_lock_success(self):
+        lst = self.kg.query(
+            """
+    SELECT ?source ?lock
+    WHERE {
+        ?source mo:lock ?lock 
+        VALUES ?source { %s }
+    }"""
+            % self.value_query,
+            keys=["source", "lock"],
+        )
+
+        obj2locks: dict[str, list[str]] = group_by_key(lst, key="source", value="lock")
+        if len(obj2locks) != len(self.objects):
+            return False
+
+        now = time()
+        for obj in self.objects:
+            if obj not in obj2locks:
+                return False
+            locks = [
+                lock
+                for lock in obj2locks[obj]
+                if lock == self.lock or float(lock.split("::")[1]) >= now
+            ]
+            if len(locks) != 1 or locks[0] != self.lock:
+                return False
+
+        return True
+
+    def remove_lock(self):
+        self.kg.delete(
+            [(f"<{obj}>", "mo:lock", f'"{self.lock}"') for obj in self.objects]
+        )
 
 
 def norm_literal(value: Annotated[Any, RDFLiteral]) -> Any:
@@ -290,5 +376,5 @@ def norm_uriref(value: Annotated[Any, URIRef]) -> Optional[URIRef]:
 M = TypeVar("M", bound=BaseRDFModel)
 
 
-def norm_object(clz: type[M], id: Node, g: Graph) -> Optional[M]:
+def norm_object(clz: type[M], id: Optional[Node], g: Graph) -> Optional[M]:
     return None if id is None else clz.from_graph(id, g)

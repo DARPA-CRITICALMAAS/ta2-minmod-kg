@@ -4,8 +4,8 @@ from functools import lru_cache
 from typing import Optional
 
 from fastapi import APIRouter
-from minmodkg.api.dependencies import SPARQL_ENDPOINT, get_snapshot_id
-from minmodkg.misc import sparql_query
+from minmodkg.api.dependencies import get_snapshot_id
+from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.models.crs import CRS
 from minmodkg.models.material_form import MaterialForm
 
@@ -44,88 +44,92 @@ def state_or_provinces():
 
 
 @lru_cache(maxsize=1)
-def get_commodities(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_commodities(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name ?is_critical
     WHERE {
-        ?uri a :Commodity ;
+        ?uri a mo:Commodity ;
             rdfs:label ?name ;
-            :is_critical_commodity ?is_critical
+            mo:is_critical_commodity ?is_critical
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_units(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_units(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name
     WHERE {
-        ?uri a :Unit ;
+        ?uri a mo:Unit ;
             rdfs:label ?name .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_deposit_types(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_deposit_types(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name ?environment ?group
     WHERE {
-        ?uri a :DepositType ;
+        ?uri a mo:DepositType ;
             rdfs:label ?name ;
-            :environment ?environment ;
-            :group ?group .
+            mo:environment ?environment ;
+            mo:group ?group .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_countries(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_countries(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name
     WHERE {
-        ?uri a :Country ;
+        ?uri a mo:Country ;
             rdfs:label ?name .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_state_or_provinces(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_state_or_provinces(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name
     WHERE {
-        ?uri a :StateOrProvince ;
+        ?uri a mo:StateOrProvince ;
             rdfs:label ?name .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_material_forms(
-    snapshot_id: str, endpoint: str = SPARQL_ENDPOINT
-) -> list[MaterialForm]:
+def get_material_forms(snapshot_id: str) -> list[MaterialForm]:
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT *
     WHERE {
-        ?uri a :MaterialForm ;
+        ?uri a mo:MaterialForm ;
             rdfs:label ?name ;
-            :conversion ?conversion ;
-            :formula ?formula ;
-            :commodity ?commodity .
+            mo:conversion ?conversion ;
+            mo:formula ?formula ;
+            mo:commodity ?commodity .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return [
         MaterialForm(
             uri=x["uri"],
@@ -139,13 +143,14 @@ def get_material_forms(
 
 
 @lru_cache(maxsize=1)
-def get_crs(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT) -> list[CRS]:
+def get_crs(snapshot_id: str) -> list[CRS]:
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
     SELECT ?uri ?name
     WHERE {
-        ?uri a :CoordinateReferenceSystem ;
+        ?uri a mo:CoordinateReferenceSystem ;
             rdfs:label ?name .
     }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return [CRS(uri=x["uri"], name=x["name"]) for x in qres]

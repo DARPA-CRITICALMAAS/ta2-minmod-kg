@@ -14,7 +14,7 @@ from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR, SPARQL_ENDPOINT
+from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR, SPARQL_QUERYENDPOINT
 from minmodkg.misc import (
     Transaction,
     Triples,
@@ -151,7 +151,7 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
     return get_site_by_uri(URIRef(uri))
 
 
-def get_site_as_graph(site_uri: str, endpoint: str = SPARQL_ENDPOINT) -> Graph:
+def get_site_as_graph(site_uri: str, endpoint: str = SPARQL_QUERYENDPOINT) -> Graph:
     query = (
         """
 CONSTRUCT {
@@ -173,7 +173,7 @@ WHERE {
 
 
 def get_dedup_site_as_graph(
-    dedup_site_uri: str, endpoint: str = SPARQL_ENDPOINT
+    dedup_site_uri: str, endpoint: str = SPARQL_QUERYENDPOINT
 ) -> Graph:
     query = (
         """

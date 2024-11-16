@@ -7,11 +7,11 @@ import serde.csv
 import serde.json
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MND_NS, MNO_NS, MNR_NS, NS_MNO
+from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.mineral_site import MineralSite
-from minmodkg.typing import InternalID
+from minmodkg.typing import IRI
 from rdflib import OWL, RDF, RDFS, Graph
 from timer import Timer
 from tqdm import tqdm
@@ -141,7 +141,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
     def step2_gen_dedup_site(
         self, infiles: list[Path], args: DedupSiteServiceInvokeArgs
     ):
-        sites: dict[InternalID, DerivedMineralSite] = {}
+        sites: dict[IRI, DerivedMineralSite] = {}
         for infile in infiles:
             for raw_derived_site in serde.json.deser(
                 infile,
@@ -153,9 +153,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                     sites[site.id].merge(site)
 
         # generate dedup mineral site
-        groups: list[list[InternalID]] = serde.json.deser(
-            args["same_as_group"].get_path()
-        )
+        groups: list[list[IRI]] = serde.json.deser(args["same_as_group"].get_path())
         linked_sites = {site for grp in groups for site in grp}
         # add sites that are not linked first
         for site_id, site in sites.items():
@@ -172,7 +170,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
     def step3_save_dedup_site(
         self,
         dedup_sites: list[DedupMineralSite],
-        sites: dict[InternalID, DerivedMineralSite],
+        sites: dict[IRI, DerivedMineralSite],
         args: DedupSiteServiceInvokeArgs,
     ):
         output_fmter = FormatOutputPathModel.init(args["output"])
@@ -180,18 +178,13 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
         output_fmter.outdir.mkdir(parents=True, exist_ok=True)
 
         with open(output_fmter.outdir / "dedup_sites.ttl", "w") as f:
-            f.write(f"@prefix : <{MNO_NS}> .\n")
-            f.write(f"@prefix mnr: <{MNR_NS}> .\n")
-            f.write(f"@prefix mnd: <{MND_NS}> .\n")
-            f.write(f"@prefix rdf: <{str(RDF)}> .\n")
-            f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
-
+            f.write(MINMOD_KG.prefix_part)
             for site in sites.values():
-                for s, p, o in site.get_shorten_triples():
+                for s, p, o in site.to_triples():
                     f.write(f"{s} {p} {o} .\n")
 
             for dedup_site in dedup_sites:
-                for s, p, o in dedup_site.get_shorten_triples():
+                for s, p, o in dedup_site.to_triples():
                     f.write(f"{s} {p} {o} .\n")
 
 
@@ -206,7 +199,7 @@ class ComputingDerivedSiteInfo:
         g.parse(predefined_entity_dir / "material_form.ttl", format="ttl")
         self.material_form_conversion = {
             str(subj): float(obj.value)  # type: ignore
-            for subj, obj in g.subject_objects(NS_MNO.conversion)
+            for subj, obj in g.subject_objects(MINMOD_NS.mo.uri("conversion"))
         }
 
         g = Graph()

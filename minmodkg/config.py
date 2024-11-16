@@ -19,7 +19,7 @@ SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
 
 MINMOD_NS = Namespace(cfg["namespace"])
 MINMOD_KG = RDFStore(MINMOD_NS, SPARQL_QUERY_ENDPOINT, SPARQL_UPDATE_ENDPOINT)
-BaseRDFModel.rdfdata = RDFMetadata(MINMOD_NS, MINMOD_KG)
+BaseRDFModel.rdfdata = RDFMetadata(MINMOD_KG.ns, MINMOD_KG)
 
 # for API prefixes
 API_PREFIX = cfg["api_prefix"]

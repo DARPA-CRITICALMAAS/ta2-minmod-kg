@@ -3,8 +3,8 @@ from __future__ import annotations
 from functools import lru_cache
 
 from fastapi import APIRouter
-from minmodkg.api.dependencies import SPARQL_ENDPOINT, get_snapshot_id
-from minmodkg.misc import sparql_query
+from minmodkg.api.dependencies import get_snapshot_id
+from minmodkg.config import MINMOD_KG
 
 router = APIRouter(tags=["statistics"])
 
@@ -40,72 +40,77 @@ def documents_by_commodity():
 
 
 @lru_cache(maxsize=1)
-def get_document_count(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_document_count(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT (COUNT(?doc) AS ?total)
         WHERE {
-            ?doc a :Document .
+            ?doc a mo:Document .
         }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres[0]
 
 
 @lru_cache(maxsize=1)
-def get_inventory_count(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_inventory_count(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT (COUNT(?mi) AS ?total)
         WHERE {
-            ?mi a :MineralInventory .
+            ?mi a mo:MineralInventory .
         }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres[0]
 
 
 @lru_cache(maxsize=1)
-def get_mineralsites_count(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_mineralsites_count(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
        SELECT (COUNT(?ms) AS ?total)
         WHERE {
-            ?ms a :MineralSite .
+            ?ms a mo:MineralSite .
         }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres[0]
 
 
 @lru_cache(maxsize=1)
-def get_inventory_by_commodity(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_inventory_by_commodity(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT  ?commodity_uri ?commodity_label ?total
         WHERE {
             {
                 SELECT ?commodity_uri (COUNT(DISTINCT ?mi) AS ?total)
                 WHERE {
-                    ?mi a :MineralInventory .
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                    ?mi a mo:MineralInventory .
+                    ?mi mo:commodity/mo:normalized_uri ?commodity_uri .
                 }
                 GROUP BY ?commodity_uri
             }
             ?commodity_uri rdfs:label ?commodity_label .
         }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_mineralsites_by_commodity(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_mineralsites_by_commodity(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT  ?commodity_uri ?commodity_label ?total
         WHERE {
             {
                 SELECT ?commodity_uri (COUNT(DISTINCT ?ms) AS ?total)
                 WHERE {
-                    ?ms a :MineralSite .
-                    ?ms :mineral_inventory ?mi .
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                    ?ms a mo:MineralSite .
+                    ?ms mo:mineral_inventory ?mi .
+                    ?mi mo:commodity/:normalized_uri ?commodity_uri .
                 }
                 GROUP BY ?commodity_uri
             }
@@ -113,12 +118,13 @@ def get_mineralsites_by_commodity(snapshot_id: str, endpoint: str = SPARQL_ENDPO
         }
         
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
 
 
 @lru_cache(maxsize=1)
-def get_documents_by_commodity(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT):
+def get_documents_by_commodity(snapshot_id: str):
+    assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
 
         SELECT  ?commodity_uri ?commodity_label ?total
@@ -126,13 +132,13 @@ def get_documents_by_commodity(snapshot_id: str, endpoint: str = SPARQL_ENDPOINT
             {
                 SELECT ?commodity_uri (COUNT(DISTINCT ?doc) AS ?total)
                 WHERE {
-                    ?mi :reference/:document ?doc . 
-                    ?mi :commodity/:normalized_uri ?commodity_uri .
+                    ?mi mo:reference/mo:document ?doc . 
+                    ?mi mo:commodity/mo:normalized_uri ?commodity_uri .
                 }
                 GROUP BY ?commodity_uri
             }
             ?commodity_uri rdfs:label ?commodity_label .
         }
     """
-    qres = sparql_query(query, endpoint)
+    qres = MINMOD_KG.query(query)
     return qres
