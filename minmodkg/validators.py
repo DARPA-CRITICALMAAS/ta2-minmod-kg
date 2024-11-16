@@ -207,24 +207,24 @@ class ContentValidator:
                 outfile.write_text(output)
 
     def validate_mineral_site(self, site_file: RelPath):
-        logger.info("Validating file {}", site_file)
+        print("Validating file {}", site_file)
         outfile = self.workdir / "mineral-sites" / (site_file.stem + ".ttl")
 
         # ------- schema check - pass 1 -------
-        logger.info("Check if the data is complied with JSON schema (part 1)...")
+        print("Check if the data is complied with JSON schema (part 1)...")
         for site in orjson.loads(site_file.get_path().read_bytes()):
             MineralSite.from_raw_site(site)
 
         # ------- schema check - pass 2 -------
-        logger.info("Check if the data is valid with D-REPR (part 2)...")
+        print("Check if the data is valid with D-REPR (part 2)...")
 
         # ------- convert the site file to ttl -------
-        logger.info("Check if the data can be converted to TTL...")
+        print("Check if the data can be converted to TTL...")
         self._exec_drepr_model(self.site_model, site_file, outfile)
-        logger.info("Check if the data can be converted to TTL... Success!")
+        print("Check if the data can be converted to TTL... Success!")
 
         # ------- validate again using SHACL to ensure all references are correct -------
-        logger.info("Check if the data is valid with SHACL (part 3)...")
+        print("Check if the data is valid with SHACL (part 3)...")
         # prepare a graph
         full_graph = self.workdir / "mineral-sites" / (site_file.stem + ".full.ttl")
         with open(full_graph, "w") as f:
@@ -278,7 +278,7 @@ class ContentValidator:
                     print("=" * 80)
                     raise Exception("SHACL validation failed")
 
-        logger.info("Check if the data is valid with SHACL (part 2)... Success!")
+        print("Check if the data is valid with SHACL (part 2)... Success!")
 
 
 if __name__ == "__main__":
