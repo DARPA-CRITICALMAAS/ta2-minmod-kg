@@ -1,36 +1,36 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
-from functools import cached_property, cmp_to_key, lru_cache
-from typing import Iterable, Optional, Union
+from functools import cached_property, cmp_to_key
+from typing import Iterable, Optional
 
-from minmodkg.config import MNR_NS
-from minmodkg.misc import UnconvertibleUnitError, V, assert_isinstance, group_by_attr
+from minmodkg.config import MINMOD_KG
+from minmodkg.misc import UnconvertibleUnitError, group_by_attr
+
+MR_NS = MINMOD_KG.ns.mr
 
 
 class ResourceCategory(str, Enum):
     """Resource category of a mineral site"""
 
-    Inferred = f"{MNR_NS}Inferred"
-    Indicated = f"{MNR_NS}Indicated"
-    Measured = f"{MNR_NS}Measured"
+    Inferred = MR_NS.uristr("Inferred")
+    Indicated = MR_NS.uristr("Indicated")
+    Measured = MR_NS.uristr("Measured")
 
 
 class ReserveCategory(str, Enum):
     """Reserve category of a mineral site"""
 
-    Proven = f"{MNR_NS}Proven"
-    Probable = f"{MNR_NS}Probable"
+    Proven = MR_NS.uristr("Proven")
+    Probable = MR_NS.uristr("Probable")
 
 
 # note that they may have more such as accumulated, previously mined, etc.
 ResourceReserveCategory = str
-Mt_unit = f"{MNR_NS}Q202"
-percent_unit = f"{MNR_NS}Q201"
+Mt_unit = MR_NS.uristr("Q202")
+percent_unit = MR_NS.uristr("Q201")
 
 
 @dataclass(frozen=True)
@@ -344,7 +344,7 @@ class GradeTonnageModel:
 
 
 weight_uncompatible_units = {
-    f"{MNR_NS}{id}"
+    MR_NS.uristr(id)
     for id in [
         "Q201",
         "Q203",
@@ -366,7 +366,7 @@ weight_uncompatible_units = {
     ]
 }
 percent_uncompatible_units = {
-    f"{MNR_NS}{id}"
+    MR_NS.uristr(id)
     for id in [
         "Q200",
         "Q202",
@@ -395,29 +395,29 @@ def unit_conversion(value: float, unit: str, to_unit: str) -> float:
     if unit == to_unit:
         return value
 
-    if to_unit == f"{MNR_NS}Q202":
+    if to_unit == MR_NS.uristr("Q202"):
         # convert to million tonnes
-        if unit == f"{MNR_NS}Q200":
+        if unit == MR_NS.uristr("Q200"):
             # from tonnes
             return value / 1_000_000
-        if unit == f"{MNR_NS}Q213":
+        if unit == MR_NS.uristr("Q213"):
             # from million short tons
             return value / 1.10231
-        if unit == f"{MNR_NS}Q214":
+        if unit == MR_NS.uristr("Q214"):
             return value / 1_000_000 / 1.10231
-        if unit == f"{MNR_NS}Q215":
+        if unit == MR_NS.uristr("Q215"):
             # million pounds
             return value * 0.000454
         if unit in weight_uncompatible_units:
             raise UnconvertibleUnitError((value, unit, to_unit))
         raise NotImplementedError((value, unit, to_unit))
 
-    if to_unit == f"{MNR_NS}Q201":
+    if to_unit == MR_NS.uristr("Q201"):
         # convert to percentage
-        if unit == f"{MNR_NS}Q203" or unit == f"{MNR_NS}Q220":
+        if unit == MR_NS.uristr("Q203") or unit == MR_NS.uristr("Q220"):
             # from grams per tonne or parts per million
             return value / 10_000
-        if unit == f"{MNR_NS}Q217":
+        if unit == MR_NS.uristr("Q217"):
             # from kg per tonne
             return value / 10
         if unit in percent_uncompatible_units:

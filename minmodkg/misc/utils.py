@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from hashlib import sha256
+from pathlib import Path
 from typing import Any, Optional, TypeVar
 
 V = TypeVar("V")
@@ -55,3 +57,9 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
 def assert_isinstance(x: Any, cls: type[V]) -> V:
     assert isinstance(x, cls), x
     return x
+
+
+def file_ident(file: str | Path):
+    file = Path(file).resolve()
+    filehash = sha256(file.read_bytes()).hexdigest()
+    return f"{file}::{filehash}"

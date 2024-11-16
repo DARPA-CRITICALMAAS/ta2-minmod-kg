@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Annotated, Iterable, Optional
+from functools import cached_property
+from typing import Annotated, ClassVar, Iterable, Optional
 
-from minmodkg.misc.rdf_store import BaseRDFModel
+from minmodkg.misc.rdf_store import BaseRDFModel, BaseRDFQueryBuilder
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
-from minmodkg.typing import InternalID, Triple
+from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import BaseModel
 
 
@@ -32,21 +33,49 @@ class DedupMineralSitePublic(BaseModel):
     grade_tonnage: Optional[GradeTonnage]
 
 
+class DedupMineralSiteQueryBuilder(BaseRDFQueryBuilder):
+    def __init__(self):
+        ns = self.rdfdata.ns
+
+        main = "dedup_ms"
+        select = []
+        where = [f"?{main} rdf:type {ns.mo.DedupMineralSite} ."]
+        for field in [ns.md.site, ns.md.commodity, ns.md.site_commodity]:
+            var = f"{main}_{field.split(":")[-1]}"
+            select.append(f"?{main} {field} ?{var} .")
+            where.append(f"?{main} {field} ?{var} .")
+
+        self.main_var: str = main
+        self.construct_select: str = "\n".join(select)
+        self.construct_where: str = "\n".join(where)
+
+
 class DedupMineralSite(BaseRDFModel):
     id: InternalID
     sites: list[InternalID]
     commodities: list[InternalID]
     site_commodities: list[Annotated[str, "Encoded <site_id>@<list of commodities>"]]
 
-    def to_triples(self) -> list[Triple]:
+    query_builder: ClassVar[DedupMineralSiteQueryBuilder] = (
+        DedupMineralSiteQueryBuilder()
+    )
+
+    @cached_property
+    def uri(self) -> IRI:
+        return self.rdfdata.ns.mr.uristr(self.id)
+
+    def get_by_uri(self, rel_uri: str):
+        self.query_builder.create_get_by_uri(self.rdfdata.ns.mr[self.id])
+
+    def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
+        triples = triples or []
         ns = self.rdfdata.ns
         md = ns.md
         mr = ns.mr
         uri = mr[self.id]
-        triples = [(uri, ns.rdf.type, ns.mo.DedupMineralSite)]
+        triples.append((uri, ns.rdf.type, ns.mo.DedupMineralSite))
         for site in self.sites:
             triples.append((uri, md.site, mr[site]))
-            triples.append((mr[site], md.dedup_site, uri))
         for commodity in self.commodities:
             triples.append((uri, md.commodity, mr[commodity]))
         for site_commodity in self.site_commodities:
@@ -68,6 +97,8 @@ class DedupMineralSite(BaseRDFModel):
                 for site in sites
             ],
         )
+
+    # def update_derived_site(self, derived_site: DerivedMineralSite):
 
     @staticmethod
     def get_id(site_ids: Iterable[InternalID]):

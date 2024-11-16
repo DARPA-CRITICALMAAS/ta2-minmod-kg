@@ -71,14 +71,16 @@ class DerivedMineralSite(BaseRDFModel):
             ],
         )
 
-    def to_triples(self) -> list[Triple]:
+    def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
+        triples = triples or []
+
         ns = self.rdfdata.ns
         md = ns.md
         mr = ns.mr
         mo = ns.mo
 
         site_uri = mr[self.id]
-        triples = [(site_uri, ns.rdf.type, mo.MineralSite)]
+        triples.append((site_uri, ns.rdf.type, mo.MineralSite))
 
         if self.coordinates is not None:
             triples.append(

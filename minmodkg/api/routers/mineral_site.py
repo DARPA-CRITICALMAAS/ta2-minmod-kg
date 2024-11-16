@@ -13,16 +13,9 @@ from fastapi import APIRouter, Body, HTTPException, Response, status
 from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
+from minmodkg.api.models.user import is_system_user
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR, SPARQL_QUERYENDPOINT
-from minmodkg.misc import (
-    Transaction,
-    Triples,
-    has_uri,
-    sparql_construct,
-    sparql_delete_insert,
-    sparql_insert,
-)
+from minmodkg.config import MINMOD_KG
 from minmodkg.models.crs import CRS
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
@@ -46,17 +39,20 @@ def get_site_uri(source_id: str, record_id: str):
 def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
     sites = []
     for uri in uris:
-        sites.append(get_site_by_uri(URIRef(uri)))
+        sites.append(get_site_by_uri(uri))
     return sites
 
 
 @router.get("/mineral-sites/{site_id}")
 def get_site(site_id: str, format: Literal["json", "ttl"] = "json"):
     if format == "json":
-        return get_site_by_uri(NS_MNR[site_id])
+        return get_site_by_uri(MINMOD_KG.ns.mr.uri(site_id))
     elif format == "ttl":
+        uri = MINMOD_KG.ns.mr.uri(site_id)
+        g_site = MineralSite.get_graph_by_uri(uri)
+        g_derived_site = DerivedMineralSite.get_graph_by_uri(uri)
         return Response(
-            content=get_site_as_graph(NS_MNR[site_id]).serialize(format="ttl"),
+            content=(g_site + g_derived_site).serialize(format="ttl"),
             media_type="text/turtle",
         )
     else:
@@ -66,12 +62,12 @@ def get_site(site_id: str, format: Literal["json", "ttl"] = "json"):
         )
 
 
-def get_site_by_uri(uri: URIRef) -> dict:
-    g = get_site_as_graph(uri)
-    # convert the graph into MineralSite
-    site = MineralSite.from_graph(uri, g).model_dump(exclude_none=True)
-    site.update(DerivedMineralSite.from_graph(uri, g).model_dump(exclude_none=True))
-    return site
+def get_site_by_uri(uri: IRI | URIRef) -> dict:
+    site = MineralSite.get_by_uri(uri)
+    derived_site = DerivedMineralSite.get_by_uri(uri)
+    out = site.to_json()
+    out.update(derived_site.to_json())
+    return out
 
 
 @router.post("/mineral-sites")
@@ -86,7 +82,7 @@ def create_site(site: MineralSite, user: CurrentUserDep):
     #      a custom lock mechanism. We will revisit this later.
     uri = make_site_uri(site.source_id, site.record_id)
 
-    if has_uri(uri):
+    if MineralSite.has_uri(uri):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
@@ -95,14 +91,18 @@ def create_site(site: MineralSite, user: CurrentUserDep):
     # update controlled fields and convert the site to TTL
     site.update_derived_data(user.username)
     snapshot_id = get_snapshot_id()
-    g, triples = get_mineral_site_model()(
+    derived_site, partial_dedup_site = derive_data(
         site,
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
     )
 
     # send the query
-    resp = sparql_insert([g, triples])
+    triples = []
+    site.to_triples(triples)
+    derived_site.to_triples(triples)
+    partial_dedup_site.to_triples(triples)
+    resp = MINMOD_KG.insert(triples)
     if resp.status_code != 200:
         logger.error(
             "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response Code: {}\n\t- Response Message{}",
@@ -118,179 +118,87 @@ def create_site(site: MineralSite, user: CurrentUserDep):
 
 @router.put("/mineral-sites/{site_id}")
 def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
-    uri = MNR_NS + site_id
-    if not has_uri(uri):
+    uri = MineralSite.rdfdata.ns.mr.uri("site_id")
+    if not MineralSite.has_uri(uri):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The site does not exist.",
         )
 
-    if site.dedup_site_uri is None:
+    if any(is_system_user(user) for user in site.created_by):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Automated system is not allowed to update the site.",
+        )
+
+    if site.dedup_site_uri is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The updated site must have a dedup site URI.",
         )
 
     # update controlled fields and convert the site to TTL
     # the site must have no blank nodes as we want a fast way to compute the delta.
     site.update_derived_data(user.username)
     snapshot_id = get_snapshot_id()
-    ng, ng_triples = get_mineral_site_model()(
+    derived_site, partial_dedup_site = derive_data(
         site,
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
     )
-    ng = ng_triples.to_graph(ng)
+
+    # TODO: we can update current site & derived site because we have all of the data
+    # for dedup site, we do not have all, so we have to refetch and compute the differences
+    # manually
+    ng = site.to_graph() + derived_site.to_graph()
 
     # start the transaction, we can read as much as we want but we can only write once
-    with Transaction([uri]).transaction():
-        og = get_site_as_graph(uri)
+    with MINMOD_KG.transaction([uri, site.dedup_site_uri]).transaction():
+        og = MineralSite.get_graph_by_uri(uri) + DerivedMineralSite.get_graph_by_uri(
+            uri
+        )
         del_triples, add_triples = get_site_changes(og, ng)
-        sparql_delete_insert(del_triples, add_triples)
+        # TODO: update dedup site
+        # DedupMineralSite.get_by_uri(site.dedup_site_uri)
+        MINMOD_KG.delete_insert(del_triples, add_triples)
 
     return get_site_by_uri(URIRef(uri))
 
 
-def get_site_as_graph(site_uri: str, endpoint: str = SPARQL_QUERYENDPOINT) -> Graph:
-    query = (
-        """
-CONSTRUCT {
-    ?s ?p ?o .
-    ?u ?e ?v .
-}
-WHERE {
-    ?s ?p ?o .
-    OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type|:normalized_uri|mnd:dedup_site))+ ?u .
-        ?u ?e ?v .
-    }
-    VALUES ?s { <%s> }
-}
-"""
-        % site_uri
-    )
-    return sparql_construct(query, endpoint)
-
-
-def get_dedup_site_as_graph(
-    dedup_site_uri: str, endpoint: str = SPARQL_QUERYENDPOINT
-) -> Graph:
-    query = (
-        """
-CONSTRUCT {
-    ?s ?p ?o .
-}
-WHERE {
-    ?s ?p ?o .
-    VALUES ?s { <%s> }
-}
-"""
-        % dedup_site_uri
-    )
-    return sparql_construct(query, endpoint)
-
-
-def get_site_changes(current_site: Graph, new_site: Graph) -> tuple[Triples, Triples]:
+def get_site_changes(
+    current_site: Graph, new_site: Graph
+) -> tuple[list[Triple], list[Triple]]:
     current_triples = set(current_site)
     new_triples = set(new_site)
-
-    lock_pred = URIRef(MNO_NS + "lock")
-    del_triples = Triples(
-        triples=[
-            (s.n3(), p.n3(), o.n3())
-            for s, p, o in current_triples.difference(new_triples)
-            if p != lock_pred
-        ]
-    )
-    add_triples = Triples(
-        triples=[
-            (s.n3(), p.n3(), o.n3())
-            for s, p, o in new_triples.difference(current_triples)
-            if p != lock_pred
-        ]
-    )
+    del_triples = [
+        (s.n3(), p.n3(), o.n3()) for s, p, o in current_triples.difference(new_triples)
+    ]
+    add_triples = [
+        (s.n3(), p.n3(), o.n3()) for s, p, o in new_triples.difference(current_triples)
+    ]
     return del_triples, add_triples
-
-
-@lru_cache()
-def get_mineral_site_model() -> (
-    Callable[[MineralSite, dict[str, float], dict[str, str]], tuple[Graph, Triples]]
-):
-    pkg_dir = Path(__file__).parent.parent.parent
-    drepr_version = version("drepr-v2").strip()
-
-    @cache(
-        backend=BackendFactory.func.sqlite.pickle(
-            dbdir=pkg_dir / "extractors",
-            mem_persist=True,
-        ),
-        cache_ser_args={
-            "repr_file": lambda x: f"drepr::{drepr_version}::" + file_ident(x)
-        },
-    )
-    def make_program(repr_file: Path, prog_file: Path):
-        convert(
-            repr=repr_file,
-            resources={},
-            progfile=prog_file,
-        )
-
-    # fix me! this is problematic when the prog_file is deleted but the cache is not cleared
-    make_program(
-        repr_file=pkg_dir.parent / "extractors/mineral_site.yml",
-        prog_file=pkg_dir / "extractors/mineral_site.py",
-    )
-    from minmodkg.extractors.mineral_site import main  # type: ignore
-
-    def map(
-        site: MineralSite,
-        material_form_conversion: dict[str, float],
-        crss: dict[str, str],
-    ) -> tuple[Graph, Triples]:
-        ttl_data = main(ResourceDataObject([site.get_drepr_resource()]))
-        g = Graph()
-        g.parse(data=ttl_data, format="turtle")
-        triples = derive_data(site, material_form_conversion, crss)
-        return g, triples
-
-    return map
 
 
 def derive_data(
     site: MineralSite,
     material_form_conversion: dict[str, float],
     crss: dict[str, str],
-) -> Triples:
-    mnr_ns_len = len(MNR_NS)
+) -> tuple[DerivedMineralSite, DedupMineralSite]:
+    ns = MineralSite.rdfdata.ns
 
     if site.dedup_site_uri is None:
-        site.dedup_site_uri = MNR_NS + DedupMineralSite.get_id([site.uri[mnr_ns_len:]])
+        site.dedup_site_uri = ns.mr.uristr(
+            DedupMineralSite.get_id([ns.mr.id(site.uri)])
+        )
 
     # get derived data
     derived_site = DerivedMineralSite.from_mineral_site(
         site, material_form_conversion, crss
     )
-    triples = derived_site.get_shorten_triples()
-
-    # add same as
-    site_id = f"mnr:{derived_site.id}"
-    for same_as in site.same_as:
-        assert same_as.startswith(MNR_NS), same_as
-        triples.append((site_id, "owl:sameAs", f"mnr:{same_as[mnr_ns_len:]}"))
-
-    # add dedup site information
-    triples.extend(
-        DedupMineralSite.from_derived_sites(
-            [derived_site], site.dedup_site_uri
-        ).get_shorten_triples()
+    partial_dedup_site = DedupMineralSite.from_derived_sites(
+        [derived_site], site.dedup_site_uri
     )
-    return Triples(triples)
-
-
-def file_ident(file: str | Path):
-    file = Path(file).resolve()
-    filehash = sha256(file.read_bytes()).hexdigest()
-    return f"{file}::{filehash}"
+    return derived_site, partial_dedup_site
 
 
 @lru_cache(maxsize=1)

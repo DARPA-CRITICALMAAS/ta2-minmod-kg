@@ -3,12 +3,15 @@ from __future__ import annotations
 import hashlib
 from uuid import uuid4
 
-from minmodkg.config import MNO_NS, MNR_NS
-from minmodkg.models.page_info import PageInfo
+from minmodkg.config import MINMOD_KG
+from minmodkg.models.reference import PageInfo
 from slugify import slugify
 
+MR_NS = MINMOD_KG.ns.mr.namespace
+MO_NS = MINMOD_KG.ns.mo.namespace
 
-def make_site_ids(value: dict, namespace: str = MNR_NS):
+
+def make_site_ids(value: dict, namespace: str = MR_NS):
     """Make all ids for a mineral site"""
     assert value["created_by"].startswith("https://minmod.isi.edu/users/")
     username = value["created_by"][len("https://minmod.isi.edu/users/") :]
@@ -33,7 +36,7 @@ def make_site_ids(value: dict, namespace: str = MNR_NS):
         make_inventory_ids(inv, inv_i, site_id, namespace)
 
 
-def make_location_info_ids(loc_info: dict, site_id: str, namespace: str = MNR_NS):
+def make_location_info_ids(loc_info: dict, site_id: str, namespace: str = MR_NS):
     loc_info["id"] = namespace + site_id + "__location_info"
     for i, country in enumerate(loc_info.get("country", [])):
         country["id"] = namespace + site_id + f"__country__{i}"
@@ -43,9 +46,7 @@ def make_location_info_ids(loc_info: dict, site_id: str, namespace: str = MNR_NS
         loc_info["crs"]["id"] = namespace + site_id + f"__crs"
 
 
-def make_inventory_ids(
-    inv: dict, inv_index: int, site_id: str, namespace: str = MNR_NS
-):
+def make_inventory_ids(inv: dict, inv_index: int, site_id: str, namespace: str = MR_NS):
     inv_id = f"{site_id}__inv__{inv_index}"
     inv["id"] = f"{namespace}{inv_id}"
     for cat_idx, cat in enumerate(inv.get("category", [])):
@@ -61,7 +62,7 @@ def make_inventory_ids(
     make_reference_ids(inv["reference"], site_id, namespace)
 
 
-def make_reference_ids(ref: dict, site_id: str, namespace: str = MNR_NS):
+def make_reference_ids(ref: dict, site_id: str, namespace: str = MR_NS):
     ref["document"]["id"] = make_document_uri(ref["document"], site_id, namespace)
 
     docid = ref["document"]["id"]
@@ -78,7 +79,7 @@ def make_reference_ids(ref: dict, site_id: str, namespace: str = MNR_NS):
         pageinfo["id"] = f"{ref['id']}__pageinfo__{i}"
 
 
-def make_site_uri(source_id: str, record_id: str | int, namespace: str = MNR_NS) -> str:
+def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) -> str:
     if source_id.find("::") != -1:
         # we need to remove the category from the source_id
         category, source_id = source_id.split("::", 1)
@@ -112,7 +113,7 @@ def make_site_uri(source_id: str, record_id: str | int, namespace: str = MNR_NS)
     return f"{namespace}site__{path}"
 
 
-def make_document_uri(doc: dict, site_id: str, namespace: str = MNR_NS):
+def make_document_uri(doc: dict, site_id: str, namespace: str = MR_NS):
     if "uri" in doc:
         return doc["uri"]
     if "doi" in doc:
@@ -131,7 +132,7 @@ def make_document_uri(doc: dict, site_id: str, namespace: str = MNR_NS):
     return f"{namespace}{path}"
 
 
-def make_reference_uri(ref: dict, doc_id: str, namespace: str = MNR_NS):
+def make_reference_uri(ref: dict, doc_id: str, namespace: str = MR_NS):
     # gen pageinfo id
     if len(ref.get("page_info", [])) > 0:
         pageinfo_id = hashlib.sha256(
@@ -147,8 +148,8 @@ def make_reference_uri(ref: dict, doc_id: str, namespace: str = MNR_NS):
 
     if "property" in ref:
         property = ref["property"]
-        assert property.startswith(MNO_NS)
-        property = property[len(MNO_NS) :]
+        assert property.startswith(MO_NS)
+        property = property[len(MO_NS) :]
     else:
         property = ""
 
@@ -159,7 +160,7 @@ def make_reference_uri(ref: dict, doc_id: str, namespace: str = MNR_NS):
         return namespace + doc_id + "__ref__" + shorten_id(slugify(constraintinfo), 120)
 
 
-def get_uuid4(prefix: str = "B", namespace: str = MNR_NS):
+def get_uuid4(prefix: str = "B", namespace: str = MR_NS):
     return f"{namespace}{prefix}_{str(uuid4()).replace('-', '')}"
 
 

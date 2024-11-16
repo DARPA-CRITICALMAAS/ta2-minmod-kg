@@ -1,28 +1,30 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cached_property, lru_cache
 from time import time
 from typing import (
     Annotated,
     Any,
     ClassVar,
-    Generic,
     Iterable,
     Literal,
     Optional,
     Self,
+    Sequence,
     TypeVar,
 )
 from uuid import uuid4
 
 import httpx
-from minmodkg.config import MINMOD_KG
 from minmodkg.misc.utils import group_by_key
-from minmodkg.typing import IRI, SPARQLMainQuery, T, Triple, Triples, V
+from minmodkg.typing import IRI, SPARQLMainQuery, Triple, Triples
 from pydantic import BaseModel
 from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
+from rdflib.namespace import NamespaceManager
 from rdflib.term import Literal as RDFLiteral
 from rdflib.term import Node
 
@@ -35,6 +37,7 @@ class RDFMetadata:
 
 class BaseRDFModel(BaseModel):
     rdfdata: ClassVar[RDFMetadata]
+    qbuilder: ClassVar[BaseRDFQueryBuilder]
 
     @classmethod
     def from_json(cls, json: dict) -> Self:
@@ -51,8 +54,130 @@ class BaseRDFModel(BaseModel):
     def from_graph(cls, uid: Node, g: Graph) -> Self:
         raise NotImplementedError()
 
-    def to_triples(self) -> list[Triple]:
+    def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
+        """Convert this model to list of triples. If the input `triples` is not None, append new triples to it and return the same input list"""
         raise NotImplementedError()
+
+    def to_graph(self) -> Graph:
+        ns = self.rdfdata.ns
+        g = Graph(namespace_manager=ns.rdflib_namespace_manager)
+        for s, p, o in self.to_triples():
+            if o.startswith("http://") or o.startswith("https://"):
+                obj = URIRef(o)
+            elif o[0].isdigit():
+                obj = RDFLiteral(
+                    obj, datatype=XSD.integer if o[0].find(".") == -1 else XSD.float
+                )
+            elif o[0] == '"':
+                obj = RDFLiteral(o)
+            else:
+                prefix, name = o.split(":", 1)
+                obj = ns.namespaces[prefix].uri(name)
+            g.add((URIRef(s), URIRef(p), obj))
+        return g
+
+    @classmethod
+    def has_uri(cls, uri: IRI | URIRef) -> bool:
+        return cls.rdfdata.store.has(uri)
+
+    @classmethod
+    def get_by_uri(cls, uri: IRI | URIRef) -> Self:
+        return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
+
+    @classmethod
+    def get_graph_by_uri(cls, uri: IRI | URIRef) -> Graph:
+        query = cls.qbuilder.create_get_by_uri(uri)
+        return cls.rdfdata.store.construct(query)
+
+
+class BaseRDFQueryBuilder:
+    rdfdata: ClassVar[RDFMetadata]
+    class_reluri: str
+    fields: list[PropertyRule]
+
+    @dataclass
+    class PropertyRule:
+        ns: SingleNS
+        name: str
+        is_optional: bool = False
+        target: Optional[BaseRDFQueryBuilder] = None
+
+        def construct(self, source_var: str):
+            """Return the CONSTRUCT part for this property"""
+            target_var = source_var + "_" + self.name
+            property = self.ns[self.name]
+            if self.target is None:
+                return f"?{source_var} {property} ?{target_var} ."
+            else:
+                return f"?{source_var} {property} ?{target_var} ." + self.target.match(
+                    target_var
+                )
+
+        def match(self, source_var: str):
+            """Return the match part for this property, the match part is used in WHERE clause"""
+            target_var = source_var + "_" + self.name
+            property = self.ns[self.name]
+            if self.target is None:
+                if self.is_optional:
+                    return f"OPTIONAL {{ ?{source_var} {property} ?{target_var} }} ."
+                else:
+                    return f"?{source_var} {property} ?{target_var} ."
+            else:
+                if self.is_optional:
+                    return f"OPTIONAL {{ ?{source_var} {property} ?{target_var} . {self.target.match(target_var)} }} ."
+                else:
+                    return (
+                        f"?{source_var} {property} ?{target_var} ."
+                        + self.target.match(target_var)
+                    )
+
+    def get_default_source_var(self):
+        return self.class_reluri.replace(":", "_")
+
+    @lru_cache()
+    def construct(self, source_var: Optional[str] = None) -> str:
+        """Return the CONSTRUCT part for this class"""
+        source_var = source_var or self.get_default_source_var()
+        out = []
+        for field in self.fields:
+            out.append(field.construct(source_var))
+        return "\n".join(out)
+
+    @lru_cache()
+    def where(self, source_var: str) -> str:
+        source_var = source_var or self.get_default_source_var()
+        return (
+            f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} .\n"
+            + self.match(source_var)
+        )
+
+    @lru_cache()
+    def match(self, source_var: str) -> str:
+        """Return the match part to match this object as if it is target of another object
+
+        For example:
+            # outer query
+            ?ms :deposit_type_candidate ?can_ent
+
+            # inner query (match_target for ?can_ent)
+            ?can_ent :source ?source .
+            ?can_ent :target ?target .
+            ?can_ent :observed_name ?type .
+            ?can_ent :normalized_uri ?uri .
+        """
+        out = []
+        for field in self.fields:
+            out.append(field.match(source_var))
+        return "\n".join(out)
+
+    def create_get_by_uri(self, uri: str | URIRef) -> str:
+        source_var = self.get_default_source_var()
+        return "CONSTRUCT { %s } WHERE { %s VALUES ?%s { <%s> } }" % (
+            self.construct(source_var),
+            self.where(source_var),
+            source_var,
+            uri,
+        )
 
 
 @dataclass
@@ -70,6 +195,9 @@ class SingleNS:
 
     def uri(self, name: str) -> URIRef:
         return URIRef(self.namespace + name)
+
+    def uristr(self, name: str) -> str:
+        return self.namespace + name
 
     def __getattr__(self, name: str):
         return self.alias + ":" + name
@@ -103,6 +231,13 @@ class Namespace:
     def get_by_alias(self, alias: str) -> SingleNS:
         return self.namespaces[alias]
 
+    @cached_property
+    def rdflib_namespace_manager(self) -> NamespaceManager:
+        nsmanager = NamespaceManager(Graph(), bind_namespaces="none")
+        for ns in self.iter():
+            nsmanager.bind(ns.alias, ns.namespace)
+        return nsmanager
+
 
 class RDFStore:
     """Responsible for namespace & querying endpoint"""
@@ -117,6 +252,9 @@ class RDFStore:
             "\n".join(f"PREFIX {x.alias}: <{x.namespace}>" for x in self.ns.iter())
             + "\n\n"
         )
+
+    def transaction(self, objects: Sequence[IRI | URIRef], timeout_sec: float = 300):
+        return Transaction(self, objects, timeout_sec)
 
     def has(self, rel_uri: str):
         return (
@@ -216,7 +354,7 @@ class RDFStore:
 
     def construct(self, query: str):
         resp = self._sparql(query, self.query_endpoint, type="query")
-        g = Graph()
+        g = Graph(namespace_manager=self.ns.rdflib_namespace_manager)
         g.parse(data=resp.text, format="turtle")
         return g
 
@@ -293,7 +431,8 @@ class Transaction:
 
     def __init__(
         self,
-        objects: list[IRI],
+        kg: RDFStore,
+        objects: Sequence[IRI | URIRef],
         timeout_sec: float = 300,
     ):
         self.objects = []
@@ -308,7 +447,7 @@ class Transaction:
         self.timeout_sec = timeout_sec
         self.lock = None
 
-        self.kg = MINMOD_KG
+        self.kg = kg
         assert self.kg.ns.mo.alias == "mo", "Our query assume mo has alias `mo`"
 
     @contextmanager
