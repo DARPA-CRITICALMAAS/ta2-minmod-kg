@@ -1,0 +1,32 @@
+@prefix mnr: <https://minmod.isi.edu/resource/> .
+@prefix mno: <https://minmod.isi.edu/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix drepr: <https://purl.org/drepr/1.0/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mnr:Inferred rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Inferred"^^xsd:string .
+
+mnr:Indicated rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Indicated"^^xsd:string .
+
+mnr:Measured rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Measured"^^xsd:string .
+
+mnr:Probable rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Probable"^^xsd:string .
+
+mnr:Proven rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Proven"^^xsd:string .
+
+mnr:OriginalResource rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "OriginalResource"^^xsd:string .
+
+mnr:Extracted rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "Extracted"^^xsd:string .
+
+mnr:CumulativeExtracted rdf:type mno:ResourceReserveCategory ;
+	rdfs:label "CumulativeExtracted"^^xsd:string .
+

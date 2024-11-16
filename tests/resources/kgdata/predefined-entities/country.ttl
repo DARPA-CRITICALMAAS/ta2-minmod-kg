@@ -1,0 +1,1264 @@
+@prefix mnr: <https://minmod.isi.edu/resource/> .
+@prefix mno: <https://minmod.isi.edu/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix drepr: <https://purl.org/drepr/1.0/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mnr:Q1000 rdf:type mno:Country ;
+	rdfs:label "Afghanistan"^^xsd:string ;
+	skos:altLabel "AFG"^^xsd:string ;
+	skos:altLabel "AF"^^xsd:string .
+
+mnr:Q1001 rdf:type mno:Country ;
+	rdfs:label "Aland Islands"^^xsd:string ;
+	skos:altLabel "ALA"^^xsd:string ;
+	skos:altLabel "AX"^^xsd:string .
+
+mnr:Q1002 rdf:type mno:Country ;
+	rdfs:label "Albania"^^xsd:string ;
+	skos:altLabel "ALB"^^xsd:string ;
+	skos:altLabel "AL"^^xsd:string .
+
+mnr:Q1003 rdf:type mno:Country ;
+	rdfs:label "Algeria"^^xsd:string ;
+	skos:altLabel "DZA"^^xsd:string ;
+	skos:altLabel "DZ"^^xsd:string .
+
+mnr:Q1004 rdf:type mno:Country ;
+	rdfs:label "American Samoa"^^xsd:string ;
+	skos:altLabel "ASM"^^xsd:string ;
+	skos:altLabel "AS"^^xsd:string .
+
+mnr:Q1005 rdf:type mno:Country ;
+	rdfs:label "Andorra"^^xsd:string ;
+	skos:altLabel "AND"^^xsd:string ;
+	skos:altLabel "AD"^^xsd:string .
+
+mnr:Q1006 rdf:type mno:Country ;
+	rdfs:label "Angola"^^xsd:string ;
+	skos:altLabel "AGO"^^xsd:string ;
+	skos:altLabel "AO"^^xsd:string .
+
+mnr:Q1007 rdf:type mno:Country ;
+	rdfs:label "Anguilla"^^xsd:string ;
+	skos:altLabel "AIA"^^xsd:string ;
+	skos:altLabel "AI"^^xsd:string .
+
+mnr:Q1008 rdf:type mno:Country ;
+	rdfs:label "Antarctica"^^xsd:string ;
+	skos:altLabel "ATA"^^xsd:string ;
+	skos:altLabel "AQ"^^xsd:string .
+
+mnr:Q1009 rdf:type mno:Country ;
+	rdfs:label "Antigua and Barbuda"^^xsd:string ;
+	skos:altLabel "ATG"^^xsd:string ;
+	skos:altLabel "AG"^^xsd:string .
+
+mnr:Q1010 rdf:type mno:Country ;
+	rdfs:label "Argentina"^^xsd:string ;
+	skos:altLabel "ARG"^^xsd:string ;
+	skos:altLabel "AR"^^xsd:string .
+
+mnr:Q1011 rdf:type mno:Country ;
+	rdfs:label "Armenia"^^xsd:string ;
+	skos:altLabel "ARM"^^xsd:string ;
+	skos:altLabel "AM"^^xsd:string .
+
+mnr:Q1012 rdf:type mno:Country ;
+	rdfs:label "Aruba"^^xsd:string ;
+	skos:altLabel "ABW"^^xsd:string ;
+	skos:altLabel "AW"^^xsd:string .
+
+mnr:Q1013 rdf:type mno:Country ;
+	rdfs:label "Australia"^^xsd:string ;
+	skos:altLabel "AUS"^^xsd:string ;
+	skos:altLabel "AU"^^xsd:string .
+
+mnr:Q1014 rdf:type mno:Country ;
+	rdfs:label "Austria"^^xsd:string ;
+	skos:altLabel "AUT"^^xsd:string ;
+	skos:altLabel "AT"^^xsd:string .
+
+mnr:Q1015 rdf:type mno:Country ;
+	rdfs:label "Azerbaijan"^^xsd:string ;
+	skos:altLabel "AZE"^^xsd:string ;
+	skos:altLabel "AZ"^^xsd:string .
+
+mnr:Q1016 rdf:type mno:Country ;
+	rdfs:label "Bahrain"^^xsd:string ;
+	skos:altLabel "BHR"^^xsd:string ;
+	skos:altLabel "BH"^^xsd:string .
+
+mnr:Q1017 rdf:type mno:Country ;
+	rdfs:label "Bangladesh"^^xsd:string ;
+	skos:altLabel "BGD"^^xsd:string ;
+	skos:altLabel "BD"^^xsd:string .
+
+mnr:Q1018 rdf:type mno:Country ;
+	rdfs:label "Barbados"^^xsd:string ;
+	skos:altLabel "BRB"^^xsd:string ;
+	skos:altLabel "BB"^^xsd:string .
+
+mnr:Q1019 rdf:type mno:Country ;
+	rdfs:label "Belarus"^^xsd:string ;
+	skos:altLabel "BLR"^^xsd:string ;
+	skos:altLabel "BY"^^xsd:string .
+
+mnr:Q1020 rdf:type mno:Country ;
+	rdfs:label "Belgium"^^xsd:string ;
+	skos:altLabel "BEL"^^xsd:string ;
+	skos:altLabel "BE"^^xsd:string .
+
+mnr:Q1021 rdf:type mno:Country ;
+	rdfs:label "Belize"^^xsd:string ;
+	skos:altLabel "BLZ"^^xsd:string ;
+	skos:altLabel "BZ"^^xsd:string .
+
+mnr:Q1022 rdf:type mno:Country ;
+	rdfs:label "Benin"^^xsd:string ;
+	skos:altLabel "BEN"^^xsd:string ;
+	skos:altLabel "BJ"^^xsd:string .
+
+mnr:Q1023 rdf:type mno:Country ;
+	rdfs:label "Bermuda"^^xsd:string ;
+	skos:altLabel "BMU"^^xsd:string ;
+	skos:altLabel "BM"^^xsd:string .
+
+mnr:Q1024 rdf:type mno:Country ;
+	rdfs:label "Bhutan"^^xsd:string ;
+	skos:altLabel "BTN"^^xsd:string ;
+	skos:altLabel "BT"^^xsd:string .
+
+mnr:Q1025 rdf:type mno:Country ;
+	rdfs:label "Bolivia"^^xsd:string ;
+	skos:altLabel "BOL"^^xsd:string ;
+	skos:altLabel "BO"^^xsd:string .
+
+mnr:Q1026 rdf:type mno:Country ;
+	rdfs:label "Bonaire, Sint Eustatius and Saba"^^xsd:string ;
+	skos:altLabel "BES"^^xsd:string ;
+	skos:altLabel "BQ"^^xsd:string .
+
+mnr:Q1027 rdf:type mno:Country ;
+	rdfs:label "Bosnia and Herzegovina"^^xsd:string ;
+	skos:altLabel "BIH"^^xsd:string ;
+	skos:altLabel "BA"^^xsd:string .
+
+mnr:Q1028 rdf:type mno:Country ;
+	rdfs:label "Botswana"^^xsd:string ;
+	skos:altLabel "BWA"^^xsd:string ;
+	skos:altLabel "BW"^^xsd:string .
+
+mnr:Q1029 rdf:type mno:Country ;
+	rdfs:label "Bouvet Island"^^xsd:string ;
+	skos:altLabel "BVT"^^xsd:string ;
+	skos:altLabel "BV"^^xsd:string .
+
+mnr:Q1030 rdf:type mno:Country ;
+	rdfs:label "Brazil"^^xsd:string ;
+	skos:altLabel "BRA"^^xsd:string ;
+	skos:altLabel "BR"^^xsd:string .
+
+mnr:Q1031 rdf:type mno:Country ;
+	rdfs:label "British Indian Ocean Territory"^^xsd:string ;
+	skos:altLabel "IOT"^^xsd:string ;
+	skos:altLabel "IO"^^xsd:string .
+
+mnr:Q1032 rdf:type mno:Country ;
+	rdfs:label "Brunei"^^xsd:string ;
+	skos:altLabel "BRN"^^xsd:string ;
+	skos:altLabel "BN"^^xsd:string .
+
+mnr:Q1033 rdf:type mno:Country ;
+	rdfs:label "Bulgaria"^^xsd:string ;
+	skos:altLabel "BGR"^^xsd:string ;
+	skos:altLabel "BG"^^xsd:string .
+
+mnr:Q1034 rdf:type mno:Country ;
+	rdfs:label "Burkina Faso"^^xsd:string ;
+	skos:altLabel "BFA"^^xsd:string ;
+	skos:altLabel "BF"^^xsd:string .
+
+mnr:Q1035 rdf:type mno:Country ;
+	rdfs:label "Burundi"^^xsd:string ;
+	skos:altLabel "BDI"^^xsd:string ;
+	skos:altLabel "BI"^^xsd:string .
+
+mnr:Q1036 rdf:type mno:Country ;
+	rdfs:label "Cambodia"^^xsd:string ;
+	skos:altLabel "KHM"^^xsd:string ;
+	skos:altLabel "KH"^^xsd:string .
+
+mnr:Q1037 rdf:type mno:Country ;
+	rdfs:label "Cameroon"^^xsd:string ;
+	skos:altLabel "CMR"^^xsd:string ;
+	skos:altLabel "CM"^^xsd:string .
+
+mnr:Q1038 rdf:type mno:Country ;
+	rdfs:label "Canada"^^xsd:string ;
+	skos:altLabel "CAN"^^xsd:string ;
+	skos:altLabel "CA"^^xsd:string .
+
+mnr:Q1039 rdf:type mno:Country ;
+	rdfs:label "Cape Verde"^^xsd:string ;
+	skos:altLabel "CPV"^^xsd:string ;
+	skos:altLabel "CV"^^xsd:string .
+
+mnr:Q1040 rdf:type mno:Country ;
+	rdfs:label "Cayman Islands"^^xsd:string ;
+	skos:altLabel "CYM"^^xsd:string ;
+	skos:altLabel "KY"^^xsd:string .
+
+mnr:Q1041 rdf:type mno:Country ;
+	rdfs:label "Central African Republic"^^xsd:string ;
+	skos:altLabel "CAF"^^xsd:string ;
+	skos:altLabel "CF"^^xsd:string .
+
+mnr:Q1042 rdf:type mno:Country ;
+	rdfs:label "Chad"^^xsd:string ;
+	skos:altLabel "TCD"^^xsd:string ;
+	skos:altLabel "TD"^^xsd:string .
+
+mnr:Q1043 rdf:type mno:Country ;
+	rdfs:label "Chile"^^xsd:string ;
+	skos:altLabel "CHL"^^xsd:string ;
+	skos:altLabel "CL"^^xsd:string .
+
+mnr:Q1044 rdf:type mno:Country ;
+	rdfs:label "China"^^xsd:string ;
+	skos:altLabel "CHN"^^xsd:string ;
+	skos:altLabel "CN"^^xsd:string .
+
+mnr:Q1045 rdf:type mno:Country ;
+	rdfs:label "Christmas Island"^^xsd:string ;
+	skos:altLabel "CXR"^^xsd:string ;
+	skos:altLabel "CX"^^xsd:string .
+
+mnr:Q1046 rdf:type mno:Country ;
+	rdfs:label "Cocos (Keeling) Islands"^^xsd:string ;
+	skos:altLabel "CCK"^^xsd:string ;
+	skos:altLabel "CC"^^xsd:string .
+
+mnr:Q1047 rdf:type mno:Country ;
+	rdfs:label "Colombia"^^xsd:string ;
+	skos:altLabel "COL"^^xsd:string ;
+	skos:altLabel "CO"^^xsd:string .
+
+mnr:Q1048 rdf:type mno:Country ;
+	rdfs:label "Comoros"^^xsd:string ;
+	skos:altLabel "COM"^^xsd:string ;
+	skos:altLabel "KM"^^xsd:string .
+
+mnr:Q1049 rdf:type mno:Country ;
+	rdfs:label "Congo"^^xsd:string ;
+	skos:altLabel "COG"^^xsd:string ;
+	skos:altLabel "CG"^^xsd:string .
+
+mnr:Q1050 rdf:type mno:Country ;
+	rdfs:label "Cook Islands"^^xsd:string ;
+	skos:altLabel "COK"^^xsd:string ;
+	skos:altLabel "CK"^^xsd:string .
+
+mnr:Q1051 rdf:type mno:Country ;
+	rdfs:label "Costa Rica"^^xsd:string ;
+	skos:altLabel "CRI"^^xsd:string ;
+	skos:altLabel "CR"^^xsd:string .
+
+mnr:Q1052 rdf:type mno:Country ;
+	rdfs:label "Cote D'Ivoire (Ivory Coast)"^^xsd:string ;
+	skos:altLabel "CIV"^^xsd:string ;
+	skos:altLabel "CI"^^xsd:string .
+
+mnr:Q1053 rdf:type mno:Country ;
+	rdfs:label "Croatia"^^xsd:string ;
+	skos:altLabel "HRV"^^xsd:string ;
+	skos:altLabel "HR"^^xsd:string .
+
+mnr:Q1054 rdf:type mno:Country ;
+	rdfs:label "Cuba"^^xsd:string ;
+	skos:altLabel "CUB"^^xsd:string ;
+	skos:altLabel "CU"^^xsd:string .
+
+mnr:Q1055 rdf:type mno:Country ;
+	rdfs:label "Curaçao"^^xsd:string ;
+	skos:altLabel "CUW"^^xsd:string ;
+	skos:altLabel "CW"^^xsd:string .
+
+mnr:Q1056 rdf:type mno:Country ;
+	rdfs:label "Cyprus"^^xsd:string ;
+	skos:altLabel "CYP"^^xsd:string ;
+	skos:altLabel "CY"^^xsd:string .
+
+mnr:Q1057 rdf:type mno:Country ;
+	rdfs:label "Czech Republic"^^xsd:string ;
+	skos:altLabel "CZE"^^xsd:string ;
+	skos:altLabel "CZ"^^xsd:string .
+
+mnr:Q1058 rdf:type mno:Country ;
+	rdfs:label "Democratic Republic of the Congo"^^xsd:string ;
+	skos:altLabel "Congo (Kinshasa)"^^xsd:string ;
+	skos:altLabel "COD"^^xsd:string ;
+	skos:altLabel "CD"^^xsd:string .
+
+mnr:Q1059 rdf:type mno:Country ;
+	rdfs:label "Denmark"^^xsd:string ;
+	skos:altLabel "DNK"^^xsd:string ;
+	skos:altLabel "DK"^^xsd:string .
+
+mnr:Q1060 rdf:type mno:Country ;
+	rdfs:label "Djibouti"^^xsd:string ;
+	skos:altLabel "DJI"^^xsd:string ;
+	skos:altLabel "DJ"^^xsd:string .
+
+mnr:Q1061 rdf:type mno:Country ;
+	rdfs:label "Dominica"^^xsd:string ;
+	skos:altLabel "DMA"^^xsd:string ;
+	skos:altLabel "DM"^^xsd:string .
+
+mnr:Q1062 rdf:type mno:Country ;
+	rdfs:label "Dominican Republic"^^xsd:string ;
+	skos:altLabel "DOM"^^xsd:string ;
+	skos:altLabel "DO"^^xsd:string .
+
+mnr:Q1063 rdf:type mno:Country ;
+	rdfs:label "Ecuador"^^xsd:string ;
+	skos:altLabel "ECU"^^xsd:string ;
+	skos:altLabel "EC"^^xsd:string .
+
+mnr:Q1064 rdf:type mno:Country ;
+	rdfs:label "Egypt"^^xsd:string ;
+	skos:altLabel "EGY"^^xsd:string ;
+	skos:altLabel "EG"^^xsd:string .
+
+mnr:Q1065 rdf:type mno:Country ;
+	rdfs:label "El Salvador"^^xsd:string ;
+	skos:altLabel "SLV"^^xsd:string ;
+	skos:altLabel "SV"^^xsd:string .
+
+mnr:Q1066 rdf:type mno:Country ;
+	rdfs:label "Equatorial Guinea"^^xsd:string ;
+	skos:altLabel "GNQ"^^xsd:string ;
+	skos:altLabel "GQ"^^xsd:string .
+
+mnr:Q1067 rdf:type mno:Country ;
+	rdfs:label "Eritrea"^^xsd:string ;
+	skos:altLabel "ERI"^^xsd:string ;
+	skos:altLabel "ER"^^xsd:string .
+
+mnr:Q1068 rdf:type mno:Country ;
+	rdfs:label "Estonia"^^xsd:string ;
+	skos:altLabel "EST"^^xsd:string ;
+	skos:altLabel "EE"^^xsd:string .
+
+mnr:Q1069 rdf:type mno:Country ;
+	rdfs:label "Eswatini"^^xsd:string ;
+	skos:altLabel "Swaziland"^^xsd:string ;
+	skos:altLabel "SWZ"^^xsd:string ;
+	skos:altLabel "SZ"^^xsd:string .
+
+mnr:Q1070 rdf:type mno:Country ;
+	rdfs:label "Ethiopia"^^xsd:string ;
+	skos:altLabel "ETH"^^xsd:string ;
+	skos:altLabel "ET"^^xsd:string .
+
+mnr:Q1071 rdf:type mno:Country ;
+	rdfs:label "Falkland Islands"^^xsd:string ;
+	skos:altLabel "FLK"^^xsd:string ;
+	skos:altLabel "FK"^^xsd:string .
+
+mnr:Q1072 rdf:type mno:Country ;
+	rdfs:label "Faroe Islands"^^xsd:string ;
+	skos:altLabel "FRO"^^xsd:string ;
+	skos:altLabel "FO"^^xsd:string .
+
+mnr:Q1073 rdf:type mno:Country ;
+	rdfs:label "Fiji Islands"^^xsd:string ;
+	skos:altLabel "FJI"^^xsd:string ;
+	skos:altLabel "FJ"^^xsd:string .
+
+mnr:Q1074 rdf:type mno:Country ;
+	rdfs:label "Finland"^^xsd:string ;
+	skos:altLabel "FIN"^^xsd:string ;
+	skos:altLabel "FI"^^xsd:string .
+
+mnr:Q1075 rdf:type mno:Country ;
+	rdfs:label "France"^^xsd:string ;
+	skos:altLabel "FRA"^^xsd:string ;
+	skos:altLabel "FR"^^xsd:string .
+
+mnr:Q1076 rdf:type mno:Country ;
+	rdfs:label "French Guiana"^^xsd:string ;
+	skos:altLabel "GUF"^^xsd:string ;
+	skos:altLabel "GF"^^xsd:string .
+
+mnr:Q1077 rdf:type mno:Country ;
+	rdfs:label "French Polynesia"^^xsd:string ;
+	skos:altLabel "PYF"^^xsd:string ;
+	skos:altLabel "PF"^^xsd:string .
+
+mnr:Q1078 rdf:type mno:Country ;
+	rdfs:label "French Southern Territories"^^xsd:string ;
+	skos:altLabel "ATF"^^xsd:string ;
+	skos:altLabel "TF"^^xsd:string .
+
+mnr:Q1079 rdf:type mno:Country ;
+	rdfs:label "Gabon"^^xsd:string ;
+	skos:altLabel "GAB"^^xsd:string ;
+	skos:altLabel "GA"^^xsd:string .
+
+mnr:Q1080 rdf:type mno:Country ;
+	rdfs:label "Gambia The"^^xsd:string ;
+	skos:altLabel "GMB"^^xsd:string ;
+	skos:altLabel "GM"^^xsd:string .
+
+mnr:Q1081 rdf:type mno:Country ;
+	rdfs:label "Georgia"^^xsd:string ;
+	skos:altLabel "GEO"^^xsd:string ;
+	skos:altLabel "GE"^^xsd:string .
+
+mnr:Q1082 rdf:type mno:Country ;
+	rdfs:label "Germany"^^xsd:string ;
+	skos:altLabel "DEU"^^xsd:string ;
+	skos:altLabel "DE"^^xsd:string .
+
+mnr:Q1083 rdf:type mno:Country ;
+	rdfs:label "Ghana"^^xsd:string ;
+	skos:altLabel "GHA"^^xsd:string ;
+	skos:altLabel "GH"^^xsd:string .
+
+mnr:Q1084 rdf:type mno:Country ;
+	rdfs:label "Gibraltar"^^xsd:string ;
+	skos:altLabel "GIB"^^xsd:string ;
+	skos:altLabel "GI"^^xsd:string .
+
+mnr:Q1085 rdf:type mno:Country ;
+	rdfs:label "Greece"^^xsd:string ;
+	skos:altLabel "GRC"^^xsd:string ;
+	skos:altLabel "GR"^^xsd:string .
+
+mnr:Q1086 rdf:type mno:Country ;
+	rdfs:label "Greenland"^^xsd:string ;
+	skos:altLabel "GRL"^^xsd:string ;
+	skos:altLabel "GL"^^xsd:string .
+
+mnr:Q1087 rdf:type mno:Country ;
+	rdfs:label "Grenada"^^xsd:string ;
+	skos:altLabel "GRD"^^xsd:string ;
+	skos:altLabel "GD"^^xsd:string .
+
+mnr:Q1088 rdf:type mno:Country ;
+	rdfs:label "Guadeloupe"^^xsd:string ;
+	skos:altLabel "GLP"^^xsd:string ;
+	skos:altLabel "GP"^^xsd:string .
+
+mnr:Q1089 rdf:type mno:Country ;
+	rdfs:label "Guam"^^xsd:string ;
+	skos:altLabel "GUM"^^xsd:string ;
+	skos:altLabel "GU"^^xsd:string .
+
+mnr:Q1090 rdf:type mno:Country ;
+	rdfs:label "Guatemala"^^xsd:string ;
+	skos:altLabel "GTM"^^xsd:string ;
+	skos:altLabel "GT"^^xsd:string .
+
+mnr:Q1091 rdf:type mno:Country ;
+	rdfs:label "Guernsey and Alderney"^^xsd:string ;
+	skos:altLabel "GGY"^^xsd:string ;
+	skos:altLabel "GG"^^xsd:string .
+
+mnr:Q1092 rdf:type mno:Country ;
+	rdfs:label "Guinea"^^xsd:string ;
+	skos:altLabel "GIN"^^xsd:string ;
+	skos:altLabel "GN"^^xsd:string .
+
+mnr:Q1093 rdf:type mno:Country ;
+	rdfs:label "Guinea-Bissau"^^xsd:string ;
+	skos:altLabel "GNB"^^xsd:string ;
+	skos:altLabel "GW"^^xsd:string .
+
+mnr:Q1094 rdf:type mno:Country ;
+	rdfs:label "Guyana"^^xsd:string ;
+	skos:altLabel "GUY"^^xsd:string ;
+	skos:altLabel "GY"^^xsd:string .
+
+mnr:Q1095 rdf:type mno:Country ;
+	rdfs:label "Haiti"^^xsd:string ;
+	skos:altLabel "HTI"^^xsd:string ;
+	skos:altLabel "HT"^^xsd:string .
+
+mnr:Q1096 rdf:type mno:Country ;
+	rdfs:label "Heard Island and McDonald Islands"^^xsd:string ;
+	skos:altLabel "HMD"^^xsd:string ;
+	skos:altLabel "HM"^^xsd:string .
+
+mnr:Q1097 rdf:type mno:Country ;
+	rdfs:label "Honduras"^^xsd:string ;
+	skos:altLabel "HND"^^xsd:string ;
+	skos:altLabel "HN"^^xsd:string .
+
+mnr:Q1098 rdf:type mno:Country ;
+	rdfs:label "Hong Kong S.A.R."^^xsd:string ;
+	skos:altLabel "HKG"^^xsd:string ;
+	skos:altLabel "HK"^^xsd:string .
+
+mnr:Q1099 rdf:type mno:Country ;
+	rdfs:label "Hungary"^^xsd:string ;
+	skos:altLabel "HUN"^^xsd:string ;
+	skos:altLabel "HU"^^xsd:string .
+
+mnr:Q1100 rdf:type mno:Country ;
+	rdfs:label "Iceland"^^xsd:string ;
+	skos:altLabel "ISL"^^xsd:string ;
+	skos:altLabel "IS"^^xsd:string .
+
+mnr:Q1101 rdf:type mno:Country ;
+	rdfs:label "India"^^xsd:string ;
+	skos:altLabel "IND"^^xsd:string ;
+	skos:altLabel "IN"^^xsd:string .
+
+mnr:Q1102 rdf:type mno:Country ;
+	rdfs:label "Indonesia"^^xsd:string ;
+	skos:altLabel "IDN"^^xsd:string ;
+	skos:altLabel "ID"^^xsd:string .
+
+mnr:Q1103 rdf:type mno:Country ;
+	rdfs:label "Iran"^^xsd:string ;
+	skos:altLabel "IRN"^^xsd:string ;
+	skos:altLabel "IR"^^xsd:string .
+
+mnr:Q1104 rdf:type mno:Country ;
+	rdfs:label "Iraq"^^xsd:string ;
+	skos:altLabel "IRQ"^^xsd:string ;
+	skos:altLabel "IQ"^^xsd:string .
+
+mnr:Q1105 rdf:type mno:Country ;
+	rdfs:label "Ireland"^^xsd:string ;
+	skos:altLabel "IRL"^^xsd:string ;
+	skos:altLabel "IE"^^xsd:string .
+
+mnr:Q1106 rdf:type mno:Country ;
+	rdfs:label "Israel"^^xsd:string ;
+	skos:altLabel "ISR"^^xsd:string ;
+	skos:altLabel "IL"^^xsd:string .
+
+mnr:Q1107 rdf:type mno:Country ;
+	rdfs:label "Italy"^^xsd:string ;
+	skos:altLabel "ITA"^^xsd:string ;
+	skos:altLabel "IT"^^xsd:string .
+
+mnr:Q1108 rdf:type mno:Country ;
+	rdfs:label "Jamaica"^^xsd:string ;
+	skos:altLabel "JAM"^^xsd:string ;
+	skos:altLabel "JM"^^xsd:string .
+
+mnr:Q1109 rdf:type mno:Country ;
+	rdfs:label "Japan"^^xsd:string ;
+	skos:altLabel "JPN"^^xsd:string ;
+	skos:altLabel "JP"^^xsd:string .
+
+mnr:Q1110 rdf:type mno:Country ;
+	rdfs:label "Jersey"^^xsd:string ;
+	skos:altLabel "JEY"^^xsd:string ;
+	skos:altLabel "JE"^^xsd:string .
+
+mnr:Q1111 rdf:type mno:Country ;
+	rdfs:label "Jordan"^^xsd:string ;
+	skos:altLabel "JOR"^^xsd:string ;
+	skos:altLabel "JO"^^xsd:string .
+
+mnr:Q1112 rdf:type mno:Country ;
+	rdfs:label "Kazakhstan"^^xsd:string ;
+	skos:altLabel "KAZ"^^xsd:string ;
+	skos:altLabel "KZ"^^xsd:string .
+
+mnr:Q1113 rdf:type mno:Country ;
+	rdfs:label "Kenya"^^xsd:string ;
+	skos:altLabel "KEN"^^xsd:string ;
+	skos:altLabel "KE"^^xsd:string .
+
+mnr:Q1114 rdf:type mno:Country ;
+	rdfs:label "Kiribati"^^xsd:string ;
+	skos:altLabel "KIR"^^xsd:string ;
+	skos:altLabel "KI"^^xsd:string .
+
+mnr:Q1115 rdf:type mno:Country ;
+	rdfs:label "Kosovo"^^xsd:string ;
+	skos:altLabel "XKX"^^xsd:string ;
+	skos:altLabel "XK"^^xsd:string .
+
+mnr:Q1116 rdf:type mno:Country ;
+	rdfs:label "Kuwait"^^xsd:string ;
+	skos:altLabel "KWT"^^xsd:string ;
+	skos:altLabel "KW"^^xsd:string .
+
+mnr:Q1117 rdf:type mno:Country ;
+	rdfs:label "Kyrgyzstan"^^xsd:string ;
+	skos:altLabel "KGZ"^^xsd:string ;
+	skos:altLabel "KG"^^xsd:string .
+
+mnr:Q1118 rdf:type mno:Country ;
+	rdfs:label "Laos"^^xsd:string ;
+	skos:altLabel "LAO"^^xsd:string ;
+	skos:altLabel "LA"^^xsd:string .
+
+mnr:Q1119 rdf:type mno:Country ;
+	rdfs:label "Latvia"^^xsd:string ;
+	skos:altLabel "LVA"^^xsd:string ;
+	skos:altLabel "LV"^^xsd:string .
+
+mnr:Q1120 rdf:type mno:Country ;
+	rdfs:label "Lebanon"^^xsd:string ;
+	skos:altLabel "LBN"^^xsd:string ;
+	skos:altLabel "LB"^^xsd:string .
+
+mnr:Q1121 rdf:type mno:Country ;
+	rdfs:label "Lesotho"^^xsd:string ;
+	skos:altLabel "LSO"^^xsd:string ;
+	skos:altLabel "LS"^^xsd:string .
+
+mnr:Q1122 rdf:type mno:Country ;
+	rdfs:label "Liberia"^^xsd:string ;
+	skos:altLabel "LBR"^^xsd:string ;
+	skos:altLabel "LR"^^xsd:string .
+
+mnr:Q1123 rdf:type mno:Country ;
+	rdfs:label "Libya"^^xsd:string ;
+	skos:altLabel "LBY"^^xsd:string ;
+	skos:altLabel "LY"^^xsd:string .
+
+mnr:Q1124 rdf:type mno:Country ;
+	rdfs:label "Liechtenstein"^^xsd:string ;
+	skos:altLabel "LIE"^^xsd:string ;
+	skos:altLabel "LI"^^xsd:string .
+
+mnr:Q1125 rdf:type mno:Country ;
+	rdfs:label "Lithuania"^^xsd:string ;
+	skos:altLabel "LTU"^^xsd:string ;
+	skos:altLabel "LT"^^xsd:string .
+
+mnr:Q1126 rdf:type mno:Country ;
+	rdfs:label "Luxembourg"^^xsd:string ;
+	skos:altLabel "LUX"^^xsd:string ;
+	skos:altLabel "LU"^^xsd:string .
+
+mnr:Q1127 rdf:type mno:Country ;
+	rdfs:label "Macau S.A.R."^^xsd:string ;
+	skos:altLabel "MAC"^^xsd:string ;
+	skos:altLabel "MO"^^xsd:string .
+
+mnr:Q1128 rdf:type mno:Country ;
+	rdfs:label "Madagascar"^^xsd:string ;
+	skos:altLabel "MDG"^^xsd:string ;
+	skos:altLabel "MG"^^xsd:string .
+
+mnr:Q1129 rdf:type mno:Country ;
+	rdfs:label "Malawi"^^xsd:string ;
+	skos:altLabel "MWI"^^xsd:string ;
+	skos:altLabel "MW"^^xsd:string .
+
+mnr:Q1130 rdf:type mno:Country ;
+	rdfs:label "Malaysia"^^xsd:string ;
+	skos:altLabel "MYS"^^xsd:string ;
+	skos:altLabel "MY"^^xsd:string .
+
+mnr:Q1131 rdf:type mno:Country ;
+	rdfs:label "Maldives"^^xsd:string ;
+	skos:altLabel "MDV"^^xsd:string ;
+	skos:altLabel "MV"^^xsd:string .
+
+mnr:Q1132 rdf:type mno:Country ;
+	rdfs:label "Mali"^^xsd:string ;
+	skos:altLabel "MLI"^^xsd:string ;
+	skos:altLabel "ML"^^xsd:string .
+
+mnr:Q1133 rdf:type mno:Country ;
+	rdfs:label "Malta"^^xsd:string ;
+	skos:altLabel "MLT"^^xsd:string ;
+	skos:altLabel "MT"^^xsd:string .
+
+mnr:Q1134 rdf:type mno:Country ;
+	rdfs:label "Man (Isle of)"^^xsd:string ;
+	skos:altLabel "IMN"^^xsd:string ;
+	skos:altLabel "IM"^^xsd:string .
+
+mnr:Q1135 rdf:type mno:Country ;
+	rdfs:label "Marshall Islands"^^xsd:string ;
+	skos:altLabel "MHL"^^xsd:string ;
+	skos:altLabel "MH"^^xsd:string .
+
+mnr:Q1136 rdf:type mno:Country ;
+	rdfs:label "Martinique"^^xsd:string ;
+	skos:altLabel "MTQ"^^xsd:string ;
+	skos:altLabel "MQ"^^xsd:string .
+
+mnr:Q1137 rdf:type mno:Country ;
+	rdfs:label "Mauritania"^^xsd:string ;
+	skos:altLabel "MRT"^^xsd:string ;
+	skos:altLabel "MR"^^xsd:string .
+
+mnr:Q1138 rdf:type mno:Country ;
+	rdfs:label "Mauritius"^^xsd:string ;
+	skos:altLabel "MUS"^^xsd:string ;
+	skos:altLabel "MU"^^xsd:string .
+
+mnr:Q1139 rdf:type mno:Country ;
+	rdfs:label "Mayotte"^^xsd:string ;
+	skos:altLabel "MYT"^^xsd:string ;
+	skos:altLabel "YT"^^xsd:string .
+
+mnr:Q1140 rdf:type mno:Country ;
+	rdfs:label "Mexico"^^xsd:string ;
+	skos:altLabel "MEX"^^xsd:string ;
+	skos:altLabel "MX"^^xsd:string .
+
+mnr:Q1141 rdf:type mno:Country ;
+	rdfs:label "Micronesia"^^xsd:string ;
+	skos:altLabel "FSM"^^xsd:string ;
+	skos:altLabel "FM"^^xsd:string .
+
+mnr:Q1142 rdf:type mno:Country ;
+	rdfs:label "Moldova"^^xsd:string ;
+	skos:altLabel "MDA"^^xsd:string ;
+	skos:altLabel "MD"^^xsd:string .
+
+mnr:Q1143 rdf:type mno:Country ;
+	rdfs:label "Monaco"^^xsd:string ;
+	skos:altLabel "MCO"^^xsd:string ;
+	skos:altLabel "MC"^^xsd:string .
+
+mnr:Q1144 rdf:type mno:Country ;
+	rdfs:label "Mongolia"^^xsd:string ;
+	skos:altLabel "MNG"^^xsd:string ;
+	skos:altLabel "MN"^^xsd:string .
+
+mnr:Q1145 rdf:type mno:Country ;
+	rdfs:label "Montenegro"^^xsd:string ;
+	skos:altLabel "MNE"^^xsd:string ;
+	skos:altLabel "ME"^^xsd:string .
+
+mnr:Q1146 rdf:type mno:Country ;
+	rdfs:label "Montserrat"^^xsd:string ;
+	skos:altLabel "MSR"^^xsd:string ;
+	skos:altLabel "MS"^^xsd:string .
+
+mnr:Q1147 rdf:type mno:Country ;
+	rdfs:label "Morocco"^^xsd:string ;
+	skos:altLabel "MAR"^^xsd:string ;
+	skos:altLabel "MA"^^xsd:string .
+
+mnr:Q1148 rdf:type mno:Country ;
+	rdfs:label "Mozambique"^^xsd:string ;
+	skos:altLabel "MOZ"^^xsd:string ;
+	skos:altLabel "MZ"^^xsd:string .
+
+mnr:Q1149 rdf:type mno:Country ;
+	rdfs:label "Myanmar"^^xsd:string ;
+	skos:altLabel "Burma"^^xsd:string ;
+	skos:altLabel "MMR"^^xsd:string ;
+	skos:altLabel "MM"^^xsd:string .
+
+mnr:Q1150 rdf:type mno:Country ;
+	rdfs:label "Namibia"^^xsd:string ;
+	skos:altLabel "NAM"^^xsd:string ;
+	skos:altLabel "NA"^^xsd:string .
+
+mnr:Q1151 rdf:type mno:Country ;
+	rdfs:label "Nauru"^^xsd:string ;
+	skos:altLabel "NRU"^^xsd:string ;
+	skos:altLabel "NR"^^xsd:string .
+
+mnr:Q1152 rdf:type mno:Country ;
+	rdfs:label "Nepal"^^xsd:string ;
+	skos:altLabel "NPL"^^xsd:string ;
+	skos:altLabel "NP"^^xsd:string .
+
+mnr:Q1153 rdf:type mno:Country ;
+	rdfs:label "Netherlands"^^xsd:string ;
+	skos:altLabel "NLD"^^xsd:string ;
+	skos:altLabel "NL"^^xsd:string .
+
+mnr:Q1154 rdf:type mno:Country ;
+	rdfs:label "New Caledonia"^^xsd:string ;
+	skos:altLabel "NCL"^^xsd:string ;
+	skos:altLabel "NC"^^xsd:string .
+
+mnr:Q1155 rdf:type mno:Country ;
+	rdfs:label "New Zealand"^^xsd:string ;
+	skos:altLabel "NZL"^^xsd:string ;
+	skos:altLabel "NZ"^^xsd:string .
+
+mnr:Q1156 rdf:type mno:Country ;
+	rdfs:label "Nicaragua"^^xsd:string ;
+	skos:altLabel "NIC"^^xsd:string ;
+	skos:altLabel "NI"^^xsd:string .
+
+mnr:Q1157 rdf:type mno:Country ;
+	rdfs:label "Niger"^^xsd:string ;
+	skos:altLabel "NER"^^xsd:string ;
+	skos:altLabel "NE"^^xsd:string .
+
+mnr:Q1158 rdf:type mno:Country ;
+	rdfs:label "Nigeria"^^xsd:string ;
+	skos:altLabel "NGA"^^xsd:string ;
+	skos:altLabel "NG"^^xsd:string .
+
+mnr:Q1159 rdf:type mno:Country ;
+	rdfs:label "Niue"^^xsd:string ;
+	skos:altLabel "NIU"^^xsd:string ;
+	skos:altLabel "NU"^^xsd:string .
+
+mnr:Q1160 rdf:type mno:Country ;
+	rdfs:label "Norfolk Island"^^xsd:string ;
+	skos:altLabel "NFK"^^xsd:string ;
+	skos:altLabel "NF"^^xsd:string .
+
+mnr:Q1161 rdf:type mno:Country ;
+	rdfs:label "North Korea"^^xsd:string ;
+	skos:altLabel "PRK"^^xsd:string ;
+	skos:altLabel "KP"^^xsd:string .
+
+mnr:Q1162 rdf:type mno:Country ;
+	rdfs:label "North Macedonia"^^xsd:string ;
+	skos:altLabel "Macedonia"^^xsd:string ;
+	skos:altLabel "MKD"^^xsd:string ;
+	skos:altLabel "MK"^^xsd:string .
+
+mnr:Q1163 rdf:type mno:Country ;
+	rdfs:label "Northern Mariana Islands"^^xsd:string ;
+	skos:altLabel "MNP"^^xsd:string ;
+	skos:altLabel "MP"^^xsd:string .
+
+mnr:Q1164 rdf:type mno:Country ;
+	rdfs:label "Norway"^^xsd:string ;
+	skos:altLabel "NOR"^^xsd:string ;
+	skos:altLabel "NO"^^xsd:string .
+
+mnr:Q1165 rdf:type mno:Country ;
+	rdfs:label "Oman"^^xsd:string ;
+	skos:altLabel "OMN"^^xsd:string ;
+	skos:altLabel "OM"^^xsd:string .
+
+mnr:Q1166 rdf:type mno:Country ;
+	rdfs:label "Pakistan"^^xsd:string ;
+	skos:altLabel "PAK"^^xsd:string ;
+	skos:altLabel "PK"^^xsd:string .
+
+mnr:Q1167 rdf:type mno:Country ;
+	rdfs:label "Palau"^^xsd:string ;
+	skos:altLabel "PLW"^^xsd:string ;
+	skos:altLabel "PW"^^xsd:string .
+
+mnr:Q1168 rdf:type mno:Country ;
+	rdfs:label "Palestinian Territory Occupied"^^xsd:string ;
+	skos:altLabel "PSE"^^xsd:string ;
+	skos:altLabel "PS"^^xsd:string .
+
+mnr:Q1169 rdf:type mno:Country ;
+	rdfs:label "Panama"^^xsd:string ;
+	skos:altLabel "PAN"^^xsd:string ;
+	skos:altLabel "PA"^^xsd:string .
+
+mnr:Q1170 rdf:type mno:Country ;
+	rdfs:label "Papua New Guinea"^^xsd:string ;
+	skos:altLabel "PNG"^^xsd:string ;
+	skos:altLabel "PG"^^xsd:string .
+
+mnr:Q1171 rdf:type mno:Country ;
+	rdfs:label "Paraguay"^^xsd:string ;
+	skos:altLabel "PRY"^^xsd:string ;
+	skos:altLabel "PY"^^xsd:string .
+
+mnr:Q1172 rdf:type mno:Country ;
+	rdfs:label "Peru"^^xsd:string ;
+	skos:altLabel "PER"^^xsd:string ;
+	skos:altLabel "PE"^^xsd:string .
+
+mnr:Q1173 rdf:type mno:Country ;
+	rdfs:label "Philippines"^^xsd:string ;
+	skos:altLabel "PHL"^^xsd:string ;
+	skos:altLabel "PH"^^xsd:string .
+
+mnr:Q1174 rdf:type mno:Country ;
+	rdfs:label "Pitcairn Island"^^xsd:string ;
+	skos:altLabel "PCN"^^xsd:string ;
+	skos:altLabel "PN"^^xsd:string .
+
+mnr:Q1175 rdf:type mno:Country ;
+	rdfs:label "Poland"^^xsd:string ;
+	skos:altLabel "POL"^^xsd:string ;
+	skos:altLabel "PL"^^xsd:string .
+
+mnr:Q1176 rdf:type mno:Country ;
+	rdfs:label "Portugal"^^xsd:string ;
+	skos:altLabel "PRT"^^xsd:string ;
+	skos:altLabel "PT"^^xsd:string .
+
+mnr:Q1177 rdf:type mno:Country ;
+	rdfs:label "Puerto Rico"^^xsd:string ;
+	skos:altLabel "PRI"^^xsd:string ;
+	skos:altLabel "PR"^^xsd:string .
+
+mnr:Q1178 rdf:type mno:Country ;
+	rdfs:label "Qatar"^^xsd:string ;
+	skos:altLabel "QAT"^^xsd:string ;
+	skos:altLabel "QA"^^xsd:string .
+
+mnr:Q1179 rdf:type mno:Country ;
+	rdfs:label "Reunion"^^xsd:string ;
+	skos:altLabel "REU"^^xsd:string ;
+	skos:altLabel "RE"^^xsd:string .
+
+mnr:Q1180 rdf:type mno:Country ;
+	rdfs:label "Romania"^^xsd:string ;
+	skos:altLabel "ROU"^^xsd:string ;
+	skos:altLabel "RO"^^xsd:string .
+
+mnr:Q1181 rdf:type mno:Country ;
+	rdfs:label "Russia"^^xsd:string ;
+	skos:altLabel "RUS"^^xsd:string ;
+	skos:altLabel "RU"^^xsd:string .
+
+mnr:Q1182 rdf:type mno:Country ;
+	rdfs:label "Rwanda"^^xsd:string ;
+	skos:altLabel "RWA"^^xsd:string ;
+	skos:altLabel "RW"^^xsd:string .
+
+mnr:Q1183 rdf:type mno:Country ;
+	rdfs:label "Saint Helena"^^xsd:string ;
+	skos:altLabel "SHN"^^xsd:string ;
+	skos:altLabel "SH"^^xsd:string .
+
+mnr:Q1184 rdf:type mno:Country ;
+	rdfs:label "Saint Kitts and Nevis"^^xsd:string ;
+	skos:altLabel "KNA"^^xsd:string ;
+	skos:altLabel "KN"^^xsd:string .
+
+mnr:Q1185 rdf:type mno:Country ;
+	rdfs:label "Saint Lucia"^^xsd:string ;
+	skos:altLabel "LCA"^^xsd:string ;
+	skos:altLabel "LC"^^xsd:string .
+
+mnr:Q1186 rdf:type mno:Country ;
+	rdfs:label "Saint Pierre and Miquelon"^^xsd:string ;
+	skos:altLabel "SPM"^^xsd:string ;
+	skos:altLabel "PM"^^xsd:string .
+
+mnr:Q1187 rdf:type mno:Country ;
+	rdfs:label "Saint Vincent and the Grenadines"^^xsd:string ;
+	skos:altLabel "VCT"^^xsd:string ;
+	skos:altLabel "VC"^^xsd:string .
+
+mnr:Q1188 rdf:type mno:Country ;
+	rdfs:label "Saint-Barthelemy"^^xsd:string ;
+	skos:altLabel "BLM"^^xsd:string ;
+	skos:altLabel "BL"^^xsd:string .
+
+mnr:Q1189 rdf:type mno:Country ;
+	rdfs:label "Saint-Martin (French part)"^^xsd:string ;
+	skos:altLabel "MAF"^^xsd:string ;
+	skos:altLabel "MF"^^xsd:string .
+
+mnr:Q1190 rdf:type mno:Country ;
+	rdfs:label "Samoa"^^xsd:string ;
+	skos:altLabel "WSM"^^xsd:string ;
+	skos:altLabel "WS"^^xsd:string .
+
+mnr:Q1191 rdf:type mno:Country ;
+	rdfs:label "San Marino"^^xsd:string ;
+	skos:altLabel "SMR"^^xsd:string ;
+	skos:altLabel "SM"^^xsd:string .
+
+mnr:Q1192 rdf:type mno:Country ;
+	rdfs:label "Sao Tome and Principe"^^xsd:string ;
+	skos:altLabel "STP"^^xsd:string ;
+	skos:altLabel "ST"^^xsd:string .
+
+mnr:Q1193 rdf:type mno:Country ;
+	rdfs:label "Saudi Arabia"^^xsd:string ;
+	skos:altLabel "SAU"^^xsd:string ;
+	skos:altLabel "SA"^^xsd:string .
+
+mnr:Q1194 rdf:type mno:Country ;
+	rdfs:label "Senegal"^^xsd:string ;
+	skos:altLabel "SEN"^^xsd:string ;
+	skos:altLabel "SN"^^xsd:string .
+
+mnr:Q1195 rdf:type mno:Country ;
+	rdfs:label "Serbia"^^xsd:string ;
+	skos:altLabel "SRB"^^xsd:string ;
+	skos:altLabel "RS"^^xsd:string .
+
+mnr:Q1196 rdf:type mno:Country ;
+	rdfs:label "Seychelles"^^xsd:string ;
+	skos:altLabel "SYC"^^xsd:string ;
+	skos:altLabel "SC"^^xsd:string .
+
+mnr:Q1197 rdf:type mno:Country ;
+	rdfs:label "Sierra Leone"^^xsd:string ;
+	skos:altLabel "SLE"^^xsd:string ;
+	skos:altLabel "SL"^^xsd:string .
+
+mnr:Q1198 rdf:type mno:Country ;
+	rdfs:label "Singapore"^^xsd:string ;
+	skos:altLabel "SGP"^^xsd:string ;
+	skos:altLabel "SG"^^xsd:string .
+
+mnr:Q1199 rdf:type mno:Country ;
+	rdfs:label "Sint Maarten (Dutch part)"^^xsd:string ;
+	skos:altLabel "SXM"^^xsd:string ;
+	skos:altLabel "SX"^^xsd:string .
+
+mnr:Q1200 rdf:type mno:Country ;
+	rdfs:label "Slovakia"^^xsd:string ;
+	skos:altLabel "SVK"^^xsd:string ;
+	skos:altLabel "SK"^^xsd:string .
+
+mnr:Q1201 rdf:type mno:Country ;
+	rdfs:label "Slovenia"^^xsd:string ;
+	skos:altLabel "SVN"^^xsd:string ;
+	skos:altLabel "SI"^^xsd:string .
+
+mnr:Q1202 rdf:type mno:Country ;
+	rdfs:label "Solomon Islands"^^xsd:string ;
+	skos:altLabel "SLB"^^xsd:string ;
+	skos:altLabel "SB"^^xsd:string .
+
+mnr:Q1203 rdf:type mno:Country ;
+	rdfs:label "Somalia"^^xsd:string ;
+	skos:altLabel "SOM"^^xsd:string ;
+	skos:altLabel "SO"^^xsd:string .
+
+mnr:Q1204 rdf:type mno:Country ;
+	rdfs:label "South Africa"^^xsd:string ;
+	skos:altLabel "ZAF"^^xsd:string ;
+	skos:altLabel "ZA"^^xsd:string .
+
+mnr:Q1205 rdf:type mno:Country ;
+	rdfs:label "South Georgia"^^xsd:string ;
+	skos:altLabel "SGS"^^xsd:string ;
+	skos:altLabel "GS"^^xsd:string .
+
+mnr:Q1206 rdf:type mno:Country ;
+	rdfs:label "South Korea"^^xsd:string ;
+	skos:altLabel "KOR"^^xsd:string ;
+	skos:altLabel "KR"^^xsd:string .
+
+mnr:Q1207 rdf:type mno:Country ;
+	rdfs:label "South Sudan"^^xsd:string ;
+	skos:altLabel "SSD"^^xsd:string ;
+	skos:altLabel "SS"^^xsd:string .
+
+mnr:Q1208 rdf:type mno:Country ;
+	rdfs:label "Spain"^^xsd:string ;
+	skos:altLabel "ESP"^^xsd:string ;
+	skos:altLabel "ES"^^xsd:string .
+
+mnr:Q1209 rdf:type mno:Country ;
+	rdfs:label "Sri Lanka"^^xsd:string ;
+	skos:altLabel "LKA"^^xsd:string ;
+	skos:altLabel "LK"^^xsd:string .
+
+mnr:Q1210 rdf:type mno:Country ;
+	rdfs:label "Sudan"^^xsd:string ;
+	skos:altLabel "SDN"^^xsd:string ;
+	skos:altLabel "SD"^^xsd:string .
+
+mnr:Q1211 rdf:type mno:Country ;
+	rdfs:label "Suriname"^^xsd:string ;
+	skos:altLabel "SUR"^^xsd:string ;
+	skos:altLabel "SR"^^xsd:string .
+
+mnr:Q1212 rdf:type mno:Country ;
+	rdfs:label "Svalbard and Jan Mayen Islands"^^xsd:string ;
+	skos:altLabel "SJM"^^xsd:string ;
+	skos:altLabel "SJ"^^xsd:string .
+
+mnr:Q1213 rdf:type mno:Country ;
+	rdfs:label "Sweden"^^xsd:string ;
+	skos:altLabel "SWE"^^xsd:string ;
+	skos:altLabel "SE"^^xsd:string .
+
+mnr:Q1214 rdf:type mno:Country ;
+	rdfs:label "Switzerland"^^xsd:string ;
+	skos:altLabel "CHE"^^xsd:string ;
+	skos:altLabel "CH"^^xsd:string .
+
+mnr:Q1215 rdf:type mno:Country ;
+	rdfs:label "Syria"^^xsd:string ;
+	skos:altLabel "SYR"^^xsd:string ;
+	skos:altLabel "SY"^^xsd:string .
+
+mnr:Q1216 rdf:type mno:Country ;
+	rdfs:label "Taiwan"^^xsd:string ;
+	skos:altLabel "TWN"^^xsd:string ;
+	skos:altLabel "TW"^^xsd:string .
+
+mnr:Q1217 rdf:type mno:Country ;
+	rdfs:label "Tajikistan"^^xsd:string ;
+	skos:altLabel "TJK"^^xsd:string ;
+	skos:altLabel "TJ"^^xsd:string .
+
+mnr:Q1218 rdf:type mno:Country ;
+	rdfs:label "Tanzania"^^xsd:string ;
+	skos:altLabel "TZA"^^xsd:string ;
+	skos:altLabel "TZ"^^xsd:string .
+
+mnr:Q1219 rdf:type mno:Country ;
+	rdfs:label "Thailand"^^xsd:string ;
+	skos:altLabel "THA"^^xsd:string ;
+	skos:altLabel "TH"^^xsd:string .
+
+mnr:Q1220 rdf:type mno:Country ;
+	rdfs:label "The Bahamas"^^xsd:string ;
+	skos:altLabel "BHS"^^xsd:string ;
+	skos:altLabel "BS"^^xsd:string .
+
+mnr:Q1221 rdf:type mno:Country ;
+	rdfs:label "Timor-Leste"^^xsd:string ;
+	skos:altLabel "TLS"^^xsd:string ;
+	skos:altLabel "TL"^^xsd:string .
+
+mnr:Q1222 rdf:type mno:Country ;
+	rdfs:label "Togo"^^xsd:string ;
+	skos:altLabel "TGO"^^xsd:string ;
+	skos:altLabel "TG"^^xsd:string .
+
+mnr:Q1223 rdf:type mno:Country ;
+	rdfs:label "Tokelau"^^xsd:string ;
+	skos:altLabel "TKL"^^xsd:string ;
+	skos:altLabel "TK"^^xsd:string .
+
+mnr:Q1224 rdf:type mno:Country ;
+	rdfs:label "Tonga"^^xsd:string ;
+	skos:altLabel "TON"^^xsd:string ;
+	skos:altLabel "TO"^^xsd:string .
+
+mnr:Q1225 rdf:type mno:Country ;
+	rdfs:label "Trinidad and Tobago"^^xsd:string ;
+	skos:altLabel "TTO"^^xsd:string ;
+	skos:altLabel "TT"^^xsd:string .
+
+mnr:Q1226 rdf:type mno:Country ;
+	rdfs:label "Tunisia"^^xsd:string ;
+	skos:altLabel "TUN"^^xsd:string ;
+	skos:altLabel "TN"^^xsd:string .
+
+mnr:Q1227 rdf:type mno:Country ;
+	rdfs:label "Turkey"^^xsd:string ;
+	skos:altLabel "TUR"^^xsd:string ;
+	skos:altLabel "TR"^^xsd:string .
+
+mnr:Q1228 rdf:type mno:Country ;
+	rdfs:label "Turkmenistan"^^xsd:string ;
+	skos:altLabel "TKM"^^xsd:string ;
+	skos:altLabel "TM"^^xsd:string .
+
+mnr:Q1229 rdf:type mno:Country ;
+	rdfs:label "Turks and Caicos Islands"^^xsd:string ;
+	skos:altLabel "TCA"^^xsd:string ;
+	skos:altLabel "TC"^^xsd:string .
+
+mnr:Q1230 rdf:type mno:Country ;
+	rdfs:label "Tuvalu"^^xsd:string ;
+	skos:altLabel "TUV"^^xsd:string ;
+	skos:altLabel "TV"^^xsd:string .
+
+mnr:Q1231 rdf:type mno:Country ;
+	rdfs:label "Uganda"^^xsd:string ;
+	skos:altLabel "UGA"^^xsd:string ;
+	skos:altLabel "UG"^^xsd:string .
+
+mnr:Q1232 rdf:type mno:Country ;
+	rdfs:label "Ukraine"^^xsd:string ;
+	skos:altLabel "UKR"^^xsd:string ;
+	skos:altLabel "UA"^^xsd:string .
+
+mnr:Q1233 rdf:type mno:Country ;
+	rdfs:label "United Arab Emirates"^^xsd:string ;
+	skos:altLabel "ARE"^^xsd:string ;
+	skos:altLabel "AE"^^xsd:string .
+
+mnr:Q1234 rdf:type mno:Country ;
+	rdfs:label "United Kingdom"^^xsd:string ;
+	skos:altLabel "GBR"^^xsd:string ;
+	skos:altLabel "GB"^^xsd:string .
+
+mnr:Q1235 rdf:type mno:Country ;
+	rdfs:label "United States"^^xsd:string ;
+	skos:altLabel "United States of America"^^xsd:string ;
+	skos:altLabel "USA"^^xsd:string ;
+	skos:altLabel "US"^^xsd:string .
+
+mnr:Q1236 rdf:type mno:Country ;
+	rdfs:label "United States Minor Outlying Islands"^^xsd:string ;
+	skos:altLabel "UMI"^^xsd:string ;
+	skos:altLabel "UM"^^xsd:string .
+
+mnr:Q1237 rdf:type mno:Country ;
+	rdfs:label "Uruguay"^^xsd:string ;
+	skos:altLabel "URY"^^xsd:string ;
+	skos:altLabel "UY"^^xsd:string .
+
+mnr:Q1238 rdf:type mno:Country ;
+	rdfs:label "Uzbekistan"^^xsd:string ;
+	skos:altLabel "UZB"^^xsd:string ;
+	skos:altLabel "UZ"^^xsd:string .
+
+mnr:Q1239 rdf:type mno:Country ;
+	rdfs:label "Vanuatu"^^xsd:string ;
+	skos:altLabel "VUT"^^xsd:string ;
+	skos:altLabel "VU"^^xsd:string .
+
+mnr:Q1240 rdf:type mno:Country ;
+	rdfs:label "Vatican City State (Holy See)"^^xsd:string ;
+	skos:altLabel "VAT"^^xsd:string ;
+	skos:altLabel "VA"^^xsd:string .
+
+mnr:Q1241 rdf:type mno:Country ;
+	rdfs:label "Venezuela"^^xsd:string ;
+	skos:altLabel "VEN"^^xsd:string ;
+	skos:altLabel "VE"^^xsd:string .
+
+mnr:Q1242 rdf:type mno:Country ;
+	rdfs:label "Vietnam"^^xsd:string ;
+	skos:altLabel "VNM"^^xsd:string ;
+	skos:altLabel "VN"^^xsd:string .
+
+mnr:Q1243 rdf:type mno:Country ;
+	rdfs:label "Virgin Islands (British)"^^xsd:string ;
+	skos:altLabel "VGB"^^xsd:string ;
+	skos:altLabel "VG"^^xsd:string .
+
+mnr:Q1244 rdf:type mno:Country ;
+	rdfs:label "Virgin Islands (US)"^^xsd:string ;
+	skos:altLabel "VIR"^^xsd:string ;
+	skos:altLabel "VI"^^xsd:string .
+
+mnr:Q1245 rdf:type mno:Country ;
+	rdfs:label "Wallis and Futuna Islands"^^xsd:string ;
+	skos:altLabel "WLF"^^xsd:string ;
+	skos:altLabel "WF"^^xsd:string .
+
+mnr:Q1246 rdf:type mno:Country ;
+	rdfs:label "Western Sahara"^^xsd:string ;
+	skos:altLabel "ESH"^^xsd:string ;
+	skos:altLabel "EH"^^xsd:string .
+
+mnr:Q1247 rdf:type mno:Country ;
+	rdfs:label "Yemen"^^xsd:string ;
+	skos:altLabel "YEM"^^xsd:string ;
+	skos:altLabel "YE"^^xsd:string .
+
+mnr:Q1248 rdf:type mno:Country ;
+	rdfs:label "Zambia"^^xsd:string ;
+	skos:altLabel "ZMB"^^xsd:string ;
+	skos:altLabel "ZM"^^xsd:string .
+
+mnr:Q1249 rdf:type mno:Country ;
+	rdfs:label "Zimbabwe"^^xsd:string ;
+	skos:altLabel "ZWE"^^xsd:string ;
+	skos:altLabel "ZW"^^xsd:string .
+

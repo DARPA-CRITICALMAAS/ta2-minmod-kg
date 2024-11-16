@@ -1,0 +1,953 @@
+@prefix mnr: <https://minmod.isi.edu/resource/> .
+@prefix mno: <https://minmod.isi.edu/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix drepr: <https://purl.org/drepr/1.0/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mnr:Q301 rdf:type mno:DepositType ;
+	rdfs:label "Residual placer tin"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q302 rdf:type mno:DepositType ;
+	rdfs:label "Residual placer lead"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q303 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer gold"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q304 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer PGE"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q305 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer tin"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q306 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer niobium-tantalum"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q307 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer tungsten"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q308 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer REE"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q309 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer diamond"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q310 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer gemstones"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q311 rdf:type mno:DepositType ;
+	rdfs:label "Fluvial placer garnet"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q312 rdf:type mno:DepositType ;
+	rdfs:label "Heavy mineral sands"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q313 rdf:type mno:DepositType ;
+	rdfs:label "Shoreline placer gold"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q314 rdf:type mno:DepositType ;
+	rdfs:label "Paleoplacer heavy mineral sands"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q315 rdf:type mno:DepositType ;
+	rdfs:label "Paleoplacer tin"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q316 rdf:type mno:DepositType ;
+	rdfs:label "Paleoplacer gold ± uranium"^^xsd:string ;
+	mno:environment "Erosional"^^xsd:string ;
+	mno:group "Placer"^^xsd:string .
+
+mnr:Q317 rdf:type mno:DepositType ;
+	rdfs:label "Bauxite"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Laterite"^^xsd:string .
+
+mnr:Q318 rdf:type mno:DepositType ;
+	rdfs:label "Karst bauxite"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Laterite"^^xsd:string .
+
+mnr:Q319 rdf:type mno:DepositType ;
+	rdfs:label "Laterite nickel"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Laterite"^^xsd:string .
+
+mnr:Q320 rdf:type mno:DepositType ;
+	rdfs:label "Carbonatite laterite REE"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Laterite"^^xsd:string .
+
+mnr:Q321 rdf:type mno:DepositType ;
+	rdfs:label "Laterite magnesite"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Laterite"^^xsd:string .
+
+mnr:Q322 rdf:type mno:DepositType ;
+	rdfs:label "Residual clay"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Clay"^^xsd:string .
+
+mnr:Q323 rdf:type mno:DepositType ;
+	rdfs:label "Underclay overclay"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Clay"^^xsd:string .
+
+mnr:Q324 rdf:type mno:DepositType ;
+	rdfs:label "Ion adsorption REE"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Clay"^^xsd:string .
+
+mnr:Q325 rdf:type mno:DepositType ;
+	rdfs:label "Supergene silver"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q326 rdf:type mno:DepositType ;
+	rdfs:label "Supergene lead"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q327 rdf:type mno:DepositType ;
+	rdfs:label "Supergene uranium"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q328 rdf:type mno:DepositType ;
+	rdfs:label "Supergene vanadium"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q329 rdf:type mno:DepositType ;
+	rdfs:label "Supergene gold"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q330 rdf:type mno:DepositType ;
+	rdfs:label "Supergene zinc"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q331 rdf:type mno:DepositType ;
+	rdfs:label "Supergene copper"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q332 rdf:type mno:DepositType ;
+	rdfs:label "Supergene manganese"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q333 rdf:type mno:DepositType ;
+	rdfs:label "Supergene iron"^^xsd:string ;
+	mno:environment "Supergene"^^xsd:string ;
+	mno:group "Supergene"^^xsd:string .
+
+mnr:Q334 rdf:type mno:DepositType ;
+	rdfs:label "Exotic copper"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Exotic"^^xsd:string .
+
+mnr:Q335 rdf:type mno:DepositType ;
+	rdfs:label "Paleochannel iron"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Paleochannel"^^xsd:string .
+
+mnr:Q336 rdf:type mno:DepositType ;
+	rdfs:label "Sandstone uranium"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Uranium"^^xsd:string .
+
+mnr:Q337 rdf:type mno:DepositType ;
+	rdfs:label "Carbonate uranium"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Uranium"^^xsd:string .
+
+mnr:Q338 rdf:type mno:DepositType ;
+	rdfs:label "Coal/peat/bog uranium"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Uranium"^^xsd:string .
+
+mnr:Q339 rdf:type mno:DepositType ;
+	rdfs:label "Calcrete uranium"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Uranium"^^xsd:string .
+
+mnr:Q340 rdf:type mno:DepositType ;
+	rdfs:label "Nodular magnesite"^^xsd:string ;
+	mno:environment "Infiltrational"^^xsd:string ;
+	mno:group "Magnesite"^^xsd:string .
+
+mnr:Q341 rdf:type mno:DepositType ;
+	rdfs:label "Marine evaporite gypsum"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q342 rdf:type mno:DepositType ;
+	rdfs:label "Marine evaporite salt"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q343 rdf:type mno:DepositType ;
+	rdfs:label "Marine evaporite potash"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q344 rdf:type mno:DepositType ;
+	rdfs:label "Marine evaporite magnesite"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q345 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite trona"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q346 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite salt"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q347 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite potash"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q348 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite carnallite-bischofite"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q349 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite borate"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q350 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite magnesite"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q351 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine evaporite nitrate"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Evaporite"^^xsd:string .
+
+mnr:Q352 rdf:type mno:DepositType ;
+	rdfs:label "Marine brine potash (±Mg, Li, and so on)"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Brine"^^xsd:string .
+
+mnr:Q353 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine brine potash"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Brine"^^xsd:string .
+
+mnr:Q354 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine brine lithium"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Brine"^^xsd:string .
+
+mnr:Q355 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine zeolite (± Li, B)"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Zeolite"^^xsd:string .
+
+mnr:Q356 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine clay lithium"^^xsd:string ;
+	mno:environment "Basin evaporative"^^xsd:string ;
+	mno:group "Clay"^^xsd:string .
+
+mnr:Q357 rdf:type mno:DepositType ;
+	rdfs:label "Black shale vanadium ± Mo ± Ni"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Black shale"^^xsd:string .
+
+mnr:Q358 rdf:type mno:DepositType ;
+	rdfs:label "Black shale nickel ± Mo-PGE"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Black shale"^^xsd:string .
+
+mnr:Q359 rdf:type mno:DepositType ;
+	rdfs:label "Black shale gold"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Black shale"^^xsd:string .
+
+mnr:Q360 rdf:type mno:DepositType ;
+	rdfs:label "Black shale uranium"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Black shale"^^xsd:string .
+
+mnr:Q361 rdf:type mno:DepositType ;
+	rdfs:label "Phosphorite"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Phosphorite"^^xsd:string .
+
+mnr:Q362 rdf:type mno:DepositType ;
+	rdfs:label "Superior-type banded iron formation"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Iron formation"^^xsd:string .
+
+mnr:Q363 rdf:type mno:DepositType ;
+	rdfs:label "Oolitic iron formation"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Iron formation"^^xsd:string .
+
+mnr:Q364 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine iron formation"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Iron formation"^^xsd:string .
+
+mnr:Q365 rdf:type mno:DepositType ;
+	rdfs:label "Superior-type banded manganese"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Manganese"^^xsd:string .
+
+mnr:Q366 rdf:type mno:DepositType ;
+	rdfs:label "Sedimentary manganese"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Manganese"^^xsd:string .
+
+mnr:Q367 rdf:type mno:DepositType ;
+	rdfs:label "Crust manganese"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Manganese"^^xsd:string .
+
+mnr:Q368 rdf:type mno:DepositType ;
+	rdfs:label "Nodule manganese"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Manganese"^^xsd:string .
+
+mnr:Q369 rdf:type mno:DepositType ;
+	rdfs:label "Lacustrine manganese"^^xsd:string ;
+	mno:environment "Basin chemical"^^xsd:string ;
+	mno:group "Manganese"^^xsd:string .
+
+mnr:Q370 rdf:type mno:DepositType ;
+	rdfs:label "Unconformity-related uranium"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Unconformity-related"^^xsd:string .
+
+mnr:Q371 rdf:type mno:DepositType ;
+	rdfs:label "Unconformity-related REE"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Unconformity-related"^^xsd:string .
+
+mnr:Q372 rdf:type mno:DepositType ;
+	rdfs:label "Collapse breccia pipe uranium"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Collapse breccia pipe"^^xsd:string .
+
+mnr:Q373 rdf:type mno:DepositType ;
+	rdfs:label "Volcanic-hosted copper"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanic-hosted"^^xsd:string .
+
+mnr:Q374 rdf:type mno:DepositType ;
+	rdfs:label "Sediment-hosted copper ± Co"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q375 rdf:type mno:DepositType ;
+	rdfs:label "Siliciclastic-mafic zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q376 rdf:type mno:DepositType ;
+	rdfs:label "Siliciclastic-mafic barite"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q377 rdf:type mno:DepositType ;
+	rdfs:label "Siliciclastic-carbonate zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q378 rdf:type mno:DepositType ;
+	rdfs:label "Irish-type sediment-hosted zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q379 rdf:type mno:DepositType ;
+	rdfs:label "Kipushi-type sediment-hosted copper-zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Sediment-hosted"^^xsd:string .
+
+mnr:Q380 rdf:type mno:DepositType ;
+	rdfs:label "MVT zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Mississippi Valley-type (MVT)"^^xsd:string .
+
+mnr:Q381 rdf:type mno:DepositType ;
+	rdfs:label "MVT barite"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Mississippi Valley-type (MVT)"^^xsd:string .
+
+mnr:Q382 rdf:type mno:DepositType ;
+	rdfs:label "MVT fluorspar"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Mississippi Valley-type (MVT)"^^xsd:string .
+
+mnr:Q383 rdf:type mno:DepositType ;
+	rdfs:label "MVT strontium"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Mississippi Valley-type (MVT)"^^xsd:string .
+
+mnr:Q384 rdf:type mno:DepositType ;
+	rdfs:label "Sandstone-hosted zinc-lead"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Mississippi Valley-type (MVT)"^^xsd:string .
+
+mnr:Q385 rdf:type mno:DepositType ;
+	rdfs:label "Non-sulfide zinc-lead ± Mn"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Non-sulfide"^^xsd:string .
+
+mnr:Q386 rdf:type mno:DepositType ;
+	rdfs:label "Vein five-element"^^xsd:string ;
+	mno:environment "Basin hydrothermal"^^xsd:string ;
+	mno:group "Five-element"^^xsd:string .
+
+mnr:Q387 rdf:type mno:DepositType ;
+	rdfs:label "Hypozonal orogenic gold"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q388 rdf:type mno:DepositType ;
+	rdfs:label "Mesozonal orogenic gold"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q389 rdf:type mno:DepositType ;
+	rdfs:label "Epizonal orogenic gold"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q390 rdf:type mno:DepositType ;
+	rdfs:label "Epizonal orogenic antimony ± gold"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q391 rdf:type mno:DepositType ;
+	rdfs:label "Epizonal orogenic mercury"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q392 rdf:type mno:DepositType ;
+	rdfs:label "Orogenic silver-lead-zinc-copper-antimony"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q393 rdf:type mno:DepositType ;
+	rdfs:label "Orogenic copper ± gold"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q394 rdf:type mno:DepositType ;
+	rdfs:label "Orogenic graphite"^^xsd:string ;
+	mno:environment "Metamorphic hydrothermal"^^xsd:string ;
+	mno:group "Orogenic"^^xsd:string .
+
+mnr:Q395 rdf:type mno:DepositType ;
+	rdfs:label "Metamorphic graphite"^^xsd:string ;
+	mno:environment "Metamorphic"^^xsd:string ;
+	mno:group "Metamorphic"^^xsd:string .
+
+mnr:Q396 rdf:type mno:DepositType ;
+	rdfs:label "Metamorphic kyanite"^^xsd:string ;
+	mno:environment "Metamorphic"^^xsd:string ;
+	mno:group "Metamorphic"^^xsd:string .
+
+mnr:Q397 rdf:type mno:DepositType ;
+	rdfs:label "Low Iron alkali-calcic"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Alkali-calcic"^^xsd:string .
+
+mnr:Q398 rdf:type mno:DepositType ;
+	rdfs:label "Albitite-hosted uranium"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Alkali-calcic"^^xsd:string .
+
+mnr:Q399 rdf:type mno:DepositType ;
+	rdfs:label "Ferroan carbonate polymetallic"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q400 rdf:type mno:DepositType ;
+	rdfs:label "Iron sulfide polymetallic"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q401 rdf:type mno:DepositType ;
+	rdfs:label "Iron silicate polymetallic"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q402 rdf:type mno:DepositType ;
+	rdfs:label "Iron oxide polymetallic"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q403 rdf:type mno:DepositType ;
+	rdfs:label "Iron oxide uranium"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q404 rdf:type mno:DepositType ;
+	rdfs:label "Iron oxide gold"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "Metasomatic iron"^^xsd:string .
+
+mnr:Q405 rdf:type mno:DepositType ;
+	rdfs:label "Hematite-dominant IOCG"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "IOCG"^^xsd:string .
+
+mnr:Q406 rdf:type mno:DepositType ;
+	rdfs:label "Magnetite-dominant IOCG"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "IOCG"^^xsd:string .
+
+mnr:Q407 rdf:type mno:DepositType ;
+	rdfs:label "Hematite-dominant IOA"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "IOA"^^xsd:string .
+
+mnr:Q408 rdf:type mno:DepositType ;
+	rdfs:label "Magnetite-dominant IOA"^^xsd:string ;
+	mno:environment "Regional metasomatic"^^xsd:string ;
+	mno:group "IOA"^^xsd:string .
+
+mnr:Q409 rdf:type mno:DepositType ;
+	rdfs:label "Mafic-ultramafic VMS"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic massive sulfide (VMS)"^^xsd:string .
+
+mnr:Q410 rdf:type mno:DepositType ;
+	rdfs:label "Mafic-siliciclastic VMS"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic massive sulfide (VMS)"^^xsd:string .
+
+mnr:Q411 rdf:type mno:DepositType ;
+	rdfs:label "Bimodal-mafic VMS"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic massive sulfide (VMS)"^^xsd:string .
+
+mnr:Q412 rdf:type mno:DepositType ;
+	rdfs:label "Bimodal felsic VMS"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic massive sulfide (VMS)"^^xsd:string .
+
+mnr:Q413 rdf:type mno:DepositType ;
+	rdfs:label "Felsic-siliciclastic VMS"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic massive sulfide (VMS)"^^xsd:string .
+
+mnr:Q414 rdf:type mno:DepositType ;
+	rdfs:label "Algoma-type banded iron formation"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic"^^xsd:string .
+
+mnr:Q415 rdf:type mno:DepositType ;
+	rdfs:label "Volcanogenic manganese"^^xsd:string ;
+	mno:environment "Volcanic basin hydrothermal"^^xsd:string ;
+	mno:group "Volcanogenic"^^xsd:string .
+
+mnr:Q416 rdf:type mno:DepositType ;
+	rdfs:label "Low-sulfidation (LS) epithermal gold-silver"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q417 rdf:type mno:DepositType ;
+	rdfs:label "Intermediate-sulfidation (IS) epithermal silver-gold ± Zn, Pb, Cu, Sn, Mn"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q418 rdf:type mno:DepositType ;
+	rdfs:label "High-sulfidation (HS) epithermal silver-gold ± Cu"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q419 rdf:type mno:DepositType ;
+	rdfs:label "Alkalic epithermal gold ± Ag"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q420 rdf:type mno:DepositType ;
+	rdfs:label "Epithermal mercury"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q421 rdf:type mno:DepositType ;
+	rdfs:label "Epithermal beryllium"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q422 rdf:type mno:DepositType ;
+	rdfs:label "Epithermal uranium"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Epithermal"^^xsd:string .
+
+mnr:Q423 rdf:type mno:DepositType ;
+	rdfs:label "Vein ± replacement nickel"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q424 rdf:type mno:DepositType ;
+	rdfs:label "Vein cobalt ± Ni"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q425 rdf:type mno:DepositType ;
+	rdfs:label "Vein copper"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q426 rdf:type mno:DepositType ;
+	rdfs:label "Vein tin"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q427 rdf:type mno:DepositType ;
+	rdfs:label "Vein tungsten"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q428 rdf:type mno:DepositType ;
+	rdfs:label "Vein tin polymetallic"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q429 rdf:type mno:DepositType ;
+	rdfs:label "Vein fluorite"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q430 rdf:type mno:DepositType ;
+	rdfs:label "Vein polymetallic"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Vein"^^xsd:string .
+
+mnr:Q431 rdf:type mno:DepositType ;
+	rdfs:label "Breccia pipe copper"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Breccia pipe"^^xsd:string .
+
+mnr:Q432 rdf:type mno:DepositType ;
+	rdfs:label "Breccia pipe gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Breccia pipe"^^xsd:string .
+
+mnr:Q433 rdf:type mno:DepositType ;
+	rdfs:label "Breccia pipe molybdenum"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Breccia pipe"^^xsd:string .
+
+mnr:Q434 rdf:type mno:DepositType ;
+	rdfs:label "Breccia pipe REE"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Breccia pipe"^^xsd:string .
+
+mnr:Q435 rdf:type mno:DepositType ;
+	rdfs:label "Carlin-type gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Carlin-type"^^xsd:string .
+
+mnr:Q436 rdf:type mno:DepositType ;
+	rdfs:label "Distal-disseminated silver-gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Distal-disseminated"^^xsd:string .
+
+mnr:Q437 rdf:type mno:DepositType ;
+	rdfs:label "Replacement polymetallic"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q438 rdf:type mno:DepositType ;
+	rdfs:label "Replacement gold-silver"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q439 rdf:type mno:DepositType ;
+	rdfs:label "Replacement tin"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q440 rdf:type mno:DepositType ;
+	rdfs:label "Replacement copper"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q441 rdf:type mno:DepositType ;
+	rdfs:label "Replacement zinc-lead"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q442 rdf:type mno:DepositType ;
+	rdfs:label "Replacement manganese"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q443 rdf:type mno:DepositType ;
+	rdfs:label "Replacement magnesium"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q444 rdf:type mno:DepositType ;
+	rdfs:label "Replacement fluorite"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Replacement"^^xsd:string .
+
+mnr:Q445 rdf:type mno:DepositType ;
+	rdfs:label "Skarn iron"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q446 rdf:type mno:DepositType ;
+	rdfs:label "Skarn copper"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q447 rdf:type mno:DepositType ;
+	rdfs:label "Skarn tungsten ± Mo"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q448 rdf:type mno:DepositType ;
+	rdfs:label "Skarn tin ± copper ± Mo"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q449 rdf:type mno:DepositType ;
+	rdfs:label "Skarn gold ± copper ± tungsten"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q450 rdf:type mno:DepositType ;
+	rdfs:label "Skarn zinc-lead-silver"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q451 rdf:type mno:DepositType ;
+	rdfs:label "Skarn molybdenum"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q452 rdf:type mno:DepositType ;
+	rdfs:label "Skarn beryllium-fluorite"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q453 rdf:type mno:DepositType ;
+	rdfs:label "Skarn uranium-REE"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Skarn"^^xsd:string .
+
+mnr:Q454 rdf:type mno:DepositType ;
+	rdfs:label "Porphyry copper ± gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q455 rdf:type mno:DepositType ;
+	rdfs:label "Porphyry copper-molybdenum"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q456 rdf:type mno:DepositType ;
+	rdfs:label "Porphyry gold ± copper"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q457 rdf:type mno:DepositType ;
+	rdfs:label "Climax-type porphyry molybdenum"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q458 rdf:type mno:DepositType ;
+	rdfs:label "Low-fluorine porphyry molybdenum"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q459 rdf:type mno:DepositType ;
+	rdfs:label "Porphyry tungsten"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q460 rdf:type mno:DepositType ;
+	rdfs:label "Porphyry tin"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Porphyry"^^xsd:string .
+
+mnr:Q461 rdf:type mno:DepositType ;
+	rdfs:label "Greisen tin ±W-Mo"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Greisen"^^xsd:string .
+
+mnr:Q462 rdf:type mno:DepositType ;
+	rdfs:label "Greisen tungsten-molybdenum±Bi"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Greisen"^^xsd:string .
+
+mnr:Q463 rdf:type mno:DepositType ;
+	rdfs:label "Greisen beryllium±Li"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Greisen"^^xsd:string .
+
+mnr:Q464 rdf:type mno:DepositType ;
+	rdfs:label "Reduced intrusion-related gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Intrusion-related"^^xsd:string .
+
+mnr:Q465 rdf:type mno:DepositType ;
+	rdfs:label "Oxidized intrusion-related gold"^^xsd:string ;
+	mno:environment "Magmatic hydrothermal"^^xsd:string ;
+	mno:group "Intrusion-related"^^xsd:string .
+
+mnr:Q466 rdf:type mno:DepositType ;
+	rdfs:label "Simple pegmatite"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Pegmatite"^^xsd:string .
+
+mnr:Q467 rdf:type mno:DepositType ;
+	rdfs:label "LCT pegmatite"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Pegmatite"^^xsd:string .
+
+mnr:Q468 rdf:type mno:DepositType ;
+	rdfs:label "NYF pegmatite"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Pegmatite"^^xsd:string .
+
+mnr:Q469 rdf:type mno:DepositType ;
+	rdfs:label "Abyssal pegmatite REE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Pegmatite"^^xsd:string .
+
+mnr:Q470 rdf:type mno:DepositType ;
+	rdfs:label "Carbonatite REE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Carbonatite"^^xsd:string .
+
+mnr:Q471 rdf:type mno:DepositType ;
+	rdfs:label "Carbonatite niobium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Carbonatite"^^xsd:string .
+
+mnr:Q472 rdf:type mno:DepositType ;
+	rdfs:label "Peralkaline igneous HFSE-REE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Peralkaline igneous"^^xsd:string .
+
+mnr:Q473 rdf:type mno:DepositType ;
+	rdfs:label "Apatite-nepheline-titanite intrusion"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Apatite-nepheline-titanite intrusion"^^xsd:string .
+
+mnr:Q474 rdf:type mno:DepositType ;
+	rdfs:label "Apatite intrusion REE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Apatite intrusion"^^xsd:string .
+
+mnr:Q475 rdf:type mno:DepositType ;
+	rdfs:label "Kimberlite diamond"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Kimberlite"^^xsd:string .
+
+mnr:Q476 rdf:type mno:DepositType ;
+	rdfs:label "Komatiite nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Komatiite"^^xsd:string .
+
+mnr:Q477 rdf:type mno:DepositType ;
+	rdfs:label "U-M layered intrusion chromium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic-layered intrusion"^^xsd:string .
+
+mnr:Q478 rdf:type mno:DepositType ;
+	rdfs:label "U-M layered intrusion nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic-layered intrusion"^^xsd:string .
+
+mnr:Q479 rdf:type mno:DepositType ;
+	rdfs:label "U-M layered intrusion PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic-layered intrusion"^^xsd:string .
+
+mnr:Q480 rdf:type mno:DepositType ;
+	rdfs:label "U-M layered intrusion iron-titanium-vanadium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic-layered intrusion"^^xsd:string .
+
+mnr:Q481 rdf:type mno:DepositType ;
+	rdfs:label "U-M intrusion nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic intrusion"^^xsd:string .
+
+mnr:Q482 rdf:type mno:DepositType ;
+	rdfs:label "U-M conduit nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic conduit"^^xsd:string .
+
+mnr:Q483 rdf:type mno:DepositType ;
+	rdfs:label "Ophiolite chromium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ophiolite"^^xsd:string .
+
+mnr:Q484 rdf:type mno:DepositType ;
+	rdfs:label "Ophiolite nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ophiolite"^^xsd:string .
+
+mnr:Q485 rdf:type mno:DepositType ;
+	rdfs:label "Arc U-M intrusion titanium-vanadium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic intrusion"^^xsd:string .
+
+mnr:Q486 rdf:type mno:DepositType ;
+	rdfs:label "Arc U-M intrusion nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic intrusion"^^xsd:string .
+
+mnr:Q487 rdf:type mno:DepositType ;
+	rdfs:label "Anorthosite massif titanium"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Anorthosite massif"^^xsd:string .
+
+mnr:Q488 rdf:type mno:DepositType ;
+	rdfs:label "Anorthosite conduit nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Anorthosite conduit"^^xsd:string .
+
+mnr:Q489 rdf:type mno:DepositType ;
+	rdfs:label "Impact U-M intrusion nickel-copper-PGE"^^xsd:string ;
+	mno:environment "Magmatic"^^xsd:string ;
+	mno:group "Ultramafic and (or) mafic intrusion"^^xsd:string .
+

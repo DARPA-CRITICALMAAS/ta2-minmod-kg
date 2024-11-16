@@ -1,0 +1,23 @@
+@prefix mnr: <https://minmod.isi.edu/resource/> .
+@prefix mno: <https://minmod.isi.edu/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix drepr: <https://purl.org/drepr/1.0/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mnr:Q701 rdf:type mno:CoordinateReferenceSystem ;
+	rdfs:label "EPSG:4326"^^xsd:string .
+
+mnr:Q702 rdf:type mno:CoordinateReferenceSystem ;
+	rdfs:label "EPSG:4267"^^xsd:string .
+
+mnr:Q703 rdf:type mno:CoordinateReferenceSystem ;
+	rdfs:label "EPSG:3857"^^xsd:string .
+
+mnr:Q704 rdf:type mno:CoordinateReferenceSystem ;
+	rdfs:label "EPSG:26912"^^xsd:string .
+
+mnr:Q705 rdf:type mno:CoordinateReferenceSystem ;
+	rdfs:label "EPSG:2994"^^xsd:string .
+
