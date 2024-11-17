@@ -10,12 +10,14 @@ from minmodkg.api.models.user import is_system_user
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
 from minmodkg.config import MINMOD_KG
 from minmodkg.misc.exceptions import DBError
+from minmodkg.misc.utils import mut_merge_graphs
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
-from minmodkg.models.derived_mineral_site import DerivedMineralSite
+from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
-from minmodkg.typing import IRI, Triple
-from rdflib import Graph, URIRef
+from minmodkg.typing import IRI, InternalID, Triple
+from pydantic import BaseModel
+from rdflib import OWL, Graph, URIRef
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -31,6 +33,15 @@ def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
     for uri in uris:
         sites.append(get_site_by_uri(uri))
     return sites
+
+
+@router.post("/same-as")
+def update_same_as(
+    dedup_links: list[UpdateDedupLink],
+    current_user: CurrentUserDep,
+):
+    UpdateDedupLink.update_same_as(dedup_links)
+    return {"message": "The same as links have been updated."}
 
 
 @router.get("/mineral-sites/{site_id}")
@@ -61,7 +72,11 @@ def get_site_by_uri(uri: IRI | URIRef) -> dict:
 
 
 @router.post("/mineral-sites")
-def create_site(site: MineralSite, user: CurrentUserDep):
+def create_site(
+    site: Annotated[MineralSite, Body(embed=True)],
+    same_as: Annotated[list[InternalID], Body(embed=True)],
+    user: CurrentUserDep,
+):
     """Create a mineral site."""
     # To safely update the data, we need to do it in a transaction
     # There are two places where we update the data:
@@ -92,9 +107,17 @@ def create_site(site: MineralSite, user: CurrentUserDep):
     triples = site.to_triples(triples)
     triples = derived_site.to_triples(triples)
     triples = partial_dedup_site.to_triples(triples)
+    # add same as to other sites
+    triples.extend(
+        (site.uri, OWL.sameAs, MINMOD_KG.ns.mr.uri(same_as_id))
+        for same_as_id in same_as
+    )
 
     try:
-        MINMOD_KG.insert(triples)
+        with MINMOD_KG.transaction([partial_dedup_site.uri]).transaction():
+            # TODO: need to sure that all same as sites are having the same dedup site
+            # and the dedup site is the same as the dedup site of the current site
+            MINMOD_KG.insert(triples)
     except DBError as e:
         logger.error(
             "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response: {}",
@@ -138,7 +161,7 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
         crs_uri_to_name(snapshot_id),
     )
 
-    # TODO: we can update current site & derived site because we have all of the data
+    # TODO: we ca]n update current site & derived site because we have all of the data
     # for dedup site, we do not have all, so we have to refetch and compute the differences
     # manually
     ng = site.to_graph() + derived_site.to_graph()
@@ -200,3 +223,148 @@ def crs_uri_to_name(snapshot_id: str):
 @lru_cache(maxsize=1)
 def material_form_uri_to_conversion(snapshot_id: str):
     return {mf.uri: mf.conversion for mf in get_material_forms(snapshot_id)}
+
+
+class UpdateDedupLink(BaseModel):
+    """A class represents the latest dedup links"""
+
+    id: InternalID
+    sites: list[InternalID]
+
+    @staticmethod
+    def update_same_as(groups: list[UpdateDedupLink]):
+        assert len({g.id for g in groups}) == len(groups)
+
+        ns = MINMOD_KG.ns
+        dedup_site_predicate = ns.md.uri("dedup_site")
+        md_commodity_predicate = ns.md.uri("commodity")
+
+        # step 1: gather all objects that will be updated
+        dedup_site_uris = set()
+        site_uris = set()
+        for group in groups:
+            dedup_site_uris.add(ns.mr.uri(group.id))
+            for site in group.sites:
+                site_uris.add(ns.mr.uri(site))
+
+        site_uris = list(site_uris)
+        all_uris = dedup_site_uris.union(site_uris)
+
+        # step 2: lock the objects
+        with MINMOD_KG.transaction(list(all_uris)).transaction():
+            # step 3: check if this changes will affect sites that are not in the group
+            # if so, we need to abort the transaction
+            affected_uris = {
+                x["o"]
+                for x in MINMOD_KG.query(
+                    """
+SELECT DISTINCT ?o
+WHERE {
+    OPTIONAL { ?s owl:sameAs ?o . }
+    OPTIONAL { ?o owl:sameAs ?s . }
+    OPTIONAL { ?s md:dedup_site ?o . }
+    OPTIONAL { ?o md:dedup_site ?s . }
+    VALUES ?s { %s }
+}
+"""
+                    % f" ".join(f"<{uri}>" for uri in site_uris)
+                )
+            }
+
+            if affected_uris != all_uris:
+                raise Exception(
+                    "The data is stale as someone updated it. Please refresh and try again."
+                )
+
+            # step 4: gather previous data and compute the delta
+            # we are going to:
+            # 1. extract the same as links
+            # 2. extract the dedup links
+            old_dedup_sites = DedupMineralSite.get_by_uris(
+                [group.id for group in groups]
+            )
+            old_dedup_sites_graph = mut_merge_graphs(
+                [dms.to_graph() for dms in old_dedup_sites]
+            )
+
+            # extract all same as links and links from previous sites to the dedup sites
+            old_sites_graph = MINMOD_KG.construct(
+                """
+CONSTRUCT {
+    ?ms owl:sameAs ?ms1 .
+    ?ms md:dedup_site ?dms .
+    ?ms md:commodity ?commodity .
+}
+WHERE {
+    OPTIONAL { ?ms owl:sameAs ?ms1 . }
+    OPTIONAL { ?ms md:dedup_site ?dms . }
+    OPTIONAL { ?ms mo:mineral_inventory/mo:commodity/mo:normalized_uri ?commodity . }
+
+    VALUES ?s { %s }
+}
+                """
+                % f" ".join(f"<{uri}>" for uri in site_uris)
+            )
+
+            # assuming that md:dedup_site is always correctly determined by owl:sameAs
+            old_site_triples = set()
+            for p in [OWL.sameAs, dedup_site_predicate]:
+                for s, o in old_sites_graph.subject_objects(p):
+                    old_site_triples.add((s, p, o))
+
+            new_site_triples = set()
+            new_dedup_sites = []
+            for group in groups:
+                dedup_site_uri = ns.mr.uri(group.id)
+                group_site_uris = [ns.mr.uri(site) for site in group.sites]
+                site_uri = group_site_uris[0]
+                if len(group.sites) == 1:
+                    new_site_triples.add((site_uri, OWL.sameAs, site_uri))
+                new_site_triples.add((site_uri, dedup_site_predicate, dedup_site_uri))
+                for target_site_uri in group_site_uris[1:]:
+                    new_site_triples.add((site_uri, OWL.sameAs, target_site_uri))
+                    new_site_triples.add(
+                        (target_site_uri, dedup_site_predicate, dedup_site_uri)
+                    )
+
+                # calculate the new dedup site
+                partial_new_derived_sites = []
+                for site_id, site_uri in zip(group.sites, group_site_uris):
+                    # TODO: we use commodity existing in the KG -- we have to
+                    # ensure that we are not updating the commodity
+                    partial_new_derived_sites.append(
+                        DerivedMineralSite(
+                            id=site_id,
+                            grade_tonnage=[
+                                GradeTonnage(commodity=ns.mr.id(str(commodity)))
+                                for commodity in old_sites_graph.objects(
+                                    site_uri, md_commodity_predicate
+                                )
+                            ],
+                        )
+                    )
+
+                new_dedup_sites.append(
+                    DedupMineralSite.from_derived_sites(
+                        sites=partial_new_derived_sites,
+                        id=group.id,
+                    ),
+                )
+
+            new_dedup_sites_graph = mut_merge_graphs(
+                [dms.to_graph() for dms in new_dedup_sites]
+            )
+
+            old_triples = old_site_triples.union(iter(new_dedup_sites_graph))
+            new_triples = new_site_triples.union(iter(new_dedup_sites_graph))
+
+            del_triples = [
+                (s.n3(), p.n3(), o.n3())
+                for s, p, o in old_triples.difference(new_triples)
+            ]
+            add_triples = [
+                (s.n3(), p.n3(), o.n3())
+                for s, p, o in new_triples.difference(old_triples)
+            ]
+
+            MINMOD_KG.delete_insert(del_triples, add_triples)

@@ -102,12 +102,7 @@ class DerivedMineralSite(BaseRDFModel):
         if lat is None or lon is None:
             coors = None
         else:
-            try:
-                coors = Coordinates(lat=float(lat), lon=float(lon))
-            except ValueError:
-                import IPython
-
-                IPython.embed()
+            coors = Coordinates(lat=float(lat), lon=float(lon))
 
         return DerivedMineralSite(
             id=mr.id(uid),

@@ -20,7 +20,7 @@ from typing import (
 from uuid import uuid4
 
 import httpx
-from minmodkg.misc.exceptions import DBError
+from minmodkg.misc.exceptions import DBError, TransactionError
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, SPARQLMainQuery, Triple, Triples
 from pydantic import BaseModel
@@ -99,8 +99,18 @@ class BaseRDFModel(BaseModel):
         return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
 
     @classmethod
+    def get_by_uris(cls, uris: Sequence[IRI | URIRef]) -> list[Self]:
+        g = cls.get_graph_by_uris(uris)
+        return [cls.from_graph(URIRef(uri), g) for uri in uris]
+
+    @classmethod
     def get_graph_by_uri(cls, uri: IRI | URIRef) -> Graph:
         query = cls.qbuilder.create_get_by_uri(uri)
+        return cls.rdfdata.store.construct(query)
+
+    @classmethod
+    def get_graph_by_uris(cls, uris: Sequence[IRI | URIRef]) -> Graph:
+        query = cls.qbuilder.create_get_by_uris(uris)
         return cls.rdfdata.store.construct(query)
 
 
@@ -243,6 +253,15 @@ class BaseRDFQueryBuilder:
             self.where(source_var).to_str(indent=2),
             source_var,
             uri,
+        )
+
+    def create_get_by_uris(self, uris: Sequence[str | URIRef]) -> str:
+        source_var = self.get_default_source_var()
+        return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { %s }\n}" % (
+            self.construct(source_var).to_str(indent=2),
+            self.where(source_var).to_str(indent=2),
+            source_var,
+            " ".join(f"<{uri}>" for uri in uris),
         )
 
 
@@ -526,7 +545,7 @@ class Transaction:
     def transaction(self):
         self.insert_lock()
         if not self.does_lock_success():
-            raise Exception(
+            raise TransactionError(
                 "The objects are being edited by another one. Please try again later."
             )
         # yield so the caller can perform the transaction

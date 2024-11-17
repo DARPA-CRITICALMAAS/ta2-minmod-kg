@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Optional, TypeVar
+from typing import Any, Optional, Sequence, TypeVar
+
+from rdflib import Graph
 
 V = TypeVar("V")
 
@@ -63,3 +65,13 @@ def file_ident(file: str | Path):
     file = Path(file).resolve()
     filehash = sha256(file.read_bytes()).hexdigest()
     return f"{file}::{filehash}"
+
+
+def mut_merge_graphs(graphs: Sequence[Graph]) -> Graph:
+    if len(graphs) == 0:
+        raise ValueError("No graphs to merge")
+
+    graph = graphs[0]
+    for g in graphs[1:]:
+        graph += g
+    return graph

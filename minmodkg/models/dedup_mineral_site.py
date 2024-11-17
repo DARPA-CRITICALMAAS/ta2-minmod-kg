@@ -33,39 +33,27 @@ class DedupMineralSitePublic(BaseModel):
     grade_tonnage: Optional[GradeTonnage]
 
 
-class DedupMineralSiteQueryBuilder(BaseRDFQueryBuilder):
-    def __init__(self):
-        ns = self.rdfdata.ns
-
-        main = "dedup_ms"
-        select = []
-        where = [f"?{main} rdf:type {ns.mo.DedupMineralSite} ."]
-        for field in [ns.md.site, ns.md.commodity, ns.md.site_commodity]:
-            var = f"{main}_{field.split(":")[-1]}"
-            select.append(f"?{main} {field} ?{var} .")
-            where.append(f"?{main} {field} ?{var} .")
-
-        self.main_var: str = main
-        self.construct_select: str = "\n".join(select)
-        self.construct_where: str = "\n".join(where)
-
-
 class DedupMineralSite(BaseRDFModel):
     id: InternalID
     sites: list[InternalID]
     commodities: list[InternalID]
     site_commodities: list[Annotated[str, "Encoded <site_id>@<list of commodities>"]]
 
-    query_builder: ClassVar[DedupMineralSiteQueryBuilder] = (
-        DedupMineralSiteQueryBuilder()
-    )
+    class QueryBuilder(BaseRDFQueryBuilder):
+        def __init__(self):
+            ns = self.rdfdata.ns
+            self.class_reluri = ns.mo.DedupMineralSite
+            self.fields = [
+                self.PropertyRule(ns.md, "site", is_optional=False),
+                self.PropertyRule(ns.md, "commodity", is_optional=False),
+                self.PropertyRule(ns.md, "site_commodity", is_optional=False),
+            ]
+
+    qbuilder: ClassVar[QueryBuilder] = QueryBuilder()
 
     @cached_property
     def uri(self) -> IRI:
         return self.rdfdata.ns.mr.uristr(self.id)
-
-    def get_by_uri(self, rel_uri: str):
-        self.query_builder.create_get_by_uri(self.rdfdata.ns.mr[self.id])
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
         if triples is None:

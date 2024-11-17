@@ -37,7 +37,7 @@ class MineralSite(BaseRDFModel):
     aliases: list[str] = Field(default_factory=list)
     site_rank: Optional[str] = None
     site_type: Optional[str] = None
-    same_as: list[IRI] = Field(default_factory=list)
+    # same_as: list[IRI] = Field(default_factory=list)
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = Field(default_factory=list)
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
@@ -67,7 +67,7 @@ class MineralSite(BaseRDFModel):
                     self.PropertyRule(ns.md, "dedup_site", is_optional=True),
                     self.PropertyRule(ns.rdfs, "label", is_optional=True),
                     self.PropertyRule(ns.skos, "altLabel", is_optional=True),
-                    self.PropertyRule(ns.owl, "sameAs", is_optional=True),
+                    # self.PropertyRule(ns.owl, "sameAs", is_optional=True),
                 ]
             )
             self.fields.extend(
@@ -135,7 +135,7 @@ class MineralSite(BaseRDFModel):
             ],
             site_rank=norm_literal(next(g.objects(uid, mo.uri("site_rank")), None)),
             site_type=norm_literal(next(g.objects(uid, mo.uri("site_type")), None)),
-            same_as=[str(same) for same in g.objects(uid, ns.owl.uri("sameAs"))],
+            # same_as=[str(same) for same in g.objects(uid, ns.owl.uri("sameAs"))],
             location_info=location_info,
             deposit_type_candidate=[
                 CandidateEntity.from_graph(dep, g)
@@ -166,10 +166,10 @@ class MineralSite(BaseRDFModel):
                 )
             )
 
-        if len(self.same_as) > 0:
-            same_as = self.rdfdata.ns.owl.uri("sameAs")
-            for site in self.same_as:
-                g.add((self.uri, same_as, URIRef(site)))
+        # if len(self.same_as) > 0:
+        #     same_as = self.rdfdata.ns.owl.uri("sameAs")
+        #     for site in self.same_as:
+        #         g.add((self.uri, same_as, URIRef(site)))
         return g
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
@@ -185,7 +185,8 @@ class MineralSite(BaseRDFModel):
         return self
 
     def get_drepr_resource(self):
-        obj = self.model_dump(exclude_none=True, exclude={"same_as"})
+        # obj = self.model_dump(exclude_none=True, exclude={"same_as"})
+        obj = self.model_dump(exclude_none=True)
         obj["created_by"] = self.created_by[0]
         return obj
 
