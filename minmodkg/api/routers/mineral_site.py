@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated, Iterable, Literal
 
 from fastapi import APIRouter, Body, HTTPException, Response, status
 from loguru import logger
@@ -25,33 +25,36 @@ router = APIRouter(tags=["mineral_sites"])
 class UpdateDedupLink(BaseModel):
     """A class represents the latest dedup links"""
 
-    id: InternalID
     sites: list[InternalID]
 
-    @staticmethod
-    def update_same_as(groups: list[UpdateDedupLink]):
-        assert len({g.id for g in groups}) == len(groups)
+    @classmethod
+    def get_dedup_sites(cls, site_uris: Iterable[URIRef]) -> set[URIRef]:
+        resp = MINMOD_KG.query(
+            "SELECT DISTINCT ?dms WHERE { ?ms md:dedup_site ?dms . VALUES ?ms { %s } }"
+            % " ".join(f"<{uri}>" for uri in site_uris)
+        )
+        return {URIRef(row["dms"]) for row in resp}
 
+    @classmethod
+    def update_same_as(cls, groups: list[UpdateDedupLink]) -> list[DedupMineralSite]:
         ns = MINMOD_KG.ns
         dedup_site_predicate = ns.md.uri("dedup_site")
         md_commodity_predicate = ns.md.uri("commodity")
 
         # step 1: gather all objects that will be updated
-        dedup_site_uris = set()
         site_uris = set()
         for group in groups:
-            dedup_site_uris.add(ns.mr.uri(group.id))
             for site in group.sites:
                 site_uris.add(ns.mr.uri(site))
 
-        site_uris = list(site_uris)
-        all_uris = dedup_site_uris.union(site_uris)
+        old_dedup_site_uris = cls.get_dedup_sites(site_uris)
+        site_uris = site_uris.union(old_dedup_site_uris)
 
         # step 2: lock the objects
-        with MINMOD_KG.transaction(list(all_uris)).transaction():
+        with MINMOD_KG.transaction(list(site_uris)).transaction():
             # step 3: check if this changes will affect sites that are not in the group
             # if so, we need to abort the transaction
-            affected_uris = {
+            affected_site_uris = {
                 x["o"]
                 for x in MINMOD_KG.query(
                     """
@@ -59,8 +62,6 @@ SELECT DISTINCT ?o
 WHERE {
     OPTIONAL { ?s owl:sameAs ?o . }
     OPTIONAL { ?o owl:sameAs ?s . }
-    OPTIONAL { ?s md:dedup_site ?o . }
-    OPTIONAL { ?o md:dedup_site ?s . }
     VALUES ?s { %s }
 }
 """
@@ -68,7 +69,13 @@ WHERE {
                 )
             }
 
-            if affected_uris != all_uris:
+            if affected_site_uris != site_uris:
+                raise Exception(
+                    "The data is stale as someone updated it. Please refresh and try again."
+                )
+
+            verified_old_dedup_site_uris = cls.get_dedup_sites(site_uris)
+            if verified_old_dedup_site_uris != old_dedup_site_uris:
                 raise Exception(
                     "The data is stale as someone updated it. Please refresh and try again."
                 )
@@ -77,9 +84,7 @@ WHERE {
             # we are going to:
             # 1. extract the same as links
             # 2. extract the dedup links
-            old_dedup_sites = DedupMineralSite.get_by_uris(
-                [group.id for group in groups]
-            )
+            old_dedup_sites = DedupMineralSite.get_by_uris(list(old_dedup_site_uris))
             old_dedup_sites_graph = mut_merge_graphs(
                 [dms.to_graph() for dms in old_dedup_sites]
             )
@@ -112,7 +117,7 @@ WHERE {
             new_site_triples = set()
             new_dedup_sites = []
             for group in groups:
-                dedup_site_uri = ns.mr.uri(group.id)
+                dedup_site_uri = ns.mr.uri(DedupMineralSite.get_id(group.sites))
                 group_site_uris = [ns.mr.uri(site) for site in group.sites]
                 site_uri = group_site_uris[0]
                 if len(group.sites) == 1:
@@ -144,7 +149,6 @@ WHERE {
                 new_dedup_sites.append(
                     DedupMineralSite.from_derived_sites(
                         sites=partial_new_derived_sites,
-                        id=group.id,
                     ),
                 )
 
@@ -152,7 +156,7 @@ WHERE {
                 [dms.to_graph() for dms in new_dedup_sites]
             )
 
-            old_triples = old_site_triples.union(iter(new_dedup_sites_graph))
+            old_triples = old_site_triples.union(iter(old_dedup_sites_graph))
             new_triples = new_site_triples.union(iter(new_dedup_sites_graph))
 
             del_triples = [
@@ -165,6 +169,7 @@ WHERE {
             ]
 
             MINMOD_KG.delete_insert(del_triples, add_triples)
+        return new_dedup_sites
 
 
 @router.get("/mineral-sites/make-id")
@@ -185,8 +190,7 @@ def update_same_as(
     dedup_links: list[UpdateDedupLink],
     current_user: CurrentUserDep,
 ):
-    UpdateDedupLink.update_same_as(dedup_links)
-    return {"message": "The same as links have been updated."}
+    return UpdateDedupLink.update_same_as(dedup_links)
 
 
 @router.get("/mineral-sites/{site_id}")
