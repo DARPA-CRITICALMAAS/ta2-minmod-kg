@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from time import sleep
 
 import pytest
@@ -213,35 +214,36 @@ class TestMineralSite:
             "grade_tonnage": {"commodity": "Q578"},
         }
 
-    # def test_create_new_site(self, auth_client_2, user2_uri, kg):
-    #     resp = check_req(
-    #         lambda: auth_client_2.post(
-    #             "/api/v1/mineral-sites",
-    #             json=self.site2.model_dump(exclude_none=True),
-    #         )
-    #     ).json()
-    #     gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
-    #     assert resp == gold_resp
+    def test_create_new_site(self, auth_client_2, user2_uri, kg):
+        time.sleep(1.0)  # to ensure the modified_at is different
+        resp = check_req(
+            lambda: auth_client_2.post(
+                "/api/v1/mineral-sites",
+                json=self.site2.model_dump(exclude_none=True),
+            )
+        ).json()
+        gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
+        assert resp == gold_resp
 
-    #     for commodity in [self.site1_commodity, self.site2_commodity]:
-    #         resp = check_req(
-    #             lambda: auth_client_2.get(
-    #                 f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
-    #                 params={"commodity": commodity},
-    #             )
-    #         ).json()
-    #         assert resp == {
-    #             "id": self.site1_dedup_id,
-    #             "name": "Frog Mine",
-    #             "type": "NotSpecified",
-    #             "rank": "U",
-    #             "sites": [self.site1_id, self.site2_id],
-    #             "deposit_types": [],
-    #             "location": {
-    #                 "lat": 46.9,
-    #                 "lon": -87.1,
-    #                 "country": [],
-    #                 "state_or_province": [],
-    #             },
-    #             "grade_tonnage": {"commodity": commodity},
-    #         }
+        for commodity in [self.site1_commodity, self.site2_commodity]:
+            resp = check_req(
+                lambda: auth_client_2.get(
+                    f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
+                    params={"commodity": commodity},
+                )
+            ).json()
+            assert resp == {
+                "id": self.site1_dedup_id,
+                "name": "Beaver Mine",
+                "type": "NotSpecified",
+                "rank": "U",
+                "sites": [self.site2_id, self.site1_id],
+                "deposit_types": [],
+                "location": {
+                    "lat": 44.71207,
+                    "lon": -118.7805,
+                    "country": [],
+                    "state_or_province": [],
+                },
+                "grade_tonnage": {"commodity": commodity},
+            }

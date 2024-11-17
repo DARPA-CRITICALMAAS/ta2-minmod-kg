@@ -323,25 +323,25 @@ def make_dedup_site(
 
     site_name: str = next(
         (
-            (site := sid2sites[site_id][0])["ms_name"]
+            _ms_name
             for site_id in ranked_site_ids
-            if site["ms_name"] is not None
+            if (_ms_name := sid2sites[site_id][0]["ms_name"]) is not None
         ),
         "",
     )
     site_type = next(
         (
-            (site := sid2sites[site_id][0])["ms_type"]
+            _ms_type
             for site_id in ranked_site_ids
-            if site["ms_type"] is not None
+            if (_ms_type := sid2sites[site_id][0]["ms_type"]) is not None
         ),
         "NotSpecified",
     )
     site_rank = next(
         (
-            (site := sid2sites[site_id][0])["ms_rank"]
+            _ms_rank
             for site_id in ranked_site_ids
-            if site["ms_rank"] is not None
+            if (_ms_rank := sid2sites[site_id][0]["ms_rank"]) is not None
         ),
         "U",
     )
