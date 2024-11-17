@@ -183,7 +183,7 @@ class MineralSite(BaseRDFModel):
 
 @lru_cache()
 def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
-    pkg_dir = Path(__file__).parent.parent.parent
+    pkg_dir = Path(__file__).parent.parent
     drepr_version = version("drepr-v2").strip()
 
     @cache(
