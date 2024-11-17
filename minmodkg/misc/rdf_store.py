@@ -210,7 +210,7 @@ class Namespace:
     def __init__(self, ns_cfg: dict):
         self.mr = SingleNS("mr", ns_cfg["mr"])
         self.mo = SingleNS("mo", ns_cfg["mo"])
-        self.md = SingleNS("md", ns_cfg["mr-derived"])
+        self.md = SingleNS("md", ns_cfg["mo-derived"])
         self.dcterms = SingleNS("dcterms", "http://purl.org/dc/terms/")
         self.rdf = SingleNS("rdf", str(RDF))
         self.rdfs = SingleNS("rdfs", str(RDFS))
@@ -256,11 +256,11 @@ class RDFStore:
     def transaction(self, objects: Sequence[IRI | URIRef], timeout_sec: float = 300):
         return Transaction(self, objects, timeout_sec)
 
-    def has(self, rel_uri: str):
+    def has(self, uri: IRI | URIRef):
         return (
             len(
                 self.query(
-                    "select 1 where { %s ?p ?o } LIMIT 1" % rel_uri,
+                    "select 1 where { <%s> ?p ?o } LIMIT 1" % uri,
                 )
             )
             > 0
@@ -268,9 +268,6 @@ class RDFStore:
 
     def query(self, query: str, keys: Optional[list[str]] = None) -> list[dict]:
         response = self._sparql(query, self.query_endpoint, type="query")
-        if response.status_code != 200:
-            raise Exception(response.text)
-
         qres = response.json()["results"]["bindings"]
 
         if len(qres) == 0:
@@ -372,11 +369,14 @@ class RDFStore:
 
     def insert(
         self,
-        query: str | Triples,
+        query: str | Triples | Graph,
     ):
         if not isinstance(query, str):
             parts = ["INSERT DATA {"]
-            parts.extend((f"\n{s} {p} {o}." for s, p, o in query))
+            if isinstance(query, Graph):
+                parts.extend(f"\n{s.n3()} {p.n3()} {o.n3()}." for s, p, o in query)
+            else:
+                parts.extend((f"\n{s} {p} {o}." for s, p, o in query))
             parts.append("\n}")
             query = "".join(parts)
 
@@ -407,6 +407,7 @@ class RDFStore:
         endpoint: str,
         type: Literal["query", "update"] = "query",
     ):
+        """Execute a SPARQL query and ensure the response is successful"""
         response = httpx.post(
             url=endpoint,
             data={type: self.prefix_part + query},
@@ -417,6 +418,10 @@ class RDFStore:
             verify=False,
             timeout=None,
         )
+        if response.status_code != 200:
+            raise Exception(
+                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}"
+            )
         return response
 
 

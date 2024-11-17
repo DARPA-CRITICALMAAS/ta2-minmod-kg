@@ -48,7 +48,7 @@ CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
 def get_snapshot_id():
-    query = f"SELECT ?snapshot_id WHERE {{ {MINMOD_NS.mo.alias}:kg {MINMOD_NS.dcterms.alias}:hasVersion ?snapshot_id }}"
+    query = f"SELECT ?snapshot_id WHERE {{ {MINMOD_NS.mr.alias}:kg {MINMOD_NS.dcterms.alias}:hasVersion ?snapshot_id }}"
     qres = MINMOD_KG.query(query)
     return qres[0]["snapshot_id"]
 

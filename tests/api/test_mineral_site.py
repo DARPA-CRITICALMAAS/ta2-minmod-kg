@@ -4,17 +4,16 @@ from time import sleep
 
 import pytest
 from fastapi.testclient import TestClient
-from minmodkg.api.routers.mineral_site import get_site_as_graph
-from minmodkg.config import MNO_NS, MNR_NS, NS_MNO, NS_MNR
+from minmodkg.config import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite, DedupMineralSitePublic
 from minmodkg.models.mineral_site import (
     CandidateEntity,
-    Document,
     LocationInfo,
     MineralInventory,
     MineralSite,
     Reference,
 )
+from minmodkg.models.reference import Document
 from minmodkg.transformations import make_site_uri
 from rdflib import RDF, RDFS
 from rdflib import Literal as RDFLiteral
@@ -41,7 +40,7 @@ class TestMineralSite:
                         source="database::https://mrdata.usgs.gov/mrds",
                         confidence=1.0,
                         observed_name="Nickel",
-                        normalized_uri=MNR_NS + self.site1_commodity,
+                        normalized_uri=MINMOD_KG.ns.mr.uristr(self.site1_commodity),
                     ),
                     reference=Reference(
                         document=Document(uri="https://mrdata.usgs.gov/mrds")
@@ -53,7 +52,9 @@ class TestMineralSite:
             self.site1.source_id, self.site1.record_id, namespace=""
         )
         self.site1_uri = make_site_uri(self.site1.source_id, self.site1.record_id)
-        self.site1_dedup_uri = MNR_NS + DedupMineralSite.get_id([self.site1_id])
+        self.site1_dedup_uri = MINMOD_KG.ns.mr.uristr(
+            DedupMineralSite.get_id([self.site1_id])
+        )
 
         self.site1_dump = self.site1.model_dump(exclude_none=True)
         self.site1_dump.update(
@@ -87,7 +88,7 @@ class TestMineralSite:
                         source="database::https://mrdata.usgs.gov/mrds",
                         confidence=1.0,
                         observed_name="Lithium",
-                        normalized_uri=MNR_NS + self.site2_commodity,
+                        normalized_uri=MINMOD_KG.ns.mr.uristr(self.site2_commodity),
                     ),
                     reference=Reference(
                         document=Document(uri="https://mrdata.usgs.gov/mrds")
@@ -137,7 +138,7 @@ class TestMineralSite:
 
         resp = check_req(
             lambda: auth_client.get(
-                f"/api/v1/dedup-mineral-sites/{self.site1_dedup_uri[len(MNR_NS):]}",
+                f"/api/v1/dedup-mineral-sites/{MINMOD_KG.ns.mr.id(self.site1_dedup_uri)}",
                 params={"commodity": self.site1_commodity},
             )
         ).json()
@@ -162,7 +163,9 @@ class TestMineralSite:
     def test_update_site(self, auth_client, user1_uri, kg):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
-        self.site1.dedup_site_uri = MNR_NS + DedupMineralSite.get_id([self.site1_id])
+        self.site1.dedup_site_uri = MINMOD_KG.ns.mr.uristr(
+            DedupMineralSite.get_id([self.site1_id])
+        )
         resp = check_req(
             lambda: auth_client.post(
                 f"/api/v1/mineral-sites/{self.site1_id}",
@@ -183,7 +186,7 @@ class TestMineralSite:
 
         resp = check_req(
             lambda: auth_client.get(
-                f"/api/v1/dedup-mineral-sites/{self.site1_dedup_uri[len(MNR_NS):]}",
+                f"/api/v1/dedup-mineral-sites/{MINMOD_KG.ns.mr.id(self.site1_dedup_uri)}",
                 params={"commodity": self.site1_commodity},
             )
         ).json()
@@ -210,7 +213,7 @@ class TestMineralSite:
         for commodity in [self.site1_commodity, self.site2_commodity]:
             resp = check_req(
                 lambda: auth_client_2.get(
-                    f"/api/v1/dedup-mineral-sites/{self.site1_dedup_uri[len(MNR_NS):]}",
+                    f"/api/v1/dedup-mineral-sites/{MINMOD_KG.ns.mr.id(self.site1_dedup_uri)}",
                     params={"commodity": commodity},
                 )
             ).json()

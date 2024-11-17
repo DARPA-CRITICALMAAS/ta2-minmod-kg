@@ -13,7 +13,6 @@ from fastapi.testclient import TestClient
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
-from minmodkg.misc.sparql import sparql_insert
 from rdflib import Graph
 
 
@@ -87,12 +86,14 @@ def kg(resource_dir: Path, db):
     print(" DONE!", flush=True)
 
     # insert basic KG info
-    g = Graph()
-    g.parse(resource_dir / "kgversion.ttl", format="ttl")
-    g.parse(resource_dir / "source_score.ttl", format="ttl")
-    sparql_insert(g)
+    g = Graph(namespace_manager=config.MINMOD_KG.ns.rdflib_namespace_manager)
+    for file in resource_dir.glob("kgdata/**/*.ttl"):
+        g.parse(file, format="ttl")
+    config.MINMOD_KG.insert(g)
 
-    yield None
+    print("Finished loading KG data", flush=True)
+
+    yield config.MINMOD_KG
 
     subprocess.check_output("docker container rm -f test-kg", shell=True)
 

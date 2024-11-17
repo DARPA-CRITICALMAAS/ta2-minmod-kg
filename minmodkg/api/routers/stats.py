@@ -110,7 +110,7 @@ def get_mineralsites_by_commodity(snapshot_id: str):
                 WHERE {
                     ?ms a mo:MineralSite .
                     ?ms mo:mineral_inventory ?mi .
-                    ?mi mo:commodity/:normalized_uri ?commodity_uri .
+                    ?mi mo:commodity/mo:normalized_uri ?commodity_uri .
                 }
                 GROUP BY ?commodity_uri
             }
