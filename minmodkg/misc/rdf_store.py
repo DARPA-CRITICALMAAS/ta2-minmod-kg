@@ -20,6 +20,7 @@ from typing import (
 from uuid import uuid4
 
 import httpx
+from minmodkg.misc.exceptions import DBError
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, SPARQLMainQuery, Triple, Triples
 from pydantic import BaseModel
@@ -62,18 +63,31 @@ class BaseRDFModel(BaseModel):
         ns = self.rdfdata.ns
         g = Graph(namespace_manager=ns.rdflib_namespace_manager)
         for s, p, o in self.to_triples():
+            if s.startswith("http://") or s.startswith("https://"):
+                subj = URIRef(s)
+            else:
+                prefix, name = s.split(":")
+                subj = ns.namespaces[prefix].uri(name)
+
+            if p.startswith("http://") or p.startswith("https://"):
+                pred = URIRef(p)
+            else:
+                prefix, name = p.split(":")
+                pred = ns.namespaces[prefix].uri(name)
+
             if o.startswith("http://") or o.startswith("https://"):
                 obj = URIRef(o)
-            elif o[0].isdigit():
+            elif o[0].isdigit() or o[0] == "-":
                 obj = RDFLiteral(
-                    obj, datatype=XSD.integer if o[0].find(".") == -1 else XSD.float
+                    o, datatype=XSD.integer if o[0].find(".") == -1 else XSD.float
                 )
             elif o[0] == '"':
                 obj = RDFLiteral(o)
             else:
                 prefix, name = o.split(":", 1)
                 obj = ns.namespaces[prefix].uri(name)
-            g.add((URIRef(s), URIRef(p), obj))
+
+            g.add((subj, pred, obj))
         return g
 
     @classmethod
@@ -95,6 +109,34 @@ class BaseRDFQueryBuilder:
     class_reluri: str
     fields: list[PropertyRule]
 
+    class HPg:
+        """Hierarchical Paragraph.
+
+        In this class, any child text share the same indent level, however, the child HPg has a higher indent level.
+        """
+
+        def __init__(
+            self, children: Optional[list[BaseRDFQueryBuilder.HPg | str] | str] = None
+        ):
+            if children is None:
+                children = []
+            elif isinstance(children, str):
+                children = [children]
+            self.children: list[BaseRDFQueryBuilder.HPg | str] = children
+
+        def to_str(self, tab_size: int = 2, indent: int = 0):
+            out = []
+            for child in self.children:
+                if isinstance(child, str):
+                    out.append(" " * indent + child)
+                else:
+                    out.append(child.to_str(tab_size=tab_size, indent=indent + 2))
+            return "\n".join(out)
+
+        def extend(self, another: BaseRDFQueryBuilder.HPg):
+            self.children.extend(another.children)
+            return self
+
     @dataclass
     class PropertyRule:
         ns: SingleNS
@@ -104,55 +146,79 @@ class BaseRDFQueryBuilder:
 
         def construct(self, source_var: str):
             """Return the CONSTRUCT part for this property"""
-            target_var = source_var + "_" + self.name
+            HPg = BaseRDFQueryBuilder.HPg
+            target_var = source_var + "__" + self.name
             property = self.ns[self.name]
             if self.target is None:
-                return f"?{source_var} {property} ?{target_var} ."
+                return HPg(f"?{source_var} {property} ?{target_var} .")
             else:
-                return f"?{source_var} {property} ?{target_var} ." + self.target.match(
-                    target_var
+                return HPg(
+                    [
+                        f"?{source_var} {property} ?{target_var} .",
+                        self.target.construct(target_var),
+                    ]
                 )
 
         def match(self, source_var: str):
             """Return the match part for this property, the match part is used in WHERE clause"""
-            target_var = source_var + "_" + self.name
+            HPg = BaseRDFQueryBuilder.HPg
+            target_var = source_var + "__" + self.name
             property = self.ns[self.name]
+
             if self.target is None:
                 if self.is_optional:
-                    return f"OPTIONAL {{ ?{source_var} {property} ?{target_var} }} ."
+                    return HPg(
+                        [
+                            "OPTIONAL {",
+                            HPg(f"?{source_var} {property} ?{target_var} ."),
+                            "}",
+                        ]
+                    )
                 else:
-                    return f"?{source_var} {property} ?{target_var} ."
+                    return HPg(f"?{source_var} {property} ?{target_var} .")
             else:
                 if self.is_optional:
-                    return f"OPTIONAL {{ ?{source_var} {property} ?{target_var} . {self.target.match(target_var)} }} ."
+                    return HPg(
+                        [
+                            "OPTIONAL {",
+                            HPg(
+                                [
+                                    f"?{source_var} {property} ?{target_var} .",
+                                    self.target.match(target_var),
+                                ]
+                            ),
+                            "}",
+                        ]
+                    )
                 else:
-                    return (
-                        f"?{source_var} {property} ?{target_var} ."
-                        + self.target.match(target_var)
+                    return HPg(
+                        [
+                            f"?{source_var} {property} ?{target_var} .",
+                            self.target.match(target_var),
+                        ]
                     )
 
     def get_default_source_var(self):
-        return self.class_reluri.replace(":", "_")
+        return "u"
 
     @lru_cache()
-    def construct(self, source_var: Optional[str] = None) -> str:
+    def construct(self, source_var: Optional[str] = None) -> HPg:
         """Return the CONSTRUCT part for this class"""
         source_var = source_var or self.get_default_source_var()
-        out = []
+        out = self.HPg()
         for field in self.fields:
-            out.append(field.construct(source_var))
-        return "\n".join(out)
+            out.extend(field.construct(source_var))
+        return out
 
     @lru_cache()
-    def where(self, source_var: str) -> str:
+    def where(self, source_var: str) -> HPg:
         source_var = source_var or self.get_default_source_var()
-        return (
-            f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} .\n"
-            + self.match(source_var)
-        )
+        return self.HPg(
+            f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} ."
+        ).extend(self.match(source_var))
 
     @lru_cache()
-    def match(self, source_var: str) -> str:
+    def match(self, source_var: str) -> HPg:
         """Return the match part to match this object as if it is target of another object
 
         For example:
@@ -165,16 +231,16 @@ class BaseRDFQueryBuilder:
             ?can_ent :observed_name ?type .
             ?can_ent :normalized_uri ?uri .
         """
-        out = []
+        out = self.HPg()
         for field in self.fields:
-            out.append(field.match(source_var))
-        return "\n".join(out)
+            out.extend(field.match(source_var))
+        return out
 
     def create_get_by_uri(self, uri: str | URIRef) -> str:
         source_var = self.get_default_source_var()
-        return "CONSTRUCT { %s } WHERE { %s VALUES ?%s { <%s> } }" % (
-            self.construct(source_var),
-            self.where(source_var),
+        return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { <%s> }\n}" % (
+            self.construct(source_var).to_str(indent=2),
+            self.where(source_var).to_str(indent=2),
             source_var,
             uri,
         )
@@ -419,8 +485,9 @@ class RDFStore:
             timeout=None,
         )
         if response.status_code != 200:
-            raise Exception(
-                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}"
+            raise DBError(
+                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}",
+                response,
             )
         return response
 
@@ -440,12 +507,12 @@ class Transaction:
         objects: Sequence[IRI | URIRef],
         timeout_sec: float = 300,
     ):
-        self.objects = []
+        self.objects: list[IRI] = []
         value_filter_parts = []
 
         for obj in objects:
             assert obj.startswith("http://") or obj.startswith("https://"), obj
-            self.objects.append(obj)
+            self.objects.append(str(obj))
             value_filter_parts.append(f"<{obj}>")
 
         self.value_query = " ".join(value_filter_parts)

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import Annotated, Optional
+from typing import Annotated, ClassVar, Optional
 
 import shapely.wkt
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
-from minmodkg.misc.rdf_store import BaseRDFModel, norm_literal
+from minmodkg.misc.rdf_store import BaseRDFModel, BaseRDFQueryBuilder, norm_literal
 from minmodkg.misc.utils import assert_isinstance
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.typing import InternalID, Triple
@@ -21,6 +21,22 @@ class GradeTonnage(BaseRDFModel):
     total_contained_metal: Optional[float] = None
     total_tonnage: Optional[float] = None
     total_grade: Optional[float] = None
+
+    class QueryBuilder(BaseRDFQueryBuilder):
+
+        def __init__(self):
+            ns = self.rdfdata.ns
+            self.class_reluri = ns.mo.GradeTonnage
+            self.fields = [
+                self.PropertyRule(
+                    ns.md,
+                    "commodity",
+                )
+            ]
+            for prop in ["total_contained_metal", "total_tonnage", "total_grade"]:
+                self.fields.append(self.PropertyRule(ns.md, prop, is_optional=True))
+
+    qbuilder: ClassVar[QueryBuilder] = QueryBuilder()
 
     def __post_init__(self):
         if self.total_grade is not None and self.total_tonnage is not None:
@@ -50,6 +66,32 @@ class DerivedMineralSite(BaseRDFModel):
     coordinates: Optional[Coordinates] = None
     grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
 
+    class QueryBuilder(BaseRDFQueryBuilder):
+
+        def __init__(self):
+            ns = self.rdfdata.ns
+            self.class_reluri = ns.mo.MineralSite
+            self.fields = [
+                self.PropertyRule(
+                    ns.md,
+                    "lat",
+                    is_optional=True,
+                ),
+                self.PropertyRule(
+                    ns.md,
+                    "lon",
+                    is_optional=True,
+                ),
+                self.PropertyRule(
+                    ns.md,
+                    "grade_tonnage",
+                    is_optional=True,
+                    target=GradeTonnage.qbuilder,
+                ),
+            ]
+
+    qbuilder: ClassVar[QueryBuilder] = QueryBuilder()
+
     @classmethod
     def from_graph(cls, uid: URIRef, g: Graph):
         md = cls.rdfdata.ns.md
@@ -60,7 +102,12 @@ class DerivedMineralSite(BaseRDFModel):
         if lat is None or lon is None:
             coors = None
         else:
-            coors = Coordinates(lat=lat, lon=lon)
+            try:
+                coors = Coordinates(lat=float(lat), lon=float(lon))
+            except ValueError:
+                import IPython
+
+                IPython.embed()
 
         return DerivedMineralSite(
             id=mr.id(uid),
@@ -72,7 +119,8 @@ class DerivedMineralSite(BaseRDFModel):
         )
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
-        triples = triples or []
+        if triples is None:
+            triples = []
 
         ns = self.rdfdata.ns
         md = ns.md
@@ -249,7 +297,7 @@ class DerivedMineralSite(BaseRDFModel):
                 site_comms.append(GradeTonnage(commodity=comm))
 
         return DerivedMineralSite(
-            id=site.uri,
+            id=mr.id(site.uri),
             coordinates=coordinates,
             grade_tonnage=site_comms,
         )

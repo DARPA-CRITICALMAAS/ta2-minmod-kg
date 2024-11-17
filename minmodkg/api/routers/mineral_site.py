@@ -1,31 +1,21 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from functools import lru_cache
-from hashlib import sha256
-from importlib.metadata import version
-from pathlib import Path
-from typing import Annotated, Callable, Literal
+from typing import Annotated, Literal
 
-from drepr.main import convert
-from drepr.models.resource import ResourceDataObject
 from fastapi import APIRouter, Body, HTTPException, Response, status
-from libactor.cache import BackendFactory, cache
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
 from minmodkg.api.models.user import is_system_user
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
 from minmodkg.config import MINMOD_KG
-from minmodkg.models.crs import CRS
+from minmodkg.misc.exceptions import DBError
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
-from minmodkg.models.material_form import MaterialForm
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import IRI, Triple
-from rdflib import RDF, Graph
-from rdflib import Literal as RDFLiteral
-from rdflib import URIRef
+from rdflib import Graph, URIRef
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -99,26 +89,27 @@ def create_site(site: MineralSite, user: CurrentUserDep):
 
     # send the query
     triples = []
-    site.to_triples(triples)
-    derived_site.to_triples(triples)
-    partial_dedup_site.to_triples(triples)
-    resp = MINMOD_KG.insert(triples)
-    if resp.status_code != 200:
+    triples = site.to_triples(triples)
+    triples = derived_site.to_triples(triples)
+    triples = partial_dedup_site.to_triples(triples)
+
+    try:
+        MINMOD_KG.insert(triples)
+    except DBError as e:
         logger.error(
-            "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response Code: {}\n\t- Response Message{}",
+            "Failed to create site:\n\t- User: {}\n\t- Input: {}\n\t- Response: {}",
             user.username,
             site.model_dump_json(),
-            resp.status_code,
-            resp.text,
+            e.message,
         )
-        raise HTTPException(status_code=500, detail="Failed to create the site.")
+        raise HTTPException(status_code=500, detail="Failed to create the site.") from e
 
     return get_site_by_uri(URIRef(uri))
 
 
 @router.put("/mineral-sites/{site_id}")
 def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
-    uri = MineralSite.rdfdata.ns.mr.uri("site_id")
+    uri = MineralSite.rdfdata.ns.mr.uri(site_id)
     if not MineralSite.has_uri(uri):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -196,7 +187,7 @@ def derive_data(
         site, material_form_conversion, crss
     )
     partial_dedup_site = DedupMineralSite.from_derived_sites(
-        [derived_site], site.dedup_site_uri
+        [derived_site], ns.mr.id(site.dedup_site_uri)
     )
     return derived_site, partial_dedup_site
 

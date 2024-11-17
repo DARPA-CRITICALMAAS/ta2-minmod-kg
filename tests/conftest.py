@@ -14,6 +14,7 @@ from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
 from rdflib import Graph
+from timer import Timer
 
 
 @pytest.fixture(scope="session")
@@ -86,12 +87,11 @@ def kg(resource_dir: Path, db):
     print(" DONE!", flush=True)
 
     # insert basic KG info
-    g = Graph(namespace_manager=config.MINMOD_KG.ns.rdflib_namespace_manager)
-    for file in resource_dir.glob("kgdata/**/*.ttl"):
-        g.parse(file, format="ttl")
-    config.MINMOD_KG.insert(g)
-
-    print("Finished loading KG data", flush=True)
+    with Timer().watch_and_report("Finish loading KG data"):
+        g = Graph(namespace_manager=config.MINMOD_KG.ns.rdflib_namespace_manager)
+        for file in resource_dir.glob("kgdata/**/*.ttl"):
+            g.parse(file, format="ttl")
+        config.MINMOD_KG.insert(g)
 
     yield config.MINMOD_KG
 

@@ -58,14 +58,18 @@ class MineralSite(BaseRDFModel):
             for prop in ["source_id", "record_id", "created_by", "modified_at"]:
                 self.fields.append(self.PropertyRule(ns.mo, prop))
             for prop in [
-                "dedup_site_uri",
-                "name",
-                "aliases",
                 "site_rank",
                 "site_type",
-                "same_as",
             ]:
                 self.fields.append(self.PropertyRule(ns.mo, prop, is_optional=True))
+            self.fields.extend(
+                [
+                    self.PropertyRule(ns.md, "dedup_site", is_optional=True),
+                    self.PropertyRule(ns.rdfs, "label", is_optional=True),
+                    self.PropertyRule(ns.skos, "altLabel", is_optional=True),
+                    self.PropertyRule(ns.owl, "sameAs", is_optional=True),
+                ]
+            )
             self.fields.extend(
                 [
                     self.PropertyRule(
@@ -119,7 +123,9 @@ class MineralSite(BaseRDFModel):
         return MineralSite(
             source_id=norm_literal(next(g.objects(uid, mo.uri("source_id")))),
             record_id=norm_literal(next(g.objects(uid, mo.uri("record_id")))),
-            dedup_site_uri=norm_uriref(next(g.objects(uid, md.uri("dedup_site")))),
+            dedup_site_uri=norm_uriref(
+                next(g.objects(uid, md.uri("dedup_site")), None)
+            ),
             name=norm_literal(next(g.objects(uid, ns.rdfs.uri("label")), None)),
             created_by=[
                 norm_literal(val) for val in g.objects(uid, mo.uri("created_by"))
@@ -168,7 +174,10 @@ class MineralSite(BaseRDFModel):
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
         g = self.to_graph()
-        raise NotImplementedError()
+        if triples is None:
+            triples = []
+        triples.extend((s.n3(), p.n3(), o.n3()) for s, p, o in g)
+        return triples
 
     def update_derived_data(self, username: str):
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

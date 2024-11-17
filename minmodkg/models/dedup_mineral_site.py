@@ -68,7 +68,8 @@ class DedupMineralSite(BaseRDFModel):
         self.query_builder.create_get_by_uri(self.rdfdata.ns.mr[self.id])
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
-        triples = triples or []
+        if triples is None:
+            triples = []
         ns = self.rdfdata.ns
         md = ns.md
         mr = ns.mr
