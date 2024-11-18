@@ -172,18 +172,21 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
                 sub2final_grp[sub_grp_id] = final_grp_id
 
         site2groups = {}
-        id2groups = defaultdict(list)
+        id2setgroups = defaultdict(set)
 
         for site, subgrps in site2subgroups.items():
             if len(subgrps) == 1:
-                id2groups[subgrps[0]].append(site)
+                id2setgroups[subgrps[0]].add(site)
                 site2groups[site] = subgrps[0]
 
         for sub_grp_id, final_grp_id in sub2final_grp.items():
             for site in id2subgroups[sub_grp_id]:
-                id2groups[final_grp_id].append(site)
+                id2setgroups[final_grp_id].add(site)
                 site2groups[site] = final_grp_id
 
+        id2groups = {
+            final_grp_id: sorted(grps) for final_grp_id, grps in id2setgroups.items()
+        }
         return GraphLink(site2groups, id2groups)
 
     def step3_update_group(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
