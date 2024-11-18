@@ -215,8 +215,8 @@ def get_site(site_id: str, format: Literal["json", "ttl"] = "json"):
 def get_site_by_uri(uri: IRI | URIRef) -> dict:
     site = MineralSite.get_by_uri(uri)
     derived_site = DerivedMineralSite.get_by_uri(uri)
-    out = site.to_json()
-    out.update(derived_site.to_json())
+    out = site.to_dict()
+    out.update(derived_site.to_dict())
     return out
 
 

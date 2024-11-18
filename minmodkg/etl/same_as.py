@@ -14,7 +14,7 @@ import serde.json
 from drepr.writers.turtle_writer import TurtleWriter
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MNO_NS, MNR_NS
+from minmodkg.config import MINMOD_KG
 from rdflib import OWL
 from slugify import slugify
 from timer import Timer
@@ -199,7 +199,8 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
         )
 
         with open(output_fmter.outdir / "same_as.ttl", "w") as f:
-            f.write(f"@prefix : <{MNR_NS}> .\n")
+            mr = MINMOD_KG.ns.mr
+            f.write(f"@prefix : <{mr.namespace}> .\n")
             f.write(f"@prefix owl: <{str(OWL)}> .\n\n")
 
             for group, nodes in graph_link.groups.items():
@@ -265,14 +266,15 @@ class Step1ComputingSubGroupFn(Fn):
         },
     )
     def invoke(self, prefix: str, infile: InputFile, outfile: Path):
+        mr = MINMOD_KG.ns.mr
         lst = serde.csv.deser(infile.path)
         it = iter(lst)
         next(it)
         edges = []
         for u, v in it:
-            assert u.startswith(MNR_NS)
-            assert v.startswith(MNR_NS)
-            edges.append((u[len(MNR_NS) :], v[len(MNR_NS) :]))
+            assert u.startswith(mr.namespace)
+            assert v.startswith(mr.namespace)
+            edges.append((mr.id(u), mr.id(v)))
 
         G = nx.from_edgelist(edges)
         groups = nx.connected_components(G)

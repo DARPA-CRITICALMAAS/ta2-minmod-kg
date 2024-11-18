@@ -41,14 +41,14 @@ class BaseRDFModel(BaseModel):
     qbuilder: ClassVar[BaseRDFQueryBuilder]
 
     @classmethod
-    def from_json(cls, json: dict) -> Self:
+    def from_dict(cls, json: dict) -> Self:
         return cls.model_validate(json)
 
     @classmethod
-    def validate_json(cls, json: dict) -> Self:
+    def validate_dict(cls, json: dict) -> Self:
         return cls.model_validate(json)
 
-    def to_json(self) -> dict:
+    def to_dict(self) -> dict:
         return self.model_dump(exclude_none=True)
 
     @classmethod

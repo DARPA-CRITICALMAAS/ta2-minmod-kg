@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Optional, Sequence, TypeVar
+from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
 
 from rdflib import Graph
 
@@ -75,3 +75,25 @@ def mut_merge_graphs(graphs: Sequence[Graph]) -> Graph:
     for g in graphs[1:]:
         graph += g
     return graph
+
+
+def filter_duplication(
+    lst: Iterable[V], key_fn: Optional[Callable[[V], Any]] = None
+) -> list[V]:
+    keys = set()
+    new_lst = []
+    if key_fn is not None:
+        for item in lst:
+            k = key_fn(item)
+            if k in keys:
+                continue
+
+            keys.add(k)
+            new_lst.append(item)
+    else:
+        for k in lst:
+            if k in keys:
+                continue
+            keys.add(k)
+            new_lst.append(k)
+    return new_lst

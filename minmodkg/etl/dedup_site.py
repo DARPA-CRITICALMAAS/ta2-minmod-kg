@@ -5,6 +5,7 @@ from typing import Iterable, Mapping, NotRequired, TypedDict
 
 import serde.csv
 import serde.json
+import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
 from minmodkg.config import MINMOD_KG, MINMOD_NS
@@ -142,11 +143,11 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
         self, infiles: list[Path], args: DedupSiteServiceInvokeArgs
     ):
         sites: dict[IRI, DerivedMineralSite] = {}
-        for infile in infiles:
+        for infile in sorted(infiles):
             for raw_derived_site in serde.json.deser(
                 infile,
             ):
-                site = DerivedMineralSite.model_validate(raw_derived_site)
+                site = DerivedMineralSite.from_dict(raw_derived_site)
                 if site.id not in sites:
                     sites[site.id] = site
                 else:
@@ -235,7 +236,7 @@ class ComputingDerivedSiteInfo:
                     MineralSite.from_raw_site(raw_site),
                     self.material_form_conversion,
                     self.epsg_name,
-                ).model_dump(exclude_none=True)
+                ).to_dict()
             )
         serde.json.ser(output, outfile)
         return outfile

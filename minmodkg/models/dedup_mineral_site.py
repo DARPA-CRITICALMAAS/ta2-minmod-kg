@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Annotated, ClassVar, Iterable, Optional
 
 from minmodkg.misc.rdf_store import BaseRDFModel, BaseRDFQueryBuilder
+from minmodkg.misc.utils import filter_duplication
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
 from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import BaseModel
@@ -78,8 +79,8 @@ class DedupMineralSite(BaseRDFModel):
         return DedupMineralSite(
             id=id or DedupMineralSite.get_id(site.id for site in sites),
             sites=[site.id for site in sites],
-            commodities=list(
-                set(gt.commodity for site in sites for gt in site.grade_tonnage)
+            commodities=filter_duplication(
+                (gt.commodity for site in sites for gt in site.grade_tonnage)
             ),
             site_commodities=[
                 site.id + "@" + ",".join(gt.commodity for gt in site.grade_tonnage)
