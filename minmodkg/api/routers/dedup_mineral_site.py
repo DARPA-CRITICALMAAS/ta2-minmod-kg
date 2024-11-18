@@ -273,7 +273,7 @@ def get_dedup_mineral_sites(
 
     dms2sites = group_by_key(qres, "dms")
     return [
-        make_dedup_site(dms, commodity, dupsites, snapshot_id)
+        make_dedup_site(mr.id(dms), commodity, dupsites, snapshot_id)
         for dms, dupsites in dms2sites.items()
     ]
 

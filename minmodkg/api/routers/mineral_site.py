@@ -178,10 +178,14 @@ def get_site_uri(source_id: str, record_id: str):
 
 
 @router.post("/mineral-sites/find_by_ids")
-def get_sites(uris: Annotated[list[str], Body(embed=True, alias="ids")]):
-    sites = []
-    for uri in uris:
-        sites.append(get_site_by_uri(uri))
+def get_sites(ids: Annotated[list[InternalID], Body(embed=True, alias="ids")]):
+    mr = MINMOD_KG.ns.mr
+    sites = {}
+    for id in ids:
+        uri = mr.uri(id)
+        if not MineralSite.has_uri(uri):
+            continue
+        sites[id] = get_site_by_uri(uri)
     return sites
 
 
@@ -194,13 +198,18 @@ def update_same_as(
 
 
 @router.get("/mineral-sites/{site_id}")
-def get_site(site_id: str, format: Literal["json", "ttl"] = "json"):
+def get_site(site_id: InternalID, format: Literal["json", "ttl"] = "json"):
+    site_uri = MINMOD_KG.ns.mr.uri(site_id)
+    if not MineralSite.has_uri(site_uri):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The site does not exist.",
+        )
     if format == "json":
-        return get_site_by_uri(MINMOD_KG.ns.mr.uri(site_id))
+        return get_site_by_uri(site_uri)
     elif format == "ttl":
-        uri = MINMOD_KG.ns.mr.uri(site_id)
-        g_site = MineralSite.get_graph_by_uri(uri)
-        g_derived_site = DerivedMineralSite.get_graph_by_uri(uri)
+        g_site = MineralSite.get_graph_by_uri(site_uri)
+        g_derived_site = DerivedMineralSite.get_graph_by_uri(site_uri)
         return Response(
             content=(g_site + g_derived_site).serialize(format="ttl"),
             media_type="text/turtle",
