@@ -246,3 +246,21 @@ class TestMineralSite:
                 },
                 "grade_tonnage": {"commodity": commodity},
             }
+
+
+class TestMineralSiteLinking:
+    def test_update_same_as(self, auth_client, kg):
+        time.sleep(1.0)  # to ensure the modified_at is different
+        resp = check_req(
+            lambda: auth_client.post(
+                "/api/v1/same-as",
+                json=[
+                    {
+                        "sites": [
+                            "site__doi-org-10-5066-p9htergk__29834",
+                            "site__doi-org-10-5066-p9htergk__29328",
+                        ]
+                    }
+                ],
+            )
+        )

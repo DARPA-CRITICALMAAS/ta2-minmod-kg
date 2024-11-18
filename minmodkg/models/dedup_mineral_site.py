@@ -8,6 +8,8 @@ from minmodkg.misc.utils import filter_duplication
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
 from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import BaseModel
+from rdflib import Graph, URIRef
+from rdflib.term import Node
 
 
 class DedupMineralSiteDepositType(BaseModel):
@@ -55,6 +57,17 @@ class DedupMineralSite(BaseRDFModel):
     @cached_property
     def uri(self) -> IRI:
         return self.rdfdata.ns.mr.uristr(self.id)
+
+    @classmethod
+    def from_graph(cls, uid: URIRef, g: Graph):
+        mr = cls.rdfdata.ns.mr
+        md = cls.rdfdata.ns.md
+        return DedupMineralSite(
+            id=mr.id(uid),
+            sites=[mr.id(str(o)) for o in g.objects(uid, md.uri("site"))],
+            commodities=[mr.id(str(o)) for o in g.objects(uid, md.uri("commodity"))],
+            site_commodities=[str(o) for o in g.objects(uid, md.uri("site_commodity"))],
+        )
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
         if triples is None:

@@ -544,13 +544,15 @@ class Transaction:
     @contextmanager
     def transaction(self):
         self.insert_lock()
-        if not self.does_lock_success():
-            raise TransactionError(
-                "The objects are being edited by another one. Please try again later."
-            )
-        # yield so the caller can perform the transaction
-        yield
-        self.remove_lock()
+        try:
+            if not self.does_lock_success():
+                raise TransactionError(
+                    "The objects are being edited by another one. Please try again later."
+                )
+            # yield so the caller can perform the transaction
+            yield
+        finally:
+            self.remove_lock()
 
     def insert_lock(self):
         assert self.lock is None

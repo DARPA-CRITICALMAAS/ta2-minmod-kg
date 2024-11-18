@@ -69,7 +69,7 @@ WHERE {
                 )
             }
 
-            if affected_site_uris != site_uris:
+            if len(affected_site_uris.difference(site_uris)) > 0:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="The data is stale as someone updated it. Please refresh and try again.",

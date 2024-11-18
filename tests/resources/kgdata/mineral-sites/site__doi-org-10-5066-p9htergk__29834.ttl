@@ -1,0 +1,126 @@
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix md: <https://minmod.isi.edu/ontology-derived/> .
+@prefix mo: <https://minmod.isi.edu/ontology/> .
+@prefix mr: <https://minmod.isi.edu/resource/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mr:site__doi-org-10-5066-p9htergk__29834 rdfs:label "Sinclair No. 3" ;
+    md:grade_tonnage mr:site__doi-org-10-5066-p9htergk__29834__gt__Q515,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q538,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q565,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q569,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q585,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q589,
+        mr:site__doi-org-10-5066-p9htergk__29834__gt__Q622 ;
+    md:lat 33.14566 ;
+    md:lon -115.61502 ;
+    md:dedup_site mr:dedup_site__doi-org-10-5066-p9htergk__29834 ;
+    mo:created_by "https://minmod.isi.edu/users/umn" ;
+    mo:location_info mr:site__doi-org-10-5066-p9htergk__29834__user_umn____location_info ;
+    mo:mineral_inventory mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__0,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__1,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__2,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__3,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__4,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__5,
+        mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__6 ;
+    mo:modified_at "2024-10-26T17:28:01Z" ;
+    mo:record_id 29834 ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref ;
+    mo:source_id "database::https://doi.org/10.5066/P9HTERGK" .
+
+<https://doi.org/10.5066/P9HTERGK> mo:uri "https://doi.org/10.5066/P9HTERGK" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q515 md:commodity mr:Q515 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q538 md:commodity mr:Q538 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q565 md:commodity mr:Q565 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q569 md:commodity mr:Q569 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q585 md:commodity mr:Q585 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q589 md:commodity mr:Q589 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__gt__Q622 md:commodity mr:Q622 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____country__0 mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q1235 ;
+    mo:observed_name "United States" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____crs mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q701 ;
+    mo:observed_name "EPSG:4326" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__0 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__0__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__0__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q515 ;
+    mo:observed_name "Boron-Borates" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__1 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__1__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__1__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q565 ;
+    mo:observed_name "Lead" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__2 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__2__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__2__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q569 ;
+    mo:observed_name "Lithium" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__3 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__3__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__3__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q622 ;
+    mo:observed_name "Chlorine" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__4 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__4__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__4__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q538 ;
+    mo:observed_name "Copper" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__5 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__5__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__5__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q585 ;
+    mo:observed_name "Silver" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__6 mo:commodity mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__6__commodity ;
+    mo:reference mr:doi-org-10-5066-p9htergk__ref .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____inv__6__commodity mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q589 ;
+    mo:observed_name "Zinc" ;
+    mo:source "UMN Matching System v1" .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____location_info mo:country mr:site__doi-org-10-5066-p9htergk__29834__user_umn____country__0 ;
+    mo:crs mr:site__doi-org-10-5066-p9htergk__29834__user_umn____crs ;
+    mo:location "POINT (-115.61502 33.14566)"^^geo:wktLiteral ;
+    mo:state_or_province mr:site__doi-org-10-5066-p9htergk__29834__user_umn____state__0 .
+
+mr:site__doi-org-10-5066-p9htergk__29834__user_umn____state__0 mo:confidence 1e+00 ;
+    mo:normalized_uri mr:Q6845 ;
+    mo:observed_name "California" ;
+    mo:source "UMN Matching System v1" .
+
+mr:doi-org-10-5066-p9htergk__ref mo:document <https://doi.org/10.5066/P9HTERGK> .
+
