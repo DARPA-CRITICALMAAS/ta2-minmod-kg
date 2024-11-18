@@ -70,14 +70,16 @@ WHERE {
             }
 
             if affected_site_uris != site_uris:
-                raise Exception(
-                    "The data is stale as someone updated it. Please refresh and try again."
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="The data is stale as someone updated it. Please refresh and try again.",
                 )
 
             verified_old_dedup_site_uris = cls.get_dedup_sites(site_uris)
             if verified_old_dedup_site_uris != old_dedup_site_uris:
-                raise Exception(
-                    "The data is stale as someone updated it. Please refresh and try again."
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="The data is stale as someone updated it. Please refresh and try again.",
                 )
 
             # step 4: gather previous data and compute the delta
