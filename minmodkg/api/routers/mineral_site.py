@@ -16,7 +16,7 @@ from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnag
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import IRI, InternalID, Triple
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from rdflib import OWL, Graph, URIRef
 
 router = APIRouter(tags=["mineral_sites"])
@@ -172,6 +172,27 @@ WHERE {
         return new_dedup_sites
 
 
+class CreateMineralSite(MineralSite):
+    same_as: list[InternalID] = Field(default_factory=list)
+
+    def to_mineral_site(self) -> MineralSite:
+        return MineralSite.model_construct(
+            source_id=self.source_id,
+            record_id=self.record_id,
+            dedup_site_uri=self.dedup_site_uri,
+            name=self.name,
+            created_by=self.created_by,
+            aliases=self.aliases,
+            site_rank=self.site_rank,
+            site_type=self.site_type,
+            location_info=self.location_info,
+            deposit_type_candidate=self.deposit_type_candidate,
+            mineral_inventory=self.mineral_inventory,
+            reference=self.reference,
+            modified_at=self.modified_at,
+        )
+
+
 @router.get("/mineral-sites/make-id")
 def get_site_uri(source_id: str, record_id: str):
     return make_site_uri(source_id, record_id)
@@ -231,8 +252,7 @@ def get_site_by_uri(uri: IRI | URIRef) -> dict:
 
 @router.post("/mineral-sites")
 def create_site(
-    site: Annotated[MineralSite, Body(embed=True)],
-    same_as: Annotated[list[InternalID], Body(embed=True)],
+    create_site: Annotated[CreateMineralSite, Body()],
     user: CurrentUserDep,
 ):
     """Create a mineral site."""
@@ -243,6 +263,8 @@ def create_site(
     #      by reading the data first. This is impossible to do via Restful API as we
     #      cannot explicitly control the transaction. We have to achieve this by implementing
     #      a custom lock mechanism. We will revisit this later.
+    site = create_site.to_mineral_site()
+    same_as = create_site.same_as
     uri = make_site_uri(site.source_id, site.record_id)
 
     if MineralSite.has_uri(uri):
