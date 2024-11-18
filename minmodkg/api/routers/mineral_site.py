@@ -173,9 +173,21 @@ WHERE {
 
 
 class CreateMineralSite(MineralSite):
+    created_by: IRI | list[IRI] = Field(default_factory=list)
     same_as: list[InternalID] = Field(default_factory=list)
 
     def to_mineral_site(self) -> MineralSite:
+        if isinstance(self.created_by, str):
+            self.created_by = [self.created_by]
+
+        if not all(
+            user.startswith("https://minmod.isi.edu/users/") for user in self.created_by
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The created_by field must be a valid user URI. E.g., https://minmod.isi.edu/users/<username>",
+            )
+
         return MineralSite.model_construct(
             source_id=self.source_id,
             record_id=self.record_id,

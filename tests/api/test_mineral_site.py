@@ -97,7 +97,6 @@ class TestMineralSite:
                     ),
                 )
             ],
-            same_as=[self.site1_uri],
             dedup_site_uri=self.site1_dedup_uri,
         )
         self.site2_id = make_site_uri(
