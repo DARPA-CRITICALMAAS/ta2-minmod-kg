@@ -323,7 +323,7 @@ def make_dedup_site(
             or site["dt_confidence"] > _tmp_deposit_types[site["dt_id"]].confidence
         ):
             _tmp_deposit_types[site["dt_id"]] = DedupMineralSiteDepositType(
-                id=site["dt_id"],
+                id=mr.id(site["dt_id"]),
                 source=site["dt_source"],
                 confidence=site["dt_confidence"],
             )
@@ -380,7 +380,7 @@ def make_dedup_site(
     lon = None
     for site_id in ranked_site_ids:
         _tmp_country = {
-            site["country"]
+            mr.id(site["country"])
             for site in sid2sites[site_id]
             if site["country"] is not None
         }
@@ -389,7 +389,7 @@ def make_dedup_site(
             break
     for site_id in ranked_site_ids:
         _tmp_province = {
-            site["state_or_province"]
+            mr.id(site["state_or_province"])
             for site in sid2sites[site_id]
             if site["state_or_province"] is not None
         }
