@@ -226,7 +226,7 @@ def get_mineral_site_model() -> Callable[[MineralSite], Graph]:
         site: MineralSite,
     ) -> Graph:
         ttl_data = main(ResourceDataObject([site.get_drepr_resource()]))
-        g = Graph(namespace_manager=MineralSite.rdfdata.ns.rdflib_namespace_manager)
+        g = Graph()
         g.parse(data=ttl_data, format="turtle")
         return g
 

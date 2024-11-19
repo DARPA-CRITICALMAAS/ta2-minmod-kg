@@ -88,7 +88,7 @@ def kg(resource_dir: Path, db):
 
     # insert basic KG info
     with Timer().watch_and_report("Finish loading KG data"):
-        g = Graph(namespace_manager=config.MINMOD_KG.ns.rdflib_namespace_manager)
+        g = Graph()
         for file in resource_dir.glob("kgdata/**/*.ttl"):
             g.parse(file, format="ttl")
         config.MINMOD_KG.insert(g)

@@ -377,7 +377,7 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
 def get_site_changes(
     current_site: Graph, new_site: Graph
 ) -> tuple[list[Triple], list[Triple]]:
-    ns_manager = current_site.namespace_manager
+    ns_manager = MINMOD_KG.ns.rdflib_namespace_manager
     current_triples = set(current_site)
     new_triples = set(new_site)
     del_triples = [

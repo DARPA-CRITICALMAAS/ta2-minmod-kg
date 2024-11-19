@@ -61,7 +61,7 @@ class BaseRDFModel(BaseModel):
 
     def to_graph(self) -> Graph:
         ns = self.rdfdata.ns
-        g = Graph(namespace_manager=ns.rdflib_namespace_manager)
+        g = Graph()
         for s, p, o in self.to_triples():
             if s.startswith("http://") or s.startswith("https://"):
                 subj = URIRef(s)
@@ -437,7 +437,7 @@ class RDFStore:
 
     def construct(self, query: str):
         resp = self._sparql(query, self.query_endpoint, type="query")
-        g = Graph(namespace_manager=self.ns.rdflib_namespace_manager)
+        g = Graph()
         g.parse(data=resp.text, format="turtle")
         return g
 
@@ -460,7 +460,7 @@ class RDFStore:
         if not isinstance(query, str):
             parts = ["INSERT DATA {"]
             if isinstance(query, Graph):
-                ns_manager = query.namespace_manager
+                ns_manager = self.ns.rdflib_namespace_manager
                 parts.extend(
                     f"\n{s.n3(ns_manager)} {p.n3(ns_manager)} {o.n3(ns_manager)} ."
                     for s, p, o in query
@@ -489,8 +489,6 @@ class RDFStore:
         else:
             parts.append(insert)
         parts.append("\n} WHERE {}")
-
-        print(">>> query\n", "".join(parts))
 
         return self._sparql("".join(parts), self.update_endpoint, type="update")
 
