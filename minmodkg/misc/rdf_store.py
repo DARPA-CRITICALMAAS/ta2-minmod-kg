@@ -82,7 +82,8 @@ class BaseRDFModel(BaseModel):
                     o, datatype=XSD.integer if o[0].find(".") == -1 else XSD.float
                 )
             elif o[0] == '"':
-                obj = RDFLiteral(o)
+                # TODO: fix bug if we need to escape the quote
+                obj = RDFLiteral(o[1:-1])
             else:
                 prefix, name = o.split(":", 1)
                 obj = ns.namespaces[prefix].uri(name)
@@ -459,9 +460,13 @@ class RDFStore:
         if not isinstance(query, str):
             parts = ["INSERT DATA {"]
             if isinstance(query, Graph):
-                parts.extend(f"\n{s.n3()} {p.n3()} {o.n3()}." for s, p, o in query)
+                ns_manager = query.namespace_manager
+                parts.extend(
+                    f"\n{s.n3(ns_manager)} {p.n3(ns_manager)} {o.n3(ns_manager)} ."
+                    for s, p, o in query
+                )
             else:
-                parts.extend((f"\n{s} {p} {o}." for s, p, o in query))
+                parts.extend((f"\n{s} {p} {o} ." for s, p, o in query))
             parts.append("\n}")
             query = "".join(parts)
 
@@ -484,6 +489,9 @@ class RDFStore:
         else:
             parts.append(insert)
         parts.append("\n} WHERE {}")
+
+        print(">>> query\n", "".join(parts))
+
         return self._sparql("".join(parts), self.update_endpoint, type="update")
 
     def _sparql(

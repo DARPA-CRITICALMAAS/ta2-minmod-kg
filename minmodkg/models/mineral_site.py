@@ -174,9 +174,12 @@ class MineralSite(BaseRDFModel):
 
     def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
         g = self.to_graph()
+        ns_manager = self.rdfdata.ns.rdflib_namespace_manager
         if triples is None:
             triples = []
-        triples.extend((s.n3(), p.n3(), o.n3()) for s, p, o in g)
+        triples.extend(
+            (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager)) for s, p, o in g
+        )
         return triples
 
     def update_derived_data(self, username: str):

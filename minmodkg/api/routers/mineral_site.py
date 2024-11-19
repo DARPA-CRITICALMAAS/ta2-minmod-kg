@@ -48,14 +48,14 @@ class UpdateDedupLink(BaseModel):
                 site_uris.add(ns.mr.uri(site))
 
         old_dedup_site_uris = cls.get_dedup_sites(site_uris)
-        site_uris = site_uris.union(old_dedup_site_uris)
+        all_uris = site_uris.union(old_dedup_site_uris)
 
         # step 2: lock the objects
-        with MINMOD_KG.transaction(list(site_uris)).transaction():
+        with MINMOD_KG.transaction(list(all_uris)).transaction():
             # step 3: check if this changes will affect sites that are not in the group
             # if so, we need to abort the transaction
             affected_site_uris = {
-                x["o"]
+                URIRef(x["o"])
                 for x in MINMOD_KG.query(
                     """
 SELECT DISTINCT ?o
@@ -102,9 +102,9 @@ CONSTRUCT {
 WHERE {
     OPTIONAL { ?ms owl:sameAs ?ms1 . }
     OPTIONAL { ?ms md:dedup_site ?dms . }
-    OPTIONAL { ?ms mo:mineral_inventory/mo:commodity/mo:normalized_uri ?commodity . }
+    OPTIONAL { ?ms md:grade_tonnage/md:commodity ?commodity . }
 
-    VALUES ?s { %s }
+    VALUES ?ms { %s }
 }
                 """
                 % f" ".join(f"<{uri}>" for uri in site_uris)
@@ -161,12 +161,13 @@ WHERE {
             old_triples = old_site_triples.union(iter(old_dedup_sites_graph))
             new_triples = new_site_triples.union(iter(new_dedup_sites_graph))
 
+            nsmng = ns.rdflib_namespace_manager
             del_triples = [
-                (s.n3(), p.n3(), o.n3())
+                (s.n3(nsmng), p.n3(nsmng), o.n3(nsmng))
                 for s, p, o in old_triples.difference(new_triples)
             ]
             add_triples = [
-                (s.n3(), p.n3(), o.n3())
+                (s.n3(nsmng), p.n3(nsmng), o.n3(nsmng))
                 for s, p, o in new_triples.difference(old_triples)
             ]
 
@@ -376,13 +377,16 @@ def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
 def get_site_changes(
     current_site: Graph, new_site: Graph
 ) -> tuple[list[Triple], list[Triple]]:
+    ns_manager = current_site.namespace_manager
     current_triples = set(current_site)
     new_triples = set(new_site)
     del_triples = [
-        (s.n3(), p.n3(), o.n3()) for s, p, o in current_triples.difference(new_triples)
+        (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
+        for s, p, o in current_triples.difference(new_triples)
     ]
     add_triples = [
-        (s.n3(), p.n3(), o.n3()) for s, p, o in new_triples.difference(current_triples)
+        (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
+        for s, p, o in new_triples.difference(current_triples)
     ]
     return del_triples, add_triples
 
