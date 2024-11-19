@@ -20,12 +20,14 @@ Setup the workspace by cloning [ta2-minmod-data](https://github.com/DARPA-CRITIC
 git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
 git clone --depth 1 https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
 mkdir kgdata
+mkdir config
 ```
 
 The directory will look like this
 
     <WORKDIR>
       ├── kgdata                    # for storing databases
+      ├── config                    # for storing configuration
       ├── ta2-minmod-data           # ta2-minmod-data repository
       └── ta2-minmod-kg             # code to setup TA2 KG
 
@@ -42,6 +44,8 @@ The following commands will use these environment variables:
 
 2. `CERT_DIR`: a directory containing SSL certificate (`fullchain.pem` and `privkey.pem`) for your server (see more at [Generating an SSL certificate](#generating-an-ssl-certificate)).
 
+3. `CFG_DIR`: a directory containing necessary files for the API such as `config.yml`
+
 To make it easy to set these environment variables, you can create a copied file named `.myenv` from [`env.template`](/env.template) and update the values accordingly. Then you can run the following command to set the environment variables:
 
 ```bash
@@ -55,6 +59,10 @@ You can use [Let's Encrypt](https://letsencrypt.org/) to create a free SSL certi
 ```
 openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
 ```
+
+### Generating API configuration
+
+Create a copy of [config.yml.template](/config.yml.template) at the same folder and name it `config.yml`. Update the values accordingly. Note that you must update the secret key for the API by running `openssl rand -hex 32` and update the value in `config.yml`.
 
 ### Setup dependencies
 
