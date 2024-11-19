@@ -143,219 +143,219 @@ alignments:
   - type: auto
 
 semantic_model:
-  mno:MineralSite:1:
+  mo:MineralSite:1:
     properties:
       - [drepr:uri, site_id]
       - [rdfs:label, site_name]
       - [skos:altLabel, site_aliases]
-      - [mno:source_id, site_source_id]
-      - [mno:record_id, site_record_id]
-      - [mno:site_type, site_type]
-      - [mno:site_rank, site_rank]
-      - [mno:modified_at, site_modified_at]
-      - [mno:created_by, site_created_by]
+      - [mo:source_id, site_source_id]
+      - [mo:record_id, site_record_id]
+      - [mo:site_type, site_type]
+      - [mo:site_rank, site_rank]
+      - [mo:modified_at, site_modified_at]
+      - [mo:created_by, site_created_by]
     links:
-      - [mno:deposit_type_candidate, mno:DepositTypeCandidate:1]
-      - [mno:location_info, mno:LocationInfo:1]
-      - [mno:mineral_inventory, mno:MineralInventory:1]
-      - [mno:reference, mno:Reference:site]
+      - [mo:deposit_type_candidate, mo:DepositTypeCandidate:1]
+      - [mo:location_info, mo:LocationInfo:1]
+      - [mo:mineral_inventory, mo:MineralInventory:1]
+      - [mo:reference, mo:Reference:site]
 
   # ------------------------------------------------------------
   # DepositTypeCandidate
-  mno:DepositTypeCandidate:1:
+  mo:DepositTypeCandidate:1:
     properties:
       - [drepr:uri, deposit_type_id]
-      - [mno:observed_name, deposit_type_name]
-      - [mno:source, deposit_type_source]
-      - [mno:normalized_uri, deposit_type_normalized_uri, drepr:uri]
-      - [mno:confidence, deposit_type_confidence]
+      - [mo:observed_name, deposit_type_name]
+      - [mo:source, deposit_type_source]
+      - [mo:normalized_uri, deposit_type_normalized_uri, drepr:uri]
+      - [mo:confidence, deposit_type_confidence]
 
   # ------------------------------------------------------------
   # LocationInfo
-  mno:LocationInfo:1:
+  mo:LocationInfo:1:
     properties:
       - [drepr:uri, loc_id]
-      - [mno:location, location, geo:wktLiteral]
+      - [mo:location, location, geo:wktLiteral]
     links:
-      - [mno:crs, mno:CoordinateReferenceSystemCandidate:crs]
-      - [mno:state_or_province, mno:StateOrProvinceCandidate:state_or_province]
-      - [mno:country, mno:CountryCandidate:country]
-  mno:CoordinateReferenceSystemCandidate:crs:
+      - [mo:crs, mo:CoordinateReferenceSystemCandidate:crs]
+      - [mo:state_or_province, mo:StateOrProvinceCandidate:state_or_province]
+      - [mo:country, mo:CountryCandidate:country]
+  mo:CoordinateReferenceSystemCandidate:crs:
     properties:
       - [drepr:uri, crs_id]
-      - [mno:observed_name, crs_name]
-      - [mno:normalized_uri, crs_uri, drepr:uri]
-      - [mno:source, crs_source]
-      - [mno:confidence, crs_confidence]
-  mno:StateOrProvinceCandidate:state_or_province:
+      - [mo:observed_name, crs_name]
+      - [mo:normalized_uri, crs_uri, drepr:uri]
+      - [mo:source, crs_source]
+      - [mo:confidence, crs_confidence]
+  mo:StateOrProvinceCandidate:state_or_province:
     properties:
       - [drepr:uri, state_or_province_id]
-      - [mno:observed_name, state_or_province_name]
-      - [mno:normalized_uri, state_or_province_uri, drepr:uri]
-      - [mno:source, state_or_province_source]
-      - [mno:confidence, state_or_province_confidence]
-  mno:CountryCandidate:country:
+      - [mo:observed_name, state_or_province_name]
+      - [mo:normalized_uri, state_or_province_uri, drepr:uri]
+      - [mo:source, state_or_province_source]
+      - [mo:confidence, state_or_province_confidence]
+  mo:CountryCandidate:country:
     properties:
       - [drepr:uri, country_id]
-      - [mno:observed_name, country_name]
-      - [mno:normalized_uri, country_uri, drepr:uri]
-      - [mno:source, country_source]
-      - [mno:confidence, country_confidence]
+      - [mo:observed_name, country_name]
+      - [mo:normalized_uri, country_uri, drepr:uri]
+      - [mo:source, country_source]
+      - [mo:confidence, country_confidence]
 
   # ------------------------------------------------------------
   # MineralInventory
-  mno:MineralInventory:1:
+  mo:MineralInventory:1:
     properties:
       - [drepr:uri, inv_id]
       # TODO: make inv_date xsd:date
-      # - [mno:date, inv_date, xsd:date]
-      - [mno:date, inv_date]
-      - [mno:zone, inv_zone]
+      # - [mo:date, inv_date, xsd:date]
+      - [mo:date, inv_date]
+      - [mo:zone, inv_zone]
     links:
-      - [mno:commodity, mno:CommodityCandidate:commodity]
-      - [mno:material_form, mno:MaterialFormCandidate:material_form]
-      - [mno:category, mno:ResourceReserveCategoryCandidate:category]
-      - [mno:ore, mno:Measure:ore]
-      - [mno:grade, mno:Measure:grade]
-      - [mno:cutoff_grade, mno:Measure:cutoff_grade]
-      - [mno:reference, mno:Reference:inv]
+      - [mo:commodity, mo:CommodityCandidate:commodity]
+      - [mo:material_form, mo:MaterialFormCandidate:material_form]
+      - [mo:category, mo:ResourceReserveCategoryCandidate:category]
+      - [mo:ore, mo:Measure:ore]
+      - [mo:grade, mo:Measure:grade]
+      - [mo:cutoff_grade, mo:Measure:cutoff_grade]
+      - [mo:reference, mo:Reference:inv]
     subject: inv_id
-  mno:Measure:ore:
+  mo:Measure:ore:
     properties:
       - [drepr:uri, ore_id]
-      - [mno:value, ore_value, xsd:decimal]
+      - [mo:value, ore_value, xsd:decimal]
     links:
-      - [mno:unit, mno:UnitCandidate:ore_unit]
-  mno:Measure:grade:
+      - [mo:unit, mo:UnitCandidate:ore_unit]
+  mo:Measure:grade:
     properties:
       - [drepr:uri, grade_id]
-      - [mno:value, grade_value, xsd:decimal]
+      - [mo:value, grade_value, xsd:decimal]
     links:
-      - [mno:unit, mno:UnitCandidate:grade_unit]
-  mno:Measure:cutoff_grade:
+      - [mo:unit, mo:UnitCandidate:grade_unit]
+  mo:Measure:cutoff_grade:
     properties:
       - [drepr:uri, cutoff_grade_id]
-      - [mno:value, cutoff_grade_value, xsd:decimal]
+      - [mo:value, cutoff_grade_value, xsd:decimal]
     links:
-      - [mno:unit, mno:UnitCandidate:cutoff_grade_unit]
-  mno:ResourceReserveCategoryCandidate:category:
+      - [mo:unit, mo:UnitCandidate:cutoff_grade_unit]
+  mo:ResourceReserveCategoryCandidate:category:
     properties:
       - [drepr:uri, category_id]
-      - [mno:observed_name, category_name]
-      - [mno:normalized_uri, category_uri, drepr:uri]
-      - [mno:source, category_source]
-      - [mno:confidence, category_confidence]
-  mno:CommodityCandidate:commodity:
+      - [mo:observed_name, category_name]
+      - [mo:normalized_uri, category_uri, drepr:uri]
+      - [mo:source, category_source]
+      - [mo:confidence, category_confidence]
+  mo:CommodityCandidate:commodity:
     properties:
       - [drepr:uri, commodity_id]
-      - [mno:observed_name, commodity_name]
-      - [mno:normalized_uri, commodity_uri, drepr:uri]
-      - [mno:source, commodity_source]
-      - [mno:confidence, commodity_confidence]
-  mno:MaterialFormCandidate:material_form:
+      - [mo:observed_name, commodity_name]
+      - [mo:normalized_uri, commodity_uri, drepr:uri]
+      - [mo:source, commodity_source]
+      - [mo:confidence, commodity_confidence]
+  mo:MaterialFormCandidate:material_form:
     properties:
       - [drepr:uri, material_form_id]
-      - [mno:observed_name, material_form_name]
-      - [mno:normalized_uri, material_form_uri, drepr:uri]
-      - [mno:source, material_form_source]
-      - [mno:confidence, material_form_confidence]
-  mno:UnitCandidate:ore_unit:
+      - [mo:observed_name, material_form_name]
+      - [mo:normalized_uri, material_form_uri, drepr:uri]
+      - [mo:source, material_form_source]
+      - [mo:confidence, material_form_confidence]
+  mo:UnitCandidate:ore_unit:
     properties:
       - [drepr:uri, ore_unit_id]
-      - [mno:observed_name, ore_unit_name]
-      - [mno:normalized_uri, ore_unit_uri, drepr:uri]
-      - [mno:source, ore_unit_source]
-      - [mno:confidence, ore_unit_confidence]
-  mno:UnitCandidate:grade_unit:
+      - [mo:observed_name, ore_unit_name]
+      - [mo:normalized_uri, ore_unit_uri, drepr:uri]
+      - [mo:source, ore_unit_source]
+      - [mo:confidence, ore_unit_confidence]
+  mo:UnitCandidate:grade_unit:
     properties:
       - [drepr:uri, grade_unit_id]
-      - [mno:observed_name, grade_unit_name]
-      - [mno:normalized_uri, grade_unit_uri, drepr:uri]
-      - [mno:source, grade_unit_source]
-      - [mno:confidence, grade_unit_confidence]
-  mno:UnitCandidate:cutoff_grade_unit:
+      - [mo:observed_name, grade_unit_name]
+      - [mo:normalized_uri, grade_unit_uri, drepr:uri]
+      - [mo:source, grade_unit_source]
+      - [mo:confidence, grade_unit_confidence]
+  mo:UnitCandidate:cutoff_grade_unit:
     properties:
       - [drepr:uri, cutoff_grade_unit_id]
-      - [mno:observed_name, cutoff_grade_unit_name]
-      - [mno:normalized_uri, cutoff_grade_unit_uri, drepr:uri]
-      - [mno:source, cutoff_grade_unit_source]
-      - [mno:confidence, cutoff_grade_unit_confidence]
+      - [mo:observed_name, cutoff_grade_unit_name]
+      - [mo:normalized_uri, cutoff_grade_unit_uri, drepr:uri]
+      - [mo:source, cutoff_grade_unit_source]
+      - [mo:confidence, cutoff_grade_unit_confidence]
 
   # ------------------------------------------------------------
   # MineralInventory Reference
-  mno:Reference:inv:
+  mo:Reference:inv:
     properties:
       - [drepr:uri, ref_inv_id]
-      - [mno:property, ref_inv_property]
-      - [mno:comment, ref_inv_comment]
+      - [mo:property, ref_inv_property]
+      - [mo:comment, ref_inv_comment]
     links:
-      - [mno:document, mno:Document:inv]
-      - [mno:page_info, mno:PageInfo:inv]
-  mno:PageInfo:inv:
+      - [mo:document, mo:Document:inv]
+      - [mo:page_info, mo:PageInfo:inv]
+  mo:PageInfo:inv:
     properties:
       - [drepr:uri, page_inv_id]
-      - [mno:page, page_inv_no]
+      - [mo:page, page_inv_no]
     links:
-      - [mno:bounding_box, mno:BoundingBox:inv]
-  mno:BoundingBox:inv:
+      - [mo:bounding_box, mo:BoundingBox:inv]
+  mo:BoundingBox:inv:
     properties:
       - [drepr:uri, bb_inv_id]
-      - [mno:x_min, bb_inv_x_min]
-      - [mno:x_max, bb_inv_x_max]
-      - [mno:y_min, bb_inv_y_min]
-      - [mno:y_max, bb_inv_y_max]
-  mno:Document:inv:
+      - [mo:x_min, bb_inv_x_min]
+      - [mo:x_max, bb_inv_x_max]
+      - [mo:y_min, bb_inv_y_min]
+      - [mo:y_max, bb_inv_y_max]
+  mo:Document:inv:
     properties:
       - [drepr:uri, doc_inv_id]
-      - [mno:uri, doc_inv_uri]
-      - [mno:doi, doc_inv_doi]
-      - [mno:journal, doc_inv_journal]
-      - [mno:authors, doc_inv_authors]
-      - [mno:description, doc_inv_desc]
-      - [mno:title, doc_inv_title]
-      - [mno:volume, doc_inv_volume]
-      - [mno:issue, doc_inv_issue]
-      - [mno:month, doc_inv_month]
-      - [mno:year, doc_inv_year]
+      - [mo:uri, doc_inv_uri]
+      - [mo:doi, doc_inv_doi]
+      - [mo:journal, doc_inv_journal]
+      - [mo:authors, doc_inv_authors]
+      - [mo:description, doc_inv_desc]
+      - [mo:title, doc_inv_title]
+      - [mo:volume, doc_inv_volume]
+      - [mo:issue, doc_inv_issue]
+      - [mo:month, doc_inv_month]
+      - [mo:year, doc_inv_year]
 
   # ------------------------------------------------------------
   # MineralSite Reference
-  mno:Reference:site:
+  mo:Reference:site:
     properties:
       - [drepr:uri, ref_site_id]
     links:
-      - [mno:document, mno:Document:site]
-      - [mno:page_info, mno:PageInfo:site]
-  mno:PageInfo:site:
+      - [mo:document, mo:Document:site]
+      - [mo:page_info, mo:PageInfo:site]
+  mo:PageInfo:site:
     properties:
       - [drepr:uri, page_site_id]
-      - [mno:page, page_site_no]
+      - [mo:page, page_site_no]
     links:
-      - [mno:bounding_box, mno:BoundingBox:site]
-  mno:BoundingBox:site:
+      - [mo:bounding_box, mo:BoundingBox:site]
+  mo:BoundingBox:site:
     properties:
       - [drepr:uri, bb_site_id]
-      - [mno:x_min, bb_site_x_min]
-      - [mno:x_max, bb_site_x_max]
-      - [mno:y_min, bb_site_y_min]
-      - [mno:y_max, bb_site_y_max]
-  mno:Document:site:
+      - [mo:x_min, bb_site_x_min]
+      - [mo:x_max, bb_site_x_max]
+      - [mo:y_min, bb_site_y_min]
+      - [mo:y_max, bb_site_y_max]
+  mo:Document:site:
     properties:
       - [drepr:uri, doc_site_id]
-      - [mno:uri, doc_site_uri]
-      - [mno:doi, doc_site_doi]
-      - [mno:journal, doc_site_journal]
-      - [mno:authors, doc_site_authors]
-      - [mno:description, doc_site_desc]
-      - [mno:title, doc_site_title]
-      - [mno:volume, doc_site_volume]
-      - [mno:issue, doc_site_issue]
-      - [mno:month, doc_site_month]
-      - [mno:year, doc_site_year]
+      - [mo:uri, doc_site_uri]
+      - [mo:doi, doc_site_doi]
+      - [mo:journal, doc_site_journal]
+      - [mo:authors, doc_site_authors]
+      - [mo:description, doc_site_desc]
+      - [mo:title, doc_site_title]
+      - [mo:volume, doc_site_volume]
+      - [mo:issue, doc_site_issue]
+      - [mo:month, doc_site_month]
+      - [mo:year, doc_site_year]
 
   prefixes:
-    mnr: https://minmod.isi.edu/resource/
-    mno: https://minmod.isi.edu/ontology/
+    mr: https://minmod.isi.edu/resource/
+    mo: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     xsd: http://www.w3.org/2001/XMLSchema#
