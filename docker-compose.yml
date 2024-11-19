@@ -45,6 +45,12 @@ services:
     networks:
       - minmod
     command: python ./app.py dev
+  editor:
+    image: darpa-criticalmaas/ta2-minmod-editor
+    ports:
+      - 9000:80
+    environment:
+      - MINMOD_API=http://api:8000
 
 networks:
   minmod:
