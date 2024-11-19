@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Body, HTTPException
 from minmodkg.api.dependencies import get_snapshot_id, norm_commodity, rank_source
 from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.misc import group_by_key
@@ -26,21 +28,33 @@ def dedup_mineral_sites_v2(
     return [x.model_dump(exclude_none=True) for x in output]
 
 
+@router.post("/dedup-mineral-sites/find_by_ids")
+def api_get_dedup_mineral_sites(
+    ids: Annotated[list[InternalID], Body(embed=True)],
+    commodity: InternalID,
+) -> dict[InternalID, DedupMineralSitePublic]:
+    return get_dedup_mineral_site_by_ids(get_snapshot_id(), ids, commodity)
+
+
 @router.get("/dedup-mineral-sites/{dedup_site_id}")
 def api_get_dedup_mineral_site(
     dedup_site_id: str,
     commodity: str,
 ):
     commodity = norm_commodity(commodity)
-    output = get_dedup_mineral_site(get_snapshot_id(), dedup_site_id, commodity)
-    return output.model_dump(exclude_none=True)
+    output = get_dedup_mineral_site_by_ids(
+        get_snapshot_id(), [dedup_site_id], commodity
+    )
+    if len(output) == 0:
+        raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")
+    return output[dedup_site_id].model_dump(exclude_none=True)
 
 
-def get_dedup_mineral_site(
+def get_dedup_mineral_site_by_ids(
     snapshot_id: str,
-    dms: InternalID,
+    lst_dms: list[InternalID],
     commodity: InternalID,
-) -> DedupMineralSitePublic:
+) -> dict[InternalID, DedupMineralSitePublic]:
     mr = MINMOD_NS.mr
     md = MINMOD_NS.md
     mo = MINMOD_NS.mo
@@ -53,6 +67,7 @@ def get_dedup_mineral_site(
 
     query = """
     SELECT
+        ?dms
         ?ms
         ?ms_source
         ?ms_name
@@ -70,7 +85,7 @@ def get_dedup_mineral_site(
         ?total_tonnage
         ?total_grade
     WHERE {
-        mr:%s md:site ?ms .
+        ?dms md:site ?ms .
 
         OPTIONAL {
             ?ms mo:deposit_type_candidate [
@@ -110,10 +125,12 @@ def get_dedup_mineral_site(
                 md:total_grade ?total_grade ;
             ]
         }
+
+        VALUES ?dms { %s }
     }
     """ % (
-        dms,
         commodity,
+        " ".join(f"mr:{dms}" for dms in lst_dms),
     )
     qres = MINMOD_KG.query(
         query,
@@ -136,7 +153,19 @@ def get_dedup_mineral_site(
             "total_grade",
         ],
     )
-    return make_dedup_site(dms, commodity, qres, snapshot_id)
+
+    if len(lst_dms) == 1:
+        if len(qres) == 0:
+            return {}
+        return {lst_dms[0]: make_dedup_site(lst_dms[0], commodity, qres, snapshot_id)}
+    dms2sites = group_by_key(qres, "dms")
+    return {
+        (dms_id := mr.id(dms)): make_dedup_site(
+            dms_id, commodity, dupsites, snapshot_id
+        )
+        for dms, dupsites in dms2sites.items()
+        if len(dupsites) > 0
+    }
 
 
 def get_dedup_mineral_sites(
