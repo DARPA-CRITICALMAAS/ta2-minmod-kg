@@ -5,7 +5,7 @@ namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/
   mo-derived: https://minmod.isi.edu/ontology-derived/
-dbfile: /tmp/minmod.db
+dbfile: /home/criticalmaas/config/minmod.db
 api_prefix: /api/v1
 lod_prefix: ""
 # openssl rand -hex 32

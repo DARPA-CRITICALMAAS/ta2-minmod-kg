@@ -27,6 +27,8 @@ services:
       - "443:443"
     networks:
       - minmod
+    cap_add:
+      - NET_BIND_SERVICE
   api:
     image: minmod
     ports:
@@ -36,7 +38,7 @@ services:
     environment:
       - CFG_FILE=/home/criticalmaas/config/config.yml
     volumes:
-      - ../config:/home/criticalmaas/config
+      - ${CFG_DIR}:/home/criticalmaas/config
     command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
   dashboard:
     image: toan2/minmod-dashboard
@@ -48,9 +50,12 @@ services:
   editor:
     image: darpa-criticalmaas/ta2-minmod-editor
     ports:
-      - 9000:80
+      - 9000:9000
+    networks:
+      - minmod
     environment:
       - MINMOD_API=http://api:8000
+    command: python -m minmod_editor --port 9000
 
 networks:
   minmod:

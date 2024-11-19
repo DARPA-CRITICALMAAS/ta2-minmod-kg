@@ -49,7 +49,7 @@ The following commands will use these environment variables:
 To make it easy to set these environment variables, you can create a copied file named `.myenv` from [`env.template`](/env.template) and update the values accordingly. Then you can run the following command to set the environment variables:
 
 ```bash
-. ./ta2-minmod-kg/.myenv
+. ./.myenv
 ```
 
 ### Generating an SSL certificate
@@ -62,7 +62,7 @@ openssl req -x509 -newkey rsa:4096 -keyout privkey.pem -out fullchain.pem -sha25
 
 ### Generating API configuration
 
-Create a copy of [config.yml.template](/config.yml.template) at the same folder and name it `config.yml`. Update the values accordingly. Note that you must update the secret key for the API by running `openssl rand -hex 32` and update the value in `config.yml`.
+Create a copy of [config.yml.template](/config.yml.template) at the config folder and name it `config.yml`. Update the values accordingly. Note that you must update the secret key for the API by running `openssl rand -hex 32` and update the value in `config.yml`.
 
 ### Setup dependencies
 
