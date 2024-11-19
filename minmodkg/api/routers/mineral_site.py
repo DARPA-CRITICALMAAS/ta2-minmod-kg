@@ -303,8 +303,15 @@ def create_site(
     triples = derived_site.to_triples(triples)
     triples = partial_dedup_site.to_triples(triples)
     # add same as to other sites
+    ns_manager = MINMOD_KG.ns.rdflib_namespace_manager
+    _subj = URIRef(site.uri).n3(ns_manager)
+    _pred = OWL.sameAs.n3(ns_manager)
     triples.extend(
-        (site.uri, OWL.sameAs, MINMOD_KG.ns.mr.uri(same_as_id))
+        (
+            _subj,
+            _pred,
+            MINMOD_KG.ns.mr.uri(same_as_id).n3(ns_manager),
+        )
         for same_as_id in same_as
     )
 
