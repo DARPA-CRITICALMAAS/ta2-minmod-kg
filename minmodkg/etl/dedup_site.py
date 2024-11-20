@@ -12,8 +12,8 @@ from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.mineral_site import MineralSite
-from minmodkg.typing import IRI
-from rdflib import OWL, RDF, RDFS, Graph
+from minmodkg.typing import InternalID
+from rdflib import RDFS, Graph
 from timer import Timer
 from tqdm import tqdm
 
@@ -142,7 +142,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
     def step2_gen_dedup_site(
         self, infiles: list[Path], args: DedupSiteServiceInvokeArgs
     ):
-        sites: dict[IRI, DerivedMineralSite] = {}
+        sites: dict[InternalID, DerivedMineralSite] = {}
         for infile in sorted(infiles):
             for raw_derived_site in serde.json.deser(
                 infile,
@@ -154,7 +154,9 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                     sites[site.id].merge(site)
 
         # generate dedup mineral site
-        groups: list[list[IRI]] = serde.json.deser(args["same_as_group"].get_path())
+        groups: list[list[InternalID]] = serde.json.deser(
+            args["same_as_group"].get_path()
+        )
         linked_sites = {site for grp in groups for site in grp}
         # add sites that are not linked first
         for site_id, site in sites.items():
@@ -171,7 +173,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
     def step3_save_dedup_site(
         self,
         dedup_sites: list[DedupMineralSite],
-        sites: dict[IRI, DerivedMineralSite],
+        sites: dict[InternalID, DerivedMineralSite],
         args: DedupSiteServiceInvokeArgs,
     ):
         output_fmter = FormatOutputPathModel.init(args["output"])

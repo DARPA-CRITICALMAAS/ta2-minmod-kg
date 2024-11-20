@@ -263,7 +263,7 @@ class GraphLink:
 class Step1ComputingSubGroupFn(Fn):
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="step_1_v104.sqlite"),
+        backend=FileSqliteBackend.factory(filename="step_1_v105.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
@@ -274,10 +274,10 @@ class Step1ComputingSubGroupFn(Fn):
         it = iter(lst)
         next(it)
         edges = []
-        for u, v in it:
-            assert not u.startswith("http")
-            assert not v.startswith("http")
-            edges.append((mr.id(u), mr.id(v)))
+        for uid, vid in it:
+            assert not uid.startswith("http")
+            assert not vid.startswith("http")
+            edges.append((uid, vid))
 
         G = nx.from_edgelist(edges)
         groups = nx.connected_components(G)
