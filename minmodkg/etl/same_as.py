@@ -275,8 +275,8 @@ class Step1ComputingSubGroupFn(Fn):
         next(it)
         edges = []
         for u, v in it:
-            assert u.startswith(mr.namespace)
-            assert v.startswith(mr.namespace)
+            assert not u.startswith("http")
+            assert not v.startswith("http")
             edges.append((mr.id(u), mr.id(v)))
 
         G = nx.from_edgelist(edges)
