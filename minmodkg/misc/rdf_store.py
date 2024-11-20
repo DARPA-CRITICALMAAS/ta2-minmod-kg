@@ -77,13 +77,13 @@ class BaseRDFModel(BaseModel):
 
             if o.startswith("http://") or o.startswith("https://"):
                 obj = URIRef(o)
+            elif o[0] == '"':
+                # TODO: fix bug if we need to escape the quote
+                obj = RDFLiteral(o[1:-1])
             elif o[0].isdigit() or o[0] == "-":
                 obj = RDFLiteral(
                     o, datatype=XSD.int if o.find(".") == -1 else XSD.float
                 )
-            elif o[0] == '"':
-                # TODO: fix bug if we need to escape the quote
-                obj = RDFLiteral(o[1:-1])
             else:
                 prefix, name = o.split(":", 1)
                 obj = ns.namespaces[prefix].uri(name)
@@ -369,7 +369,6 @@ class RDFStore:
                 if key not in sample:
                     sample[key] = {"type": "bnode"}
 
-        print(">>>", sample)
         output = [{} for _ in range(len(qres))]
         for key, val in sample.items():
             if val["type"] in {"uri", "bnode"}:
