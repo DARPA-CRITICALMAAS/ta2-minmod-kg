@@ -32,8 +32,13 @@ def dedup_mineral_sites_v2(
 def api_get_dedup_mineral_sites(
     ids: Annotated[list[InternalID], Body(embed=True)],
     commodity: Annotated[InternalID, Body(embed=True)],
-) -> dict[InternalID, DedupMineralSitePublic]:
-    return get_dedup_mineral_site_by_ids(get_snapshot_id(), ids, commodity)
+) -> dict[InternalID, dict]:
+    return {
+        id: site.model_dump(exclude_none=True)
+        for id, site in get_dedup_mineral_site_by_ids(
+            get_snapshot_id(), ids, commodity
+        ).items()
+    }
 
 
 @router.get("/dedup-mineral-sites/{dedup_site_id}")
