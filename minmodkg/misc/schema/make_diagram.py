@@ -230,7 +230,7 @@ def get_field_type(
     for obj in types:
         if obj == XSD.string:
             norm_types.append(str)
-        elif obj == XSD.integer:
+        elif obj == XSD.integer or obj == XSD.int:
             norm_types.append(int)
         elif obj == XSD.decimal:
             norm_types.append(float)

@@ -79,7 +79,7 @@ class BaseRDFModel(BaseModel):
                 obj = URIRef(o)
             elif o[0].isdigit() or o[0] == "-":
                 obj = RDFLiteral(
-                    o, datatype=XSD.integer if o[0].find(".") == -1 else XSD.float
+                    o, datatype=XSD.int if o.find(".") == -1 else XSD.float
                 )
             elif o[0] == '"':
                 # TODO: fix bug if we need to escape the quote
@@ -369,6 +369,7 @@ class RDFStore:
                 if key not in sample:
                     sample[key] = {"type": "bnode"}
 
+        print(">>>", sample)
         output = [{} for _ in range(len(qres))]
         for key, val in sample.items():
             if val["type"] in {"uri", "bnode"}:
@@ -390,6 +391,7 @@ class RDFStore:
                             output[i][key] = None
                 elif val["datatype"] in {
                     "http://www.w3.org/2001/XMLSchema#integer",
+                    "http://www.w3.org/2001/XMLSchema#int",
                 }:
                     for i, row in enumerate(qres):
                         if key in row:
