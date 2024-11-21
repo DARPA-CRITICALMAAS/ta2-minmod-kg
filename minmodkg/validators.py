@@ -15,6 +15,7 @@ import orjson
 import typer
 from drepr.main import convert
 from loguru import logger
+from minmodkg.config import CFG_FILE
 from minmodkg.models.mineral_site import MineralSite
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
