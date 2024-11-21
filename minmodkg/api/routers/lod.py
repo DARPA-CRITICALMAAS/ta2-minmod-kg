@@ -30,7 +30,7 @@ def get_resource(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):
     uri = MINMOD_NS.mr.uri(resource_id)
-    if not MINMOD_KG.has(MINMOD_NS.mr.uri(uri)):
+    if not MINMOD_KG.has(uri):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
