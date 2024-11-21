@@ -92,7 +92,7 @@ def rank_source(
 ) -> int:
     """Get ranking of a source, higher is better"""
     # TODO: fix me!!!
-    if is_system_user(created_by):
+    if not is_system_user(created_by):
         return 1000
 
     default_score = 5
