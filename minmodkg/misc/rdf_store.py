@@ -82,7 +82,12 @@ class BaseRDFModel(BaseModel):
                 obj = RDFLiteral(o[1:-1])
             elif o[0].isdigit() or o[0] == "-":
                 obj = RDFLiteral(
-                    o, datatype=XSD.int if o.find(".") == -1 else XSD.float
+                    o,
+                    datatype=(
+                        XSD.int
+                        if (o.find(".") == -1 and o.find("e-") == -1)
+                        else XSD.float
+                    ),
                 )
             else:
                 prefix, name = o.split(":", 1)
