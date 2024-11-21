@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, HTTPException
 from minmodkg.api.dependencies import get_snapshot_id, norm_commodity, rank_source
+from minmodkg.api.models.user import is_system_user
 from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.misc import group_by_key
 from minmodkg.models.dedup_mineral_site import (
@@ -436,16 +437,32 @@ def make_dedup_site(
 
     gt_sites = [s for s in dupsites if s["total_contained_metal"] is not None]
     if len(gt_sites) > 0:
-        gtsite = max(
-            (s for s in dupsites if s["total_contained_metal"] is not None),
-            key=lambda x: x["total_contained_metal"],
-        )
-        gt = GradeTonnage(
-            commodity=commodity,
-            total_contained_metal=gtsite["total_contained_metal"],
-            total_tonnage=gtsite["total_tonnage"],
-            total_grade=gtsite["total_grade"],
-        )
+        # if there is grade & tonnage from the users, prefer it
+        curated_gt_sites = [s for s in gt_sites if not is_system_user(s["created_by"])]
+        if len(curated_gt_sites) > 0:
+            # choose based on the latest modified date
+            gtsite = max(
+                curated_gt_sites,
+                key=lambda x: x["modified_at"],
+            )
+            gt = GradeTonnage(
+                commodity=commodity,
+                total_contained_metal=gtsite["total_contained_metal"],
+                total_tonnage=gtsite["total_tonnage"],
+                total_grade=gtsite["total_grade"],
+            )
+        else:
+            # no curated grade & tonnage, choose the one with the highest contained metal
+            gtsite = max(
+                (s for s in dupsites if s["total_contained_metal"] is not None),
+                key=lambda x: x["total_contained_metal"],
+            )
+            gt = GradeTonnage(
+                commodity=commodity,
+                total_contained_metal=gtsite["total_contained_metal"],
+                total_tonnage=gtsite["total_tonnage"],
+                total_grade=gtsite["total_grade"],
+            )
     else:
         gt = GradeTonnage(
             commodity=commodity,
