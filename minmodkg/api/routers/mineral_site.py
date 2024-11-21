@@ -171,6 +171,9 @@ WHERE {
                 for s, p, o in new_triples.difference(old_triples)
             ]
 
+            print(">>> same as del triples", del_triples)
+            print(">>> same as add triples", add_triples)
+
             MINMOD_KG.delete_insert(del_triples, add_triples)
         return new_dedup_sites
 
