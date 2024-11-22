@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from functools import cached_property, lru_cache
 from importlib.metadata import version
 from pathlib import Path
-from typing import Callable, ClassVar, Optional
+from typing import Callable, ClassVar, Optional, Sequence
 
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
@@ -52,6 +52,7 @@ class MineralSite(BaseRDFModel):
 
         def __init__(self):
             ns = self.rdfdata.ns
+
             self.class_reluri = ns.mo.MineralSite
             self.fields = []
 
@@ -94,6 +95,44 @@ class MineralSite(BaseRDFModel):
                         ns.mo, "reference", is_optional=True, target=Reference.qbuilder
                     ),
                 ]
+            )
+
+        def create_get_by_uri(self, uri: IRI | URIRef) -> str:
+            # Fuseki can optimize this case, but I don't know why sometimes it cannot
+            return """
+CONSTRUCT {
+    <%s> ?p ?o .
+    ?cs ?cp ?co .
+}
+WHERE {
+    <%s> ?p ?o .
+    OPTIONAL {
+        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri))+ ?cs .
+        ?cs ?cp ?co .
+    }
+}
+""" % (
+                uri,
+                uri,
+                uri,
+            )
+
+        def create_get_by_uris(self, uris: Sequence[str | URIRef]) -> str:
+            return """
+CONSTRUCT {
+    ?s ?p ?o .
+    ?cs ?cp ?co .
+}
+WHERE {
+    ?s ?p ?o .
+    OPTIONAL {
+        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri))+ ?cs .
+        ?cs ?cp ?co .
+    }
+    VALUES ?s { %s }
+}
+""" % " ".join(
+                f"<{uri}>" for uri in uris
             )
 
     qbuilder: ClassVar[QueryBuilder] = QueryBuilder()
