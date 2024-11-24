@@ -60,6 +60,7 @@ class UpdateDedupLink(BaseModel):
                     """
 SELECT DISTINCT ?o
 WHERE {
+    ?s rdf:type mo:MineralSite .
     OPTIONAL { ?s owl:sameAs ?o . }
     OPTIONAL { ?o owl:sameAs ?s . }
     VALUES ?s { %s }
