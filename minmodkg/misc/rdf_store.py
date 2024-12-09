@@ -22,12 +22,76 @@ from uuid import uuid4
 import httpx
 from minmodkg.misc.exceptions import DBError, TransactionError
 from minmodkg.misc.utils import group_by_key
-from minmodkg.typing import IRI, SPARQLMainQuery, Triple, Triples
+from minmodkg.typing import IRI, InternalID, RelIRI, SPARQLMainQuery, Triple, Triples
 from pydantic import BaseModel
 from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
 from rdflib.namespace import NamespaceManager
 from rdflib.term import Literal as RDFLiteral
 from rdflib.term import Node
+
+
+@dataclass
+class SingleNS:
+    alias: str
+    namespace: str
+
+    def __post_init__(self):
+        assert self.namespace.endswith("/") or self.namespace.endswith(
+            "#"
+        ), f"Namespace {self.namespace} should end with / or #"
+
+    def id(self, uri: IRI | URIRef) -> str:
+        return uri[len(self.namespace) :]
+
+    def uri(self, name: InternalID) -> URIRef:
+        return URIRef(self.namespace + name)
+
+    def uristr(self, name: InternalID) -> IRI:
+        return self.namespace + name
+
+    def __getattr__(self, name: InternalID):
+        return self.alias + ":" + name
+
+    def __getitem__(self, name: InternalID):
+        return self.alias + ":" + name
+
+    def rel2abs(self, reluri: RelIRI) -> URIRef:
+        return URIRef(self.namespace + reluri.split(":")[1])
+
+
+class Namespace:
+    rdf = SingleNS("rdf", str(RDF))
+
+    def __init__(self, ns_cfg: dict):
+        self.mr = SingleNS("mr", ns_cfg["mr"])
+        self.mo = SingleNS("mo", ns_cfg["mo"])
+        self.md = SingleNS("md", ns_cfg["mo-derived"])
+        self.dcterms = SingleNS("dcterms", "http://purl.org/dc/terms/")
+        self.rdfs = SingleNS("rdfs", str(RDFS))
+        self.xsd = SingleNS("xsd", str(XSD))
+        self.owl = SingleNS("owl", str(OWL))
+        self.gkbi = SingleNS("gkbi", "https://geokb.wikibase.cloud/entity/")
+        self.gkbt = SingleNS("gkbt", "https://geokb.wikibase.cloud/prop/direct/")
+        self.geo = SingleNS("geo", "http://www.opengis.net/ont/geosparql#")
+        self.skos = SingleNS("skos", str(SKOS))
+
+        self.namespaces = {
+            x.alias: x for x in self.__dict__.values() if isinstance(x, SingleNS)
+        }
+        self.namespaces[self.rdf.alias] = self.rdf
+
+    def iter(self) -> Iterable[SingleNS]:
+        return self.namespaces.values()
+
+    def get_by_alias(self, alias: str) -> SingleNS:
+        return self.namespaces[alias]
+
+    @cached_property
+    def rdflib_namespace_manager(self) -> NamespaceManager:
+        nsmanager = NamespaceManager(Graph(), bind_namespaces="none")
+        for ns in self.iter():
+            nsmanager.bind(ns.alias, ns.namespace)
+        return nsmanager
 
 
 @dataclass
@@ -86,7 +150,7 @@ class BaseRDFModel(BaseModel):
                     datatype=(
                         XSD.int
                         if (o.find(".") == -1 and o.find("e-") == -1)
-                        else XSD.float
+                        else XSD.decimal
                     ),
                 )
             else:
@@ -101,6 +165,15 @@ class BaseRDFModel(BaseModel):
         return cls.rdfdata.store.has(uri)
 
     @classmethod
+    def has_id(cls, id: InternalID) -> bool:
+        return cls.rdfdata.store.has(cls.qbuilder.class_namespace.uri(id))
+
+    @classmethod
+    def get_by_id(cls, id: InternalID) -> Self:
+        uri = cls.qbuilder.class_namespace.uri(id)
+        return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
+
+    @classmethod
     def get_by_uri(cls, uri: IRI | URIRef) -> Self:
         return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
 
@@ -108,6 +181,10 @@ class BaseRDFModel(BaseModel):
     def get_by_uris(cls, uris: Sequence[IRI | URIRef]) -> list[Self]:
         g = cls.get_graph_by_uris(uris)
         return [cls.from_graph(URIRef(uri), g) for uri in uris]
+
+    @classmethod
+    def get_graph_by_id(cls, id: InternalID) -> Graph:
+        return cls.get_graph_by_uri(cls.qbuilder.class_namespace.uri(id))
 
     @classmethod
     def get_graph_by_uri(cls, uri: IRI | URIRef) -> Graph:
@@ -119,10 +196,26 @@ class BaseRDFModel(BaseModel):
         query = cls.qbuilder.create_get_by_uris(uris)
         return cls.rdfdata.store.construct(query)
 
+    @classmethod
+    def remove_irrelevant_triples(cls, g: Graph):
+        """Keep only triples that are relevant to an instance of this class. This function keeps RDF.type triples, because they are necessary to determine the class of the instance.
+
+        Note that this function is initially used in detect del/add triples to update KG, as if we do not careful
+        when loading graphs, we may load extra triples and delete them accidentally.
+        However, we decide to temporary not use it as we may have some values to delete unwanted triples to keep the
+        KG clean.
+        """
+        Class = cls.qbuilder.class_namespace.rel2abs(cls.qbuilder.class_reluri)
+
+        # retrieve the subject of this class first
+        (subj,) = list(g.subjects(RDF.type, Class))
+        raise NotImplementedError()
+
 
 class BaseRDFQueryBuilder:
     rdfdata: ClassVar[RDFMetadata]
-    class_reluri: str
+    class_namespace: SingleNS
+    class_reluri: RelIRI
     fields: list[PropertyRule]
 
     class HPg:
@@ -222,6 +315,9 @@ class BaseRDFQueryBuilder:
         """Return the CONSTRUCT part for this class"""
         source_var = source_var or self.get_default_source_var()
         out = self.HPg()
+        out.extend(
+            self.HPg(f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} .")
+        )
         for field in self.fields:
             out.extend(field.construct(source_var))
         return out
@@ -252,7 +348,7 @@ class BaseRDFQueryBuilder:
             out.extend(field.match(source_var))
         return out
 
-    def create_get_by_uri(self, uri: str | URIRef) -> str:
+    def create_get_by_uri(self, uri: IRI | URIRef) -> str:
         source_var = self.get_default_source_var()
         return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { <%s> }\n}" % (
             self.construct(source_var).to_str(indent=2),
@@ -261,7 +357,7 @@ class BaseRDFQueryBuilder:
             uri,
         )
 
-    def create_get_by_uris(self, uris: Sequence[str | URIRef]) -> str:
+    def create_get_by_uris(self, uris: Sequence[IRI | URIRef]) -> str:
         source_var = self.get_default_source_var()
         return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { %s }\n}" % (
             self.construct(source_var).to_str(indent=2),
@@ -269,65 +365,6 @@ class BaseRDFQueryBuilder:
             source_var,
             " ".join(f"<{uri}>" for uri in uris),
         )
-
-
-@dataclass
-class SingleNS:
-    alias: str
-    namespace: str
-
-    def __post_init__(self):
-        assert self.namespace.endswith("/") or self.namespace.endswith(
-            "#"
-        ), f"Namespace {self.namespace} should end with / or #"
-
-    def id(self, uri: str | URIRef) -> str:
-        return uri[len(self.namespace) :]
-
-    def uri(self, name: str) -> URIRef:
-        return URIRef(self.namespace + name)
-
-    def uristr(self, name: str) -> str:
-        return self.namespace + name
-
-    def __getattr__(self, name: str):
-        return self.alias + ":" + name
-
-    def __getitem__(self, name: str):
-        return self.alias + ":" + name
-
-
-class Namespace:
-    def __init__(self, ns_cfg: dict):
-        self.mr = SingleNS("mr", ns_cfg["mr"])
-        self.mo = SingleNS("mo", ns_cfg["mo"])
-        self.md = SingleNS("md", ns_cfg["mo-derived"])
-        self.dcterms = SingleNS("dcterms", "http://purl.org/dc/terms/")
-        self.rdf = SingleNS("rdf", str(RDF))
-        self.rdfs = SingleNS("rdfs", str(RDFS))
-        self.xsd = SingleNS("xsd", str(XSD))
-        self.owl = SingleNS("owl", str(OWL))
-        self.gkbi = SingleNS("gkbi", "https://geokb.wikibase.cloud/entity/")
-        self.gkbt = SingleNS("gkbt", "https://geokb.wikibase.cloud/prop/direct/")
-        self.geo = SingleNS("geo", "http://www.opengis.net/ont/geosparql#")
-        self.skos = SingleNS("skos", str(SKOS))
-
-        self.namespaces = {
-            x.alias: x for x in self.__dict__.values() if isinstance(x, SingleNS)
-        }
-
-    def iter(self) -> Iterable[SingleNS]:
-        return self.namespaces.values()
-
-    def get_by_alias(self, alias: str) -> SingleNS:
-        return self.namespaces[alias]
-
-    @cached_property
-    def rdflib_namespace_manager(self) -> NamespaceManager:
-        nsmanager = NamespaceManager(Graph(), bind_namespaces="none")
-        for ns in self.iter():
-            nsmanager.bind(ns.alias, ns.namespace)
-        return nsmanager
 
 
 class RDFStore:

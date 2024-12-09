@@ -7,6 +7,7 @@ V = TypeVar("V")
 
 NamespaceAlias = Annotated[str, "A shorter name for the corresponding namespace"]
 IRI = Annotated[str, "Internationalized Resource Identifier"]
+RelIRI = Annotated[str, "Relative Internationalized Resource Identifier"]
 InternalID = Annotated[
     str,
     "internal MinMod ID (e.g., Q578) - together with `https://minmod.isi.edu/resource/` prefix, it creates the URI of a resource in the MinMod KG",

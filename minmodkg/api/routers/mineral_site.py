@@ -239,17 +239,16 @@ def update_same_as(
 
 @router.get("/mineral-sites/{site_id}")
 def get_site(site_id: InternalID, format: Literal["json", "ttl"] = "json"):
-    site_uri = MINMOD_KG.ns.mr.uri(site_id)
-    if not MineralSite.has_uri(site_uri):
+    if not MineralSite.has_id(site_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The site does not exist.",
         )
     if format == "json":
-        return get_site_by_uri(site_uri)
+        return get_site_by_id(site_id)
     elif format == "ttl":
-        g_site = MineralSite.get_graph_by_uri(site_uri)
-        g_derived_site = DerivedMineralSite.get_graph_by_uri(site_uri)
+        g_site = MineralSite.get_graph_by_id(site_id)
+        g_derived_site = DerivedMineralSite.get_graph_by_id(site_id)
         return Response(
             content=(g_site + g_derived_site).serialize(format="ttl"),
             media_type="text/turtle",
@@ -261,9 +260,19 @@ def get_site(site_id: InternalID, format: Literal["json", "ttl"] = "json"):
         )
 
 
+def get_site_by_id(id: InternalID) -> dict:
+    site = MineralSite.get_by_id(id)
+    derived_site = DerivedMineralSite.get_by_id(id)
+    out = site.to_dict()
+    out.update(derived_site.to_dict())
+    return out
+
+
 def get_site_by_uri(uri: IRI | URIRef) -> dict:
     site = MineralSite.get_by_uri(uri)
-    derived_site = DerivedMineralSite.get_by_uri(uri)
+    derived_site = DerivedMineralSite.get_by_id(
+        MineralSite.qbuilder.class_namespace.id(uri)
+    )
     out = site.to_dict()
     out.update(derived_site.to_dict())
     return out
@@ -306,6 +315,7 @@ def create_site(
     triples = site.to_triples(triples)
     triples = derived_site.to_triples(triples)
     triples = partial_dedup_site.to_triples(triples)
+
     # add same as to other sites
     ns_manager = MINMOD_KG.ns.rdflib_namespace_manager
     _subj = URIRef(site.uri).n3(ns_manager)
@@ -336,53 +346,62 @@ def create_site(
     return get_site_by_uri(URIRef(uri))
 
 
-@router.put("/mineral-sites/{site_id}")
-def update_site(site_id: str, site: MineralSite, user: CurrentUserDep):
-    uri = MineralSite.rdfdata.ns.mr.uri(site_id)
-    if not MineralSite.has_uri(uri):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="The site does not exist.",
+class UpdateMineralSite:
+    @staticmethod
+    @router.put("/mineral-sites/{site_id}")
+    def main(site_id: str, site: MineralSite, user: CurrentUserDep):
+        uri = MineralSite.rdfdata.ns.mr.uri(site_id)
+        if not MineralSite.has_uri(uri):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="The site does not exist.",
+            )
+
+        if any(is_system_user(user) for user in site.created_by):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Automated system is not allowed to update the site.",
+            )
+
+        if site.dedup_site_uri is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The updated site must have a dedup site URI.",
+            )
+
+        with MINMOD_KG.transaction([uri, site.dedup_site_uri]).transaction():
+            del_triples, add_triples = UpdateMineralSite.get_triples(
+                site_id, uri, site, user.username
+            )
+            MINMOD_KG.delete_insert(del_triples, add_triples)
+
+        return get_site_by_uri(URIRef(uri))
+
+    @staticmethod
+    def get_triples(site_id: str, uri: str, site: MineralSite, username: str):
+        # update controlled fields and convert the site to TTL
+        # the site must have no blank nodes as we want a fast way to compute the delta.
+        site.update_derived_data(username)
+        snapshot_id = get_snapshot_id()
+        derived_site, partial_dedup_site = derive_data(
+            site,
+            material_form_uri_to_conversion(snapshot_id),
+            crs_uri_to_name(snapshot_id),
         )
 
-    if any(is_system_user(user) for user in site.created_by):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Automated system is not allowed to update the site.",
+        # we can update current site & derived site because we have all of the data
+        # for dedup site, we do not have all, so we have to refetch and compute the differences
+        # manually
+        ng = site.to_graph() + derived_site.to_graph()
+
+        og = MineralSite.get_graph_by_uri(uri) + DerivedMineralSite.get_graph_by_id(
+            site_id
         )
 
-    if site.dedup_site_uri is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The updated site must have a dedup site URI.",
-        )
-
-    # update controlled fields and convert the site to TTL
-    # the site must have no blank nodes as we want a fast way to compute the delta.
-    site.update_derived_data(user.username)
-    snapshot_id = get_snapshot_id()
-    derived_site, partial_dedup_site = derive_data(
-        site,
-        material_form_uri_to_conversion(snapshot_id),
-        crs_uri_to_name(snapshot_id),
-    )
-
-    # TODO: we ca]n update current site & derived site because we have all of the data
-    # for dedup site, we do not have all, so we have to refetch and compute the differences
-    # manually
-    ng = site.to_graph() + derived_site.to_graph()
-
-    # start the transaction, we can read as much as we want but we can only write once
-    with MINMOD_KG.transaction([uri, site.dedup_site_uri]).transaction():
-        og = MineralSite.get_graph_by_uri(uri) + DerivedMineralSite.get_graph_by_uri(
-            uri
-        )
         del_triples, add_triples = get_site_changes(og, ng)
         # TODO: update dedup site
         # DedupMineralSite.get_by_uri(site.dedup_site_uri)
-        MINMOD_KG.delete_insert(del_triples, add_triples)
-
-    return get_site_by_uri(URIRef(uri))
+        return del_triples, add_triples
 
 
 def get_site_changes(

@@ -71,10 +71,18 @@ def db(user1: UserCreate, user2: UserCreate):
 
 @pytest.fixture(scope="class")
 def kg(resource_dir: Path, db):
-    subprocess.check_output(
-        "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
-        shell=True,
-    )
+    try:
+        subprocess.check_output(
+            "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
+            shell=True,
+        )
+    except subprocess.CalledProcessError as e:
+        subprocess.check_output("docker rm -f test-kg", shell=True)
+        subprocess.check_output(
+            "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
+            shell=True,
+        )
+
     print("\nWaiting for Fuseki to start ", end="", flush=True)
     for i in range(100):
         try:

@@ -45,6 +45,7 @@ class DedupMineralSite(BaseRDFModel):
     class QueryBuilder(BaseRDFQueryBuilder):
         def __init__(self):
             ns = self.rdfdata.ns
+            self.class_namespace = ns.md
             self.class_reluri = ns.mo.DedupMineralSite
             self.fields = [
                 self.PropertyRule(ns.md, "site", is_optional=False),
@@ -63,7 +64,7 @@ class DedupMineralSite(BaseRDFModel):
         mr = cls.rdfdata.ns.mr
         md = cls.rdfdata.ns.md
         return DedupMineralSite(
-            id=mr.id(uid),
+            id=md.id(uid),
             sites=[mr.id(str(o)) for o in g.objects(uid, md.uri("site"))],
             commodities=[mr.id(str(o)) for o in g.objects(uid, md.uri("commodity"))],
             site_commodities=[str(o) for o in g.objects(uid, md.uri("site_commodity"))],
@@ -75,7 +76,7 @@ class DedupMineralSite(BaseRDFModel):
         ns = self.rdfdata.ns
         md = ns.md
         mr = ns.mr
-        uri = mr[self.id]
+        uri = md[self.id]
         triples.append((uri, ns.rdf.type, ns.mo.DedupMineralSite))
         for site in self.sites:
             triples.append((uri, md.site, mr[site]))

@@ -70,6 +70,7 @@ class DerivedMineralSite(BaseRDFModel):
 
         def __init__(self):
             ns = self.rdfdata.ns
+            self.class_namespace = ns.md
             self.class_reluri = ns.mo.MineralSite
             self.fields = [
                 self.PropertyRule(
@@ -105,7 +106,7 @@ class DerivedMineralSite(BaseRDFModel):
             coors = Coordinates(lat=float(lat), lon=float(lon))
 
         return DerivedMineralSite(
-            id=mr.id(uid),
+            id=md.id(uid),
             coordinates=coors,
             grade_tonnage=[
                 GradeTonnage.from_graph(gt, g)
@@ -122,7 +123,7 @@ class DerivedMineralSite(BaseRDFModel):
         mr = ns.mr
         mo = ns.mo
 
-        site_uri = mr[self.id]
+        site_uri = md[self.id]
         triples.append((site_uri, ns.rdf.type, mo.MineralSite))
 
         if self.coordinates is not None:
@@ -141,10 +142,11 @@ class DerivedMineralSite(BaseRDFModel):
                 )
             )
 
-        gtnode_uri_prefix = mr[f"{self.id}__gt__"]
+        gtnode_uri_prefix = md[f"{self.id}__gt__"]
         for gt in self.grade_tonnage:
             gtnode_uri = gtnode_uri_prefix + gt.commodity
             triples.append((site_uri, md.grade_tonnage, gtnode_uri))
+            triples.append((gtnode_uri, ns.rdf.type, mo.GradeTonnage))
             triples.append((gtnode_uri, md.commodity, ns.mr[gt.commodity]))
             if gt.total_contained_metal is not None:
                 triples.append(

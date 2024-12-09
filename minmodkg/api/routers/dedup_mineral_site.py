@@ -8,6 +8,7 @@ from minmodkg.api.models.user import is_system_user
 from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.misc import group_by_key
 from minmodkg.models.dedup_mineral_site import (
+    DedupMineralSite,
     DedupMineralSiteDepositType,
     DedupMineralSiteLocation,
     DedupMineralSitePublic,
@@ -61,6 +62,7 @@ def get_dedup_mineral_site_by_ids(
     lst_dms: list[InternalID],
     commodity: InternalID,
 ) -> dict[InternalID, DedupMineralSitePublic]:
+    dedup_ns = DedupMineralSite.qbuilder.class_namespace
     mr = MINMOD_NS.mr
     md = MINMOD_NS.md
     mo = MINMOD_NS.mo
@@ -118,14 +120,16 @@ def get_dedup_mineral_site_by_ids(
                 ?loc mo:state_or_province/mo:normalized_uri ?state_or_province . 
             }
         }
+        
+        %s
 
         OPTIONAL {
-            ?ms md:lat ?lat ;
-                md:lon ?lon .
+            ?derived_ms md:lat ?lat ;
+                        md:lon ?lon .
         }
 
         OPTIONAL {
-            ?ms md:grade_tonnage [
+            ?derived_ms md:grade_tonnage [
                 md:commodity mr:%s ;
                 md:total_tonnage ?total_tonnage ;
                 md:total_grade ?total_grade ;
@@ -135,9 +139,11 @@ def get_dedup_mineral_site_by_ids(
         VALUES ?dms { %s }
     }
     """ % (
+        f'BIND (IRI(CONCAT("{md.namespace}", SUBSTR(STR(?ms), {len(mr.namespace)+1}))) as ?derived_ms)',
         commodity,
-        " ".join(f"mr:{dms}" for dms in lst_dms),
+        " ".join(dedup_ns[dms] for dms in lst_dms),
     )
+
     qres = MINMOD_KG.query(
         query,
         keys=[
@@ -166,7 +172,7 @@ def get_dedup_mineral_site_by_ids(
         return {lst_dms[0]: make_dedup_site(lst_dms[0], commodity, qres, snapshot_id)}
     dms2sites = group_by_key(qres, "dms")
     return {
-        (dms_id := mr.id(dms)): make_dedup_site(
+        (dms_id := dedup_ns.id(dms)): make_dedup_site(
             dms_id, commodity, dupsites, snapshot_id
         )
         for dms, dupsites in dms2sites.items()
@@ -180,6 +186,7 @@ def get_dedup_mineral_sites(
     limit: int = -1,
     offset: int = 0,
 ) -> list[DedupMineralSitePublic]:
+    dedup_ns = DedupMineralSite.qbuilder.class_namespace
     mr = MINMOD_NS.mr
     md = MINMOD_NS.md
     mo = MINMOD_NS.mo
@@ -262,13 +269,15 @@ def get_dedup_mineral_sites(
             }
         }
 
+        %s
+
         OPTIONAL {
-            ?ms md:lat ?lat ;
-                md:lon ?lon .
+            ?derived_ms md:lat ?lat ;
+                        md:lon ?lon .
         }
 
         OPTIONAL {
-            ?ms md:grade_tonnage [
+            ?derived_ms md:grade_tonnage [
                 md:commodity mr:%s ;
                 md:total_tonnage ?total_tonnage ;
                 md:total_grade ?total_grade ;
@@ -277,6 +286,7 @@ def get_dedup_mineral_sites(
     }
     """ % (
         dm_query_part,
+        f'BIND (IRI(CONCAT("{md.namespace}", SUBSTR(STR(?ms), {len(mr.namespace)+1}))) as ?derived_ms)',
         commodity,
     )
 
@@ -308,7 +318,7 @@ def get_dedup_mineral_sites(
 
     dms2sites = group_by_key(qres, "dms")
     return [
-        make_dedup_site(mr.id(dms), commodity, dupsites, snapshot_id)
+        make_dedup_site(dedup_ns.id(dms), commodity, dupsites, snapshot_id)
         for dms, dupsites in dms2sites.items()
     ]
 

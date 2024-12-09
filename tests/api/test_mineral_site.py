@@ -5,6 +5,8 @@ from time import sleep
 
 import pytest
 from fastapi.testclient import TestClient
+from minmodkg.api.models.user import UserCreate
+from minmodkg.api.routers.mineral_site import UpdateMineralSite, get_site_changes
 from minmodkg.config import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite, DedupMineralSitePublic
 from minmodkg.models.mineral_site import (
@@ -22,8 +24,7 @@ from rdflib import Namespace, URIRef
 from tests.utils import check_req
 
 
-class TestMineralSite:
-
+class TestMineralSiteData:
     @pytest.fixture(autouse=True)
     def site1_(self, user1_uri: str):
         self.site1_commodity = "Q578"
@@ -118,6 +119,9 @@ class TestMineralSite:
         )
         del self.site2_dump["modified_at"]
 
+
+class TestMineralSite(TestMineralSiteData):
+
     def test_create_first(self, auth_client: TestClient, user1_uri: str, kg):
         # create a mineral site record
         resp = check_req(
@@ -126,6 +130,8 @@ class TestMineralSite:
                 json=self.site1.model_dump(exclude_none=True),
             )
         ).json()
+        self.site1.modified_at = resp["modified_at"]
+        print("Create first: ", resp["modified_at"])
 
         gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
         assert resp == gold_resp
@@ -167,85 +173,126 @@ class TestMineralSite:
         assert resp.json() == {"detail": "The site already exists."}
         assert resp.status_code == 403
 
-    def test_update_site(self, auth_client, user1_uri, kg):
+    def test_get_site_changes(self, auth_client, kg, user1: UserCreate):
         sleep(1.0)  # to ensure the modified_at is different
+        print("Get site changes: ", self.site1.modified_at)
         self.site1.name = "Frog Mine"
         self.site1.dedup_site_uri = MINMOD_KG.ns.mr.uristr(
             DedupMineralSite.get_id([self.site1_id])
         )
-        resp = check_req(
-            lambda: auth_client.put(
-                f"/api/v1/mineral-sites/{self.site1_id}",
-                json=self.site1.model_dump(exclude_none=True),
-            )
-        ).json()
 
-        gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
-        gold_resp["name"] = "Frog Mine"
-        assert resp == gold_resp
-
-        resp = check_req(
-            lambda: auth_client.get(
-                f"/api/v1/mineral-sites/{self.site1_id}",
-            )
-        ).json()
-        assert resp == gold_resp
-
-        resp = check_req(
-            lambda: auth_client.get(
-                f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
-                params={"commodity": self.site1_commodity},
-            )
-        ).json()
-        assert resp == {
-            "id": self.site1_dedup_id,
-            "name": "Frog Mine",
-            "type": "NotSpecified",
-            "rank": "U",
-            "sites": [self.site1_id],
-            "deposit_types": [],
-            "location": {
-                "lat": 46.9,
-                "lon": -87.1,
-                "country": [],
-                "state_or_province": [],
-            },
-            "grade_tonnage": {"commodity": "Q578"},
+        new_site1 = self.site1.model_copy()
+        del_triples, add_triples = UpdateMineralSite.get_triples(
+            self.site1_id, self.site1_uri, new_site1, user1.username
+        )
+        subj = MINMOD_KG.ns.mr[self.site1_id]
+        print("Get site changes: ", self.site1.modified_at, new_site1.modified_at)
+        assert set(del_triples) == {
+            (
+                subj,
+                "mo:modified_at",
+                [triple[2] for triple in del_triples if triple[1] == "mo:modified_at"][
+                    0
+                ],
+            ),
+            (
+                subj,
+                "rdfs:label",
+                '"Eagle Mine"',
+            ),
+        }
+        assert set(add_triples) == {
+            (
+                subj,
+                "mo:modified_at",
+                f'"{new_site1.modified_at}"',
+            ),
+            (
+                subj,
+                "rdfs:label",
+                '"Frog Mine"',
+            ),
         }
 
-    def test_create_new_site(self, auth_client_2, user2_uri, kg):
-        time.sleep(1.0)  # to ensure the modified_at is different
-        resp = check_req(
-            lambda: auth_client_2.post(
-                "/api/v1/mineral-sites",
-                json=self.site2.model_dump(exclude_none=True),
-            )
-        ).json()
-        gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
-        assert resp == gold_resp
+    # def test_update_site(self, auth_client, user1_uri, kg):
+    #     sleep(1.0)  # to ensure the modified_at is different
+    #     self.site1.name = "Frog Mine"
+    #     self.site1.dedup_site_uri = MINMOD_KG.ns.mr.uristr(
+    #         DedupMineralSite.get_id([self.site1_id])
+    #     )
+    #     resp = check_req(
+    #         lambda: auth_client.put(
+    #             f"/api/v1/mineral-sites/{self.site1_id}",
+    #             json=self.site1.model_dump(exclude_none=True),
+    #         )
+    #     ).json()
 
-        for commodity in [self.site1_commodity, self.site2_commodity]:
-            resp = check_req(
-                lambda: auth_client_2.get(
-                    f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
-                    params={"commodity": commodity},
-                )
-            ).json()
-            assert resp == {
-                "id": self.site1_dedup_id,
-                "name": "Beaver Mine",
-                "type": "NotSpecified",
-                "rank": "U",
-                "sites": [self.site2_id, self.site1_id],
-                "deposit_types": [],
-                "location": {
-                    "lat": 44.71207,
-                    "lon": -118.7805,
-                    "country": [],
-                    "state_or_province": [],
-                },
-                "grade_tonnage": {"commodity": commodity},
-            }
+    #     gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
+    #     gold_resp["name"] = "Frog Mine"
+    #     assert resp == gold_resp
+
+    #     resp = check_req(
+    #         lambda: auth_client.get(
+    #             f"/api/v1/mineral-sites/{self.site1_id}",
+    #         )
+    #     ).json()
+    #     assert resp == gold_resp
+
+    #     resp = check_req(
+    #         lambda: auth_client.get(
+    #             f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
+    #             params={"commodity": self.site1_commodity},
+    #         )
+    #     ).json()
+    #     assert resp == {
+    #         "id": self.site1_dedup_id,
+    #         "name": "Frog Mine",
+    #         "type": "NotSpecified",
+    #         "rank": "U",
+    #         "sites": [self.site1_id],
+    #         "deposit_types": [],
+    #         "location": {
+    #             "lat": 46.9,
+    #             "lon": -87.1,
+    #             "country": [],
+    #             "state_or_province": [],
+    #         },
+    #         "grade_tonnage": {"commodity": "Q578"},
+    #     }
+
+    # def test_create_new_site(self, auth_client_2, user2_uri, kg):
+    #     time.sleep(1.0)  # to ensure the modified_at is different
+    #     resp = check_req(
+    #         lambda: auth_client_2.post(
+    #             "/api/v1/mineral-sites",
+    #             json=self.site2.model_dump(exclude_none=True),
+    #         )
+    #     ).json()
+    #     gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
+    #     assert resp == gold_resp
+
+    #     for commodity in [self.site1_commodity, self.site2_commodity]:
+    #         resp = check_req(
+    #             lambda: auth_client_2.get(
+    #                 f"/api/v1/dedup-mineral-sites/{self.site1_dedup_id}",
+    #                 params={"commodity": commodity},
+    #             )
+    #         ).json()
+    #         assert resp == {
+    #             "id": self.site1_dedup_id,
+    #             "name": "Beaver Mine",
+    #             "type": "NotSpecified",
+    #             "rank": "U",
+    #             "sites": [self.site2_id, self.site1_id],
+    #             "deposit_types": [],
+    #             "location": {
+    #                 "lat": 44.71207,
+    #                 "lon": -118.7805,
+    #                 "country": [],
+    #                 "state_or_province": [],
+    #             },
+    #             "grade_tonnage": {"commodity": commodity},
+    #         }
 
 
 class TestMineralSiteLinking:

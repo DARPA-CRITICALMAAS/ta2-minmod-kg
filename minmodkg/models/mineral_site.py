@@ -12,6 +12,7 @@ from libactor.cache import BackendFactory, cache
 from minmodkg.misc.rdf_store import (
     BaseRDFModel,
     BaseRDFQueryBuilder,
+    SingleNS,
     norm_literal,
     norm_object,
     norm_uriref,
@@ -22,7 +23,7 @@ from minmodkg.models.location_info import LocationInfo
 from minmodkg.models.mineral_inventory import MineralInventory
 from minmodkg.models.reference import Reference
 from minmodkg.transformations import make_site_uri
-from minmodkg.typing import IRI, Triple
+from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import Field
 from rdflib import Graph, URIRef
 from rdflib.term import Node
@@ -53,6 +54,7 @@ class MineralSite(BaseRDFModel):
         def __init__(self):
             ns = self.rdfdata.ns
 
+            self.class_namespace = ns.mr
             self.class_reluri = ns.mo.MineralSite
             self.fields = []
 
@@ -107,7 +109,7 @@ CONSTRUCT {
 WHERE {
     <%s> ?p ?o .
     OPTIONAL {
-        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri))+ ?cs .
+        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property))+ ?cs .
         ?cs ?cp ?co .
     }
 }
@@ -126,7 +128,7 @@ CONSTRUCT {
 WHERE {
     ?s ?p ?o .
     OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri))+ ?cs .
+        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property))+ ?cs .
         ?cs ?cp ?co .
     }
     VALUES ?s { %s }
@@ -140,6 +142,10 @@ WHERE {
     @cached_property
     def uri(self) -> URIRef:
         return URIRef(make_site_uri(self.source_id, self.record_id))
+
+    @cached_property
+    def id(self) -> InternalID:
+        return self.qbuilder.class_namespace.id(self.uri)
 
     @staticmethod
     def from_raw_site(raw_site: dict) -> MineralSite:
