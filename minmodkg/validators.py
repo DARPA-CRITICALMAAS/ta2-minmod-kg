@@ -325,16 +325,9 @@ if __name__ == "__main__":
             if relpath.startswith("data/entities/"):
                 # validate the entities
                 raise NotImplementedError()
-            elif any(
-                relpath.startswith(dir)
-                for dir in [
-                    "data/inferlink/extractions/",
-                    "data/umn/",
-                    "data/sri/",
-                    "data/usc/",
-                    "test-mineral-sites/",
-                ]
-            ) and relpath.endswith(".json"):
+            elif relpath.startswith("data/mineral-sites/") and relpath.endswith(
+                ".json"
+            ):
                 print("::group::Validate file", relpath)
                 validator.validate_mineral_site(
                     RelPath(
