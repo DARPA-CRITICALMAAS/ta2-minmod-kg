@@ -45,7 +45,22 @@ def get_ontology(
     resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
 ):  # -> HTMLResponse | dict[Any, Any]:
     uri = MINMOD_NS.mo.uri(resource_id)
-    if not MINMOD_KG.has(MINMOD_NS.mo.uri(uri)):
+    if not MINMOD_KG.has(uri):
+        raise HTTPException(status_code=404, detail="Resource not found")
+
+    if format == "html":
+        return render_entity_html(uri)
+    if format == "json":
+        return render_entity_json(uri)
+    raise HTTPException(status_code=400, detail="Invalid format")
+
+
+@router.get("/derived/{resource_id}")
+def get_derived(
+    resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
+):  # -> HTMLResponse | dict[Any, Any]:
+    uri = MINMOD_NS.md.uri(resource_id)
+    if not MINMOD_KG.has(uri):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
