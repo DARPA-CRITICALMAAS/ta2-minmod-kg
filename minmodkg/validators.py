@@ -14,6 +14,7 @@ from typing import Annotated, Callable, NotRequired, TypedDict
 import orjson
 import typer
 from drepr.main import convert
+from joblib import Parallel, delayed
 from loguru import logger
 from minmodkg.config import CFG_FILE
 from minmodkg.models.mineral_site import MineralSite
@@ -68,6 +69,7 @@ class FilenameValidatorService(BaseFileService[FilenameValidatorServiceInvokeArg
 
 
 class ContentValidator:
+    instance = None
 
     @dataclass
     class DReprModel:
@@ -95,6 +97,14 @@ class ContentValidator:
         self.pkgdir = self.setup(workdir)
         self.drepr_version = version("drepr-v2").strip()
         self.cache = CacheProcess(workdir / "cache.db")
+
+    @staticmethod
+    def get_instance(workdir: Path, shacl_bin: Path, predefined_ent_dir: RelPath):
+        if ContentValidator.instance is None:
+            ContentValidator.instance = ContentValidator(
+                workdir, shacl_bin, predefined_ent_dir
+            )
+        return ContentValidator.instance
 
     def setup(self, workdir: Path):
         pkgname = "gen_validate_programs"
@@ -306,8 +316,15 @@ if __name__ == "__main__":
                 help="A list of changed files (relative path) in the data repository",
             ),
         ],
+        parallel: Annotated[
+            bool,
+            typer.Option(
+                "--parallel/--no-parallel",
+                help="Whether to run the validation in parallel",
+            ),
+        ] = False,
     ):
-        validator = ContentValidator(
+        validator_args = (
             workdir,
             shacl_bin,
             RelPath(
@@ -321,7 +338,8 @@ if __name__ == "__main__":
             assert changed_files_lst.name.endswith(".txt")
             changed_files = changed_files_lst.read_text().splitlines()
 
-        for relpath in changed_files:
+        def validate_file(relpath: str):
+            validator = ContentValidator.get_instance(*validator_args)
             if relpath.startswith("data/entities/"):
                 # validate the entities
                 raise NotImplementedError()
@@ -338,5 +356,16 @@ if __name__ == "__main__":
             else:
                 print("::group::Not validate file", relpath)
                 print("::endgroup::")
+
+        if not parallel:
+            for relpath in changed_files:
+                validate_file(relpath)
+        else:
+            parallel_executor = Parallel(n_jobs=-1, return_as="generator_unordered")
+            it = parallel_executor(
+                delayed(validate_file)(relpath) for relpath in changed_files
+            )
+            for _ in tqdm(it, total=len(changed_files), desc="Validate files"):
+                pass
 
     app()

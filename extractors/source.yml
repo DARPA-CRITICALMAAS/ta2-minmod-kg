@@ -12,18 +12,22 @@ attributes:
   name: [1.., 1]
   description: [1.., 2]
   score: [1.., 3]
+  connection:
+    path: [1.., 4]
+    missing_values: [""]
 alignments:
   - type: auto
 semantic_model:
-  mno:SourceScore:1:
+  mo:SourceScore:1:
     properties:
       - [drepr:uri, uri]
-      - [mno:prefixed_id, id]
+      - [mo:prefixed_id, id]
       - [rdfs:label, name, xsd:string]
       - [rdfs:comment, description, xsd:string]
-      - [mno:score, score, xsd:float]
+      - [mo:score, score, xsd:float]
+      - [mo:connection, connection, xsd:string]
   prefixes:
-    mnr: https://minmod.isi.edu/resource/
-    mno: https://minmod.isi.edu/ontology/
+    mr: https://minmod.isi.edu/resource/
+    mo: https://minmod.isi.edu/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
