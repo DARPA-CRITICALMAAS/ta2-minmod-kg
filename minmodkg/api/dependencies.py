@@ -118,14 +118,16 @@ class SourceScore:
 
 @lru_cache(maxsize=1)
 def get_source_scores(snapshot_id: str):
+    mo = MINMOD_NS.mo
     query = f"""
     SELECT ?uri ?prefixed_id ?score
     WHERE {{
-        ?uri a {MINMOD_NS.mo.alias}:SourceConfig ;
-            {MINMOD_NS.mo.alias}:prefixed_id ?prefixed_id ;
-            {MINMOD_NS.mo.alias}:score ?score
+        ?uri a {mo.SourceConfig} ;
+            {mo.prefix} ?prefixed_id ;
+            {mo.score} ?score
     }}
     """
+    print(query)
     qres = MINMOD_KG.query(query)
     source2score = {record["prefixed_id"]: record["score"] for record in qres}
     index = LongestPrefixIndex.create(list(source2score.keys()))
