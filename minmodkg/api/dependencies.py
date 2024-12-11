@@ -89,13 +89,13 @@ def rank_source(
     source_id: IRI,
     created_by: str,
     snapshot_id: str,
-) -> int:
+) -> float:
     """Get ranking of a source, higher is better"""
     # TODO: fix me!!!
     if not is_system_user(created_by):
         return 1000
 
-    default_score = 5
+    default_score = 0.5
     score = get_source_scores(snapshot_id).get_score(source_id)
     if score is None:
         # print("Unknown source id:", source_id)
@@ -120,7 +120,7 @@ def get_source_scores(snapshot_id: str):
     query = f"""
     SELECT ?uri ?prefixed_id ?score
     WHERE {{
-        ?uri a {MINMOD_NS.mo.alias}:SourceScore ;
+        ?uri a {MINMOD_NS.mo.alias}:SourceConfig ;
             {MINMOD_NS.mo.alias}:prefixed_id ?prefixed_id ;
             {MINMOD_NS.mo.alias}:score ?score
     }}

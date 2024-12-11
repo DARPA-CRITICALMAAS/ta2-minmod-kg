@@ -35,6 +35,12 @@ def make_site_ids(value: dict, namespace: str = MR_NS):
     for inv_i, inv in enumerate(value.get("mineral_inventory", [])):
         make_inventory_ids(inv, inv_i, site_id, namespace)
 
+    value["source_uri"] = get_source_uri(value["source_id"])
+
+
+def get_source_uri(source_id: str):
+    return "https://minmod.isi.edu/resource/source__" + slugify(source_id)
+
 
 def make_location_info_ids(loc_info: dict, site_id: str, namespace: str = MR_NS):
     loc_info["id"] = namespace + site_id + "__location_info"
@@ -87,9 +93,6 @@ def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) 
             "mining-report",
             "article",
             "database",
-            "curated-mining-report",
-            "curated-article",
-            "curated-database",
         }
 
     if source_id.startswith("http://"):

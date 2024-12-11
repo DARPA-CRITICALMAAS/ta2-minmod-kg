@@ -120,7 +120,6 @@ class DerivedMineralSite(BaseRDFModel):
 
         ns = self.rdfdata.ns
         md = ns.md
-        mr = ns.mr
         mo = ns.mo
 
         site_uri = md[self.id]

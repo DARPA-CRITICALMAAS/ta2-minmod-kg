@@ -23,6 +23,10 @@ services:
       path: ::CFG_DIR::extractors/mineral_site.yml
       format: turtle
       parallel: true
+  - name: mineral site source
+    classpath: minmodkg.etl.source.SourceService
+    args:
+      parallel: true
   - name: dedup mineral site
     classpath: minmodkg.etl.dedup_site.DedupSiteService
     args:
@@ -76,6 +80,14 @@ pipeline:
       output:
         base: ::DATA_DIR::same-as/
         format: "{fileparent}_{filestem}.json"
+  - service: mineral site source
+    args:
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::mineral-site-sources
+        format: "{filegrandparent}/{fileparent}_{filestem}.json"
+      predefined_entities: ::DATA_DIR::predefined-entities/
+      default_source_score: 0.5
   - service: dedup mineral site
     args:
       predefined_entities: ::DATA_DIR::predefined-entities/
@@ -101,6 +113,7 @@ pipeline:
         - ::DATA_DIR::mineral-sites/*/*.ttl
         - ::DATA_DIR::same-as/final/*.ttl
         - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
+        - ::DATA_DIR::mineral-site-sources/final/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       endpoint:
         update: /minmod/update

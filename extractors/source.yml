@@ -6,7 +6,7 @@ preprocessing:
     output: { attr: uri }
     code: |
       from slugify import slugify
-      return "https://minmod.isi.edu/resource/source_score__" + slugify(value)
+      return "https://minmod.isi.edu/resource/source_cfg__" + slugify(value)
 attributes:
   id: [1.., 0]
   name: [1.., 1]
@@ -18,10 +18,10 @@ attributes:
 alignments:
   - type: auto
 semantic_model:
-  mo:SourceScore:1:
+  mo:SourceConfig:1:
     properties:
       - [drepr:uri, uri]
-      - [mo:prefixed_id, id]
+      - [mo:prefix, id]
       - [rdfs:label, name, xsd:string]
       - [rdfs:comment, description, xsd:string]
       - [mo:score, score, xsd:float]
