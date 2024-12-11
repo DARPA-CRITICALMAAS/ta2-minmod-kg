@@ -3,7 +3,8 @@ from __future__ import annotations
 import hashlib
 from uuid import uuid4
 
-from minmodkg.config import MINMOD_KG
+from minmodkg.api.models.user import is_valid_user_uri
+from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.reference import PageInfo
 from slugify import slugify
 
@@ -13,8 +14,8 @@ MO_NS = MINMOD_KG.ns.mo.namespace
 
 def make_site_ids(value: dict, namespace: str = MR_NS):
     """Make all ids for a mineral site"""
-    assert value["created_by"].startswith("https://minmod.isi.edu/users/")
-    username = value["created_by"][len("https://minmod.isi.edu/users/") :]
+    assert is_valid_user_uri(value["created_by"])
+    username = value["created_by"].rsplit("/", 1)[1]
     site_uri = make_site_uri(value["source_id"], value["record_id"], namespace)
     site_id = site_uri[len(namespace) :] + "__user_" + slugify(username) + "__"
 

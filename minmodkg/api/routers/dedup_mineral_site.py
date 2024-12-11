@@ -5,8 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException
 from minmodkg.api.dependencies import get_snapshot_id, norm_commodity, rank_source
 from minmodkg.api.models.user import is_system_user
-from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.misc import group_by_key
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import (
     DedupMineralSite,
     DedupMineralSiteDepositType,

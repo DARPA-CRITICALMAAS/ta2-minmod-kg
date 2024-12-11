@@ -2,25 +2,21 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    norm_literal,
-    norm_object,
-)
+from minmodkg.misc.rdf_store import norm_literal, norm_object
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from minmodkg.models.candidate_entity import CandidateEntity
 from pydantic import Field
 from rdflib import Graph
 from rdflib.term import Node
 
 
-class LocationInfo(BaseRDFModel):
+class LocationInfo(MinModRDFModel):
     country: list[CandidateEntity] = Field(default_factory=list)
     state_or_province: list[CandidateEntity] = Field(default_factory=list)
     crs: Optional[CandidateEntity] = None
     location: Optional[str] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns

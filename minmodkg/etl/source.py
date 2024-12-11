@@ -8,8 +8,8 @@ import serde.json
 import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MINMOD_KG, MINMOD_NS
 from minmodkg.misc.utils import assert_isinstance
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.source import Source, SourceConfig, SourceFactory
 from rdflib import RDF, Graph, URIRef
 from timer import Timer

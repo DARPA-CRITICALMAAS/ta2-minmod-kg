@@ -2,12 +2,8 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    norm_literal,
-    norm_object,
-)
+from minmodkg.misc.rdf_store import norm_literal, norm_object
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from minmodkg.models.candidate_entity import CandidateEntity
 from minmodkg.models.reference import Reference
 from pydantic import Field
@@ -15,11 +11,11 @@ from rdflib import Graph
 from rdflib.term import Node
 
 
-class Measure(BaseRDFModel):
+class Measure(MinModRDFModel):
     value: Optional[float] = None
     unit: Optional[CandidateEntity] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -56,7 +52,7 @@ class Measure(BaseRDFModel):
         )
 
 
-class MineralInventory(BaseRDFModel):
+class MineralInventory(MinModRDFModel):
     category: list[CandidateEntity] = Field(default_factory=list)
     commodity: CandidateEntity
     cutoff_grade: Optional[Measure] = None
@@ -67,7 +63,7 @@ class MineralInventory(BaseRDFModel):
     reference: Reference = Field()
     zone: Optional[str | int] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns

@@ -7,8 +7,9 @@ from typing import Annotated, ClassVar, Optional
 import shapely.wkt
 from minmodkg.grade_tonnage_model import GradeTonnageModel, SiteGradeTonnage
 from minmodkg.misc.geo import reproject_wkt
-from minmodkg.misc.rdf_store import BaseRDFModel, BaseRDFQueryBuilder, norm_literal
+from minmodkg.misc.rdf_store import norm_literal
 from minmodkg.misc.utils import assert_isinstance
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.typing import InternalID, Triple
 from pydantic import Field
@@ -16,13 +17,13 @@ from rdflib import Graph, URIRef
 from rdflib.term import Node
 
 
-class GradeTonnage(BaseRDFModel):
+class GradeTonnage(MinModRDFModel):
     commodity: InternalID
     total_contained_metal: Optional[float] = None
     total_tonnage: Optional[float] = None
     total_grade: Optional[float] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -56,17 +57,17 @@ class GradeTonnage(BaseRDFModel):
         )
 
 
-class Coordinates(BaseRDFModel):
+class Coordinates(MinModRDFModel):
     lat: Annotated[float, "Latitude"]
     lon: Annotated[float, "Longitude"]
 
 
-class DerivedMineralSite(BaseRDFModel):
+class DerivedMineralSite(MinModRDFModel):
     id: InternalID
     coordinates: Optional[Coordinates] = None
     grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns

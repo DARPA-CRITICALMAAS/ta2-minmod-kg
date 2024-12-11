@@ -5,7 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter
 from minmodkg.api.dependencies import get_snapshot_id
-from minmodkg.config import MINMOD_KG, MINMOD_NS
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.crs import CRS
 from minmodkg.models.material_form import MaterialForm
 

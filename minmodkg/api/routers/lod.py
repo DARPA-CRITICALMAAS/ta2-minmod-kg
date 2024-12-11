@@ -7,7 +7,7 @@ import rdflib
 import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
-from minmodkg.config import MINMOD_KG, MINMOD_NS
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from rdflib import OWL, RDF, RDFS, BNode, Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef

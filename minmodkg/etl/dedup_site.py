@@ -8,7 +8,7 @@ import serde.json
 import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MINMOD_KG, MINMOD_NS
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
 from minmodkg.models.mineral_site import MineralSite

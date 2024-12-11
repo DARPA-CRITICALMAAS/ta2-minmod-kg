@@ -3,13 +3,12 @@ from __future__ import annotations
 from functools import cached_property
 from typing import Annotated, ClassVar, Iterable, Optional
 
-from minmodkg.misc.rdf_store import BaseRDFModel, BaseRDFQueryBuilder
 from minmodkg.misc.utils import filter_duplication
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
 from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import BaseModel
 from rdflib import Graph, URIRef
-from rdflib.term import Node
 
 
 class DedupMineralSiteDepositType(BaseModel):
@@ -36,13 +35,13 @@ class DedupMineralSitePublic(BaseModel):
     grade_tonnage: Optional[GradeTonnage]
 
 
-class DedupMineralSite(BaseRDFModel):
+class DedupMineralSite(MinModRDFModel):
     id: InternalID
     sites: list[InternalID]
     commodities: list[InternalID]
     site_commodities: list[Annotated[str, "Encoded <site_id>@<list of commodities>"]]
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
         def __init__(self):
             ns = self.rdfdata.ns
             self.class_namespace = ns.md

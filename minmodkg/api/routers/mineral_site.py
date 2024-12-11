@@ -6,11 +6,11 @@ from typing import Annotated, Iterable, Literal
 from fastapi import APIRouter, Body, HTTPException, Response, status
 from loguru import logger
 from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
-from minmodkg.api.models.user import is_system_user
+from minmodkg.api.models.user import UserBase, is_system_user, is_valid_user_uri
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
-from minmodkg.config import MINMOD_KG
 from minmodkg.misc.exceptions import DBError
 from minmodkg.misc.utils import mut_merge_graphs
+from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
 from minmodkg.models.mineral_site import MineralSite
@@ -187,12 +187,10 @@ class CreateMineralSite(MineralSite):
         if isinstance(self.created_by, str):
             self.created_by = [self.created_by]
 
-        if not all(
-            user.startswith("https://minmod.isi.edu/users/") for user in self.created_by
-        ):
+        if not all(is_valid_user_uri(user) for user in self.created_by):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The created_by field must be a valid user URI. E.g., https://minmod.isi.edu/users/<username>",
+                detail="The created_by field must be a valid user URI. E.g., https://minmod.isi.edu/users/u/<username>",
             )
 
         return MineralSite.model_construct(
@@ -302,7 +300,7 @@ def create_site(
         )
 
     # update controlled fields and convert the site to TTL
-    site.update_derived_data(user.username)
+    site.update_derived_data(user)
     snapshot_id = get_snapshot_id()
     derived_site, partial_dedup_site = derive_data(
         site,
@@ -350,8 +348,8 @@ class UpdateMineralSite:
     @staticmethod
     @router.put("/mineral-sites/{site_id}")
     def main(site_id: str, site: MineralSite, user: CurrentUserDep):
-        uri = MineralSite.rdfdata.ns.mr.uri(site_id)
-        if not MineralSite.has_uri(uri):
+        site_uri = MineralSite.rdfdata.ns.mr.uri(site_id)
+        if not MineralSite.has_uri(site_uri):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="The site does not exist.",
@@ -369,19 +367,19 @@ class UpdateMineralSite:
                 detail="The updated site must have a dedup site URI.",
             )
 
-        with MINMOD_KG.transaction([uri, site.dedup_site_uri]).transaction():
+        with MINMOD_KG.transaction([site_uri, site.dedup_site_uri]).transaction():
             del_triples, add_triples = UpdateMineralSite.get_triples(
-                site_id, uri, site, user.username
+                site_id, site_uri, site, user
             )
             MINMOD_KG.delete_insert(del_triples, add_triples)
 
-        return get_site_by_uri(URIRef(uri))
+        return get_site_by_uri(URIRef(site_uri))
 
     @staticmethod
-    def get_triples(site_id: str, uri: str, site: MineralSite, username: str):
+    def get_triples(site_id: str, site_uri: str, site: MineralSite, user: UserBase):
         # update controlled fields and convert the site to TTL
         # the site must have no blank nodes as we want a fast way to compute the delta.
-        site.update_derived_data(username)
+        site.update_derived_data(user)
         snapshot_id = get_snapshot_id()
         derived_site, partial_dedup_site = derive_data(
             site,
@@ -394,9 +392,9 @@ class UpdateMineralSite:
         # manually
         ng = site.to_graph() + derived_site.to_graph()
 
-        og = MineralSite.get_graph_by_uri(uri) + DerivedMineralSite.get_graph_by_id(
-            site_id
-        )
+        og = MineralSite.get_graph_by_uri(
+            site_uri
+        ) + DerivedMineralSite.get_graph_by_id(site_id)
 
         del_triples, add_triples = get_site_changes(og, ng)
         # TODO: update dedup site

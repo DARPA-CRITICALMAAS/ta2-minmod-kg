@@ -22,11 +22,7 @@ cfg = serde.yaml.deser(CFG_FILE)
 # for minmod KG
 SPARQL_QUERY_ENDPOINT = cfg["triplestore"]["query"]
 SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
-
-MINMOD_NS = Namespace(cfg["namespace"])
-MINMOD_KG = RDFStore(MINMOD_NS, SPARQL_QUERY_ENDPOINT, SPARQL_UPDATE_ENDPOINT)
-BaseRDFModel.rdfdata = RDFMetadata(MINMOD_KG.ns, MINMOD_KG)
-BaseRDFQueryBuilder.rdfdata = RDFMetadata(MINMOD_KG.ns, MINMOD_KG)
+MINMOD_NS_CFG = cfg["namespace"]
 
 # for API prefixes
 API_PREFIX = cfg["api_prefix"]

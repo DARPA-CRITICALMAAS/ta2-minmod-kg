@@ -4,17 +4,17 @@ from dataclasses import dataclass
 from typing import Optional
 
 from minmodkg.misc.prefix_index import LongestPrefixIndex
-from minmodkg.misc.rdf_store import BaseRDFModel, norm_literal
+from minmodkg.misc.rdf_store import norm_literal
 from minmodkg.misc.utils import filter_duplication
+from minmodkg.models.base import MinModRDFModel
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID, Triple
 from rdflib import Graph
 from rdflib import Literal as RDFLiteral
 from rdflib import URIRef
-from slugify import slugify
 
 
-class SourceConfig(BaseRDFModel):
+class SourceConfig(MinModRDFModel):
     id: InternalID
     prefix: str
     name: str
@@ -77,7 +77,7 @@ class SourceFactory:
         return SourceFactory({src.prefix: src for src in source_configs}, index)
 
 
-class Source(BaseRDFModel):
+class Source(MinModRDFModel):
     uri: IRI
     id: URN
     name: str

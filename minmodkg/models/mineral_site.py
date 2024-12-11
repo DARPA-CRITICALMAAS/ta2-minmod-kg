@@ -9,15 +9,10 @@ from typing import Callable, ClassVar, Optional, Sequence
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
 from libactor.cache import BackendFactory, cache
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    SingleNS,
-    norm_literal,
-    norm_object,
-    norm_uriref,
-)
+from minmodkg.api.models.user import UserBase
+from minmodkg.misc.rdf_store import norm_literal, norm_uriref
 from minmodkg.misc.utils import file_ident
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from minmodkg.models.candidate_entity import CandidateEntity
 from minmodkg.models.location_info import LocationInfo
 from minmodkg.models.mineral_inventory import MineralInventory
@@ -29,7 +24,7 @@ from rdflib import Graph, URIRef
 from rdflib.term import Node
 
 
-class MineralSite(BaseRDFModel):
+class MineralSite(MinModRDFModel):
     source_id: str
     record_id: str | int
     dedup_site_uri: Optional[IRI] = None
@@ -49,7 +44,7 @@ class MineralSite(BaseRDFModel):
         )
     )
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -227,9 +222,9 @@ WHERE {
         )
         return triples
 
-    def update_derived_data(self, username: str):
+    def update_derived_data(self, user: UserBase):
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        self.created_by = [f"https://minmod.isi.edu/users/{username}"]
+        self.created_by = [user.get_uri()]
         return self
 
     def get_drepr_resource(self):

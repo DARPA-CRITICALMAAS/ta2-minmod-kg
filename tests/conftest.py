@@ -7,12 +7,13 @@ from pathlib import Path
 
 import httpx
 import jwt
-import minmodkg.config as config
 import pytest
 from fastapi.testclient import TestClient
+from minmodkg import config
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
+from minmodkg.models.base import MINMOD_KG
 from rdflib import Graph
 from timer import Timer
 
@@ -44,12 +45,12 @@ def user2() -> UserCreate:
 
 @pytest.fixture(scope="session")
 def user1_uri(user1: UserCreate):
-    return f"https://minmod.isi.edu/users/{user1.username}"
+    return user1.get_uri()
 
 
 @pytest.fixture(scope="session")
 def user2_uri(user2: UserCreate):
-    return f"https://minmod.isi.edu/users/{user2.username}"
+    return user2.get_uri()
 
 
 @pytest.fixture(scope="session")
@@ -99,9 +100,9 @@ def kg(resource_dir: Path, db):
         g = Graph()
         for file in resource_dir.glob("kgdata/**/*.ttl"):
             g.parse(file, format="ttl")
-        config.MINMOD_KG.insert(g)
+        MINMOD_KG.insert(g)
 
-    yield config.MINMOD_KG
+    yield MINMOD_KG
 
     subprocess.check_output("docker container rm -f test-kg", shell=True)
 

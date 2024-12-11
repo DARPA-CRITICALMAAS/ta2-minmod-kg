@@ -6,8 +6,8 @@ from enum import Enum
 from functools import cached_property, cmp_to_key
 from typing import Iterable, Optional
 
-from minmodkg.config import MINMOD_KG
 from minmodkg.misc import UnconvertibleUnitError, group_by_attr
+from minmodkg.models.base import MINMOD_KG
 
 MR_NS = MINMOD_KG.ns.mr
 

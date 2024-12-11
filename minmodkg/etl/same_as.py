@@ -14,7 +14,7 @@ import serde.json
 from drepr.writers.turtle_writer import TurtleWriter
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.config import MINMOD_KG
+from minmodkg.models.base import MINMOD_KG
 from rdflib import OWL
 from slugify import slugify
 from timer import Timer

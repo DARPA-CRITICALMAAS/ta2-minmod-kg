@@ -2,23 +2,19 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    norm_literal,
-    norm_uriref,
-)
+from minmodkg.misc.rdf_store import norm_literal, norm_uriref
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from rdflib import Graph
 from rdflib.term import Node
 
 
-class CandidateEntity(BaseRDFModel):
+class CandidateEntity(MinModRDFModel):
     source: str
     confidence: float
     observed_name: Optional[str] = None
     normalized_uri: Optional[str] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns

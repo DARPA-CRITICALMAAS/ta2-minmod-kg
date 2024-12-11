@@ -2,24 +2,20 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    norm_literal,
-    norm_object,
-)
+from minmodkg.misc.rdf_store import norm_literal, norm_object
+from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
 from pydantic import Field
 from rdflib import Graph
 from rdflib.term import Node
 
 
-class BoundingBox(BaseRDFModel):
+class BoundingBox(MinModRDFModel):
     x_max: float
     x_min: float
     y_max: float
     y_min: float
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -48,11 +44,11 @@ class BoundingBox(BaseRDFModel):
         )
 
 
-class PageInfo(BaseRDFModel):
+class PageInfo(MinModRDFModel):
     bounding_box: Optional[BoundingBox] = None
     page: int
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -88,13 +84,13 @@ class PageInfo(BaseRDFModel):
         )
 
 
-class Document(BaseRDFModel):
+class Document(MinModRDFModel):
 
     doi: Optional[str] = None
     uri: Optional[str] = None
     title: Optional[str] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns
@@ -120,13 +116,13 @@ class Document(BaseRDFModel):
         )
 
 
-class Reference(BaseRDFModel):
+class Reference(MinModRDFModel):
     document: Document
     page_info: list[PageInfo] = Field(default_factory=list)
     comment: Optional[str] = None
     property: Optional[str] = None
 
-    class QueryBuilder(BaseRDFQueryBuilder):
+    class QueryBuilder(MinModRDFQueryBuilder):
 
         def __init__(self):
             ns = self.rdfdata.ns

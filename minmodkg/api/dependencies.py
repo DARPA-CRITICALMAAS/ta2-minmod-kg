@@ -10,8 +10,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from minmodkg.api.models.db import SessionDep
 from minmodkg.api.models.user import User, is_system_user
-from minmodkg.config import JWT_ALGORITHM, MINMOD_KG, MINMOD_NS, SECRET_KEY
+from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.misc import LongestPrefixIndex
+from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.typing import IRI, InternalID
 
 # for login/security
