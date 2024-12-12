@@ -44,6 +44,9 @@ services:
     image: toan2/minmod-dashboard
     ports:
       - "8050:8050"
+    environment: 
+      - API_ENDPOINT=https://dev.minmod.isi.edu/api/v1
+      - SPARQL_ENDPOINT=https://dev.minmod.isi.edu/sparql
     networks:
       - minmod
   editor:
