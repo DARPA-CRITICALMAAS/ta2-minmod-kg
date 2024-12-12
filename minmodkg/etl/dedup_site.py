@@ -181,7 +181,8 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
         output_fmter.outdir.mkdir(parents=True, exist_ok=True)
 
         mr = MINMOD_KG.ns.mr
-        dedup_site_pred = MINMOD_KG.ns.md.dedup_site
+        md = MINMOD_KG.ns.md
+        dedup_site_pred = md.dedup_site
 
         with open(output_fmter.outdir / "dedup_sites.ttl", "w") as f:
             f.write(MINMOD_KG.prefix_part)
@@ -190,7 +191,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
                     f.write(f"{s} {p} {o} .\n")
 
             for dedup_site in dedup_sites:
-                dedup_site_uri = mr[dedup_site.id]
+                dedup_site_uri = md[dedup_site.id]
                 for site in dedup_site.sites:
                     f.write(f"{mr[site]} {dedup_site_pred} {dedup_site_uri} .\n")
                 for s, p, o in dedup_site.to_triples():
