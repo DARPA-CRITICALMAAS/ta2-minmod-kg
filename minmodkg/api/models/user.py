@@ -44,7 +44,8 @@ class User(UserBase, table=True):
         return bcrypt.checkpw(password.encode(), self.password)
 
 
-class UserPublic(UserBase): ...
+class UserPublic(UserBase):
+    uri: str
 
 
 class UserCreate(UserBase):

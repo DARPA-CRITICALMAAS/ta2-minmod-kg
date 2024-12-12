@@ -59,4 +59,6 @@ def get_users_by_ids(
 
 @router.get("/whoami", response_model=UserPublic)
 def whoami(user: CurrentUserDep):
-    return user
+    output = user.model_dump()
+    output["uri"] = user.get_uri()
+    return output
