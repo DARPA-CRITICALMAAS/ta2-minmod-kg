@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from functools import lru_cache
+from typing import Annotated, Literal, Optional
+from urllib.parse import urlparse, urlunparse
 
 import htbuilder as H
 import rdflib
@@ -25,16 +27,26 @@ DO_NOT_FOLLOW_PREDICATE = {
 DO_NOT_FOLLOW_PREDICATE_OBJECT = {}
 
 
+@lru_cache
+def get_hostname():
+    u = urlparse(MINMOD_NS.mr.namespace)
+    return urlunparse((u.scheme, u.netloc, "", "", "", ""))
+
+
 @router.get("/resource/{resource_id}")
 def get_resource(
-    resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
+    resource_id: str,
+    format: Annotated[Literal["html", "json"], Query()] = "html",
+    remove_hostname: Annotated[Literal["yes", "no"], Query()] = "no",
 ):
     uri = MINMOD_NS.mr.uri(resource_id)
     if not MINMOD_KG.has(uri):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
-        return render_entity_html(uri)
+        return render_entity_html(
+            uri, remove_hostname=get_hostname() if remove_hostname == "yes" else None
+        )
     if format == "json":
         return render_entity_json(uri)
     raise HTTPException(status_code=400, detail="Invalid format")
@@ -42,14 +54,18 @@ def get_resource(
 
 @router.get("/ontology/{resource_id}")
 def get_ontology(
-    resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
+    resource_id: str,
+    format: Annotated[Literal["html", "json"], Query()] = "html",
+    remove_hostname: Annotated[Literal["yes", "no"], Query()] = "no",
 ):  # -> HTMLResponse | dict[Any, Any]:
     uri = MINMOD_NS.mo.uri(resource_id)
     if not MINMOD_KG.has(uri):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
-        return render_entity_html(uri)
+        return render_entity_html(
+            uri, remove_hostname=get_hostname() if remove_hostname == "yes" else None
+        )
     if format == "json":
         return render_entity_json(uri)
     raise HTTPException(status_code=400, detail="Invalid format")
@@ -57,14 +73,18 @@ def get_ontology(
 
 @router.get("/derived/{resource_id}")
 def get_derived(
-    resource_id: str, format: Annotated[Literal["html", "json"], Query()] = "html"
+    resource_id: str,
+    format: Annotated[Literal["html", "json"], Query()] = "html",
+    remove_hostname: Annotated[Literal["yes", "no"], Query()] = "no",
 ):  # -> HTMLResponse | dict[Any, Any]:
     uri = MINMOD_NS.md.uri(resource_id)
     if not MINMOD_KG.has(uri):
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
-        return render_entity_html(uri)
+        return render_entity_html(
+            uri, remove_hostname=get_hostname() if remove_hostname == "yes" else None
+        )
     if format == "json":
         return render_entity_json(uri)
     raise HTTPException(status_code=400, detail="Invalid format")
@@ -153,7 +173,7 @@ def render_entity_json(subj: URIRef):
     return out
 
 
-def render_entity_html(subj: URIRef):
+def render_entity_html(subj: URIRef, remove_hostname: Optional[str] = None):
     g = get_entity_data(subj)
 
     def label(g, subj: rdflib.term.Node):
@@ -161,6 +181,15 @@ def render_entity_html(subj: URIRef):
             return next(g.objects(subj, RDFS.label))
         assert isinstance(subj, (URIRef, RDFLiteral))
         return subj.n3(g.namespace_manager)
+
+    def get_href(subj: rdflib.term.Node):
+        if (
+            remove_hostname is not None
+            and isinstance(subj, URIRef)
+            and subj.startswith(remove_hostname)
+        ):
+            return subj[len(remove_hostname) :] + "?remove_hostname=yes"
+        return subj
 
     def make_tree(g, p: rdflib.term.Node, subj: rdflib.term.Node, visited: set):
         if isinstance(subj, RDFLiteral):
@@ -171,7 +200,7 @@ def render_entity_html(subj: URIRef):
                 subj_name = subj.n3(g.namespace_manager)
                 if (subj, RDFS.label, None) in g:
                     subj_name = next(g.objects(subj, RDFS.label))
-                return H.a(href=subj)(subj_name)
+                return H.a(href=get_href(subj))(subj_name)
 
             if p in DO_NOT_FOLLOW_PREDICATE_OBJECT:
                 if any(
@@ -181,7 +210,7 @@ def render_entity_html(subj: URIRef):
                     subj_name = subj.n3(g.namespace_manager)
                     if (subj, RDFS.label, None) in g:
                         subj_name = next(g.objects(subj, RDFS.label))
-                    return H.a(href=subj)(subj_name)
+                    return H.a(href=get_href(subj))(subj_name)
 
         if subj in visited:
             return H.p(style="font-style: italic")("skiped as visited before")
@@ -193,11 +222,14 @@ def render_entity_html(subj: URIRef):
             subj_name = subj.n3(g.namespace_manager)
             if (subj, RDFS.label, None) in g:
                 subj_name = next(g.objects(subj, RDFS.label))
-            children.append(H.tr(H.td(colspan=2)(H.a(href=subj)(subj_name))))
+            children.append(H.tr(H.td(colspan=2)(H.a(href=get_href(subj))(subj_name))))
 
         for p, o in g.predicate_objects(subj):
             children.append(
-                H.tr(H.td(H.a(href=p)(label(g, p))), H.td(make_tree(g, p, o, visited)))
+                H.tr(
+                    H.td(H.a(href=get_href(p))(label(g, p))),
+                    H.td(make_tree(g, p, o, visited)),
+                )
             )
 
         return H.table(_class="table")(*children)
@@ -207,13 +239,15 @@ def render_entity_html(subj: URIRef):
     children = []
     for p, o in g.predicate_objects(subj):
         if p != RDFS.label:
-            children.append((H.a(href=p)(label(g, p)), make_tree(g, p, o, visited)))
+            children.append(
+                (H.a(href=get_href(p))(label(g, p)), make_tree(g, p, o, visited))
+            )
 
     tree = H.div(_class="container-fluid")(
         H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(
             H.div(_class="col")(
                 H.h4(
-                    H.a(href=subj)(subj_label),
+                    H.a(href=get_href(subj))(subj_label),
                 ),
                 H.small(_class="text-muted fw-semibold")(subj),
             )
