@@ -1,6 +1,6 @@
 PREFIX mr: <https://minmod.isi.edu/resource/>
 PREFIX mo: <https://minmod.isi.edu/ontology/>
-PREFIX md: <https://minmod.isi.edu/ontology-derived/>
+PREFIX md: <https://minmod.isi.edu/derived/>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>

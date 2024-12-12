@@ -1,5 +1,5 @@
 @prefix geo: <http://www.opengis.net/ont/geosparql#> .
-@prefix md: <https://minmod.isi.edu/ontology-derived/> .
+@prefix md: <https://minmod.isi.edu/derived/> .
 @prefix mo: <https://minmod.isi.edu/ontology/> .
 @prefix mr: <https://minmod.isi.edu/resource/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -15,7 +15,7 @@ mr:site__doi-org-10-5066-p9htergk__29328 rdfs:label "Sportsman No. 1" ;
         mr:site__doi-org-10-5066-p9htergk__29328__gt__Q622 ;
     md:lat 33.20006 ;
     md:lon -115.58642 ;
-    md:dedup_site mr:dedup_site__doi-org-10-5066-p9htergk__29328 ;
+    md:dedup_site md:dedup_site__doi-org-10-5066-p9htergk__29328 ;
     mo:created_by "https://minmod.isi.edu/users/umn" ;
     mo:location_info mr:site__doi-org-10-5066-p9htergk__29328__user_umn____location_info ;
     mo:mineral_inventory mr:site__doi-org-10-5066-p9htergk__29328__user_umn____inv__0,
