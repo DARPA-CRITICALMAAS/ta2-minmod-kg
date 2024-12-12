@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Body, HTTPException
 from minmodkg.api.dependencies import norm_commodity
@@ -100,8 +100,10 @@ def get_dedup_mineral_site_by_ids(
             ]
         }
         
-        ?ms mo:source_uri/mo:score ?ms_source_score ;
-            mo:created_by ?created_by ;
+        OPTIONAL {
+            ?ms mo:source_uri/mo:score ?ms_source_score ;
+        }
+        ?ms mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
@@ -245,8 +247,10 @@ def get_dedup_mineral_sites(
             ]
         }
         
-        ?ms mo:source_uri/mo:score ?ms_source_score ;
-            mo:created_by ?created_by ;
+        OPTIONAL {
+            ?ms mo:source_uri/mo:score ?ms_source_score ;
+        }
+        ?ms mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
 
         OPTIONAL { ?ms rdfs:label ?ms_name . }
@@ -488,9 +492,12 @@ def make_dedup_site(
 
 
 def get_ms_source_score(
-    source_score: float, created_by: str, modified_at: str, default_score: float
+    source_score: Optional[float],
+    created_by: str,
+    modified_at: str,
+    default_score: float,
 ):
-    if source_score < 0:
+    if source_score is None or source_score < 0:
         source_score = default_score
     if not is_system_user(created_by):
         # expert get the highest priority
