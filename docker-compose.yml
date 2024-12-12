@@ -46,7 +46,6 @@ services:
       - "8050:8050"
     networks:
       - minmod
-    command: python ./app.py dev
   editor:
     image: darpa-criticalmaas/ta2-minmod-editor
     ports:
