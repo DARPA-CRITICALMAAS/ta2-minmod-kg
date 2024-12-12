@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Body, HTTPException
-from minmodkg.api.dependencies import get_snapshot_id, norm_commodity, rank_source
+from minmodkg.api.dependencies import norm_commodity
 from minmodkg.api.models.user import is_system_user
 from minmodkg.misc import group_by_key
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import (
     DedupMineralSite,
     DedupMineralSiteDepositType,
+    DedupMineralSiteIdAndScore,
     DedupMineralSiteLocation,
     DedupMineralSitePublic,
 )
@@ -26,7 +27,7 @@ def dedup_mineral_sites_v2(
     offset: int = 0,
 ):
     commodity = norm_commodity(commodity)
-    output = get_dedup_mineral_sites(get_snapshot_id(), commodity, limit, offset)
+    output = get_dedup_mineral_sites(commodity, limit, offset)
     return [x.model_dump(exclude_none=True) for x in output]
 
 
@@ -37,9 +38,7 @@ def api_get_dedup_mineral_sites(
 ) -> dict[InternalID, dict]:
     return {
         id: site.model_dump(exclude_none=True)
-        for id, site in get_dedup_mineral_site_by_ids(
-            get_snapshot_id(), ids, commodity
-        ).items()
+        for id, site in get_dedup_mineral_site_by_ids(ids, commodity).items()
     }
 
 
@@ -49,16 +48,13 @@ def api_get_dedup_mineral_site(
     commodity: str,
 ):
     commodity = norm_commodity(commodity)
-    output = get_dedup_mineral_site_by_ids(
-        get_snapshot_id(), [dedup_site_id], commodity
-    )
+    output = get_dedup_mineral_site_by_ids([dedup_site_id], commodity)
     if len(output) == 0:
         raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")
     return output[dedup_site_id].model_dump(exclude_none=True)
 
 
 def get_dedup_mineral_site_by_ids(
-    snapshot_id: str,
     lst_dms: list[InternalID],
     commodity: InternalID,
 ) -> dict[InternalID, DedupMineralSitePublic]:
@@ -77,7 +73,7 @@ def get_dedup_mineral_site_by_ids(
     SELECT
         ?dms
         ?ms
-        ?ms_source
+        ?ms_source_score
         ?ms_name
         ?ms_type
         ?ms_rank
@@ -103,7 +99,7 @@ def get_dedup_mineral_site_by_ids(
             ]
         }
         
-        ?ms mo:source_id ?ms_source ;
+        ?ms mo:source_uri/mo:score ?ms_source_score ;
             mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
 
@@ -148,7 +144,7 @@ def get_dedup_mineral_site_by_ids(
         query,
         keys=[
             "ms",
-            "ms_source",
+            "ms_source_score",
             "ms_name",
             "ms_type",
             "ms_rank",
@@ -169,19 +165,16 @@ def get_dedup_mineral_site_by_ids(
     if len(lst_dms) == 1:
         if len(qres) == 0:
             return {}
-        return {lst_dms[0]: make_dedup_site(lst_dms[0], commodity, qres, snapshot_id)}
+        return {lst_dms[0]: make_dedup_site(lst_dms[0], commodity, qres)}
     dms2sites = group_by_key(qres, "dms")
     return {
-        (dms_id := dedup_ns.id(dms)): make_dedup_site(
-            dms_id, commodity, dupsites, snapshot_id
-        )
+        (dms_id := dedup_ns.id(dms)): make_dedup_site(dms_id, commodity, dupsites)
         for dms, dupsites in dms2sites.items()
         if len(dupsites) > 0
     }
 
 
 def get_dedup_mineral_sites(
-    snapshot_id: str,
     commodity: InternalID,
     limit: int = -1,
     offset: int = 0,
@@ -224,7 +217,7 @@ def get_dedup_mineral_sites(
     SELECT
         ?dms
         ?ms
-        ?ms_source
+        ?ms_source_score
         ?ms_name
         ?ms_type
         ?ms_rank
@@ -251,7 +244,7 @@ def get_dedup_mineral_sites(
             ]
         }
         
-        ?ms mo:source_id ?ms_source ;
+        ?ms mo:source_uri/mo:score ?ms_source_score ;
             mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
 
@@ -295,7 +288,7 @@ def get_dedup_mineral_sites(
         keys=[
             "dms",
             "ms",
-            "ms_source",
+            "ms_source_score",
             "ms_name",
             "ms_type",
             "ms_rank",
@@ -318,7 +311,7 @@ def get_dedup_mineral_sites(
 
     dms2sites = group_by_key(qres, "dms")
     return [
-        make_dedup_site(dedup_ns.id(dms), commodity, dupsites, snapshot_id)
+        make_dedup_site(dedup_ns.id(dms), commodity, dupsites)
         for dms, dupsites in dms2sites.items()
     ]
 
@@ -327,7 +320,7 @@ def make_dedup_site(
     dms: InternalID,
     commodity: InternalID,
     dupsites: list[dict],
-    snapshot_id: str,
+    default_source_score: float = 0.5,
 ) -> DedupMineralSitePublic:
     mr = MINMOD_NS.mr
 
@@ -344,19 +337,17 @@ def make_dedup_site(
                 confidence=site["dt_confidence"],
             )
     deposit_types: list[DedupMineralSiteDepositType] = list(_tmp_deposit_types.values())
-    ranked_site_ids = [
-        site_id
-        for site_id, _ in sorted(
+    ranked_site_id_and_scores = [
+        (site_id, min(site_score[0], 1.0))
+        for site_id, site_score in sorted(
             (
                 (
                     site_id,
-                    (
-                        rank_source(
-                            sites[0]["ms_source"],
-                            sites[0]["created_by"],
-                            snapshot_id,
-                        ),
+                    get_ms_source_score(
+                        sites[0]["ms_source_score"],
+                        sites[0]["created_by"],
                         sites[0]["modified_at"],
+                        default_source_score,
                     ),
                 )
                 for site_id, sites in sid2sites.items()
@@ -369,7 +360,7 @@ def make_dedup_site(
     site_name: str = next(
         (
             _ms_name
-            for site_id in ranked_site_ids
+            for site_id, site_score in ranked_site_id_and_scores
             if (_ms_name := sid2sites[site_id][0]["ms_name"]) is not None
         ),
         "",
@@ -377,7 +368,7 @@ def make_dedup_site(
     site_type = next(
         (
             _ms_type
-            for site_id in ranked_site_ids
+            for site_id, site_score in ranked_site_id_and_scores
             if (_ms_type := sid2sites[site_id][0]["ms_type"]) is not None
         ),
         "NotSpecified",
@@ -385,7 +376,7 @@ def make_dedup_site(
     site_rank = next(
         (
             _ms_rank
-            for site_id in ranked_site_ids
+            for site_id, site_score in ranked_site_id_and_scores
             if (_ms_rank := sid2sites[site_id][0]["ms_rank"]) is not None
         ),
         "U",
@@ -394,7 +385,7 @@ def make_dedup_site(
     state_or_province = []
     lat = None
     lon = None
-    for site_id in ranked_site_ids:
+    for site_id, site_score in ranked_site_id_and_scores:
         _tmp_country = {
             mr.id(site["country"])
             for site in sid2sites[site_id]
@@ -403,7 +394,7 @@ def make_dedup_site(
         if len(_tmp_country) > 0:
             country = list(_tmp_country)
             break
-    for site_id in ranked_site_ids:
+    for site_id, site_score in ranked_site_id_and_scores:
         _tmp_province = {
             mr.id(site["state_or_province"])
             for site in sid2sites[site_id]
@@ -415,7 +406,7 @@ def make_dedup_site(
     has_loc_site_id = next(
         (
             site_id
-            for site_id in ranked_site_ids
+            for site_id, site_score in ranked_site_id_and_scores
             if sid2sites[site_id][0]["lat"] is not None
         ),
         None,
@@ -483,10 +474,24 @@ def make_dedup_site(
         name=site_name,
         type=site_type,
         rank=site_rank,
-        sites=[mr.id(sid) for sid in ranked_site_ids],
+        sites=[
+            DedupMineralSiteIdAndScore(id=mr.id(sid), score=sscore)
+            for sid, sscore in ranked_site_id_and_scores
+        ],
         deposit_types=sorted(deposit_types, key=lambda x: x.confidence, reverse=True)[
             :5
         ],
         location=location,
         grade_tonnage=gt,
     )
+
+
+def get_ms_source_score(
+    source_score: float, created_by: str, modified_at: str, default_score: float
+):
+    if source_score < 0:
+        source_score = default_score
+    if not is_system_user(created_by):
+        # expert get the highest priority
+        return (100.0, modified_at)
+    return (min(source_score, 99.0), modified_at)

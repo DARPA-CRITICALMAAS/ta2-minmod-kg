@@ -34,7 +34,6 @@ class SourceServiceConstructArgs(TypedDict):
 
 class SourceServiceInvokeArgs(TypedDict):
     predefined_entities: RelPath
-    default_source_score: float
     input: RelPath | list[RelPath]
     output: RelPath | FormatOutputPath
     optional: NotRequired[bool]
@@ -104,7 +103,6 @@ class SourceService(BaseFileService[SourceServiceInvokeArgs]):
                 delayed(ComputingSourceInfo.exec)(
                     self.workdir,
                     predefined_entities,
-                    args["default_source_score"],
                     infile=infile,
                     outfile=outfile,
                 )
@@ -115,7 +113,6 @@ class SourceService(BaseFileService[SourceServiceInvokeArgs]):
                 ComputingSourceInfo.exec(
                     self.workdir,
                     predefined_entities,
-                    args["default_source_score"],
                     infile=infile,
                     outfile=outfile,
                 )
@@ -159,11 +156,8 @@ class ComputingSourceInfo:
 
     instances = {}
 
-    def __init__(
-        self, workdir: Path, predefined_entity_dir: Path, default_score: float
-    ):
+    def __init__(self, workdir: Path, predefined_entity_dir: Path):
         self.workdir = workdir
-        self.default_score = default_score
 
         g = Graph()
         g.parse(predefined_entity_dir / "source.ttl", format="ttl")
@@ -175,23 +169,21 @@ class ComputingSourceInfo:
 
     @classmethod
     def get_instance(
-        cls, workdir: Path, predefined_entity_dir: Path, default_score: float
+        cls,
+        workdir: Path,
+        predefined_entity_dir: Path,
     ):
         key = (workdir, predefined_entity_dir)
         if key not in cls.instances:
-            cls.instances[key] = cls(workdir, predefined_entity_dir, default_score)
+            cls.instances[key] = cls(workdir, predefined_entity_dir)
         return cls.instances[key]
 
     @classmethod
-    def exec(
-        cls, workdir: Path, predefined_entity_dir: Path, default_score: float, **kwargs
-    ):
-        return cls.get_instance(workdir, predefined_entity_dir, default_score).invoke(
-            **kwargs
-        )
+    def exec(cls, workdir: Path, predefined_entity_dir: Path, **kwargs):
+        return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="compute_source_info_v100.sqlite"),
+        backend=FileSqliteBackend.factory(filename="compute_source_info_v101.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
@@ -203,9 +195,7 @@ class ComputingSourceInfo:
         for raw_site in lst:
             source_id = raw_site["source_id"]
             if source_id not in output:
-                output[source_id] = self.source_factory.get_source(
-                    source_id, self.default_score
-                )
+                output[source_id] = self.source_factory.get_source(source_id)
 
         serde.json.ser({k: v.to_dict() for k, v in output.items()}, outfile)
         return outfile

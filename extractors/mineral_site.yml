@@ -149,7 +149,7 @@ semantic_model:
       - [drepr:uri, site_id]
       - [rdfs:label, site_name]
       - [skos:altLabel, site_aliases]
-      - [mo:source_uri, site_source_uri]
+      - [mo:source_uri, site_source_uri, drepr:uri]
       - [mo:source_id, site_source_id]
       - [mo:record_id, site_record_id]
       - [mo:site_type, site_type]

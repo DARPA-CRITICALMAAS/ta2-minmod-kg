@@ -7,14 +7,15 @@ import jwt
 from fastapi import APIRouter, Body, HTTPException, Response, status
 from minmodkg.api.dependencies import CurrentUserDep
 from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User, UserPublic
+from minmodkg.api.models.user import User, UserPublic, get_username
 from minmodkg.config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, SECRET_KEY
+from sqlmodel import col, select
 
 router = APIRouter(tags=["login"])
 
 
 @router.post("/login")
-async def login(
+def login(
     session: SessionDep,
     response: Response,
     username: Annotated[str, Body()],
@@ -42,6 +43,18 @@ async def login(
         value=access_token,
     )
     return "Logged in"
+
+
+@router.get("/users/find_by_ids")
+def get_users_by_ids(
+    user_uris: Annotated[list[str], Body(embed=True)],
+    session: SessionDep,
+):
+    statement = select(User).where(
+        col(User.username).in_([get_username(uri) for uri in user_uris])
+    )
+    output = session.exec(statement)
+    return output
 
 
 @router.get("/whoami", response_model=UserPublic)

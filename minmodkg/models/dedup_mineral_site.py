@@ -24,12 +24,17 @@ class DedupMineralSiteLocation(BaseModel):
     state_or_province: list[InternalID]
 
 
+class DedupMineralSiteIdAndScore(BaseModel):
+    id: str
+    score: float
+
+
 class DedupMineralSitePublic(BaseModel):
     id: InternalID
     name: str
     type: str
     rank: str
-    sites: list[InternalID]
+    sites: list[DedupMineralSiteIdAndScore]
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: Optional[GradeTonnage]

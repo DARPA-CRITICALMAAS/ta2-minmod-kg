@@ -47,7 +47,7 @@ class SourceFactory:
             return self.sources[prefix]
         return None
 
-    def get_source(self, source_id: str, default_score: float) -> Source:
+    def get_source(self, source_id: str) -> Source:
         """Create source from source id"""
         cfg = self.get_config(source_id)
         uri = get_source_uri(source_id)
@@ -57,7 +57,7 @@ class SourceFactory:
                 uri=uri,
                 id=source_id,
                 name=source_id,
-                score=default_score,
+                score=-1,
                 connection=None,
             )
         return Source(
