@@ -211,7 +211,7 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
                     f.write(f":{nodes[0]} owl:sameAs :{nodes[0]} .\n")
                 else:
                     for i in range(1, len(nodes)):
-                        f.write(f":{nodes[0]} owl:sameAs :{nodes[1]} .\n")
+                        f.write(f":{nodes[0]} owl:sameAs :{nodes[i]} .\n")
 
 
 @dataclass
