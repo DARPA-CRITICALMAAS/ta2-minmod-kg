@@ -48,6 +48,7 @@ def api_get_dedup_mineral_site(
     commodity: str,
 ):
     commodity = norm_commodity(commodity)
+
     output = get_dedup_mineral_site_by_ids([dedup_site_id], commodity)
     if len(output) == 0:
         raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")

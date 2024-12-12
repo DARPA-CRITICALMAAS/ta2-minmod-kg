@@ -55,6 +55,9 @@ class SingleNS:
     def __getitem__(self, name: InternalID):
         return self.alias + ":" + name
 
+    def __contains__(self, uri: IRI | URIRef) -> bool:
+        return uri.startswith(self.namespace)
+
     def rel2abs(self, reluri: RelIRI) -> URIRef:
         return URIRef(self.namespace + reluri.split(":")[1])
 

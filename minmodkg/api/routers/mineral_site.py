@@ -425,10 +425,16 @@ def derive_data(
     crss: dict[str, str],
 ) -> tuple[DerivedMineralSite, DedupMineralSite]:
     ns = MineralSite.rdfdata.ns
+    dedup_ns = DedupMineralSite.qbuilder.class_namespace
 
     if site.dedup_site_uri is None:
-        site.dedup_site_uri = ns.mr.uristr(
+        site.dedup_site_uri = dedup_ns.uristr(
             DedupMineralSite.get_id([ns.mr.id(site.uri)])
+        )
+    elif site.dedup_site_uri not in dedup_ns:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"The dedup site URI must be in the MD namespace. Got {site.dedup_site_uri}",
         )
 
     # get derived data
@@ -436,7 +442,7 @@ def derive_data(
         site, material_form_conversion, crss
     )
     partial_dedup_site = DedupMineralSite.from_derived_sites(
-        [derived_site], ns.mr.id(site.dedup_site_uri)
+        [derived_site], dedup_ns.id(site.dedup_site_uri)
     )
     return derived_site, partial_dedup_site
 

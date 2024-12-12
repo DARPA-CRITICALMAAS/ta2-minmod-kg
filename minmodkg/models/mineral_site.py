@@ -104,7 +104,7 @@ CONSTRUCT {
 WHERE {
     <%s> ?p ?o .
     OPTIONAL {
-        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property))+ ?cs .
+        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))+ ?cs .
         ?cs ?cp ?co .
     }
 }
@@ -123,7 +123,7 @@ CONSTRUCT {
 WHERE {
     ?s ?p ?o .
     OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property))+ ?cs .
+        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))+ ?cs .
         ?cs ?cp ?co .
     }
     VALUES ?s { %s }

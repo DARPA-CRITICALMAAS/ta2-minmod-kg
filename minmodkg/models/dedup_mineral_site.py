@@ -61,7 +61,7 @@ class DedupMineralSite(MinModRDFModel):
 
     @cached_property
     def uri(self) -> IRI:
-        return self.rdfdata.ns.mr.uristr(self.id)
+        return self.qbuilder.class_namespace.uristr(self.id)
 
     @classmethod
     def from_graph(cls, uid: URIRef, g: Graph):

@@ -1,0 +1,202 @@
+@prefix mr: <https://minmod.isi.edu/resource/> .
+@prefix mo: <https://minmod.isi.edu/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix drepr: <https://purl.org/drepr/1.0/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mr:source_cfg__mining-report-https-api-cdr-land-v1-docs-documents rdf:type mo:SourceConfig ;
+	mo:prefix "mining-report::https://api.cdr.land/v1/docs/documents" ;
+	rdfs:label "mining-report"^^xsd:string ;
+	rdfs:comment "Mining Report storing in CDR"^^xsd:string ;
+	mo:score "0.8"^^xsd:float ;
+	mo:connection "pdf:::https://docs.polymer.rocks/cdr/d/{record_id}/{page_number=1}"^^xsd:string .
+
+mr:source_cfg__mining-report-https-w3id-org-usgs-z rdf:type mo:SourceConfig ;
+	mo:prefix "mining-report::https://w3id.org/usgs/z" ;
+	rdfs:label "mining-report"^^xsd:string ;
+	rdfs:comment "Mining Report storing in Zotero"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__article-http-minmod-isi-edu-papers-lithium-in-nevada-simon-jowitt-2024 rdf:type mo:SourceConfig ;
+	mo:prefix "article::http://minmod.isi.edu/papers/lithium-in-nevada-simon-jowitt-2024" ;
+	rdfs:label "article"^^xsd:string ;
+	rdfs:comment "Jowitt's compiled Lithium data"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__article-https-doi-org-10-1016-j-oregeorev-2016-08-010 rdf:type mo:SourceConfig ;
+	mo:prefix "article::https://doi.org/10.1016/j.oregeorev.2016.08.010" ;
+	rdfs:label "article"^^xsd:string ;
+	rdfs:comment "Mudd & Jowitt Zinc Lead data"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__article-https-doi-org-10-2113-econgeo-110-8-1925 rdf:type mo:SourceConfig ;
+	mo:prefix "article::https://doi.org/10.2113/econgeo.110.8.1925" ;
+	rdfs:label "article"^^xsd:string ;
+	rdfs:comment "Jowitt REE data"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__database-https-doi-org-10-4095-295581 rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://doi.org/10.4095/295581" ;
+	rdfs:label "world-tin-tungsten-deposit"^^xsd:string ;
+	rdfs:comment "World Tin Tungsten Deposit"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__database-https-doi-org-10-5066-p96mmrfd rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://doi.org/10.5066/P96MMRFD" ;
+	rdfs:label "ardf"^^xsd:string ;
+	rdfs:comment "Alaska Resource Data File"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-doi-org-10-5066-p970gdd5 rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://doi.org/10.5066/P970GDD5" ;
+	rdfs:label "tri-national-cmmi"^^xsd:string ;
+	rdfs:comment "National-Scale Geophysical, Geologic, and Mineral Resource Data and Grids for the United States, Canada, and Australia"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-doi-org-10-5066-p9k1hbnt rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://doi.org/10.5066/P9K1HBNT" ;
+	rdfs:label "earth-mri-usa"^^xsd:string ;
+	rdfs:comment "Critical mineral deposits of the United States"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__article-https-doi-org-10-5382-econgeo-2018-4590 rdf:type mo:SourceConfig ;
+	mo:prefix "article::https://doi.org/10.5382/econgeo.2018.4590" ;
+	rdfs:label "article"^^xsd:string ;
+	rdfs:comment "Mudd & Jowitt Copper Data"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__article-https-doi-org-10-5382-econgeo-4950 rdf:type mo:SourceConfig ;
+	mo:prefix "article::https://doi.org/10.5382/econgeo.4950" ;
+	rdfs:label "article"^^xsd:string ;
+	rdfs:comment "Mudd & Jowitt Nickel Data"^^xsd:string ;
+	mo:score "0.8"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-asbestos rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/asbestos" ;
+	rdfs:label "mrdata-asbestos"^^xsd:string ;
+	rdfs:comment "Asbestos mines, prospects, and occurrences in the US"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-carbonatite rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/carbonatite" ;
+	rdfs:label "mrdata-carbonatite"^^xsd:string ;
+	rdfs:comment "Carbonatites of the world, explored deposits of Nb and REE"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-deposit rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/deposit" ;
+	rdfs:label "mrdata-deposit"^^xsd:string ;
+	rdfs:comment "USMIN Mineral Deposit Database"^^xsd:string ;
+	mo:score "0.7"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-laterite rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/laterite" ;
+	rdfs:label "mrdata-laterite"^^xsd:string ;
+	rdfs:comment "Ni-Co laterite deposits of the world"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-major-deposits rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/major-deposits" ;
+	rdfs:label "mrdata-major-deposits"^^xsd:string ;
+	rdfs:comment "Major mineral deposits of the world"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-mrds rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/mrds" ;
+	rdfs:label "mrdata-mrds"^^xsd:string ;
+	rdfs:comment "Mineral Resources Data System (MRDS)"^^xsd:string ;
+	mo:score "0.1"^^xsd:float ;
+	mo:connection "webpage::https://mrdata.usgs.gov/mrds/show-mrds.php?dep_id={record_id}"^^xsd:string .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-nicrpge rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/nicrpge" ;
+	rdfs:label "mrdata-nicrpge"^^xsd:string ;
+	rdfs:comment "PGE-Ni-Cr deposit and occurrence bibliographic database"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-ofr20151121 rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/ofr20151121" ;
+	rdfs:label "mrdata-ofr20151121"^^xsd:string ;
+	rdfs:comment "Phosphate occurrence and potential of south Asia"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-phosphate rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/phosphate" ;
+	rdfs:label "mrdata-phosphate"^^xsd:string ;
+	rdfs:comment "World phosphate mines, deposits, and occurrences"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-podchrome rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/podchrome" ;
+	rdfs:label "mrdata-podchrome"^^xsd:string ;
+	rdfs:comment "Podiform chromite deposits"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-porcu rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/porcu" ;
+	rdfs:label "mrdata-porcu"^^xsd:string ;
+	rdfs:comment "Porphyry copper deposits of the world"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-potash rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/potash" ;
+	rdfs:label "mrdata-potash"^^xsd:string ;
+	rdfs:comment "Evaporite-related potash resources worldwide"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-pp1802 rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/pp1802" ;
+	rdfs:label "mrdata-pp1802"^^xsd:string ;
+	rdfs:comment "Global distribution of selected mines, deposits, and districts of critical minerals"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-pp577 rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/pp577" ;
+	rdfs:label "mrdata-pp577"^^xsd:string ;
+	rdfs:comment "Mica deposits of the Blue Ridge in North Carolina"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-ree rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/ree" ;
+	rdfs:label "mrdata-ree"^^xsd:string ;
+	rdfs:comment "Rare earth element mines, deposits, and occurrences"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-sedau rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/sedau" ;
+	rdfs:label "mrdata-sedau"^^xsd:string ;
+	rdfs:comment "Sediment-hosted gold deposits"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-sedcu rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/sedcu" ;
+	rdfs:label "mrdata-sedcu"^^xsd:string ;
+	rdfs:comment "Sediment-hosted copper deposits of the world"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-sedexmvt rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/sedexmvt" ;
+	rdfs:label "mrdata-sedexmvt"^^xsd:string ;
+	rdfs:comment "Mineral resource data for Mississippi Valley-Type and clastic-dominated sediment-hosted lead-zinc deposits"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-sedznpb rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/sedznpb" ;
+	rdfs:label "mrdata-sedznpb"^^xsd:string ;
+	rdfs:comment "Sediment-hosted zinc-lead deposits of the world"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-sir20105090z rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/sir20105090z" ;
+	rdfs:label "mrdata-sir20105090z"^^xsd:string ;
+	rdfs:comment "Global assessment of undiscovered copper resources"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+
+mr:source_cfg__database-https-mrdata-usgs-gov-vms rdf:type mo:SourceConfig ;
+	mo:prefix "database::https://mrdata.usgs.gov/vms" ;
+	rdfs:label "mrdata-vms"^^xsd:string ;
+	rdfs:comment "Volcanogenic massive sulfide deposits"^^xsd:string ;
+	mo:score "0.5"^^xsd:float .
+

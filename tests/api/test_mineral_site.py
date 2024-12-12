@@ -55,10 +55,10 @@ class TestMineralSiteData:
             self.site1.source_id, self.site1.record_id, namespace=""
         )
         self.site1_uri = make_site_uri(self.site1.source_id, self.site1.record_id)
-        self.site1_dedup_uri = MINMOD_KG.ns.mr.uristr(
+        self.site1_dedup_uri = MINMOD_KG.ns.md.uristr(
             DedupMineralSite.get_id([self.site1_id])
         )
-        self.site1_dedup_id = MINMOD_KG.ns.mr.id(self.site1_dedup_uri)
+        self.site1_dedup_id = MINMOD_KG.ns.md.id(self.site1_dedup_uri)
 
         self.site1_dump = self.site1.model_dump(exclude_none=True)
         self.site1_dump.update(
@@ -132,7 +132,6 @@ class TestMineralSite(TestMineralSiteData):
             )
         ).json()
         self.site1.modified_at = resp["modified_at"]
-        print("Create first: ", resp["modified_at"])
 
         gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
         assert resp == gold_resp
@@ -155,7 +154,7 @@ class TestMineralSite(TestMineralSiteData):
             "name": "Eagle Mine",
             "type": "NotSpecified",
             "rank": "U",
-            "sites": [self.site1_id],
+            "sites": [{"id": self.site1_id, "score": resp["sites"][0]["score"]}],
             "deposit_types": [],
             "location": {
                 "lat": 46.9,
@@ -176,9 +175,8 @@ class TestMineralSite(TestMineralSiteData):
 
     def test_get_site_changes(self, auth_client, kg: RDFStore, user1: UserCreate):
         sleep(1.0)  # to ensure the modified_at is different
-        print("Get site changes: ", self.site1.modified_at)
         self.site1.name = "Frog Mine"
-        self.site1.dedup_site_uri = MINMOD_KG.ns.mr.uristr(
+        self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
             DedupMineralSite.get_id([self.site1_id])
         )
 
@@ -187,7 +185,6 @@ class TestMineralSite(TestMineralSiteData):
             self.site1_id, self.site1_uri, new_site1, user1
         )
         subj = MINMOD_KG.ns.mr[self.site1_id]
-        print("Get site changes: ", self.site1.modified_at, new_site1.modified_at)
         assert set(del_triples) == {
             (
                 subj,
@@ -218,7 +215,7 @@ class TestMineralSite(TestMineralSiteData):
     def test_update_site(self, auth_client, kg: RDFStore):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
-        self.site1.dedup_site_uri = MINMOD_KG.ns.mr.uristr(
+        self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
             DedupMineralSite.get_id([self.site1_id])
         )
         resp = check_req(
@@ -250,7 +247,7 @@ class TestMineralSite(TestMineralSiteData):
             "name": "Frog Mine",
             "type": "NotSpecified",
             "rank": "U",
-            "sites": [self.site1_id],
+            "sites": [{"id": self.site1_id, "score": resp["sites"][0]["score"]}],
             "deposit_types": [],
             "location": {
                 "lat": 46.9,
@@ -284,7 +281,16 @@ class TestMineralSite(TestMineralSiteData):
                 "name": "Beaver Mine",
                 "type": "NotSpecified",
                 "rank": "U",
-                "sites": [self.site2_id, self.site1_id],
+                "sites": [
+                    {
+                        "id": self.site2_id,
+                        "score": resp["sites"][0]["score"],
+                    },
+                    {
+                        "id": self.site1_id,
+                        "score": resp["sites"][1]["score"],
+                    },
+                ],
                 "deposit_types": [],
                 "location": {
                     "lat": 44.71207,
