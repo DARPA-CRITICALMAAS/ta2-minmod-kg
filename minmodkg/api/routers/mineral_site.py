@@ -68,6 +68,7 @@ WHERE {
 """
                     % f" ".join(f"<{uri}>" for uri in site_uris)
                 )
+                if x["o"] is not None
             }
 
             if len(affected_site_uris.difference(site_uris)) > 0:
@@ -103,12 +104,17 @@ CONSTRUCT {
 WHERE {
     OPTIONAL { ?ms owl:sameAs ?ms1 . }
     OPTIONAL { ?ms md:dedup_site ?dms . }
-    OPTIONAL { ?ms md:grade_tonnage/md:commodity ?commodity . }
 
+    %s
+
+    OPTIONAL { ?derived_ms md:grade_tonnage/md:commodity ?commodity . }
     VALUES ?ms { %s }
 }
                 """
-                % f" ".join(f"<{uri}>" for uri in site_uris)
+                % (
+                    f'BIND (IRI(CONCAT("{ns.md.namespace}", SUBSTR(STR(?ms), {len(ns.mr.namespace)+1}))) as ?derived_ms)',
+                    f" ".join(f"<{uri}>" for uri in site_uris),
+                )
             )
 
             # assuming that md:dedup_site is always correctly determined by owl:sameAs
@@ -120,7 +126,7 @@ WHERE {
             new_site_triples = set()
             new_dedup_sites = []
             for group in groups:
-                dedup_site_uri = ns.mr.uri(DedupMineralSite.get_id(group.sites))
+                dedup_site_uri = ns.md.uri(DedupMineralSite.get_id(group.sites))
                 group_site_uris = [ns.mr.uri(site) for site in group.sites]
                 site_uri = group_site_uris[0]
                 if len(group.sites) == 1:
