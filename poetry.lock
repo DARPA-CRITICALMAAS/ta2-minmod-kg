@@ -838,13 +838,13 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "libactor"
-version = "2.0.0"
+version = "2.0.1"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "libactor-2.0.0-py3-none-any.whl", hash = "sha256:f6f5acf21ed480f257a11055d61a7b6f50d4fc28ce959d3e58c5b912c90ee0c3"},
-    {file = "libactor-2.0.0.tar.gz", hash = "sha256:b5de1d232f3482c4af35ed7e3313640b30e84f22b94f52206472d9e5bb0b8594"},
+    {file = "libactor-2.0.1-py3-none-any.whl", hash = "sha256:c029d694edebccf56c94be634daf8a936c176985c4dc269ff9a5d15c7d7dde29"},
+    {file = "libactor-2.0.1.tar.gz", hash = "sha256:0c187bb3cfc6f925630499d8be6e66d924da2170bba87a27c1c6c0f607e43729"},
 ]
 
 [package.dependencies]
@@ -2299,20 +2299,20 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "statickg"
-version = "1.10.2"
+version = "1.10.3"
 description = "Tools for creating & running knowledge graphs from files"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "statickg-1.10.2-py3-none-any.whl", hash = "sha256:60448b27503942808efbd75c83229fc6f052e59555e5528fc80e12eb438ebf71"},
-    {file = "statickg-1.10.2.tar.gz", hash = "sha256:bc5780a2d4a6a849f8d799bfeadd49cce078b19a48d29ff9ccd6c332730586cb"},
+    {file = "statickg-1.10.3-py3-none-any.whl", hash = "sha256:5afae76d08b0d0f022ab3c4b5bb4677ca4fbaed1e98e7d377f70ff169366d0c5"},
+    {file = "statickg-1.10.3.tar.gz", hash = "sha256:72fdb5825d0f309dc40129b84e8d8e302745d242ba16a6be4fb591c4f27e103d"},
 ]
 
 [package.dependencies]
 drepr-v2 = ">=1.5.3,<2.0.0"
 hugedict = ">=2.14.1,<3.0.0"
 joblib = ">=1.4.2,<2.0.0"
-libactor = ">=2.0.0,<3.0.0"
+libactor = ">=2.0.1,<3.0.0"
 loguru = ">=0.7.0,<0.8.0"
 orjson = ">=3.10.3,<4.0.0"
 python-slugify = ">=8.0.4,<9.0.0"
@@ -2967,4 +2967,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "d57fd5ff4d1287bffa831601520aea021856b75eb74d7755753f392089a50c23"
+content-hash = "dbf39422f721d15283d05067a97bd9ce60145afcc5461a82e2e07e518dc1d5ed"
