@@ -183,7 +183,7 @@ class ComputingSourceInfo:
         return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="compute_source_info_v101.sqlite"),
+        backend=FileSqliteBackend.factory(filename="compute_source_info_v102.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },

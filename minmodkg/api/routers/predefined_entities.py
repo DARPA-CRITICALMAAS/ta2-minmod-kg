@@ -8,6 +8,7 @@ from minmodkg.api.dependencies import get_snapshot_id
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.crs import CRS
 from minmodkg.models.material_form import MaterialForm
+from minmodkg.models.source import Source
 
 router = APIRouter(tags=["predefined-entities"])
 
@@ -41,6 +42,11 @@ def countries():
 @router.get("/states-or-provinces")
 def state_or_provinces():
     return get_state_or_provinces(get_snapshot_id())
+
+
+@router.get("/sources")
+def sources():
+    return get_sources(get_snapshot_id())
 
 
 @lru_cache(maxsize=1)
@@ -154,3 +160,30 @@ def get_crs(snapshot_id: str) -> list[CRS]:
     """
     qres = MINMOD_KG.query(query)
     return [CRS(uri=x["uri"], name=x["name"]) for x in qres]
+
+
+@lru_cache(maxsize=1)
+def get_sources(snapshot_id: str) -> list[Source]:
+    assert MINMOD_KG.ns.mo.alias == "mo"
+    query = """
+    SELECT ?uri ?id ?name ?score ?connection
+    WHERE {
+        ?uri rdf:type mo:Source ;
+            rdfs:label ?name ;
+            mo:id ?id ;
+            mo:score ?score .
+        
+        OPTIONAL { ?uri mo:connection ?connection . }
+    }
+    """
+    qres = MINMOD_KG.query(query)
+    return [
+        Source(
+            uri=x["uri"],
+            name=x["name"],
+            id=x["id"],
+            score=x["score"],
+            connection=x["connection"],
+        )
+        for x in qres
+    ]

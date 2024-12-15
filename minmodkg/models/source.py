@@ -95,6 +95,7 @@ class Source(MinModRDFModel):
 
         triples.append((subj, ns.rdf.type, mo.uri("Source").n3()))
         triples.append((subj, ns.rdfs.label, RDFLiteral(self.name).n3()))
+        triples.append((subj, mo["id"], RDFLiteral(self.id).n3()))
         triples.append((subj, mo.score, RDFLiteral(self.score).n3()))
         if self.connection is not None:
             triples.append((subj, mo.connection, RDFLiteral(self.connection).n3()))
