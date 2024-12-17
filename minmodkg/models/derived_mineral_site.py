@@ -267,19 +267,16 @@ class DerivedMineralSite(MinModRDFModel):
 
         site_comms = []
         for commodity, gt_invs in invs.items():
-            grade_tonnage = grade_tonnage_model(gt_invs) or SiteGradeTonnage()
-            if grade_tonnage.total_reserve_tonnage is not None and (
-                grade_tonnage.total_resource_tonnage is None
-                or grade_tonnage.total_reserve_tonnage
-                > grade_tonnage.total_resource_tonnage
-            ):
-                total_grade = grade_tonnage.get_total_reserve_grade()
-                total_tonnage = grade_tonnage.total_reserve_tonnage
-                total_contained_metal = grade_tonnage.total_reserve_contained_metal
+            grade_tonnage = grade_tonnage_model(gt_invs)
+
+            if grade_tonnage is not None and grade_tonnage.total_estimate is not None:
+                total_contained_metal = grade_tonnage.total_estimate.contained_metal
+                total_tonnage = grade_tonnage.total_estimate.tonnage
+                total_grade = grade_tonnage.total_estimate.get_grade()
             else:
-                total_grade = grade_tonnage.get_total_resource_grade()
-                total_tonnage = grade_tonnage.total_resource_tonnage
-                total_contained_metal = grade_tonnage.total_resource_contained_metal
+                total_contained_metal = None
+                total_tonnage = None
+                total_grade = None
 
             site_comms.append(
                 GradeTonnage(

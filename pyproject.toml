@@ -32,6 +32,9 @@ jsonschema = "^4.23.0"
 pytest-dotenv = "^0.5.2"
 pygraphviz = "^1.13"
 
+[tool.poetry.group.dev.dependencies]
+pytest-cov = "^6.0.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -56,6 +56,11 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
     return groups
 
 
+def assert_not_none(x: Optional[V]) -> V:
+    assert x is not None
+    return x
+
+
 def assert_isinstance(x: Any, cls: type[V]) -> V:
     assert isinstance(x, cls), x
     return x

@@ -4,6 +4,7 @@ from minmodkg.misc.prefix_index import LongestPrefixIndex
 from minmodkg.misc.utils import (
     V,
     assert_isinstance,
+    assert_not_none,
     batch,
     filter_duplication,
     group_by_attr,
@@ -15,6 +16,7 @@ __all__ = [
     "TransactionError",
     "UnconvertibleUnitError",
     "assert_isinstance",
+    "assert_not_none",
     "batch",
     "group_by_attr",
     "group_by_key",

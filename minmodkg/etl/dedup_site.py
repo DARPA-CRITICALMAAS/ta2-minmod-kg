@@ -8,6 +8,7 @@ import serde.json
 import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
+from minmodkg.grade_tonnage_model import GradeTonnageModel
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite
@@ -231,7 +232,9 @@ class ComputingDerivedSiteInfo:
         return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="compute_fn_v104.sqlite"),
+        backend=FileSqliteBackend.factory(
+            filename=f"compute_fn_v104_v{GradeTonnageModel.VERSION}.sqlite"
+        ),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
