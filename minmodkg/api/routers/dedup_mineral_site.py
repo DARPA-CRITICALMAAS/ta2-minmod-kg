@@ -488,6 +488,7 @@ def make_dedup_site(
         ],
         location=location,
         grade_tonnage=gt,
+        modified_at=max(sites[0]["modified_at"] for sites in sid2sites.values()),
     )
 
 

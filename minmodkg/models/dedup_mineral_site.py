@@ -38,6 +38,7 @@ class DedupMineralSitePublic(BaseModel):
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: Optional[GradeTonnage]
+    modified_at: str
 
 
 class DedupMineralSite(MinModRDFModel):
