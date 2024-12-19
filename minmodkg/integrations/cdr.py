@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
+from pathlib import Path
+from typing import Optional, Union
+
 import httpx
 import orjson
+import serde.json
 import shapely.wkt
+import timer
 from minmodkg.grade_tonnage_model import Mt_unit, percent_unit
 from minmodkg.integrations.cdr_helper import (
     MINMOD_API,
@@ -16,10 +22,13 @@ from minmodkg.integrations.cdr_schemas import (
     DepositType,
     DepositTypeCandidate,
 )
+from minmodkg.models.base import MINMOD_NS
+from minmodkg.models.dedup_mineral_site import DedupMineralSitePublic
+from minmodkg.typing import InternalID
 from tqdm import tqdm
-from minmodkg.config import MNR_NS
 
-def replace_deposit_types():
+
+def sync_deposit_types():
     deposit_type_resp = httpx.get(
         f"{MINMOD_API}/deposit_types",
         verify=False,
@@ -32,7 +41,7 @@ def replace_deposit_types():
         deposit_types.append(
             orjson.loads(
                 DepositType(
-                    id=record["uri"][len(MNR_NS) :],
+                    id=MINMOD_NS.mr.id(record["uri"]),
                     name=record["name"],
                     group=record["group"],
                     environment=record["environment"],
@@ -44,124 +53,138 @@ def replace_deposit_types():
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
 
 
-def upload_ta2_output(
-    commodity: str,
-    norm_tonnage_unit: str,
-    norm_grade_unit: str,
-    no_upload: bool = False,
+def sync_commodities():
+    pass
+
+
+def format_dedup_site(
+    dedup_site: DedupMineralSitePublic,
+    commodity_id2name: dict[InternalID, str],
+    country_id2name: dict[InternalID, str],
+    province_id2name: dict[InternalID, str],
 ):
-    resp = httpx.get(
-        f"{MINMOD_API}/dedup_mineral_sites/{commodity}",
-        params={
-            "norm_tonnage_unit": norm_tonnage_unit,
-            "norm_grade_unit": norm_grade_unit,
-        },
-        verify=False,
-        timeout=None,
+    output = []
+
+    base = DedupSite(
+        id=dedup_site.id,
+        sites=[
+            DedupSiteRecord(
+                id=f"{dedup_site.id}___{site.id}",
+                mineral_site_id=site.id,
+            )
+            for site in dedup_site.sites
+        ],
+        commodity="",
+        contained_metal=None,
+        contained_metal_units="million tonnes",
+        tonnage=None,
+        tonnage_units="million tonnes",
+        grade=None,
+        grade_units="percent",
+        crs="EPSG:4326",
+        centroid="",
+        geom="",
+        deposit_type_candidate=[
+            DepositTypeCandidate(
+                deposit_type_id=dt.id,
+                confidence=dt.confidence,
+                source=dt.source,
+            )
+            for dt in dedup_site.deposit_types
+        ],
+        system=MINMOD_SYSTEM,
+        system_version="2.0.0a",
+        data_snapshot="",
+        data_snapshot_date=dedup_site.modified_at,
     )
-    resp.raise_for_status()
 
-    if no_upload:
-        return
+    base.sites[0].name = dedup_site.name
+    base.sites[0].site_type = dedup_site.type
+    base.sites[0].site_rank = dedup_site.rank
 
-    dedup_sites = resp.json()
+    if dedup_site.location is not None:
+        if dedup_site.location.lat is not None and dedup_site.location.lon is not None:
+            base.centroid = (
+                f"POINT ({dedup_site.location.lon} {dedup_site.location.lat})"
+            )
+            base.geom = base.centroid
 
-    dpt2id = MinmodHelper.get_deposit_type_to_id()
+        if len(dedup_site.location.country) > 0:
+            base.sites[0].country = ", ".join(
+                [country_id2name[id] for id in dedup_site.location.country]
+            )
+        if len(dedup_site.location.state_or_province) > 0:
+            base.sites[0].province = ", ".join(
+                [province_id2name[id] for id in dedup_site.location.state_or_province]
+            )
+
+    for gt in dedup_site.grade_tonnage:
+        r = base.model_copy()
+        r.id = f"{dedup_site.id}?commodity={gt.commodity}"
+        r.sites = [s.model_copy() for s in base.sites]
+        for site in r.sites:
+            site.id = f"{r.id}___{site.id}"
+
+        r.commodity = commodity_id2name[gt.commodity]
+        r.contained_metal = gt.total_contained_metal
+        r.tonnage = gt.total_tonnage
+        r.grade = gt.total_grade
+
+        output.append(r)
+
+    return output
+
+
+def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
     commodity_id2name = MinmodHelper.get_commodity_id2name()
-    unit_uri2name = MinmodHelper.get_unit_uri2name()
+    country_id2name = MinmodHelper.get_country_id2name()
+    province_id2name = MinmodHelper.get_province_id2name()
 
-    inputs = []
-    for group in dedup_sites:
-        if (
-            group["best_loc_wkt"] is not None
-            and group["best_loc_wkt"] != "MULTIPOINT()"
-        ):
-            assert group["best_loc_wkt"] != ""
-            assert group["best_loc_centroid_epsg_4326"] is not None, (
-                "Invalid WKT",
-                group["best_loc_wkt"],
-            )
-            centroid = group["best_loc_centroid_epsg_4326"]
+    dedup_sites = None
+    if cache_dir is None:
+        rerun = True
+        outfile = None
+    else:
+        outfile = Path(cache_dir) / "data.json"
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        if outfile.exists():
+            dedup_sites = serde.json.deser(outfile)
+            rerun = False
         else:
-            centroid = ""
+            rerun = True
 
-        inputs.append(
-            orjson.loads(
-                DedupSite(
-                    sites=[
-                        DedupSiteRecord(
-                            mineral_site_id=site["ms"],
-                            name=site["ms_name"] or "",
-                            country=site["country"] or "",
-                            province=site["state_or_province"] or "",
-                            site_rank=site["ms_rank"] or "",
-                            site_type=site["ms_type"] or "",
-                        )
-                        for site in group["sites"]
-                    ],
-                    commodity=commodity_id2name[group["commodity"]],
-                    contained_metal=group["total_contained_metal"],
-                    contained_metal_units=unit_uri2name[
-                        group["total_contained_metal_unit"]
-                    ],
-                    tonnage=group["total_tonnage"],
-                    tonnage_units=unit_uri2name[group["total_tonnage_unit"]],
-                    grade=group["total_grade"],
-                    grade_units=unit_uri2name[group["total_grade_unit"]],
-                    crs=group["best_loc_crs"] or "",
-                    centroid=centroid,
-                    geom=group["best_loc_wkt"],
-                    deposit_type_candidate=[
-                        DepositTypeCandidate(
-                            deposit_type_id=dpt2id[dt["name"]],
-                            confidence=dt["confidence"],
-                            source=dt["source"],
-                        )
-                        for dt in group["deposit_types"]
-                    ],
-                    system=MINMOD_SYSTEM,
-                    system_version="1.1.3",
-                    data_snapshot=commodity,
-                    data_snapshot_date="",
-                ).model_dump_json(exclude_none=True)
+    if rerun:
+        with timer.Timer().watch_and_report("Fetching dedup mineral sites"):
+            resp = httpx.get(
+                f"{MINMOD_API}/dedup-mineral-sites",
+                params={},
+                verify=False,
+                timeout=None,
             )
-        )
+            resp.raise_for_status()
+        dedup_sites = resp.json()
+        if outfile is not None:
+            serde.json.ser(dedup_sites, outfile)
 
-    CDRHelper.upload_collection(CDRHelper.DedupSites, inputs)
+    assert dedup_sites is not None
+    inputs = []
+    for dedup_site in dedup_sites:
+        for fmt_dedup_site in format_dedup_site(
+            DedupMineralSitePublic.model_validate(dedup_site),
+            commodity_id2name,
+            country_id2name,
+            province_id2name,
+        ):
+            inputs.append(
+                orjson.loads(fmt_dedup_site.model_dump_json(exclude_none=True))
+            )
 
-
-def get_critical_commodities():
-    resp = httpx.get(
-        f"{MINMOD_API}/commodities?is_critical=1",
-        verify=False,
-        timeout=None,
-    )
-    resp.raise_for_status()
-    return [r["name"] for r in resp.json()]
+    CDRHelper.truncate(CDRHelper.DedupSites)
+    batch_size = 5000
+    for i in tqdm(list(range(0, len(inputs), batch_size)), "Uploading dedup sites"):
+        CDRHelper.upload_collection(CDRHelper.DedupSites, inputs[i : i + batch_size])
 
 
 if __name__ == "__main__":
-    # replace_deposit_types()
-    # CDRHelper.truncate(CDRHelper.DedupSites)
-    commodities = sorted(get_critical_commodities())
-    commodities += ["Mica"]
-
-    print(commodities)
-
-    for commodity in tqdm(commodities):
-        upload_ta2_output(
-            commodity,
-            norm_tonnage_unit=Mt_unit,
-            norm_grade_unit=percent_unit,
-            no_upload=True,
-        )
-
-    CDRHelper.truncate(CDRHelper.DedupSites)
-
-    for commodity in tqdm(commodities):
-        upload_ta2_output(
-            commodity,
-            norm_tonnage_unit=Mt_unit,
-            norm_grade_unit=percent_unit,
-            no_upload=False,
-        )
+    # sync_deposit_types()
+    sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")

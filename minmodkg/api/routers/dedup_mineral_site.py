@@ -549,6 +549,11 @@ def make_dedup_site(
         ),
         "U",
     )
+    # TODO: fix me! we should normalize this rank & type at the beginning
+    if site_type == "":
+        site_type = "NotSpecified"
+    if site_rank == "":
+        site_rank = "U"
     country = []
     state_or_province = []
     lat = None

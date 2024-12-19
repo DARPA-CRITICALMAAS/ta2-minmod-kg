@@ -9,7 +9,7 @@ from typing import Optional
 import httpx
 import timer
 from joblib import Parallel, delayed
-from minmodkg.config import MNR_NS
+from minmodkg.models.base import MINMOD_NS
 from tqdm import tqdm
 
 if "CDR_AUTH_TOKEN" in os.environ:
@@ -49,7 +49,7 @@ class MinmodHelper:
         dpt2id = {}
         for record in deposit_type_resp.json():
             assert record["name"] not in dpt2id
-            dpt2id[record["name"]] = record["uri"][len(MNR_NS) :]
+            dpt2id[record["name"]] = MINMOD_NS.mr.id(record["uri"])
         return dpt2id
 
     @lru_cache(maxsize=1)
@@ -64,7 +64,43 @@ class MinmodHelper:
 
         id2name = {}
         for record in r.json():
-            id = record["uri"][len(MNR_NS) :]
+            id = MINMOD_NS.mr.id(record["uri"])
+            name = record["name"]
+            assert id not in id2name, (id, id2name)
+            id2name[id] = name
+        return id2name
+
+    @lru_cache(maxsize=1)
+    @staticmethod
+    def get_country_id2name():
+        r = httpx.get(
+            f"{MINMOD_API}/countries",
+            verify=False,
+            timeout=None,
+        )
+        r.raise_for_status()
+
+        id2name = {}
+        for record in r.json():
+            id = MINMOD_NS.mr.id(record["uri"])
+            name = record["name"]
+            assert id not in id2name, (id, id2name)
+            id2name[id] = name
+        return id2name
+
+    @lru_cache(maxsize=1)
+    @staticmethod
+    def get_province_id2name():
+        r = httpx.get(
+            f"{MINMOD_API}/states-or-provinces",
+            verify=False,
+            timeout=None,
+        )
+        r.raise_for_status()
+
+        id2name = {}
+        for record in r.json():
+            id = MINMOD_NS.mr.id(record["uri"])
             name = record["name"]
             assert id not in id2name, (id, id2name)
             id2name[id] = name
@@ -113,6 +149,8 @@ class CDRHelper:
                     headers=cdr_headers,
                     timeout=None,
                 )
+                if r.status_code != 200:
+                    print(r.text)
                 r.raise_for_status()
             else:
                 it = get_parallel(
