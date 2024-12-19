@@ -22,12 +22,15 @@ router = APIRouter(tags=["mineral_sites"])
 
 @router.get("/dedup-mineral-sites")
 def dedup_mineral_sites_v2(
-    commodity: str,
+    commodity: Optional[str] = None,
     limit: int = -1,
     offset: int = 0,
 ):
-    commodity = norm_commodity(commodity)
-    output = get_dedup_mineral_sites(commodity, limit, offset)
+    if commodity is None:
+        output = get_dedup_mineral_sites(None, limit, offset)
+    else:
+        commodity = norm_commodity(commodity)
+        output = get_dedup_mineral_sites_by_commodity(commodity, limit, offset)
     return [x.model_dump(exclude_none=True) for x in output]
 
 
@@ -38,24 +41,33 @@ def api_get_dedup_mineral_sites(
 ) -> dict[InternalID, dict]:
     return {
         id: site.model_dump(exclude_none=True)
-        for id, site in get_dedup_mineral_site_by_ids(ids, commodity).items()
+        for id, site in get_dedup_mineral_sites_by_commodity_and_ids(
+            ids, commodity
+        ).items()
     }
 
 
 @router.get("/dedup-mineral-sites/{dedup_site_id}")
 def api_get_dedup_mineral_site(
     dedup_site_id: str,
-    commodity: str,
+    commodity: Optional[str] = None,
 ):
-    commodity = norm_commodity(commodity)
+    if commodity is not None:
+        commodity = norm_commodity(commodity)
+        output = get_dedup_mineral_sites_by_commodity_and_ids(
+            [dedup_site_id], commodity
+        )
+    else:
+        tmp = get_dedup_mineral_sites([dedup_site_id])
+        if len(tmp) > 0:
+            output = {dedup_site_id: tmp[0]}
 
-    output = get_dedup_mineral_site_by_ids([dedup_site_id], commodity)
     if len(output) == 0:
         raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")
     return output[dedup_site_id].model_dump(exclude_none=True)
 
 
-def get_dedup_mineral_site_by_ids(
+def get_dedup_mineral_sites_by_commodity_and_ids(
     lst_dms: list[InternalID],
     commodity: InternalID,
 ) -> dict[InternalID, DedupMineralSitePublic]:
@@ -168,16 +180,18 @@ def get_dedup_mineral_site_by_ids(
     if len(lst_dms) == 1:
         if len(qres) == 0:
             return {}
-        return {lst_dms[0]: make_dedup_site(lst_dms[0], commodity, qres)}
+        return {lst_dms[0]: make_dedup_site(lst_dms[0], qres, commodity=commodity)}
     dms2sites = group_by_key(qres, "dms")
     return {
-        (dms_id := dedup_ns.id(dms)): make_dedup_site(dms_id, commodity, dupsites)
+        (dms_id := dedup_ns.id(dms)): make_dedup_site(
+            dms_id, dupsites, commodity=commodity
+        )
         for dms, dupsites in dms2sites.items()
         if len(dupsites) > 0
     }
 
 
-def get_dedup_mineral_sites(
+def get_dedup_mineral_sites_by_commodity(
     commodity: InternalID,
     limit: int = -1,
     offset: int = 0,
@@ -316,15 +330,164 @@ def get_dedup_mineral_sites(
 
     dms2sites = group_by_key(qres, "dms")
     return [
-        make_dedup_site(dedup_ns.id(dms), commodity, dupsites)
+        make_dedup_site(dedup_ns.id(dms), dupsites, commodity=commodity)
+        for dms, dupsites in dms2sites.items()
+    ]
+
+
+def get_dedup_mineral_sites(
+    lst_dms: Optional[list[InternalID]] = None,
+    limit: int = -1,
+    offset: int = 0,
+):
+    dedup_ns = DedupMineralSite.qbuilder.class_namespace
+    mr = MINMOD_NS.mr
+    md = MINMOD_NS.md
+    mo = MINMOD_NS.mo
+    rdfs = MINMOD_NS.rdfs
+
+    assert md.alias == "md"
+    assert mo.alias == "mo"
+    assert mr.alias == "mr"
+    assert rdfs.alias == "rdfs"
+
+    if lst_dms is None:
+        if limit > 0:
+            dm_query_part = """
+            {
+                SELECT ?dms
+                WHERE {
+                    ?dms a mo:DedupMineralSite .
+                }
+                LIMIT %d OFFSET %d
+            }
+    """ % (
+                limit,
+                offset,
+            )
+        else:
+            dm_query_part = "?dms a mo:DedupMineralSite ."
+    else:
+        dm_query_part = """
+        VALUES ?dms { %s }
+        """ % (
+            " ".join(dedup_ns[dms] for dms in lst_dms)
+        )
+
+    query = """
+    SELECT
+        ?dms
+        ?ms
+        ?ms_source_score
+        ?ms_name
+        ?ms_type
+        ?ms_rank
+        ?created_by
+        ?modified_at
+        ?dt_id
+        ?dt_source
+        ?dt_confidence
+        ?lat
+        ?lon
+        ?country
+        ?state_or_province
+        ?commodity
+        ?total_tonnage
+        ?total_grade
+    WHERE {
+        %s
+        ?dms md:site ?ms .
+
+        OPTIONAL {
+            ?ms mo:deposit_type_candidate [
+                mo:source ?dt_source ;
+                mo:confidence ?dt_confidence ;
+                mo:normalized_uri ?dt_id ;
+            ]
+        }
+        
+        OPTIONAL {
+            ?ms mo:source_uri/mo:score ?ms_source_score ;
+        }
+        ?ms mo:created_by ?created_by ;
+            mo:modified_at ?modified_at .
+
+        OPTIONAL { ?ms rdfs:label ?ms_name . }
+        OPTIONAL { ?ms mo:site_type ?ms_type . }
+        OPTIONAL { ?ms mo:site_rank ?ms_rank . }
+
+        OPTIONAL {
+            ?ms mo:location_info ?loc .
+            OPTIONAL { 
+                ?loc mo:country/mo:normalized_uri ?country .
+            }
+            OPTIONAL {
+                ?loc mo:state_or_province/mo:normalized_uri ?state_or_province . 
+            }
+        }
+
+        %s
+
+        OPTIONAL {
+            ?derived_ms md:lat ?lat ;
+                        md:lon ?lon .
+        }
+
+        ?derived_ms md:grade_tonnage ?derived_ms_gt .
+        ?derived_ms_gt md:commodity ?commodity ;
+
+        OPTIONAL {
+            ?derived_ms_gt md:total_tonnage ?total_tonnage .
+            ?derived_ms_gt md:total_grade ?total_grade .
+        }
+    }
+    """ % (
+        dm_query_part,
+        f'BIND (IRI(CONCAT("{md.namespace}", SUBSTR(STR(?ms), {len(mr.namespace)+1}))) as ?derived_ms)',
+    )
+
+    qres = MINMOD_KG.query(
+        query,
+        keys=[
+            "dms",
+            "ms",
+            "ms_source_score",
+            "ms_name",
+            "ms_type",
+            "ms_rank",
+            "created_by",
+            "modified_at",
+            "dt_id",
+            "dt_source",
+            "dt_confidence",
+            "lat",
+            "lon",
+            "country",
+            "state_or_province",
+            "commodity",
+            "total_tonnage",
+            "total_grade",
+        ],
+    )
+
+    if len(qres) == 0:
+        return []
+
+    for r in qres:
+        r["commodity"] = mr.id(r["commodity"])
+
+    dms2sites = group_by_key(qres, "dms")
+    return [
+        make_dedup_site(dedup_ns.id(dms), dupsites)
         for dms, dupsites in dms2sites.items()
     ]
 
 
 def make_dedup_site(
     dms: InternalID,
-    commodity: InternalID,
     dupsites: list[dict],
+    *,
+    commodity: Optional[InternalID] = None,
     default_source_score: float = 0.5,
 ) -> DedupMineralSitePublic:
     mr = MINMOD_NS.mr
@@ -441,38 +604,50 @@ def make_dedup_site(
         else:
             s["total_contained_metal"] = None
 
-    gt_sites = [s for s in dupsites if s["total_contained_metal"] is not None]
-    if len(gt_sites) > 0:
-        # if there is grade & tonnage from the users, prefer it
-        curated_gt_sites = [s for s in gt_sites if not is_system_user(s["created_by"])]
-        if len(curated_gt_sites) > 0:
-            # choose based on the latest modified date
-            gtsite = max(
-                curated_gt_sites,
-                key=lambda x: x["modified_at"],
-            )
-            gt = GradeTonnage(
-                commodity=commodity,
-                total_contained_metal=gtsite["total_contained_metal"],
-                total_tonnage=gtsite["total_tonnage"],
-                total_grade=gtsite["total_grade"],
-            )
-        else:
-            # no curated grade & tonnage, choose the one with the highest contained metal
-            gtsite = max(
-                (s for s in dupsites if s["total_contained_metal"] is not None),
-                key=lambda x: x["total_contained_metal"],
-            )
-            gt = GradeTonnage(
-                commodity=commodity,
-                total_contained_metal=gtsite["total_contained_metal"],
-                total_tonnage=gtsite["total_tonnage"],
-                total_grade=gtsite["total_grade"],
-            )
+    gts = []
+
+    if commodity is not None:
+        commodity_gt_sites = {commodity: dupsites}
     else:
-        gt = GradeTonnage(
-            commodity=commodity,
-        )
+        commodity_gt_sites = group_by_key(dupsites, "commodity")
+
+    for commodity, gt_sites in commodity_gt_sites.items():
+        gt_sites = [s for s in gt_sites if s["total_contained_metal"] is not None]
+        if len(gt_sites) > 0:
+            # if there is grade & tonnage from the users, prefer it
+            curated_gt_sites = [
+                s for s in gt_sites if not is_system_user(s["created_by"])
+            ]
+            if len(curated_gt_sites) > 0:
+                # choose based on the latest modified date
+                gtsite = max(
+                    curated_gt_sites,
+                    key=lambda x: x["modified_at"],
+                )
+                gt = GradeTonnage(
+                    commodity=commodity,
+                    total_contained_metal=gtsite["total_contained_metal"],
+                    total_tonnage=gtsite["total_tonnage"],
+                    total_grade=gtsite["total_grade"],
+                )
+            else:
+                # no curated grade & tonnage, choose the one with the highest contained metal
+                # TODO: choose the one with the most recent date
+                gtsite = max(
+                    (s for s in dupsites if s["total_contained_metal"] is not None),
+                    key=lambda x: x["total_contained_metal"],
+                )
+                gt = GradeTonnage(
+                    commodity=commodity,
+                    total_contained_metal=gtsite["total_contained_metal"],
+                    total_tonnage=gtsite["total_tonnage"],
+                    total_grade=gtsite["total_grade"],
+                )
+        else:
+            gt = GradeTonnage(
+                commodity=commodity,
+            )
+        gts.append(gt)
 
     return DedupMineralSitePublic(
         id=dms,
@@ -487,7 +662,7 @@ def make_dedup_site(
             :5
         ],
         location=location,
-        grade_tonnage=gt,
+        grade_tonnage=gts,
         modified_at=max(sites[0]["modified_at"] for sites in sid2sites.values()),
     )
 

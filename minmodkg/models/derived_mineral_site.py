@@ -22,6 +22,7 @@ class GradeTonnage(MinModRDFModel):
     total_contained_metal: Optional[float] = None
     total_tonnage: Optional[float] = None
     total_grade: Optional[float] = None
+    date: Optional[str] = None
 
     class QueryBuilder(MinModRDFQueryBuilder):
 

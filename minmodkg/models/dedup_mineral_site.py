@@ -18,8 +18,8 @@ class DedupMineralSiteDepositType(BaseModel):
 
 
 class DedupMineralSiteLocation(BaseModel):
-    lat: Optional[float]
-    lon: Optional[float]
+    lat: Optional[float] = None
+    lon: Optional[float] = None
     country: list[InternalID]
     state_or_province: list[InternalID]
 
@@ -36,8 +36,8 @@ class DedupMineralSitePublic(BaseModel):
     rank: str
     sites: list[DedupMineralSiteIdAndScore]
     deposit_types: list[DedupMineralSiteDepositType]
-    location: Optional[DedupMineralSiteLocation]
-    grade_tonnage: Optional[GradeTonnage]
+    location: Optional[DedupMineralSiteLocation] = None
+    grade_tonnage: list[GradeTonnage]
     modified_at: str
 
 
