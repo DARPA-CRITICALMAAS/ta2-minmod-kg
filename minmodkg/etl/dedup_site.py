@@ -156,8 +156,9 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
 
         # generate dedup mineral site -- remove sites that were deleted but the linking is not updated yet
         groups: list[list[InternalID]] = [
-            [id for id in lst if id in sites]
+            filtered_lst
             for lst in serde.json.deser(args["same_as_group"].get_path())
+            if len((filtered_lst := [id for id in lst if id in sites])) > 0
         ]
         linked_sites = {site for grp in groups for site in grp}
         # add sites that are not linked first
