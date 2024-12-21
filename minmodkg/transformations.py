@@ -152,8 +152,12 @@ def make_reference_uri(ref: dict, doc_id: str, namespace: str = MR_NS):
 
     if "property" in ref:
         property = ref["property"]
-        assert property.startswith(MO_NS)
-        property = property[len(MO_NS) :]
+        if property.startswith(MO_NS):
+            property = property[len(MO_NS) :]
+        elif property.startswith("http://www.w3.org/2000/01/rdf-schema#"):
+            property = f"rdfs_{property[37:]}"
+        else:
+            raise NotImplementedError(property)
     else:
         property = ""
 
