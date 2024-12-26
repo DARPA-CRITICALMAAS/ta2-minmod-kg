@@ -8,6 +8,13 @@ services:
       args:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
+  kg-virtuoso:
+    image: minmod-virtuoso
+    build:
+      context: ./containers/virtuoso/
+      args:
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
   etl:
     image: minmod
     build: 
