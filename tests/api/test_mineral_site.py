@@ -162,7 +162,8 @@ class TestMineralSite(TestMineralSiteData):
                 "country": [],
                 "state_or_province": [],
             },
-            "grade_tonnage": {"commodity": "Q578"},
+            "modified_at": self.site1.modified_at,
+            "grade_tonnage": [{"commodity": "Q578"}],
         }
 
     def test_create_exist(self, auth_client, kg: RDFStore):
@@ -255,7 +256,8 @@ class TestMineralSite(TestMineralSiteData):
                 "country": [],
                 "state_or_province": [],
             },
-            "grade_tonnage": {"commodity": "Q578"},
+            "modified_at": gold_resp["modified_at"],
+            "grade_tonnage": [{"commodity": "Q578"}],
         }
 
     def test_create_new_site(self, auth_client_2, kg: RDFStore):
@@ -298,7 +300,8 @@ class TestMineralSite(TestMineralSiteData):
                     "country": [],
                     "state_or_province": [],
                 },
-                "grade_tonnage": {"commodity": commodity},
+                "modified_at": gold_resp["modified_at"],
+                "grade_tonnage": [{"commodity": commodity}],
             }
 
 

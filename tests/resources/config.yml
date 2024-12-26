@@ -1,6 +1,8 @@
 triplestore:
+  classpath: minmodkg.misc.rdf_store.rdf_store.FusekiRDFStore
   query: http://localhost:13030/minmod/sparql
   update: http://localhost:13030/minmod/update
+
 namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/

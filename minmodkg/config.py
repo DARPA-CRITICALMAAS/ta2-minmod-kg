@@ -4,13 +4,6 @@ import os
 from pathlib import Path
 
 import serde.yaml
-from minmodkg.misc.rdf_store import (
-    BaseRDFModel,
-    BaseRDFQueryBuilder,
-    Namespace,
-    RDFMetadata,
-    RDFStore,
-)
 
 if "CFG_FILE" not in os.environ:
     CFG_FILE = Path(__file__).parent.parent / "config.yml"
@@ -22,6 +15,7 @@ cfg = serde.yaml.deser(CFG_FILE)
 # for minmod KG
 SPARQL_QUERY_ENDPOINT = cfg["triplestore"]["query"]
 SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
+MINMOD_KG_CLSPATH = cfg["triplestore"]["classpath"]
 MINMOD_NS_CFG = cfg["namespace"]
 
 # for API prefixes
