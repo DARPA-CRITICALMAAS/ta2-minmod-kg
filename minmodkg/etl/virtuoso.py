@@ -59,18 +59,21 @@ class VirtuosoLoaderService(DataLoaderService):
         sparql_endpoint = f"{dbinfo.endpoint}/sparql"
         resp = httpx.post(
             url=sparql_endpoint,
-            data={
+            headers={
                 "Content-Type": "application/sparql-update",
-                "Accept": "application/sparql-results+json",  # Requesting JSON format
+                "Accept": "text/turtle",  # Requesting JSON format
             },
-            content="DELETE { ?s ?p ?o } INSERT { %s } WHERE { ?s ?p ?o VALUES ?s { %s } }"
+            params={"default-graph-uri": "https://purl.org/drepr/1.0/"},
+            content="DELETE { ?s ?p ?o } INSERT { %s } WHERE { OPTIONAL { ?s ?p ?o VALUES ?s { %s } } }"
             % (
                 " . ".join(f"{s.n3()} {p.n3()} {o.n3()}" for s, p, o in g),
-                " ".join(s.n3() for s in g.subjects()),
+                " ".join(s.n3() for s in g.subjects(unique=True)),
             ),
             timeout=None,
         )
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            print(resp.text)
+            resp.raise_for_status()
 
     def load_files(
         self, args: DataLoaderServiceInvokeArgs, dbinfo: DBInfo, files: list[InputFile]

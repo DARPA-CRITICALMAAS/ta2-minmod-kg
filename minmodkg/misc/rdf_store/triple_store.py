@@ -14,7 +14,7 @@ from minmodkg.typing import IRI, SPARQLMainQuery, Triples
 from rdflib import Graph, URIRef
 
 
-class RDFStore:
+class TripleStore:
     """Responsible for namespace & querying endpoint"""
 
     def __init__(self, namespace: Namespace):
@@ -65,10 +65,13 @@ class RDFStore:
                     else:
                         output[i][key] = None
             else:
-                assert val["type"] == "literal", val["type"]
+                assert val["type"] == "literal" or val["type"] == "typed-literal", val[
+                    "type"
+                ]
                 if val.get("datatype") in {
                     None,
                     "http://www.opengis.net/ont/geosparql#wktLiteral",
+                    "http://www.w3.org/2001/XMLSchema#string",
                 }:
                     for i, row in enumerate(qres):
                         if key in row:
@@ -127,6 +130,7 @@ class RDFStore:
         resp = self._sparql_query(query)
         g = Graph()
         g.parse(data=resp.text, format="turtle")
+        g.namespace_manager = self.ns.rdflib_namespace_manager
         return g
 
     def delete(
@@ -160,6 +164,19 @@ class RDFStore:
 
         return self._sparql_update(query)
 
+    def batch_insert(self, query: Triples | Graph, batch_size: int = 5120):
+        if isinstance(query, Graph):
+            ns_manager = self.ns.rdflib_namespace_manager
+            triples = [
+                (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
+                for s, p, o in query
+            ]
+        else:
+            triples = query
+
+        for i in range(0, len(triples), batch_size):
+            self.insert(triples[i : i + batch_size])
+
     def delete_insert(
         self,
         delete: str | Triples,
@@ -187,78 +204,6 @@ class RDFStore:
         raise NotImplementedError()
 
 
-class Sparql11RDFStore(RDFStore):
-    def __init__(self, namespace: Namespace, query_endpoint: str, update_endpoint: str):
-        super().__init__(namespace)
-        self.query_endpoint = query_endpoint
-        self.update_endpoint = update_endpoint
-
-    def _sparql_query(self, query: SPARQLMainQuery):
-        return self._sparql(query, self.query_endpoint, "application/sparql-query")
-
-    def _sparql_update(self, query: SPARQLMainQuery):
-        return self._sparql(query, self.update_endpoint, "application/sparql-update")
-
-    def _sparql(self, query: SPARQLMainQuery, endpoint: str, content_type: str):
-        """Execute a SPARQL query and ensure the response is successful"""
-        response = httpx.post(
-            url=endpoint,
-            headers={
-                "Content-Type": content_type,
-                "Accept": "application/sparql-results+json",  # Requesting JSON format
-            },
-            content=self.prefix_part + query,
-            timeout=None,
-        )
-        if response.status_code != 200:
-            raise DBError(
-                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}",
-                response,
-            )
-        return response
-
-
-class FusekiRDFStore(RDFStore):
-    def __init__(self, namespace: Namespace, query_endpoint: str, update_endpoint: str):
-        super().__init__(namespace)
-        self.query_endpoint = query_endpoint
-        self.update_endpoint = update_endpoint
-
-    def _sparql_query(self, query: SPARQLMainQuery):
-        response = httpx.post(
-            url=self.query_endpoint,
-            data={"query": self.prefix_part + query},
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Accept": "application/sparql-results+json",  # Requesting JSON format
-            },
-            timeout=None,
-        )
-        if response.status_code != 200:
-            raise DBError(
-                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}",
-                response,
-            )
-        return response
-
-    def _sparql_update(self, query: SPARQLMainQuery):
-        response = httpx.post(
-            url=self.update_endpoint,
-            data={"update": self.prefix_part + query},
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Accept": "application/sparql-results+json",  # Requesting JSON format
-            },
-            timeout=None,
-        )
-        if response.status_code != 200:
-            raise DBError(
-                f"Failed to execute SPARQL query. Status code: {response.status_code}. Response: {response.text}",
-                response,
-            )
-        return response
-
-
 class Transaction:
     """Steps to perform a transaction:
 
@@ -270,7 +215,7 @@ class Transaction:
 
     def __init__(
         self,
-        kg: RDFStore,
+        kg: TripleStore,
         objects: Sequence[IRI | URIRef],
         timeout_sec: float = 300,
     ):

@@ -4,9 +4,18 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
 
-from rdflib import Graph
+from rdflib import XSD, Graph, Literal
+from rdflib.term import Node
 
 V = TypeVar("V")
+
+
+def norm_literal(val: Node) -> Node:
+    """Normalize the literal value between triple store and python. For example, xsd.decimal saved to Virtuoso is converted into xsd.double when read back."""
+    if isinstance(val, Literal):
+        if val.datatype in {XSD.decimal, XSD.float, XSD.double}:
+            return Literal(val.value, datatype=XSD.double)
+    return val
 
 
 def batch(size: int, *vars, return_tuple: bool = False):

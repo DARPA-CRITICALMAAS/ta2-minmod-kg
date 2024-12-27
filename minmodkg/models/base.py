@@ -11,13 +11,13 @@ from minmodkg.misc.rdf_store import (
     BaseRDFQueryBuilder,
     Namespace,
     RDFMetadata,
-    Sparql11RDFStore,
+    TripleStore,
 )
 
 from statickg.helper import import_attr
 
 MINMOD_NS = Namespace(MINMOD_NS_CFG)
-MINMOD_KG = import_attr(MINMOD_KG_CLSPATH)(
+MINMOD_KG: TripleStore = import_attr(MINMOD_KG_CLSPATH)(
     MINMOD_NS, SPARQL_QUERY_ENDPOINT, SPARQL_UPDATE_ENDPOINT
 )
 

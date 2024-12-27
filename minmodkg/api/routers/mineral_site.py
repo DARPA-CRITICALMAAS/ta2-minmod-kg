@@ -9,7 +9,7 @@ from minmodkg.api.dependencies import CurrentUserDep, get_snapshot_id
 from minmodkg.api.models.user import UserBase, is_system_user, is_valid_user_uri
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
 from minmodkg.misc.exceptions import DBError
-from minmodkg.misc.utils import mut_merge_graphs
+from minmodkg.misc.utils import mut_merge_graphs, norm_literal
 from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.derived_mineral_site import DerivedMineralSite, GradeTonnage
@@ -412,8 +412,8 @@ def get_site_changes(
     current_site: Graph, new_site: Graph
 ) -> tuple[list[Triple], list[Triple]]:
     ns_manager = MINMOD_KG.ns.rdflib_namespace_manager
-    current_triples = set(current_site)
-    new_triples = set(new_site)
+    current_triples = {(s, p, norm_literal(o)) for s, p, o in current_site}
+    new_triples = {(s, p, norm_literal(o)) for s, p, o in new_site}
     del_triples = [
         (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
         for s, p, o in current_triples.difference(new_triples)

@@ -13,6 +13,8 @@ from minmodkg import config
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
+from minmodkg.misc.rdf_store.fuseki import FusekiDB
+from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
 from minmodkg.models.base import MINMOD_KG
 from rdflib import Graph
 from timer import Timer
@@ -72,27 +74,35 @@ def db(user1: UserCreate, user2: UserCreate):
 
 @pytest.fixture(scope="class")
 def kg(resource_dir: Path, db):
+    if isinstance(MINMOD_KG, FusekiDB):
+        start_cmd = "-p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl"
+    elif isinstance(MINMOD_KG, VirtuosoDB):
+        start_cmd = "-p 13030:8890 minmod-virtuoso"
+    else:
+        raise NotImplementedError()
+
     try:
         subprocess.check_output(
-            "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
+            f"docker run --name=test-kg --rm -d {start_cmd}",
             shell=True,
         )
     except subprocess.CalledProcessError as e:
         subprocess.check_output("docker rm -f test-kg", shell=True)
         subprocess.check_output(
-            "docker run --name=test-kg --rm -d -p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl",
+            f"docker run --name=test-kg --rm -d {start_cmd}",
             shell=True,
         )
 
-    print("\nWaiting for Fuseki to start ", end="", flush=True)
+    print("\nWaiting for TripleStore to start ", end="", flush=True)
     for i in range(100):
         try:
-            resp = httpx.get("http://localhost:13030/minmod/sparql")
-            assert resp.text.strip() == "Service Description: /minmod/sparql"
+            resp = httpx.head(MINMOD_KG.query_endpoint)
+            resp.raise_for_status()
             break
         except Exception as e:
             print(".", end="", flush=True)
             time.sleep(0.1)
+        time.sleep(0.5)  # for virtuoso
     print(" DONE!", flush=True)
 
     # insert basic KG info
@@ -100,7 +110,7 @@ def kg(resource_dir: Path, db):
         g = Graph()
         for file in resource_dir.glob("kgdata/**/*.ttl"):
             g.parse(file, format="ttl")
-        MINMOD_KG.insert(g)
+        MINMOD_KG.batch_insert(g, batch_size=1024)
 
     yield MINMOD_KG
 

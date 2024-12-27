@@ -1,5 +1,5 @@
 triplestore:
-  classpath: minmodkg.misc.rdf_store.rdf_store.Sparql11RDFStore
+  classpath: minmodkg.misc.rdf_store.virtuoso.VirtuosoDB
   query: http://kg:3030/sparql
   update: http://kg:3030/sparql
 namespace:

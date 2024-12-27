@@ -6,7 +6,7 @@ from minmodkg.misc.rdf_store.rdf_model import (
     BaseRDFQueryBuilder,
     RDFMetadata,
 )
-from minmodkg.misc.rdf_store.rdf_store import RDFStore, Sparql11RDFStore, Transaction
+from minmodkg.misc.rdf_store.triple_store import Transaction, TripleStore
 from rdflib import Graph, Literal, URIRef
 from rdflib.term import Node
 

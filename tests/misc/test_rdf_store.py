@@ -3,12 +3,50 @@ from __future__ import annotations
 from time import sleep
 
 import pytest
-from minmodkg.misc.rdf_store import RDFStore, Transaction
+from minmodkg.misc.rdf_store import Transaction, TripleStore
+from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
+from rdflib import RDF, Literal, URIRef
+
+
+class TestTripleStore:
+
+    def test_insert(self, kg: TripleStore):
+        mo = kg.ns.mo
+        kg.insert(
+            [
+                (
+                    "<https://mrdata.usgs.gov/mrds>",
+                    "mo:uri",
+                    '"https://mrdata.usgs.gov/mrds"',
+                ),
+                ("<https://mrdata.usgs.gov/mrds>", "rdf:type", "mo:Document"),
+            ]
+        )
+        g = kg.construct(
+            "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . VALUES ?s { <https://mrdata.usgs.gov/mrds> } }"
+        )
+        triples = {
+            (
+                URIRef("https://mrdata.usgs.gov/mrds"),
+                mo.uri("uri"),
+                Literal("https://mrdata.usgs.gov/mrds"),
+            ),
+            (
+                URIRef("https://mrdata.usgs.gov/mrds"),
+                RDF.type,
+                mo.uri("Document"),
+            ),
+        }
+        if isinstance(kg, VirtuosoDB):
+            with pytest.raises(AssertionError):
+                assert set(g) == triples
+        else:
+            assert set(g) == triples
 
 
 class TestBaseTransaction:
     @pytest.fixture(scope="class", autouse=True)
-    def setup(self, kg: RDFStore):
+    def setup(self, kg: TripleStore):
         kg.insert(
             [
                 ("mr:Eagle", "rdf:type", "mo:MineralSite"),
@@ -20,14 +58,14 @@ class TestBaseTransaction:
 
 
 class TestTransaction__InsertLock(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         transaction = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
         transaction.insert_lock()
         assert transaction.does_lock_success()
 
 
 class TestTransaction__DoesLockSuccess(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         transaction = kg.transaction(
             objects=[kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")]
         )
@@ -57,7 +95,7 @@ class TestTransaction__DoesLockSuccess(TestBaseTransaction):
 
 
 class TestTransaction__RemoveLock(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         transaction = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
         transaction.insert_lock()
         assert transaction.does_lock_success()
@@ -76,7 +114,7 @@ class TestTransaction__RemoveLock(TestBaseTransaction):
 
 
 class TestTransaction__InsertLock__FailScenario1(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         trans1 = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
         trans2 = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
 
@@ -87,7 +125,7 @@ class TestTransaction__InsertLock__FailScenario1(TestBaseTransaction):
 
 
 class TestTransaction__InsertLock__FailScenario2(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         trans1 = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
         trans2 = kg.transaction([kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")])
 
@@ -98,7 +136,7 @@ class TestTransaction__InsertLock__FailScenario2(TestBaseTransaction):
 
 
 class TestTransaction__InsertLock__FailScenario3(TestBaseTransaction):
-    def test(self, kg: RDFStore):
+    def test(self, kg: TripleStore):
         trans1 = kg.transaction(
             objects=[kg.ns.mr.uri("Eagle"), kg.ns.mr.uri("Frog")], timeout_sec=1.5
         )  # expired after 1.5 sec

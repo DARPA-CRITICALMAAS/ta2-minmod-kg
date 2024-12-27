@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from minmodkg.api.models.user import UserCreate
 from minmodkg.api.routers.mineral_site import UpdateMineralSite, get_site_changes
-from minmodkg.misc.rdf_store import RDFStore
+from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite, DedupMineralSitePublic
 from minmodkg.models.mineral_site import (
@@ -22,6 +22,8 @@ from minmodkg.transformations import make_site_uri
 from rdflib import RDF, RDFS
 from rdflib import Literal as RDFLiteral
 from rdflib import Namespace, URIRef
+from shapely import Point
+from shapely.wkt import dumps, loads
 from tests.utils import check_req
 
 
@@ -34,7 +36,7 @@ class TestMineralSiteData:
             record_id="10014570",
             name="Eagle Mine",
             location_info=LocationInfo(
-                location="POINT (-87.1 46.9)",
+                location="POINT(-87.099998474121 46.900001525879)",
             ),
             created_by=[user1.get_uri()],
             mineral_inventory=[
@@ -64,8 +66,8 @@ class TestMineralSiteData:
         self.site1_dump.update(
             {
                 "coordinates": {
-                    "lat": 46.9,
-                    "lon": -87.1,
+                    "lat": 46.900001525879,
+                    "lon": -87.099998474121,
                 },
                 "dedup_site_uri": self.site1_dedup_uri,
                 "created_by": [user1.get_uri()],
@@ -83,7 +85,7 @@ class TestMineralSiteData:
             record_id="10109359",
             name="Beaver Mine",
             location_info=LocationInfo(
-                location="POINT (-118.7805 44.71207)",
+                location="POINT(-118.7805 44.71207)",
             ),
             created_by=[user2.get_uri()],
             mineral_inventory=[
@@ -123,7 +125,7 @@ class TestMineralSiteData:
 
 class TestMineralSite(TestMineralSiteData):
 
-    def test_create_first(self, auth_client: TestClient, kg: RDFStore):
+    def test_create_first(self, auth_client: TestClient, kg: TripleStore):
         # create a mineral site record
         resp = check_req(
             lambda: auth_client.post(
@@ -134,6 +136,7 @@ class TestMineralSite(TestMineralSiteData):
         self.site1.modified_at = resp["modified_at"]
 
         gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
+        norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
 
         resp = check_req(
@@ -141,6 +144,7 @@ class TestMineralSite(TestMineralSiteData):
                 f"/api/v1/mineral-sites/{self.site1_id}",
             )
         ).json()
+        norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
 
         resp = check_req(
@@ -157,8 +161,8 @@ class TestMineralSite(TestMineralSiteData):
             "sites": [{"id": self.site1_id, "score": resp["sites"][0]["score"]}],
             "deposit_types": [],
             "location": {
-                "lat": 46.9,
-                "lon": -87.1,
+                "lat": 46.900001525879,
+                "lon": -87.099998474121,
                 "country": [],
                 "state_or_province": [],
             },
@@ -166,7 +170,7 @@ class TestMineralSite(TestMineralSiteData):
             "grade_tonnage": [{"commodity": "Q578"}],
         }
 
-    def test_create_exist(self, auth_client, kg: RDFStore):
+    def test_create_exist(self, auth_client, kg: TripleStore):
         resp = auth_client.post(
             "/api/v1/mineral-sites",
             json=self.site1.model_dump(exclude_none=True),
@@ -174,7 +178,7 @@ class TestMineralSite(TestMineralSiteData):
         assert resp.json() == {"detail": "The site already exists."}
         assert resp.status_code == 403
 
-    def test_get_site_changes(self, auth_client, kg: RDFStore, user1: UserCreate):
+    def test_get_site_changes(self, auth_client, kg: TripleStore, user1: UserCreate):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
         self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
@@ -213,7 +217,7 @@ class TestMineralSite(TestMineralSiteData):
             ),
         }
 
-    def test_update_site(self, auth_client, kg: RDFStore):
+    def test_update_site(self, auth_client, kg: TripleStore):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
         self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
@@ -228,6 +232,7 @@ class TestMineralSite(TestMineralSiteData):
 
         gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
         gold_resp["name"] = "Frog Mine"
+        norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
 
         resp = check_req(
@@ -251,8 +256,8 @@ class TestMineralSite(TestMineralSiteData):
             "sites": [{"id": self.site1_id, "score": resp["sites"][0]["score"]}],
             "deposit_types": [],
             "location": {
-                "lat": 46.9,
-                "lon": -87.1,
+                "lat": 46.900001525879,
+                "lon": -87.099998474121,
                 "country": [],
                 "state_or_province": [],
             },
@@ -260,7 +265,7 @@ class TestMineralSite(TestMineralSiteData):
             "grade_tonnage": [{"commodity": "Q578"}],
         }
 
-    def test_create_new_site(self, auth_client_2, kg: RDFStore):
+    def test_create_new_site(self, auth_client_2, kg: TripleStore):
         time.sleep(1.0)  # to ensure the modified_at is different
         resp = check_req(
             lambda: auth_client_2.post(
@@ -269,6 +274,7 @@ class TestMineralSite(TestMineralSiteData):
             )
         ).json()
         gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
+        norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
 
         for commodity in [self.site1_commodity, self.site2_commodity]:
@@ -321,3 +327,16 @@ class TestMineralSiteLinking:
                 ],
             )
         )
+
+
+def norm_site_wkt(resp: dict, wkt: str):
+    gold_geometry = loads(wkt)
+    pred_geometry = loads(resp["location_info"]["location"])
+
+    assert isinstance(gold_geometry, Point)
+    assert isinstance(pred_geometry, Point)
+
+    assert gold_geometry.x == pytest.approx(pred_geometry.x, abs=1e-4)
+    assert gold_geometry.y == pytest.approx(pred_geometry.y, abs=1e-4)
+
+    resp["location_info"]["location"] = wkt

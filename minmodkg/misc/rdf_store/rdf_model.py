@@ -22,7 +22,7 @@ from uuid import uuid4
 import httpx
 from minmodkg.misc.exceptions import DBError, TransactionError
 from minmodkg.misc.rdf_store.namespace import Namespace, SingleNS
-from minmodkg.misc.rdf_store.rdf_store import RDFStore
+from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, InternalID, RelIRI, SPARQLMainQuery, Triple, Triples
 from pydantic import BaseModel
@@ -35,7 +35,7 @@ from rdflib.term import Node
 @dataclass
 class RDFMetadata:
     ns: Namespace
-    store: RDFStore
+    store: TripleStore
 
 
 class BaseRDFModel(BaseModel):

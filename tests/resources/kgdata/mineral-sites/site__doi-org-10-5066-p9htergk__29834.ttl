@@ -30,7 +30,7 @@ mr:site__doi-org-10-5066-p9htergk__29834 rdfs:label "Sinclair No. 3" ;
     mo:reference mr:doi-org-10-5066-p9htergk__ref ;
     mo:source_id "database::https://doi.org/10.5066/P9HTERGK" .
 
-<https://doi.org/10.5066/P9HTERGK> mo:uri "https://doi.org/10.5066/P9HTERGK" .
+<https://doi.org/10.5066/P9HTERGK> mo:uri "https://doi.org/10.5066/P9HTERGK"^^xsd:string .
 
 mr:site__doi-org-10-5066-p9htergk__29834__gt__Q515 md:commodity mr:Q515 .
 

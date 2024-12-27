@@ -309,7 +309,7 @@ semantic_model:
   mo:Document:inv:
     properties:
       - [drepr:uri, doc_inv_id]
-      - [mo:uri, doc_inv_uri]
+      - [mo:uri, doc_inv_uri, xsd:string]
       - [mo:doi, doc_inv_doi]
       - [mo:journal, doc_inv_journal]
       - [mo:authors, doc_inv_authors]

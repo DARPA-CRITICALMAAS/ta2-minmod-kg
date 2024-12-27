@@ -98,24 +98,15 @@ def get_entity_data(subj: URIRef) -> Graph:
     return MINMOD_KG.construct(
         """
     CONSTRUCT { 
-        ?a ?b ?c . 
         ?s ?p ?o . 
-        ?c rdfs:label ?cname .
-        ?o rdfs:label ?oname .
         ?p rdfs:label ?pname .
-        ?b rdfs:label ?bname .
+        ?o rdfs:label ?oname .
     }
     WHERE {
-        ?a ?b ?c .
-        OPTIONAL { ?c rdfs:label ?cname . }
-        OPTIONAL { ?b rdfs:label ?bname . }
-        OPTIONAL { 
-            ?a (!(owl:sameAs|rdf:type))+ ?s . 
-            ?s ?p ?o .
-            OPTIONAL { ?o rdfs:label ?oname . }
-            OPTIONAL { ?p rdfs:label ?pname .}
-        }
-        VALUES ?a { <%s> } 
+        <%s> (!(owl:sameAs|rdf:type))* ?s .
+        ?s ?p ?o .
+        OPTIONAL { ?o rdfs:label ?oname . }
+        OPTIONAL { ?p rdfs:label ?pname .}
     }
 """
         % subj
@@ -191,7 +182,7 @@ def render_entity_html(subj: URIRef, remove_hostname: Optional[str] = None):
             return subj[len(remove_hostname) :] + "?remove_hostname=yes"
         return subj
 
-    def make_tree(g, p: rdflib.term.Node, subj: rdflib.term.Node, visited: set):
+    def make_tree(g: Graph, p: rdflib.term.Node, subj: rdflib.term.Node, visited: set):
         if isinstance(subj, RDFLiteral):
             return H.p(subj)
 
@@ -216,6 +207,7 @@ def render_entity_html(subj: URIRef, remove_hostname: Optional[str] = None):
             return H.p(style="font-style: italic")("skiped as visited before")
 
         visited.add(subj)
+        print("Visit", subj, len(list(g.predicate_objects(subj))))
 
         children = []
         if isinstance(subj, URIRef):

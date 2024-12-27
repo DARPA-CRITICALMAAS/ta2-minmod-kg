@@ -113,7 +113,7 @@ def get_dedup_mineral_sites_by_commodity_and_ids(
         }
         
         OPTIONAL {
-            ?ms mo:source_uri/mo:score ?ms_source_score ;
+            ?ms mo:source_uri/mo:score ?ms_source_score .
         }
         ?ms mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
@@ -262,7 +262,7 @@ def get_dedup_mineral_sites_by_commodity(
         }
         
         OPTIONAL {
-            ?ms mo:source_uri/mo:score ?ms_source_score ;
+            ?ms mo:source_uri/mo:score ?ms_source_score .
         }
         ?ms mo:created_by ?created_by ;
             mo:modified_at ?modified_at .
