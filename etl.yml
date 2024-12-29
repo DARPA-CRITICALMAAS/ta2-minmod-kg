@@ -62,7 +62,7 @@ services:
         --network-alias=kg
         minmod-fuseki fuseki/fuseki-server --config=fuseki/config.ttl
       stop_service: docker stop {ID} && docker rm {ID}
-      load_cmd: docker exec {ID} mytdbloader --loc /home/criticalmaas/databases /criticalmaas/kgdata/{INPUT_FILE_LST}
+      load_cmd: docker exec {ID} mytdbloader --loc /home/criticalmaas/databases /data/{INPUT_FILE_LST}
   - name: kg.loader.virtuoso
     classpath: minmodkg.etl.virtuoso.VirtuosoLoaderService
     args:
