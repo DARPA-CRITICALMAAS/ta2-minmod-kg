@@ -8,6 +8,7 @@ import httpx
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.models.base import MINMOD_NS
 from rdflib import Graph
+from tqdm import tqdm
 
 from statickg.models.file_and_path import BaseType, InputFile
 from statickg.services.data_loader import (
@@ -21,6 +22,7 @@ class FusekiLoaderService(DataLoaderService):
 
     query_endpoint = "/minmod/sparql"
     update_endpoint = "/minmod/update"
+    gsp_endpoint = "/minmod/data"
 
     def _wait_till_service_is_ready(self, dbinfo: DBInfo):
         """Wait until the service is ready"""
@@ -72,25 +74,38 @@ class FusekiLoaderService(DataLoaderService):
     ):
         """Load files into the database"""
         assert len(files) > 0
-        self.start_service(dbinfo)
+        if dbinfo.endpoint is not None:
+            # the service is already running
+            gsp_endpoint = f"{dbinfo.endpoint}{self.gsp_endpoint}"
+            for file in tqdm(files, desc="Upload files to Fuseki"):
+                self.upload_file(gsp_endpoint, file.path)
+        else:
+            # prepare an input file containing all files needed to be loaded
+            assert all(file.basetype == BaseType.DATA_DIR for file in files)
 
-        # prepare an input file containing all files needed to be loaded
-        assert all(file.basetype == BaseType.DATA_DIR for file in files)
+            file_lst_file = files[0].get_basedir() / "data_loader_input_files.txt"
+            with open(file_lst_file, "w") as f:
+                for file in files:
+                    f.write(file.relpath + "\n")
 
-        file_lst_file = files[0].get_basedir() / "data_loader_input_files.txt"
-        with open(file_lst_file, "w") as f:
-            for file in files:
-                f.write(file.relpath + "\n")
+            # execute the load command to load the data
+            (subprocess.check_output if self.capture_output else subprocess.check_call)(
+                self.load_command.format(
+                    ID=self.get_db_service_id(dbinfo.dir),
+                    DB_DIR=dbinfo.dir,
+                    INPUT_FILE_LST="data_loader_input_files.txt",
+                ),
+                shell=True,
+            )
 
-        # execute the load command to load the data
-        (subprocess.check_output if self.capture_output else subprocess.check_call)(
-            self.load_command.format(
-                ID=self.get_db_service_id(dbinfo.dir),
-                DB_DIR=dbinfo.dir,
-                INPUT_FILE_LST="data_loader_input_files.txt",
-            ),
-            shell=True,
+    def upload_file(self, gsp_endpoint: str, file: Path):
+        resp = httpx.post(
+            gsp_endpoint,
+            content=file.read_text(),
+            headers={"Content-Type": f"text/{self.detect_format(file)}; charset=utf-8"},
+            verify=False,
         )
+        assert resp.status_code == 200, (resp.status_code, resp.text)
 
     def detect_format(self, file: Path):
         assert file.suffix == ".ttl", f"Only turtle files (.ttl) are supported: {file}"
