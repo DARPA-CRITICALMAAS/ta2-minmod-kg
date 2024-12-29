@@ -13,9 +13,8 @@ assert CFG_FILE.exists(), f"Config file {CFG_FILE} does not exist"
 cfg = serde.yaml.deser(CFG_FILE)
 
 # for minmod KG
-SPARQL_QUERY_ENDPOINT = cfg["triplestore"]["query"]
-SPARQL_UPDATE_ENDPOINT = cfg["triplestore"]["update"]
 MINMOD_KG_CLSPATH = cfg["triplestore"]["classpath"]
+MINMOD_KG_CLSARGS = cfg["triplestore"]["args"]
 MINMOD_NS_CFG = cfg["namespace"]
 
 # for API prefixes

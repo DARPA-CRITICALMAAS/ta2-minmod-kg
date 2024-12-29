@@ -14,6 +14,7 @@ from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
+from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
 from minmodkg.models.base import MINMOD_KG
 from rdflib import Graph
@@ -57,9 +58,6 @@ def user2_uri(user2: UserCreate):
 
 @pytest.fixture(scope="session")
 def db(user1: UserCreate, user2: UserCreate):
-    import os
-
-    os.environ["CFG_FILE"] = "tests/config.yml"
     create_db_and_tables()
     with Session(engine) as session:
         create_user_priv(
@@ -72,10 +70,12 @@ def db(user1: UserCreate, user2: UserCreate):
         )
 
 
-@pytest.fixture(scope="class")
-def kg(resource_dir: Path, db):
+@pytest.fixture(scope="session")
+def kg_singleton(resource_dir: Path):
     if isinstance(MINMOD_KG, FusekiDB):
-        start_cmd = "-p 13030:3030 minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/test_config.ttl"
+        start_cmd = (
+            "-p 13030:3030 minmod-fuseki fuseki-server --config=fuseki/config.ttl"
+        )
     elif isinstance(MINMOD_KG, VirtuosoDB):
         start_cmd = "-p 13030:8890 minmod-virtuoso"
     else:
@@ -93,28 +93,35 @@ def kg(resource_dir: Path, db):
             shell=True,
         )
 
-    print("\nWaiting for TripleStore to start ", end="", flush=True)
+    print("\nWaiting for TripleStore to start", end="", flush=True)
     for i in range(100):
         try:
-            resp = httpx.head(MINMOD_KG.query_endpoint)
-            resp.raise_for_status()
+            MINMOD_KG.count_all()
             break
         except Exception as e:
             print(".", end="", flush=True)
-            time.sleep(0.1)
-        time.sleep(0.5)  # for virtuoso
+            time.sleep(0.5)
     print(" DONE!", flush=True)
 
+    yield MINMOD_KG
+
+    subprocess.check_output("docker container rm -f test-kg", shell=True)
+
+
+@pytest.fixture(scope="class")
+def kg(resource_dir: Path, kg_singleton: TripleStore):
     # insert basic KG info
     with Timer().watch_and_report("Finish loading KG data"):
         g = Graph()
         for file in resource_dir.glob("kgdata/**/*.ttl"):
             g.parse(file, format="ttl")
-        MINMOD_KG.batch_insert(g, batch_size=1024)
+        kg_singleton.batch_insert(g, batch_size=1024, parallel=True)
+        print(f"Total triples: {kg_singleton.count_all()}")
 
-    yield MINMOD_KG
+    yield kg_singleton
 
-    subprocess.check_output("docker container rm -f test-kg", shell=True)
+    kg_singleton.clear()
+    assert kg_singleton.count_all() == 0
 
 
 @pytest.fixture(scope="class")

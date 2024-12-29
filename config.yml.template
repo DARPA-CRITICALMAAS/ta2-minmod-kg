@@ -1,7 +1,8 @@
 triplestore:
   classpath: minmodkg.misc.rdf_store.virtuoso.VirtuosoDB
-  query: http://kg:3030/sparql
-  update: http://kg:3030/sparql
+  args:
+    query_endpoint: http://kg:3030/sparql
+    update_endpoint: http://kg:3030/sparql
 namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/

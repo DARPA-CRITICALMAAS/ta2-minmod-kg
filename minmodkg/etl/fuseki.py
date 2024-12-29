@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 
 import httpx
+from minmodkg.misc.rdf_store.fuseki import FusekiDB
+from minmodkg.models.base import MINMOD_NS
 from rdflib import Graph
 
 from statickg.models.file_and_path import BaseType, InputFile
@@ -15,23 +17,29 @@ from statickg.services.data_loader import (
 )
 
 
-class VirtuosoLoaderService(DataLoaderService):
+class FusekiLoaderService(DataLoaderService):
+
+    query_endpoint = "/minmod/sparql"
+    update_endpoint = "/minmod/update"
 
     def _wait_till_service_is_ready(self, dbinfo: DBInfo):
         """Wait until the service is ready"""
-        sparql_endpoint = f"{dbinfo.endpoint}/sparql"
+        sparql_endpoint = f"{dbinfo.endpoint}{self.query_endpoint}"
         retry_after = 0.2
         max_wait_seconds = 30
         print("Wait for the service to be ready", end="", flush=True)
         for _ in range(int(max_wait_seconds / retry_after)):
             try:
-                resp = httpx.head(sparql_endpoint, timeout=0.3)
-                resp.raise_for_status()
-                break
+                resp = httpx.get(sparql_endpoint, timeout=0.3)
+                if resp.text.strip() == f"Service Description: {self.query_endpoint}":
+                    break
             except Exception:
                 print(".", end="", flush=True)
                 time.sleep(retry_after)
         else:
+            import IPython
+
+            IPython.embed()
             raise Exception("Service is not ready")
         print("Service is ready")
 
@@ -46,24 +54,18 @@ class VirtuosoLoaderService(DataLoaderService):
             g.parse(file.path, format=self.detect_format(file.path))
 
         assert dbinfo.endpoint is not None
-        sparql_endpoint = f"{dbinfo.endpoint}/sparql"
-        resp = httpx.post(
-            url=sparql_endpoint,
-            headers={
-                "Content-Type": "application/sparql-update",
-                "Accept": "text/turtle",  # Requesting JSON format
-            },
-            params={"default-graph-uri": "https://purl.org/drepr/1.0/"},
-            content="DELETE { ?s ?p ?o } INSERT { %s } WHERE { OPTIONAL { ?s ?p ?o VALUES ?s { %s } } }"
+        triplestore = FusekiDB(
+            MINMOD_NS,
+            f"{dbinfo.endpoint}{self.query_endpoint}",
+            f"{dbinfo.endpoint}{self.update_endpoint}",
+        )
+        triplestore._sparql_update(
+            "DELETE { ?s ?p ?o } INSERT { %s } WHERE { OPTIONAL { ?s ?p ?o VALUES ?s { %s } } }"
             % (
                 " . ".join(f"{s.n3()} {p.n3()} {o.n3()}" for s, p, o in g),
                 " ".join(s.n3() for s in g.subjects(unique=True)),
-            ),
-            timeout=None,
+            )
         )
-        if resp.status_code != 200:
-            print(resp.text)
-            resp.raise_for_status()
 
     def load_files(
         self, args: DataLoaderServiceInvokeArgs, dbinfo: DBInfo, files: list[InputFile]

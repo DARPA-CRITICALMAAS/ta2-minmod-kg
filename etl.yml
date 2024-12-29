@@ -43,17 +43,26 @@ services:
     classpath: statickg.services.version.VersionService
   - name: concat
     classpath: statickg.services.concat.ConcatTTLService
-  - name: load to fuseki
-    classpath: statickg.services.fuseki.FusekiDataLoaderService
-    args:
-      batch_size: 102400
-      capture_output: true
-  - name: deploy fuseki
-    classpath: minmodkg.etl.fuseki_deployment.FusekiDeploymentService
   - name: validate filename
     classpath: minmodkg.validators.FilenameValidatorService
     args:
       pattern: ^[a-zA-Z0-9_\-,.]+$
+  - name: kg.loader.fuseki
+    classpath: minmodkg.etl.fuseki.FusekiLoaderService
+    args:
+      capture_output: false
+      dbdir: "::DB_DIR::"
+      find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
+      start_service: >-
+        docker run --name {ID}
+        -d -p {PORT}:3030
+        -v {DB_DIR}:/home/criticalmaas/databases
+        -v ::DATA_DIR::{}:/data
+        --network=minmod
+        --network-alias=kg
+        minmod-fuseki fuseki/fuseki-server --config=fuseki/config.ttl
+      stop_service: docker stop {ID} && docker rm {ID}
+      load_cmd: docker exec {ID} mytdbloader --loc /home/criticalmaas/databases /criticalmaas/kgdata/{INPUT_FILE_LST}
   - name: kg.loader.virtuoso
     classpath: minmodkg.etl.virtuoso.VirtuosoLoaderService
     args:
@@ -71,57 +80,58 @@ services:
       stop_service: docker stop {ID} && docker rm {ID}
       load_cmd: docker exec {ID} python3 /criticalmaas/build/data_loader.py /criticalmaas/kgdata/{INPUT_FILE_LST}
 pipeline:
-  # - service: validate filename
-  #   args:
-  #     input:
-  #       - ::REPO::data/entities/*.csv
-  #       - ::REPO::data/mineral-sites/*/*/*.json
-  #       - ::REPO::data/same-as/umn/*.csv
-  #       - ::REPO::data/mappable-criteria/sri/*.json
-  #       - ::REPO::data/curated-mineral-sites/*/*/*.json
-  # - service: predefined entities
-  #   args:
-  #     input: ::REPO::data/entities/*.csv
-  #     output: ::DATA_DIR::predefined-entities/
-  # - service: mineral site
-  #   args:
-  #     - input: ::REPO::data/mineral-sites/*/*/*.json
-  #       output:
-  #         base: ::DATA_DIR::mineral-sites
-  #         format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
-  # - service: same as
-  #   args:
-  #     input: ::REPO::data/same-as/umn/*.csv
-  #     curated_input: ::REPO::data/curated-same-as/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::same-as/
-  #       format: "{fileparent}_{filestem}.json"
-  # - service: mineral site source
-  #   args:
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::mineral-site-sources
-  #       format: "{filegrandparent}/{fileparent}_{filestem}.json"
-  #     predefined_entities: ::DATA_DIR::predefined-entities/
-  #     default_source_score: 0.5
-  # - service: dedup mineral site
-  #   args:
-  #     predefined_entities: ::DATA_DIR::predefined-entities/
-  #     same_as_group: ::DATA_DIR::same-as/final/groups.json
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::dedup-mineral-sites/
-  #       format: "{filegrandparent}/{fileparent}_{filestem}.json"
-  # - service: copy
-  #   args:
-  #     input: ::CFG_DIR::schema/ontology.ttl
-  #     output: "::DATA_DIR::"
-  # - service: version
-  #   args:
-  #     entity: https://minmod.isi.edu/resource/kg
-  #     entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
-  #     output: ::DATA_DIR::version.ttl
-  - service: kg.loader.virtuoso
+  - service: validate filename
+    args:
+      input:
+        - ::REPO::data/entities/*.csv
+        - ::REPO::data/mineral-sites/*/*/*.json
+        - ::REPO::data/same-as/umn/*.csv
+        - ::REPO::data/mappable-criteria/sri/*.json
+        - ::REPO::data/curated-mineral-sites/*/*/*.json
+  - service: predefined entities
+    args:
+      input: ::REPO::data/entities/*.csv
+      output: ::DATA_DIR::predefined-entities/
+  - service: mineral site
+    args:
+      - input: ::REPO::data/mineral-sites/*/*/*.json
+        output:
+          base: ::DATA_DIR::mineral-sites
+          format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
+  - service: same as
+    args:
+      input: ::REPO::data/same-as/umn/*.csv
+      curated_input: ::REPO::data/curated-same-as/*/*.json
+      output:
+        base: ::DATA_DIR::same-as/
+        format: "{fileparent}_{filestem}.json"
+  - service: mineral site source
+    args:
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::mineral-site-sources
+        format: "{filegrandparent}/{fileparent}_{filestem}.json"
+      predefined_entities: ::DATA_DIR::predefined-entities/
+      default_source_score: 0.5
+  - service: dedup mineral site
+    args:
+      predefined_entities: ::DATA_DIR::predefined-entities/
+      same_as_group: ::DATA_DIR::same-as/final/groups.json
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output:
+        base: ::DATA_DIR::dedup-mineral-sites/
+        format: "{filegrandparent}/{fileparent}_{filestem}.json"
+  - service: copy
+    args:
+      input: ::CFG_DIR::schema/ontology.ttl
+      output: "::DATA_DIR::"
+  - service: version
+    args:
+      entity: https://minmod.isi.edu/resource/kg
+      entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
+      output: ::DATA_DIR::version.ttl
+  - service: kg.loader.fuseki
+    # - service: kg.loader.virtuoso
     args:
       input:
         - ::DATA_DIR::ontology.ttl
@@ -132,45 +142,3 @@ pipeline:
         - ::DATA_DIR::mineral-site-sources/final/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       deploy: { port: 3030 }
-  # - service: load to fuseki
-  #   args:
-  #     input:
-  #       - ::DATA_DIR::ontology.ttl
-  #       - ::DATA_DIR::predefined-entities/*.ttl
-  #       - ::DATA_DIR::mineral-sites/*/*.ttl
-  #       - ::DATA_DIR::same-as/final/*.ttl
-  #       - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
-  #       - ::DATA_DIR::mineral-site-sources/final/*.ttl
-  #     replaceable_input: ::DATA_DIR::version.ttl
-  #     endpoint:
-  #       update: /minmod/update
-  #       gsp: /minmod/data
-  #       start: >-
-  #         docker run --name {ID}
-  #         -d -p {PORT}:3030
-  #         -v {DB_DIR}:/home/criticalmaas/databases
-  #         -v ::DATA_DIR::{}:/data
-  #         --network=minmod
-  #         --network-alias=kg
-  #         minmod-fuseki fuseki/fuseki-server --config=fuseki/config.ttl
-  #       stop: docker stop {ID} && docker rm {ID}
-  #       find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
-  #     load:
-  #       command: >-
-  #         docker run --rm -w /data
-  #         -v {DB_DIR}:/home/criticalmaas/databases
-  #         -v ::DATA_DIR::{}:/data
-  #         minmod-fuseki mytdbloader --loc /home/criticalmaas/databases {FILES}
-  #       basedir: "::DATA_DIR::"
-  #       dbdir: "::DB_DIR::"
-  # - service: deploy fuseki
-  #   args:
-  #     start: >-
-  #       docker run --name {ID}
-  #       -d -p {PORT}:3030
-  #       -v {DB_DIR}:/home/criticalmaas/databases
-  #       -v ::DATA_DIR::{}:/data
-  #       --network=minmod
-  #       --network-alias=kg
-  #       minmod-fuseki fuseki-server --config=/home/criticalmaas/fuseki/config.ttl
-  #     stop_all: docker container rm -f $(docker container ls -aq --filter ancestor=minmod-fuseki)

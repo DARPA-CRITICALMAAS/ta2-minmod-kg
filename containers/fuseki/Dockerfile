@@ -2,6 +2,7 @@ FROM eclipse-temurin:21-jdk
 
 ARG UID=1000
 ARG GID=1000
+ARG MEMORY=12G
 
 # custom code for eclipse-temurin:21-jdk to free up 1000:1000
 RUN userdel ubuntu
@@ -28,6 +29,7 @@ ADD --chown=criticalmaas:criticalmaas test_config.ttl ${FUSEKI_HOME}/test_config
 RUN mkdir /home/criticalmaas/databases
 
 ENV PATH=$JENA_HOME/bin:$FUSEKI_HOME/:${FUSEKI_HOME}/mytdb2:$PATH
+ENV JVM_ARGS="-Xmx$MEMORY"
 
 COPY --chown=criticalmaas:criticalmaas mytdb2 ${FUSEKI_HOME}/mytdb2
 

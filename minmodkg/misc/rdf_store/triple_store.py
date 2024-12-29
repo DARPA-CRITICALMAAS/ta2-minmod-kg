@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import concurrent.futures
 from contextlib import contextmanager
 from datetime import datetime
+from math import ceil
 from time import time
 from typing import Literal, Optional, Sequence
 from uuid import uuid4
@@ -12,6 +14,7 @@ from minmodkg.misc.rdf_store.namespace import Namespace
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, SPARQLMainQuery, Triples
 from rdflib import Graph, URIRef
+from tqdm import tqdm
 
 
 class TripleStore:
@@ -38,6 +41,9 @@ class TripleStore:
             )
             > 0
         )
+
+    def count_all(self):
+        return self.query("SELECT (COUNT(*) as ?count) WHERE { ?s ?p ?o }")[0]["count"]
 
     def query(self, query: str, keys: Optional[list[str]] = None) -> list[dict]:
         response = self._sparql_query(query)
@@ -133,6 +139,9 @@ class TripleStore:
         g.namespace_manager = self.ns.rdflib_namespace_manager
         return g
 
+    def clear(self):
+        return self._sparql_update("CLEAR DEFAULT")
+
     def delete(
         self,
         query: str | Triples,
@@ -164,7 +173,13 @@ class TripleStore:
 
         return self._sparql_update(query)
 
-    def batch_insert(self, query: Triples | Graph, batch_size: int = 5120):
+    def batch_insert(
+        self,
+        query: Triples | Graph,
+        batch_size: int = 5120,
+        verbose: bool = False,
+        parallel: bool = False,
+    ):
         if isinstance(query, Graph):
             ns_manager = self.ns.rdflib_namespace_manager
             triples = [
@@ -174,8 +189,31 @@ class TripleStore:
         else:
             triples = query
 
-        for i in range(0, len(triples), batch_size):
-            self.insert(triples[i : i + batch_size])
+        if parallel:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                tasks = {
+                    executor.submit(self.insert, triples[i : i + batch_size]): i
+                    for i in range(0, len(triples), batch_size)
+                }
+                for future in tqdm(
+                    concurrent.futures.as_completed(tasks),
+                    total=ceil(len(triples) / batch_size),
+                    desc="Inserting data",
+                    disable=not verbose,
+                ):
+                    try:
+                        future.result()
+                    except Exception as exc:
+                        i = tasks[future]
+                        print(f"Error occurred in this batch: ({i}:{i+batch_size})")
+                        raise
+        else:
+            for i in tqdm(
+                range(0, len(triples), batch_size),
+                desc="Inserting data",
+                disable=not verbose,
+            ):
+                self.insert(triples[i : i + batch_size])
 
     def delete_insert(
         self,
