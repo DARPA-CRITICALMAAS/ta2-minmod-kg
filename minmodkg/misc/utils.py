@@ -15,6 +15,8 @@ def norm_literal(val: Node) -> Node:
     if isinstance(val, Literal):
         if val.datatype in {XSD.decimal, XSD.float, XSD.double}:
             return Literal(val.value, datatype=XSD.double)
+        elif val.datatype is None or val.datatype == XSD.string:
+            return Literal(str(val.value), datatype=None, lang=val.language)
     return val
 
 
