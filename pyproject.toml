@@ -23,6 +23,7 @@ drepr-v2 = "^1.6.0"
 serde2 = "^1.8.3"
 timer4 = "^1.1.0"
 bcrypt = "^4.2.0"
+jaydebeapi = "^1.2.3"
 
 [tool.poetry.dev-dependencies]
 erdantic = "^1.0.3"

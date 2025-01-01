@@ -13,6 +13,7 @@ from minmodkg import config
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
 from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
+from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
@@ -78,6 +79,8 @@ def kg_singleton(resource_dir: Path):
         )
     elif isinstance(MINMOD_KG, VirtuosoDB):
         start_cmd = "-p 13030:8890 minmod-virtuoso"
+    elif isinstance(MINMOD_KG, BlazeGraph):
+        start_cmd = "-p 13030:9999 minmod-blazegraph"
     else:
         raise NotImplementedError()
 
@@ -116,7 +119,9 @@ def kg(resource_dir: Path, kg_singleton: TripleStore):
         for file in resource_dir.glob("kgdata/**/*.ttl"):
             g.parse(file, format="ttl")
         kg_singleton.batch_insert(g, batch_size=1024, parallel=True)
-        print(f"Total triples: {kg_singleton.count_all()}")
+        print(
+            f"Total triples: inserted = {kg_singleton.count_all()} vs original = {len(g)}"
+        )
 
     yield kg_singleton
 

@@ -68,6 +68,26 @@ services:
         -v ::DATA_DIR::{}:/data
         -w /data
         minmod-fuseki mytdbloader --loc /home/criticalmaas/databases /data/{INPUT_FILE_LST}
+  - name: kg.loader.blazegraph
+    classpath: minmodkg.etl.blazegraph.BlazeGraphLoaderService
+    args:
+      capture_output: false
+      dbdir: "::DB_DIR::"
+      find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
+      start_service: >-
+        docker run --name {ID}
+        -d -p {PORT}:9999
+        -v {DB_DIR}:/home/criticalmaas/database
+        -v ::DATA_DIR::{}:/data
+        --network=minmod
+        --network-alias=kg
+        minmod-blazegraph
+      stop_service: docker stop {ID} && docker rm {ID}
+      load_cmd: >-
+        docker run --rm --name {ID}
+        -v {DB_DIR}:/home/criticalmaas/database
+        -v ::DATA_DIR::{}:/data
+        minmod-blazegraph python3 /home/criticalmaas/data_loader.py /data/{INPUT_FILE_LST}
   - name: kg.loader.virtuoso
     classpath: minmodkg.etl.virtuoso.VirtuosoLoaderService
     args:
@@ -135,7 +155,8 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  - service: kg.loader.fuseki
+  - service: kg.loader.blazegraph
+    # service: kg.loader.fuseki
     # - service: kg.loader.virtuoso
     args:
       input:

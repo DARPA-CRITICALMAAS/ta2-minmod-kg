@@ -56,7 +56,7 @@ def main(input_relpaths: Path):
 
     curs = conn.cursor()
     curs.execute(
-        f"ld_dir_all('{outdir.absolute()}', '*.ttl', 'https://purl.org/drepr/1.0/')"
+        f"ld_dir_all('{outdir.absolute()}', '*.ttl', 'https://minmod.isi.edu')"
     )
     curs.execute("rdf_loader_run()")
     print(f"Done in {time.time() - start:.2f}s")

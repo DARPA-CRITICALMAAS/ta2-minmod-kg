@@ -38,18 +38,19 @@ for key in ["NumberOfBuffers", "MaxDirtyBuffers"]:
 # requirements.
 if (1 - DB_PERCENTAGE) * total_memory_in_gb * 2 >= 4:
     config["Parameters"]["MaxQueryMem"] = "4G"
-    config["Parameters"]["MaxClientConnections"] = str(
-        min(max(2, int((1 - DB_PERCENTAGE) * total_memory_in_gb / 4)), 10)
-    )
+    # config["Parameters"]["MaxClientConnections"] = str(
+    #     min(max(2, int((1 - DB_PERCENTAGE) * total_memory_in_gb / 4)), 10)
+    # )
 else:
     config["Parameters"]["MaxQueryMem"] = "2G"
-    config["Parameters"]["MaxClientConnections"] = str(
-        min(max(2, int((1 - DB_PERCENTAGE) * total_memory_in_gb / 2)), 10)
-    )
+    # config["Parameters"]["MaxClientConnections"] = str(
+    #     min(max(2, int((1 - DB_PERCENTAGE) * total_memory_in_gb / 2)), 10)
+    # )
 
-config["HTTPServer"]["MaxClientConnections"] = config["Parameters"][
-    "MaxClientConnections"
-]
+# config["Parameters"]["MaxClientConnections"] = "10"
+# config["HTTPServer"]["MaxClientConnections"] = config["Parameters"][
+#     "MaxClientConnections"
+# ]
 print("MaxQueryMem:", config["Parameters"]["MaxQueryMem"])
 print("MaxClientConnections:", config["Parameters"]["MaxClientConnections"])
 

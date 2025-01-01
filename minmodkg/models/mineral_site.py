@@ -98,19 +98,13 @@ class MineralSite(MinModRDFModel):
             # Fuseki can optimize this case, but I don't know why sometimes it cannot
             return """
 CONSTRUCT {
-    <%s> ?p ?o .
-    ?cs ?cp ?co .
+    ?s ?p ?o
 }
 WHERE {
-    <%s> ?p ?o .
-    OPTIONAL {
-        <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))+ ?cs .
-        ?cs ?cp ?co .
-    }
+    <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))* ?s .
+    ?s ?p ?o .
 }
 """ % (
-                uri,
-                uri,
                 uri,
             )
 
@@ -118,15 +112,11 @@ WHERE {
             return """
 CONSTRUCT {
     ?s ?p ?o .
-    ?cs ?cp ?co .
 }
 WHERE {
+    ?os (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))* ?s .
     ?s ?p ?o .
-    OPTIONAL {
-        ?s (!(owl:sameAs|rdf:type|mo:normalized_uri|mo:property|mo:source_uri|md:dedup_site))+ ?cs .
-        ?cs ?cp ?co .
-    }
-    VALUES ?s { %s }
+    VALUES ?os { %s }
 }
 """ % " ".join(
                 f"<{uri}>" for uri in uris

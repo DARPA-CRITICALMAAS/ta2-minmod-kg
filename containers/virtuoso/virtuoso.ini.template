@@ -223,7 +223,7 @@ DefaultHost  = localhost:8890
 [SPARQL]
 ;ExternalQuerySource		= 1
 ;ExternalXsltSource 		= 1
-;DefaultGraph      		= http://localhost:8890/dataspace
+DefaultGraph      		= https://minmod.isi.edu
 ;ImmutableGraphs    		= http://localhost:8890/dataspace
 ResultSetMaxRows           = 1000000000
 MaxConstructTriples        = 1000000

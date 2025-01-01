@@ -7,6 +7,10 @@ triplestore:
   # args:
   #   query_endpoint: http://localhost:13030/sparql
   #   update_endpoint: http://localhost:13030/sparql
+  # classpath: minmodkg.misc.rdf_store.blazegraph.BlazeGraph
+  # args:
+  #   query_endpoint: http://localhost:13030/blazegraph/sparql
+  #   update_endpoint: http://localhost:13030/blazegraph/sparql
 namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/

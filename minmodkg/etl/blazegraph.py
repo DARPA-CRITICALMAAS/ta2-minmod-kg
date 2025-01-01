@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 import httpx
-from minmodkg.misc.rdf_store.fuseki import FusekiDB
+from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.models.base import MINMOD_NS
 from rdflib import Graph
 from statickg.models.file_and_path import BaseType, InputFile
@@ -17,11 +17,10 @@ from statickg.services.data_loader import (
 from tqdm import tqdm
 
 
-class FusekiLoaderService(DataLoaderService):
+class BlazeGraphLoaderService(DataLoaderService):
 
-    query_endpoint = "/minmod/sparql"
-    update_endpoint = "/minmod/update"
-    gsp_endpoint = "/minmod/data"
+    query_endpoint = "/blazegraph/sparql"
+    update_endpoint = "/blazegraph/sparql"
 
     def _wait_till_service_is_ready(self, dbinfo: DBInfo):
         """Wait until the service is ready"""
@@ -31,8 +30,8 @@ class FusekiLoaderService(DataLoaderService):
         print("Wait for the service to be ready", end="", flush=True)
         for _ in range(int(max_wait_seconds / retry_after)):
             try:
-                resp = httpx.get(sparql_endpoint, timeout=0.3)
-                if resp.text.strip() == f"Service Description: {self.query_endpoint}":
+                resp = httpx.head(sparql_endpoint, timeout=0.3)
+                if resp.status_code == 200:
                     break
             except Exception:
                 print(".", end="", flush=True)
@@ -52,7 +51,7 @@ class FusekiLoaderService(DataLoaderService):
             g.parse(file.path, format=self.detect_format(file.path))
 
         assert dbinfo.endpoint is not None
-        triplestore = FusekiDB(
+        triplestore = BlazeGraph(
             MINMOD_NS,
             f"{dbinfo.endpoint}{self.query_endpoint}",
             f"{dbinfo.endpoint}{self.update_endpoint}",
@@ -72,9 +71,9 @@ class FusekiLoaderService(DataLoaderService):
         assert len(files) > 0
         if dbinfo.endpoint is not None:
             # the service is already running
-            gsp_endpoint = f"{dbinfo.endpoint}{self.gsp_endpoint}"
+            upload_endpoint = f"{dbinfo.endpoint}{self.query_endpoint}"
             for file in tqdm(files, desc="Upload files to Fuseki"):
-                self.upload_file(gsp_endpoint, file.path)
+                self.upload_file(upload_endpoint, file.path)
         else:
             # prepare an input file containing all files needed to be loaded
             assert all(file.basetype == BaseType.DATA_DIR for file in files)
@@ -94,9 +93,9 @@ class FusekiLoaderService(DataLoaderService):
                 shell=True,
             )
 
-    def upload_file(self, gsp_endpoint: str, file: Path):
+    def upload_file(self, upload_endpoint: str, file: Path):
         resp = httpx.post(
-            gsp_endpoint,
+            upload_endpoint,
             content=file.read_text(),
             headers={"Content-Type": f"text/{self.detect_format(file)}; charset=utf-8"},
             verify=False,

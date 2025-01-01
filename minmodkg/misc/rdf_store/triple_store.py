@@ -32,15 +32,9 @@ class TripleStore:
     def transaction(self, objects: Sequence[IRI | URIRef], timeout_sec: float = 300):
         return Transaction(self, objects, timeout_sec)
 
-    def has(self, uri: IRI | URIRef):
-        return (
-            len(
-                self.query(
-                    "select 1 where { <%s> ?p ?o } LIMIT 1" % uri,
-                )
-            )
-            > 0
-        )
+    def has(self, uri: IRI | URIRef) -> bool:
+        resp = self._sparql_query("ASK WHERE { <%s> ?p ?o }" % uri)
+        return resp.json()["boolean"]
 
     def count_all(self):
         return self.query("SELECT (COUNT(*) as ?count) WHERE { ?s ?p ?o }")[0]["count"]

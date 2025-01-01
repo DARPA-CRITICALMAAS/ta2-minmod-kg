@@ -25,10 +25,6 @@ class VirtuosoDB(TripleStore):
                 self.query_endpoint,
                 "application/sparql-query",
                 accept_type="text/turtle",
-                # params={
-                #     "default-graph-uri": "https://purl.org/drepr/1.0/",
-                #     "signal_void": 1,  # important to fix an unreported bug in Virtuoso
-                # },
             )
         return self._sparql(query, self.query_endpoint, "application/sparql-query")
 
@@ -42,12 +38,11 @@ class VirtuosoDB(TripleStore):
         content_type: str,
         *,
         accept_type: str = "application/sparql-results+json",
-        params: Optional[dict] = None,
     ):
         """Execute a SPARQL query and ensure the response is successful"""
         response = httpx.post(
             url=endpoint,
-            params=params or {"default-graph-uri": "https://purl.org/drepr/1.0/"},
+            params={"default-graph-uri": "https://minmod.isi.edu"},
             headers={"Content-Type": content_type, "Accept": accept_type},
             content=self.prefix_part + query,
             timeout=None,

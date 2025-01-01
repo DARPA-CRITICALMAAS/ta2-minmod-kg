@@ -16,9 +16,17 @@ services:
       args:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
+  kg-blazegraph:
+    image: minmod-blazegraph
+    build:
+      context: ./containers/blazegraph/
+      args:
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
+        MEMORY: ${JVM_MEMORY:-12G}
   etl:
     image: minmod
-    build: 
+    build:
       context: .
       dockerfile: containers/etl/Dockerfile
       args:
@@ -52,7 +60,7 @@ services:
     image: toan2/minmod-dashboard
     ports:
       - "8050:8050"
-    environment: 
+    environment:
       - API_ENDPOINT=https://dev.minmod.isi.edu/api/v1
       - SPARQL_ENDPOINT=https://dev.minmod.isi.edu/sparql
     networks:
