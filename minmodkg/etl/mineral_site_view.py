@@ -3,21 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, Mapping, NotRequired, TypedDict
 
+import orjson
 import serde.csv
 import serde.json
 import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
 from minmodkg.grade_tonnage_model import GradeTonnageModel
-from minmodkg.models.base import MINMOD_KG, MINMOD_NS
-from minmodkg.models.dedup_mineral_site import DedupMineralSite
-from minmodkg.models.derived_mineral_site import DerivedMineralSite
+from minmodkg.models.base import MINMOD_NS
 from minmodkg.models.mineral_site import MineralSite
+from minmodkg.models.views.computed_mineral_site import ComputedMineralSite
 from minmodkg.typing import InternalID
 from rdflib import RDFS, Graph
-from timer import Timer
-from tqdm import tqdm
-
 from statickg.helper import FileSqliteBackend
 from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import (
@@ -28,14 +25,16 @@ from statickg.models.file_and_path import (
 )
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
+from timer import Timer
+from tqdm import tqdm
 
 
-class DedupSiteServiceConstructArgs(TypedDict):
+class MineralSiteViewServiceConstructArgs(TypedDict):
     verbose: NotRequired[int]
     parallel: NotRequired[bool]
 
 
-class DedupSiteServiceInvokeArgs(TypedDict):
+class MineralSiteViewServiceInvokeArgs(TypedDict):
     predefined_entities: RelPath
     same_as_group: RelPath
     input: RelPath | list[RelPath]
@@ -44,42 +43,46 @@ class DedupSiteServiceInvokeArgs(TypedDict):
     compute_missing_file_key: NotRequired[bool]
 
 
-class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
+class MineralSiteViewService(BaseFileService[MineralSiteViewServiceConstructArgs]):
     """Precompute the grade/tonnage data for each site.
 
     Then, we will use the
     """
 
+    parallel_executor = Parallel(n_jobs=-1, return_as="generator_unordered")
+
     def __init__(
         self,
         name: str,
         workdir: Path,
-        args: DedupSiteServiceConstructArgs,
+        args: MineralSiteViewServiceConstructArgs,
         services: Mapping[str, BaseService],
     ):
         super().__init__(name, workdir, args, services)
         self.verbose = args.get("verbose", 1)
         self.parallel = args.get("parallel", True)
-        self.parallel_executor = Parallel(n_jobs=-1, return_as="generator_unordered")
 
     def forward(
-        self, repo: Repository, args: DedupSiteServiceInvokeArgs, output: ETLOutput
+        self,
+        repo: Repository,
+        args: MineralSiteViewServiceInvokeArgs,
+        output: ETLOutput,
     ):
         timer = Timer()
 
-        with timer.watch("[dedup] compute site info"):
-            outfiles = self.step1_compute_site_info(repo, args)
+        with timer.watch("[site-view] compute individual site view"):
+            outfiles = self.step1_compute_site_view(repo, args)
 
-        with timer.watch("[dedup] gen dedup site"):
-            dedup_sites, sites = self.step2_gen_dedup_site(outfiles, args)
+        with timer.watch("[site-view] merge site views"):
+            sites = self.step2_merge_site_views(outfiles, args)
 
-        with timer.watch("[dedup] save dedup site"):
-            self.step3_save_dedup_site(dedup_sites, sites, args)
+        with timer.watch("[site-view] save site view"):
+            self.step3_save_site_view(sites, args)
 
         timer.report()
 
-    def step1_compute_site_info(
-        self, repo: Repository, args: DedupSiteServiceInvokeArgs
+    def step1_compute_site_view(
+        self, repo: Repository, args: MineralSiteViewServiceInvokeArgs
     ):
         infiles = self.list_files(
             repo,
@@ -109,7 +112,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
 
         if self.parallel:
             it: Iterable = self.parallel_executor(
-                delayed(ComputingDerivedSiteInfo.exec)(
+                delayed(ComputingSiteView.exec)(
                     self.workdir,
                     predefined_entities,
                     infile=infile,
@@ -119,7 +122,7 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
             )
         else:
             it: Iterable = (
-                ComputingDerivedSiteInfo.exec(
+                ComputingSiteView.exec(
                     self.workdir,
                     predefined_entities,
                     infile=infile,
@@ -140,19 +143,19 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
         self.remove_unknown_files(outfiles, output_fmter.outdir)
         return [output_fmter.outdir / outfile for outfile in outfiles]
 
-    def step2_gen_dedup_site(
-        self, infiles: list[Path], args: DedupSiteServiceInvokeArgs
+    def step2_merge_site_views(
+        self, infiles: list[Path], args: MineralSiteViewServiceInvokeArgs
     ):
-        sites: dict[InternalID, DerivedMineralSite] = {}
+        sites: dict[InternalID, ComputedMineralSite] = {}
         for infile in sorted(infiles):
             for raw_derived_site in serde.json.deser(
                 infile,
             ):
-                site = DerivedMineralSite.from_dict(raw_derived_site)
-                if site.id not in sites:
-                    sites[site.id] = site
+                site = ComputedMineralSite.from_dict(raw_derived_site)
+                if site.site_id not in sites:
+                    sites[site.site_id] = site
                 else:
-                    sites[site.id].merge(site)
+                    sites[site.site_id].merge(site)
 
         # generate dedup mineral site -- remove sites that were deleted but the linking is not updated yet
         groups: list[list[InternalID]] = [
@@ -166,43 +169,34 @@ class DedupSiteService(BaseFileService[DedupSiteServiceInvokeArgs]):
             if site_id not in linked_sites:
                 groups.append([site_id])
 
-        # make dedup sites
-        dedup_sites = [
-            DedupMineralSite.from_derived_sites([sites[site_id] for site_id in grp])
-            for grp in groups
-        ]
-        return dedup_sites, sites
+        # assert no overlapping between groups
+        seen_ids = set()
+        for grp in groups:
+            for site_id in grp:
+                assert site_id not in seen_ids
+                seen_ids.add(site_id)
 
-    def step3_save_dedup_site(
+        for grp in groups:
+            dedup_id = ComputedMineralSite.get_dedup_id(grp)
+            for site_id in grp:
+                sites[site_id].dedup_id = dedup_id
+
+        return sites
+
+    def step3_save_site_view(
         self,
-        dedup_sites: list[DedupMineralSite],
-        sites: dict[InternalID, DerivedMineralSite],
-        args: DedupSiteServiceInvokeArgs,
+        sites: dict[InternalID, ComputedMineralSite],
+        args: MineralSiteViewServiceInvokeArgs,
     ):
         output_fmter = FormatOutputPathModel.init(args["output"])
         output_fmter.outdir = output_fmter.outdir / "final"
         output_fmter.outdir.mkdir(parents=True, exist_ok=True)
 
-        mr = MINMOD_KG.ns.mr
-        md = MINMOD_KG.ns.md
-        dedup_site_pred = md.dedup_site
-
-        with open(output_fmter.outdir / "dedup_sites.ttl", "w") as f:
-            f.write(MINMOD_KG.prefix_part)
-            for site in sites.values():
-                for s, p, o in site.to_triples():
-                    f.write(f"{s} {p} {o} .\n")
-
-            for dedup_site in dedup_sites:
-                dedup_site_uri = md[dedup_site.id]
-                for site in dedup_site.sites:
-                    f.write(f"{mr[site]} {dedup_site_pred} {dedup_site_uri} .\n")
-                for s, p, o in dedup_site.to_triples():
-                    f.write(f"{s} {p} {o} .\n")
+        with open(output_fmter.outdir / "sites.json", "wb") as f:
+            f.write(orjson.dumps([site.to_dict() for site in sites.values()]))
 
 
-class ComputingDerivedSiteInfo:
-
+class ComputingSiteView:
     instances = {}
 
     def __init__(self, workdir: Path, predefined_entity_dir: Path):
@@ -233,9 +227,24 @@ class ComputingDerivedSiteInfo:
     def exec(cls, workdir: Path, predefined_entity_dir: Path, **kwargs):
         return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
 
+    @staticmethod
+    def invoke_subtask(
+        raw_sites: list[dict],
+        material_form_conversion: dict[str, float],
+        epsg_name: dict[str, str],
+    ):
+        return [
+            ComputedMineralSite.from_mineral_site(
+                MineralSite.from_raw_site(raw_site),
+                material_form_conversion,
+                epsg_name,
+            ).to_dict()
+            for raw_site in raw_sites
+        ]
+
     @cache(
         backend=FileSqliteBackend.factory(
-            filename=f"compute_fn_v104_v{GradeTonnageModel.VERSION}.sqlite"
+            filename=f"compute_mineral_site_v100_v{GradeTonnageModel.VERSION}.sqlite"
         ),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
@@ -243,14 +252,24 @@ class ComputingDerivedSiteInfo:
     )
     def invoke(self, infile: InputFile, outfile: Path):
         lst = serde.json.deser(infile.path)
-        output = []
-        for raw_site in lst:
-            output.append(
-                DerivedMineralSite.from_mineral_site(
-                    MineralSite.from_raw_site(raw_site),
+        for site in lst:
+            site["snapshot_id"] = infile.key
+
+        if len(lst) > 1024:
+            # if the number of sites is too large, we will use parallel processing
+            batch_size = 512
+            it: Iterable = MineralSiteViewService.parallel_executor(
+                delayed(ComputingSiteView.invoke_subtask)(
+                    lst[i : i + batch_size],
                     self.material_form_conversion,
                     self.epsg_name,
-                ).to_dict()
+                )
+                for i in range(0, len(lst), batch_size)
+            )
+            output = list(it)
+        else:
+            output = self.invoke_subtask(
+                lst, self.material_form_conversion, self.epsg_name
             )
         serde.json.ser(output, outfile)
         return outfile

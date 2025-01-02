@@ -38,6 +38,9 @@ class MineralSite(MinModRDFModel):
     deposit_type_candidate: list[CandidateEntity] = Field(default_factory=list)
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
     reference: list[Reference] = Field(default_factory=list)
+    # snapshot_id of the data -- it changes when the data is updated
+    # it do not guarantee to be different between different different sites
+    snapshot_id: Optional[str] = None
     modified_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
@@ -131,6 +134,9 @@ WHERE {
     @cached_property
     def id(self) -> InternalID:
         return self.qbuilder.class_namespace.id(self.uri)
+
+    def get_modified_timestamp(self) -> float:
+        return datetime.fromisoformat(self.modified_at).timestamp()
 
     @staticmethod
     def from_raw_site(raw_site: dict) -> MineralSite:

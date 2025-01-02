@@ -24,6 +24,10 @@ services:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
         MEMORY: ${JVM_MEMORY:-12G}
+  kg-postgres:
+    image: minmod-postgres
+    build:
+      context: ./containers/postgres/
   etl:
     image: minmod
     build:

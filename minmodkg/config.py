@@ -17,6 +17,10 @@ MINMOD_KG_CLSPATH = cfg["triplestore"]["classpath"]
 MINMOD_KG_CLSARGS = cfg["triplestore"]["args"]
 MINMOD_NS_CFG = cfg["namespace"]
 
+# for minmod KG views
+MINMOD_KG_VIEWDB = cfg["kgviewdb"]
+MINMOD_DEBUG = os.environ.get("MINMOD_DEBUG", "0") == "1"
+
 # for API prefixes
 API_PREFIX = cfg["api_prefix"]
 LOD_PREFIX = cfg["lod_prefix"]

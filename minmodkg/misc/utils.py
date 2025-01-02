@@ -113,3 +113,20 @@ def filter_duplication(
             keys.add(k)
             new_lst.append(k)
     return new_lst
+
+
+def extend_unique(unique_lst: list[V], other_lst: Iterable[V]) -> list[V]:
+    keys = set(unique_lst)
+    for item in other_lst:
+        if item not in keys:
+            unique_lst.append(item)
+            keys.add(item)
+    return unique_lst
+
+
+def exclude_none_or_empty_list(obj: dict):
+    return {
+        k: v
+        for k, v in obj.items()
+        if v is not None and (not isinstance(v, Sequence) or len(v) > 0)
+    }

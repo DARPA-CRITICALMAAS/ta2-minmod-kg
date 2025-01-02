@@ -1,7 +1,7 @@
 version: 1
 
 services:
-  - name: predefined entities
+  - name: kg.data.entities
     classpath: statickg.services.drepr.DReprService
     args:
       path:
@@ -15,28 +15,22 @@ services:
         - ::CFG_DIR::extractors/epsg.yml
         - ::CFG_DIR::extractors/material_form.yml
       format: turtle
-  - name: same as
+  - name: kg.data.same_as
     classpath: minmodkg.etl.same_as.SameAsService
-  - name: mineral site
+  - name: kg.data.mineral_site
     classpath: statickg.services.drepr.DReprService
     args:
       path: ::CFG_DIR::extractors/mineral_site.yml
       format: turtle
       parallel: true
-  - name: mineral site source
+  - name: kg.data.source_mineral_site
     classpath: minmodkg.etl.source.SourceService
     args:
       parallel: true
-  - name: dedup mineral site
-    classpath: minmodkg.etl.dedup_site.DedupSiteService
+  - name: kg.views.mineral_site
+    classpath: minmodkg.etl.mineral_site_view.MineralSiteViewService
     args:
-      parallel: true
-  - name: mineral system
-    classpath: statickg.services.drepr.DReprService
-    ext: ttl
-    args:
-      path: ::CFG_DIR::extractors/mineral_system.yml
-      format: turtle
+      parallel: false
   - name: copy
     classpath: statickg.services.copy.CopyService
   - name: version
@@ -51,7 +45,7 @@ services:
     classpath: minmodkg.etl.fuseki.FusekiLoaderService
     args:
       capture_output: false
-      dbdir: "::DB_DIR::"
+      dbdir: "::DB_DIR::kg"
       find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
       start_service: >-
         docker run --name {ID}
@@ -72,7 +66,7 @@ services:
     classpath: minmodkg.etl.blazegraph.BlazeGraphLoaderService
     args:
       capture_output: false
-      dbdir: "::DB_DIR::"
+      dbdir: "::DB_DIR::kg"
       find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
       start_service: >-
         docker run --name {ID}
@@ -92,7 +86,7 @@ services:
     classpath: minmodkg.etl.virtuoso.VirtuosoLoaderService
     args:
       capture_output: false
-      dbdir: "::DB_DIR::"
+      dbdir: "::DB_DIR::kg"
       find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
       start_service: >-
         docker run --name {ID}
@@ -104,6 +98,21 @@ services:
         minmod-virtuoso
       stop_service: docker stop {ID} && docker rm {ID}
       load_cmd: docker exec {ID} python3 /criticalmaas/build/data_loader.py /criticalmaas/kgdata/{INPUT_FILE_LST}
+  - name: kg.loader.postgres
+    classpath: minmodkg.etl.postgres.PostgresLoaderService
+    args:
+      capture_output: false
+      dbdir: "::DB_DIR::views"
+      find_by_id: docker ps --format '{{{{index (split .Ports "-") 0}}}}' --filter name={ID}
+      start_service: >-
+        docker run --name {ID}
+        -d -p {PORT}:5432
+        -v {DB_DIR}:/database
+        --network=minmod
+        --network-alias=kg-postgres
+        minmod-postgres
+      stop_service: docker stop {ID} && docker rm {ID}
+      load_cmd: "" # postgres does not need to load data
 pipeline:
   - service: validate filename
     args:
@@ -113,24 +122,24 @@ pipeline:
         - ::REPO::data/same-as/umn/*.csv
         - ::REPO::data/mappable-criteria/sri/*.json
         - ::REPO::data/curated-mineral-sites/*/*/*.json
-  - service: predefined entities
+  - service: kg.data.entities
     args:
       input: ::REPO::data/entities/*.csv
       output: ::DATA_DIR::predefined-entities/
-  - service: mineral site
+  - service: kg.data.mineral_site
     args:
       - input: ::REPO::data/mineral-sites/*/*/*.json
         output:
           base: ::DATA_DIR::mineral-sites
           format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
-  - service: same as
+  - service: kg.data.same_as
     args:
       input: ::REPO::data/same-as/umn/*.csv
       curated_input: ::REPO::data/curated-same-as/*/*.json
       output:
         base: ::DATA_DIR::same-as/
         format: "{fileparent}_{filestem}.json"
-  - service: mineral site source
+  - service: kg.data.source_mineral_site
     args:
       input: ::REPO::data/mineral-sites/*/*/*.json
       output:
@@ -138,13 +147,13 @@ pipeline:
         format: "{filegrandparent}/{fileparent}_{filestem}.json"
       predefined_entities: ::DATA_DIR::predefined-entities/
       default_source_score: 0.5
-  - service: dedup mineral site
+  - service: kg.views.mineral_site
     args:
       predefined_entities: ::DATA_DIR::predefined-entities/
       same_as_group: ::DATA_DIR::same-as/final/groups.json
       input: ::REPO::data/mineral-sites/*/*/*.json
       output:
-        base: ::DATA_DIR::dedup-mineral-sites/
+        base: ::DATA_DIR::view-mineral-sites/
         format: "{filegrandparent}/{fileparent}_{filestem}.json"
   - service: copy
     args:
@@ -155,8 +164,8 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  - service: kg.loader.blazegraph
-    # service: kg.loader.fuseki
+  - service: kg.loader.fuseki
+    # service: kg.loader.blazegraph
     # - service: kg.loader.virtuoso
     args:
       input:
@@ -168,3 +177,8 @@ pipeline:
         - ::DATA_DIR::mineral-site-sources/final/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       deploy: { port: 3030 }
+  - service: kg.loader.postgres
+    args:
+      input:
+        - ::DATA_DIR::view-mineral-sites/final/*.json
+      deploy: { port: 5432 }
