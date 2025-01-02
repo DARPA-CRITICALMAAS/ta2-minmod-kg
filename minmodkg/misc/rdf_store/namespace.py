@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import (
-    Iterable,
-)
+from typing import Iterable
 
 from minmodkg.typing import IRI, InternalID, RelIRI
 from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
@@ -22,6 +20,7 @@ class SingleNS:
         ), f"Namespace {self.namespace} should end with / or #"
 
     def id(self, uri: IRI | URIRef) -> str:
+        assert uri.startswith(self.namespace)
         return uri[len(self.namespace) :]
 
     def uri(self, name: InternalID) -> URIRef:

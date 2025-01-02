@@ -5,6 +5,7 @@ from functools import cached_property, lru_cache
 from importlib.metadata import version
 from pathlib import Path
 from typing import Callable, ClassVar, Optional, Sequence
+from uuid import uuid4
 
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
@@ -219,6 +220,7 @@ WHERE {
         return triples
 
     def update_derived_data(self, user: UserBase):
+        self.snapshot_id = str(uuid4()).replace("-", "")
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.created_by = [user.get_uri()]
         return self

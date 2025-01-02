@@ -8,6 +8,7 @@ import shapely.wkt
 from minmodkg.grade_tonnage_model import GradeTonnageModel
 from minmodkg.misc.geo import reproject_wkt
 from minmodkg.misc.utils import assert_not_none, exclude_none_or_empty_list
+from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.mineral_site import MineralSite
 from minmodkg.models.views.base import Base
 from minmodkg.models.views.custom_types import ComputedLocation
@@ -45,7 +46,8 @@ class ComputedMineralSite(MappedAsDataclass, Base):
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     snapshot_id: Mapped[str] = mapped_column(String(40))
     snapshot_timestamp: Mapped[float]
-    site_id: Mapped[InternalID]
+    is_updated: Mapped[bool] = mapped_column()
+    site_id: Mapped[InternalID] = mapped_column(index=True)
     dedup_id: Mapped[InternalID]
     location: Mapped[Optional[ComputedLocation]]
     grade_tonnages: Mapped[list[ComputedGradeTonnage]] = relationship(
@@ -65,6 +67,7 @@ class ComputedMineralSite(MappedAsDataclass, Base):
                 "dedup_id": self.dedup_id,
                 "snapshot_id": self.snapshot_id,
                 "snapshot_timestamp": self.snapshot_timestamp,
+                "is_updated": self.is_updated,
                 "location": (
                     self.location.to_dict() if self.location is not None else None
                 ),
@@ -91,6 +94,7 @@ class ComputedMineralSite(MappedAsDataclass, Base):
             dedup_id=obj["dedup_id"],
             snapshot_id=obj["snapshot_id"],
             snapshot_timestamp=obj["snapshot_timestamp"],
+            is_updated=obj["is_updated"],
             location=(
                 ComputedLocation(**obj["location"])
                 if obj.get("location") is not None
@@ -220,10 +224,15 @@ class ComputedMineralSite(MappedAsDataclass, Base):
         site_id = site_ns.id(site.uri)
         output = ComputedMineralSite(
             site_id=site_id,
-            dedup_id=cls.get_dedup_id((site_id,)),
+            dedup_id=(
+                DedupMineralSite.qbuilder.class_namespace.id(site.dedup_site_uri)
+                if site.dedup_site_uri is not None
+                else cls.get_dedup_id((site_id,))
+            ),
             location=location,
             snapshot_id=assert_not_none(site.snapshot_id),
             snapshot_timestamp=site.get_modified_timestamp(),
+            is_updated=True,
         )
 
         site_comms = []

@@ -30,7 +30,7 @@ services:
   - name: kg.views.mineral_site
     classpath: minmodkg.etl.mineral_site_view.MineralSiteViewService
     args:
-      parallel: false
+      parallel: true
   - name: copy
     classpath: statickg.services.copy.CopyService
   - name: version

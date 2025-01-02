@@ -266,7 +266,7 @@ class ComputingSiteView:
                 )
                 for i in range(0, len(lst), batch_size)
             )
-            output = list(it)
+            output = [x for lst in it for x in lst]
         else:
             output = self.invoke_subtask(
                 lst, self.material_form_conversion, self.epsg_name

@@ -15,6 +15,8 @@ class Base(DeclarativeBase):
 dbconn = MINMOD_KG_VIEWDB
 if dbconn.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    connect_args = {}
 engine = create_engine(dbconn, connect_args=connect_args, echo=MINMOD_DEBUG)
 
 
