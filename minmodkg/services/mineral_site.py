@@ -33,7 +33,7 @@ class MineralSiteService:
         self.material_form = material_form_uri_to_conversion(self.snapshot_id)
         self.crss = crs_uri_to_name(self.snapshot_id)
 
-    def create_mineral_site(self, site: MineralSite):
+    def create(self, site: MineralSite):
         # update automatic values
         site.update_derived_data(self.user)
         if site.dedup_site_uri is None:
@@ -71,7 +71,7 @@ class MineralSiteService:
             )
             session.commit()
 
-    def update_mineral_site(self, site: MineralSite):
+    def update(self, site: MineralSite):
         site.update_derived_data(self.user)
         assert site.snapshot_id is not None
 

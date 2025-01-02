@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import pickle
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,16 +9,12 @@ import networkx as nx
 import orjson
 import serde.csv
 import serde.json
-from drepr.writers.turtle_writer import TurtleWriter
 from joblib import Parallel, delayed
 from libactor.cache import cache
 from minmodkg.models.base import MINMOD_KG
 from rdflib import OWL
 from slugify import slugify
-from timer import Timer
-from tqdm import tqdm
-
-from statickg.helper import FileSqliteBackend, Fn, logger_helper
+from statickg.helper import FileSqliteBackend, Fn
 from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import (
     FormatOutputPath,
@@ -30,6 +24,8 @@ from statickg.models.file_and_path import (
 )
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
+from timer import Timer
+from tqdm import tqdm
 
 """
 Create a dedup group sites that are the same as each other.
@@ -56,7 +52,7 @@ class SameAsServiceInvokeArgs(TypedDict):
     compute_missing_file_key: NotRequired[bool]
 
 
-class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
+class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
     def __init__(
         self,
         name: str,
@@ -148,6 +144,7 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
         id2subgroups = defaultdict(list)
         for file in sorted(subgroup_files):
             subgrp = orjson.loads(file.read_bytes())
+            assert all(k not in id2subgroups for k in subgrp.keys())
             id2subgroups.update(subgrp)
             for grpid, grp in subgrp.items():
                 for site_id in grp:
@@ -170,19 +167,20 @@ class SameAsService(BaseFileService[SameAsServiceInvokeArgs]):
             final_grp_id = f"grp2__{i}"
             for sub_grp_id in grps:
                 sub2final_grp[sub_grp_id] = final_grp_id
+        for sub_grp_id in id2subgroups.keys():
+            if sub_grp_id not in sub2final_grp:
+                sub2final_grp[sub_grp_id] = sub_grp_id
 
         site2groups = {}
         id2setgroups = defaultdict(set)
 
-        for site, subgrps in site2subgroups.items():
-            if len(subgrps) == 1:
-                id2setgroups[subgrps[0]].add(site)
-                site2groups[site] = subgrps[0]
-
         for sub_grp_id, final_grp_id in sub2final_grp.items():
             for site in id2subgroups[sub_grp_id]:
                 id2setgroups[final_grp_id].add(site)
-                site2groups[site] = final_grp_id
+                if site in site2groups:
+                    assert site2groups[site] == final_grp_id, site2groups[site]
+                else:
+                    site2groups[site] = final_grp_id
 
         id2groups = {
             final_grp_id: sorted(grps) for final_grp_id, grps in id2setgroups.items()
