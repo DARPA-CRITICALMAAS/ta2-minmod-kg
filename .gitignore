@@ -163,6 +163,7 @@ cython_debug/
 #.idea/
 
 data*
+!data*.py
 .env
 .myenv
 env
