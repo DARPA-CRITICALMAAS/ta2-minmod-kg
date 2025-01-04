@@ -6,7 +6,10 @@ from pathlib import Path
 import serde.yaml
 
 if "CFG_FILE" not in os.environ:
-    CFG_FILE = Path(__file__).parent.parent / "config.yml"
+    if "CFG_DIR" in os.environ:
+        CFG_FILE = Path(os.environ["CFG_DIR"]) / "config.yml"
+    else:
+        CFG_FILE = Path(__file__).parent.parent / "config.yml"
 else:
     CFG_FILE = Path(os.environ["CFG_FILE"])
 assert CFG_FILE.exists(), f"Config file {CFG_FILE} does not exist"
