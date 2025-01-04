@@ -177,8 +177,8 @@ pipeline:
         - ::DATA_DIR::mineral-site-sources/final/*.ttl
       replaceable_input: ::DATA_DIR::version.ttl
       deploy: { port: 3030 }
-  - service: kg.loader.postgres
-    args:
-      input:
-        - ::DATA_DIR::view-mineral-sites/final/*.json
-      deploy: { port: 5432 }
+  # - service: kg.loader.postgres
+  #   args:
+  #     input:
+  #       - ::DATA_DIR::view-mineral-sites/final/*.json
+  #     deploy: { port: 5432 }
