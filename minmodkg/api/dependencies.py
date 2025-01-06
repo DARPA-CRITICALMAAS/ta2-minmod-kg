@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
-from functools import lru_cache
 from typing import Annotated, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User, is_system_user
+from minmodkg.api.models.user import User
 from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
-from minmodkg.misc import LongestPrefixIndex
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
-from minmodkg.typing import IRI, InternalID
+from minmodkg.services.mineral_site_v2 import MineralSiteService
+from minmodkg.typing import InternalID
+from sqlalchemy.orm import Session
 
 # for login/security
 token_from_cookie = APIKeyCookie(name="session")
@@ -45,7 +44,13 @@ async def get_current_user(session: SessionDep, token: TokenDep):
     return user
 
 
+def get_mineral_site_service():
+    return MineralSiteService()
+
+
+RelSessionDep = Annotated[Session, Depends()]
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
+MineralSiteServiceDep = Annotated[MineralSiteService, Depends(get_mineral_site_service)]
 
 
 def get_snapshot_id():

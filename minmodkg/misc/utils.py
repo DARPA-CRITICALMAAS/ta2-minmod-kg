@@ -115,12 +115,31 @@ def filter_duplication(
     return new_lst
 
 
-def extend_unique(unique_lst: list[V], other_lst: Iterable[V]) -> list[V]:
-    keys = set(unique_lst)
-    for item in other_lst:
-        if item not in keys:
-            unique_lst.append(item)
-            keys.add(item)
+def extend_unique(
+    unique_lst: list[V],
+    other_lst: Iterable[V],
+    key_fn: Optional[Callable[[V], str | tuple | int]] = None,
+) -> list[V]:
+    """Extend unique_lst with other_lst. The uniqueness is determined by key_fn. If key_fn is None, the uniqueness is determined by the object itself.
+
+    This function assumes that unique_lst is unique.
+    """
+    if isinstance(other_lst, Sequence) and len(other_lst) == 0:
+        return unique_lst
+
+    if key_fn is None:
+        keys = set(unique_lst)
+        for item in other_lst:
+            if item not in keys:
+                unique_lst.append(item)
+                keys.add(item)
+    else:
+        keys = set(key_fn(item) for item in unique_lst)
+        for item in other_lst:
+            k = key_fn(item)
+            if k not in keys:
+                unique_lst.append(item)
+                keys.add(k)
     return unique_lst
 
 
@@ -130,3 +149,17 @@ def exclude_none_or_empty_list(obj: dict):
         for k, v in obj.items()
         if v is not None and (not isinstance(v, Sequence) or len(v) > 0)
     }
+
+
+class makedict:
+    @staticmethod
+    def without_none(seq: Sequence[tuple[str, Any]]) -> dict[str, Any]:
+        return {k: v for k, v in seq if v is not None}
+
+    @staticmethod
+    def without_none_or_empty_list(seq: Sequence[tuple[str, Any]]) -> dict[str, Any]:
+        return {
+            k: v
+            for k, v in seq
+            if v is not None and (not isinstance(v, Sequence) or len(v) > 0)
+        }

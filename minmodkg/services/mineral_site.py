@@ -33,7 +33,8 @@ class MineralSiteService:
         self.material_form = material_form_uri_to_conversion(self.snapshot_id)
         self.crss = crs_uri_to_name(self.snapshot_id)
 
-    def create(self, site: MineralSite):
+    def create(self, site: MineralSite, same_as: list[InternalID]):
+        """Create a mineral site and mark it as same as other sites"""
         # update automatic values
         site.update_derived_data(self.user)
         if site.dedup_site_uri is None:

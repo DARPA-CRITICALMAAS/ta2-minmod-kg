@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 import orjson
 from minmodkg.misc.utils import extend_unique
@@ -68,3 +68,9 @@ class ComputedLocation:
             self.state_or_province, other.state_or_province
         )
         return self
+
+
+@dataclass
+class Event:
+    type: Literal["site:add", "site:update", "same-as:update"]
+    args: dict

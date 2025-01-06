@@ -11,6 +11,7 @@ triplestore:
   # args:
   #   query_endpoint: http://localhost:13030/blazegraph/sparql
   #   update_endpoint: http://localhost:13030/blazegraph/sparql
+kgviewdb: postgresql+psycopg://postgres:postgres@localhost:15432/minmod
 namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/

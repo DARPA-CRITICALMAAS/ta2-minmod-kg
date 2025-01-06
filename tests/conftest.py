@@ -7,6 +7,7 @@ from pathlib import Path
 
 import httpx
 import jwt
+import minmodkg.models_v2.kgrel.base
 import pytest
 from fastapi.testclient import TestClient
 from minmodkg import config
@@ -19,6 +20,7 @@ from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
 from minmodkg.models.base import MINMOD_KG
 from rdflib import Graph
+from sqlalchemy import Engine
 from timer import Timer
 
 
@@ -111,6 +113,36 @@ def kg_singleton(resource_dir: Path):
     subprocess.check_output("docker container rm -f test-kg", shell=True)
 
 
+@pytest.fixture(scope="session")
+def kgrel_singleton(resource_dir: Path):
+    start_cmd = "-p 15432:5432 minmod-postgres"
+    try:
+        subprocess.check_output(
+            f"docker run --name=test-kgrel --rm -d {start_cmd}",
+            shell=True,
+        )
+    except subprocess.CalledProcessError as e:
+        subprocess.check_output("docker rm -f test-kgrel", shell=True)
+        subprocess.check_output(
+            f"docker run --name=test-kgrel --rm -d {start_cmd}",
+            shell=True,
+        )
+
+    print("\nWaiting for KGRel to start", end="", flush=True)
+    for i in range(100):
+        try:
+            minmodkg.models_v2.kgrel.base.create_db_and_tables()
+            break
+        except Exception as e:
+            print(".", end="", flush=True)
+            time.sleep(0.5)
+    print(" DONE!", flush=True)
+
+    yield minmodkg.models_v2.kgrel.base.engine
+
+    subprocess.check_output("docker container rm -f test-kgrel", shell=True)
+
+
 @pytest.fixture(scope="class")
 def kg(resource_dir: Path, kg_singleton: TripleStore):
     # insert basic KG info
@@ -127,6 +159,14 @@ def kg(resource_dir: Path, kg_singleton: TripleStore):
 
     kg_singleton.clear()
     assert kg_singleton.count_all() == 0
+
+
+@pytest.fixture(scope="class")
+def kgrel(resource_dir: Path, kgrel_singleton: Engine):
+    with kgrel_singleton.connect() as conn:
+        for tbl in reversed(minmodkg.models_v2.kgrel.base.Base.metadata.sorted_tables):
+            conn.execute(tbl.delete())
+    yield kgrel_singleton
 
 
 @pytest.fixture(scope="class")

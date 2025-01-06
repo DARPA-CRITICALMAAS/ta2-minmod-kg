@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import subprocess
 import time
 from pathlib import Path
 
-import httpx
 import serde.json
-from minmodkg.models.views.base import Base
-from minmodkg.models.views.computed_mineral_site import ComputedMineralSite
-from rdflib import Graph
+
+from minmodkg.models_v2.kgrel.base import Base
+from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.services.mineral_site_v2 import MineralSiteService
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from statickg.models.file_and_path import BaseType, InputFile
+from tqdm import tqdm
+
+from statickg.models.file_and_path import InputFile
 from statickg.services.data_loader import (
     DataLoaderService,
     DataLoaderServiceInvokeArgs,
@@ -22,7 +22,7 @@ from statickg.services.data_loader import (
 class PostgresLoaderService(DataLoaderService):
 
     def get_db_service_id(self, db_store_dir: Path) -> str:
-        return f"dbviewloader-{db_store_dir.name}"
+        return f"kgrel-{db_store_dir.name}"
 
     def _wait_till_service_is_ready(self, dbinfo: DBInfo):
         """Wait until the service is ready"""
@@ -52,28 +52,20 @@ class PostgresLoaderService(DataLoaderService):
         """Load files into the database"""
         assert len(files) > 0
         self.start_service(dbinfo)
-
+        engine = self.get_engine(dbinfo)
         records = [
-            ComputedMineralSite.from_dict(record)
-            for file in files
+            MineralSite.from_dict(record)
+            for file in tqdm(files, desc="Loading files")
             for record in serde.json.deser(file.path)
         ]
-        engine = self.get_engine(dbinfo)
-        with Session(engine) as session:
-            session.bulk_save_objects(records, return_defaults=True)
-            for r in records:
-                for gt in r.grade_tonnages:
-                    assert r.id is not None
-                    gt.site_id = r.id
-            session.bulk_save_objects([gt for r in records for gt in r.grade_tonnages])
-            session.commit()
+        MineralSiteService(engine).restore(records)
 
     def get_engine(self, dbinfo: DBInfo):
         endpoint = dbinfo.endpoint
         assert endpoint is not None
 
         connection_url = (
-            "postgresql+psycopg2://postgres:postgres@"
+            "postgresql+psycopg://postgres:postgres@"
             + endpoint.hostname[len("http://") :]
             + ":"
             + str(endpoint.port)

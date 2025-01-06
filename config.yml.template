@@ -1,8 +1,8 @@
 triplestore:
-  classpath: minmodkg.misc.rdf_store.virtuoso.VirtuosoDB
+  classpath: minmodkg.misc.rdf_store.fuseki.FusekiDB
   args:
-    query_endpoint: http://kg:3030/sparql
-    update_endpoint: http://kg:3030/sparql
+    query_endpoint: http://kg:3030/minmod/sparql
+    update_endpoint: http://kg:3030/minmod/update
 kgviewdb: postgresql+psycopg://postgres:postgres@localhost:5432/minmod
 namespace:
   mr: https://minmod.isi.edu/resource/

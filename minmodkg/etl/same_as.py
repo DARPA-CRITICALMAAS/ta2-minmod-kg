@@ -14,6 +14,9 @@ from libactor.cache import cache
 from minmodkg.models.base import MINMOD_KG
 from rdflib import OWL
 from slugify import slugify
+from timer import Timer
+from tqdm import tqdm
+
 from statickg.helper import FileSqliteBackend, Fn
 from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import (
@@ -24,8 +27,6 @@ from statickg.models.file_and_path import (
 )
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
-from timer import Timer
-from tqdm import tqdm
 
 """
 Create a dedup group sites that are the same as each other.

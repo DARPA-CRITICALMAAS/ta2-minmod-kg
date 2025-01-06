@@ -1,0 +1,313 @@
+[
+  {
+    "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+    "record_id": "02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
+    "name": "Montviel Carbonatite",
+    "location_info": {
+      "location": "POINT(-75.927119 49.632846)",
+      "crs": {
+        "normalized_uri": "https://minmod.isi.edu/resource/Q701",
+        "observed_name": "EPSG:4326",
+        "confidence": 1,
+        "source": "Inferlink Extraction v3"
+      },
+      "country": [
+        {
+          "normalized_uri": "https://minmod.isi.edu/resource/Q1038",
+          "observed_name": "Canada",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        }
+      ],
+      "state_or_province": [
+        {
+          "normalized_uri": "https://minmod.isi.edu/resource/Q2663",
+          "observed_name": "Quebec",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        }
+      ]
+    },
+    "mineral_inventory": [
+      {
+        "commodity": {
+          "observed_name": "niobium",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q579"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "material_form": {
+          "observed_name": "Nb2O5",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "ore": {
+          "value": 9.1
+        },
+        "grade": {
+          "value": 0.27
+        },
+        "contained_metal": 0.0246,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+            "authors": [
+              "Richard Roy",
+              "Antoine Fournier"
+            ],
+            "year": 2004,
+            "month": 5,
+            "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+          },
+          "page_info": [
+            {
+              "page": 8
+            }
+          ]
+        },
+        "date": "2004-05"
+      },
+      {
+        "commodity": {
+          "observed_name": "niobium",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q579"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "material_form": {
+          "observed_name": "Nb2O5",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "ore": {
+          "value": 7.2
+        },
+        "grade": {
+          "value": 0.41
+        },
+        "contained_metal": 0.0295,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+            "authors": [
+              "Richard Roy",
+              "Antoine Fournier"
+            ],
+            "year": 2004,
+            "month": 5,
+            "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+          },
+          "page_info": [
+            {
+              "page": 8
+            }
+          ]
+        },
+        "date": "2004-05"
+      },
+      {
+        "commodity": {
+          "observed_name": "rare earth elements",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q618"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "material_form": {
+          "observed_name": "REE",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "ore": {
+          "value": 4.5
+        },
+        "grade": {
+          "value": 0.43
+        },
+        "contained_metal": 0.0193,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+            "authors": [
+              "Richard Roy",
+              "Antoine Fournier"
+            ],
+            "year": 2004,
+            "month": 5,
+            "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+          },
+          "page_info": [
+            {
+              "page": 8
+            }
+          ]
+        },
+        "date": "2004-05"
+      },
+      {
+        "commodity": {
+          "observed_name": "rare earth elements",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q618"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "material_form": {
+          "observed_name": "REE",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "ore": {
+          "value": 4.8
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+            "authors": [
+              "Richard Roy",
+              "Antoine Fournier"
+            ],
+            "year": 2004,
+            "month": 5,
+            "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+          },
+          "page_info": [
+            {
+              "page": 8
+            }
+          ]
+        },
+        "date": "2004-05"
+      },
+      {
+        "commodity": {
+          "observed_name": "phosphorus-phosphates",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "material_form": {
+          "observed_name": "P2O5",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        },
+        "ore": {
+          "value": 107.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+            "authors": [
+              "Richard Roy",
+              "Antoine Fournier"
+            ],
+            "year": 2004,
+            "month": 5,
+            "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+          },
+          "page_info": [
+            {
+              "page": 8
+            }
+          ]
+        },
+        "date": "2004-05"
+      }
+    ],
+    "deposit_type_candidate": [
+      {
+        "observed_name": "Carbonatite niobium",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q471",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.3333333333333333
+      },
+      {
+        "observed_name": "Carbonatite REE",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q470",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.3333333333333333
+      },
+      {
+        "observed_name": "Kimberlite diamond",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q475",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.3333333333333333
+      }
+    ],
+    "modified_at": "2024-12-11T18:39:24.450546Z",
+    "created_by": "https://minmod.isi.edu/users/s/inferlink",
+    "reference": [
+      {
+        "document": {
+          "title": "NI 43-101 Technical Report for the Montviel Project in North America dated July 2004.pdf",
+          "authors": [
+            "Richard Roy",
+            "Antoine Fournier"
+          ],
+          "year": 2004,
+          "month": 5,
+          "description": "Technical report on the Montviel property by NioGold Mining Corporation",
+          "uri": "https://api.cdr.land/v1/docs/documents/02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755"
+        }
+      }
+    ]
+  }
+]

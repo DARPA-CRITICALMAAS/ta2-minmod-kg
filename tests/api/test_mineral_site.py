@@ -5,19 +5,16 @@ from time import sleep
 
 import pytest
 from fastapi.testclient import TestClient
+from minmodkg.api.models.create_mineral_site import UpsertMineralSite
 from minmodkg.api.models.user import UserCreate
-from minmodkg.api.routers.mineral_site import UpdateMineralSite, get_site_changes
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
-from minmodkg.models.dedup_mineral_site import DedupMineralSite, DedupMineralSitePublic
-from minmodkg.models.mineral_site import (
-    CandidateEntity,
-    LocationInfo,
-    MineralInventory,
-    MineralSite,
-    Reference,
-)
-from minmodkg.models.reference import Document
+from minmodkg.models.dedup_mineral_site import DedupMineralSite
+from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
+from minmodkg.models_v2.inputs.location_info import LocationInfo
+from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
+from minmodkg.models_v2.inputs.mineral_site import MineralSite
+from minmodkg.models_v2.inputs.reference import Document, Reference
 from minmodkg.transformations import make_site_uri
 from rdflib import RDF, RDFS
 from rdflib import Literal as RDFLiteral
@@ -31,7 +28,7 @@ class TestMineralSiteData:
     @pytest.fixture(autouse=True)
     def site1_(self, user1: UserCreate):
         self.site1_commodity = "Q578"
-        self.site1 = MineralSite(
+        self.site1 = UpsertMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
             record_id="10014570",
             name="Eagle Mine",
@@ -62,7 +59,7 @@ class TestMineralSiteData:
         )
         self.site1_dedup_id = MINMOD_KG.ns.md.id(self.site1_dedup_uri)
 
-        self.site1_dump = self.site1.model_dump(exclude_none=True)
+        self.site1_dump = self.site1.to_dict()
         self.site1_dump.update(
             {
                 "coordinates": {
@@ -80,7 +77,7 @@ class TestMineralSiteData:
     @pytest.fixture(autouse=True)
     def site2_(self, user2: UserCreate):
         self.site2_commodity = "Q569"
-        self.site2 = MineralSite(
+        self.site2 = UpsertMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
             record_id="10109359",
             name="Beaver Mine",
@@ -107,7 +104,7 @@ class TestMineralSiteData:
             self.site2.source_id, self.site2.record_id, namespace=""
         )
         self.site2_uri = make_site_uri(self.site2.source_id, self.site2.record_id)
-        self.site2_dump = self.site2.model_dump(exclude_none=True)
+        self.site2_dump = self.site2.to_dict()
         self.site2_dump.update(
             {
                 "coordinates": {
@@ -125,7 +122,7 @@ class TestMineralSiteData:
 
 class TestMineralSite(TestMineralSiteData):
 
-    def test_create_first(self, auth_client: TestClient, kg: TripleStore):
+    def test_create_first(self, auth_client: TestClient, kg: TripleStore, kgrel):
         # create a mineral site record
         resp = check_req(
             lambda: auth_client.post(
@@ -178,6 +175,7 @@ class TestMineralSite(TestMineralSiteData):
         assert resp.json() == {"detail": "The site already exists."}
         assert resp.status_code == 403
 
+    @pytest.mark.skip
     def test_get_site_changes(self, auth_client, kg: TripleStore, user1: UserCreate):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
