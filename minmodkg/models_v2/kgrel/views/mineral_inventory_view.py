@@ -22,7 +22,9 @@ class MineralInventoryView(MappedAsDataclass, Base):
     grade: Mapped[Optional[float]]
     date: Mapped[Optional[str]]
 
-    site_id: Mapped[int] = mapped_column(ForeignKey("mineral_site.id"), default=None)
+    site_id: Mapped[int] = mapped_column(
+        ForeignKey("mineral_site.id", ondelete="CASCADE"), default=None
+    )
     site: Mapped[MineralSite] = relationship(
         default=None, back_populates="inventory_views", lazy="raise_on_sql"
     )

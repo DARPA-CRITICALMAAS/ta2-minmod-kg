@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Body, HTTPException, Response, status
 from minmodkg.api.dependencies import (
@@ -9,11 +9,11 @@ from minmodkg.api.dependencies import (
     MineralSiteServiceDep,
     get_snapshot_id,
 )
-from minmodkg.api.models.create_mineral_site import UpsertMineralSite
-from minmodkg.api.models.public_mineral_site import PublicMineralSite
+from minmodkg.api.models.public_mineral_site import (
+    InputPublicMineralSite,
+    PublicMineralSite,
+)
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
-from minmodkg.models_v2.inputs.mineral_site import MineralSite as InMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
@@ -78,7 +78,7 @@ def update_same_as(
 
 @router.post("/mineral-sites")
 def create_site(
-    create_site: Annotated[UpsertMineralSite, Body()],
+    create_site: Annotated[InputPublicMineralSite, Body()],
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
 ):
@@ -88,20 +88,20 @@ def create_site(
         crs_uri_to_name(snapshot_id),
     )
 
-    if mineral_site_service.contain_id(new_site.site_id):
+    if mineral_site_service.contain_site_id(new_site.site_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
         )
 
     mineral_site_service.create(user, new_site, create_site.same_as)
-    return UpsertMineralSite.from_kgrel(new_site).to_dict()
+    return PublicMineralSite.from_kgrel(new_site).to_dict()
 
 
 @router.put("/mineral-sites/{site_id}")
 def update_site(
     site_id: str,
-    update_site: UpsertMineralSite,
+    update_site: InputPublicMineralSite,
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
 ):
@@ -111,14 +111,14 @@ def update_site(
         crs_uri_to_name(snapshot_id),
     )
 
-    if not mineral_site_service.contain_id(new_site.site_id):
+    if not mineral_site_service.contain_site_id(new_site.site_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
         )
 
     mineral_site_service.update(user, new_site)
-    return UpsertMineralSite.from_kgrel(new_site).to_dict()
+    return PublicMineralSite.from_kgrel(new_site).to_dict()
 
 
 @lru_cache(maxsize=1)

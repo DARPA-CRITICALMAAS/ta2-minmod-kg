@@ -10,7 +10,7 @@ from minmodkg.models_v2.kgrel.event import EventLog
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import Engine, exists, select, update
+from sqlalchemy import Engine, delete, exists, select, update
 from sqlalchemy.orm import Session, contains_eager
 
 
@@ -19,21 +19,21 @@ class MineralSiteService:
     def __init__(self, _engine: Optional[Engine] = None):
         self.engine = _engine or engine
 
-    def contain_id(self, site_id: InternalID) -> bool:
+    def contain_site_id(self, site_id: InternalID) -> bool:
         q = exists().where(MineralSite.site_id == site_id).select()
         with Session(self.engine) as session:
             return session.execute(q).scalar_one()
 
     def find_by_id(self, site_id: InternalID) -> Optional[MineralSite]:
-        with Session(self.engine) as session:
-            query = select(MineralSite).where(MineralSite.site_id == site_id)
-            site = session.execute(query).scalar_one_or_none()
+        query = self._select_mineral_site().where(MineralSite.site_id == site_id)
+        with Session(self.engine, expire_on_commit=False) as session:
+            site = session.execute(query).unique().scalar_one_or_none()
             return site
 
     def find_by_ids(self, ids: list[InternalID]) -> dict[str, MineralSite]:
-        with Session(self.engine) as session:
-            query = select(MineralSite).where(MineralSite.site_id.in_(ids))
-            sites = {site.site_id: site for site, in session.execute(query)}
+        query = self._select_mineral_site().where(MineralSite.site_id.in_(ids))
+        with Session(self.engine, expire_on_commit=False) as session:
+            sites = {site.site_id: site for site, in session.execute(query).unique()}
             return sites
 
     def restore(self, sites: list[MineralSite]):
@@ -58,6 +58,7 @@ class MineralSiteService:
                     .values(dedup_site_id=dedup_site_id)
                 )
                 site.dedup_site_id = dedup_site_id
+            print("@@@", site.site_id, site.dedup_site_id, same_as)
 
             session.add(site)
             session.add(
@@ -73,7 +74,11 @@ class MineralSiteService:
 
     def update(self, user: UserBase, site: MineralSite):
         self._update_derived_data(site, user)
-        with Session(self.engine) as session:
+        with Session(self.engine, expire_on_commit=False) as session:
+            # TODO: improve me! -- should this be done outside?
+            session.execute(
+                delete(MineralSite).where(MineralSite.site_id == site.site_id)
+            )
             session.add(site)
             session.add(
                 EventLog(
@@ -121,7 +126,7 @@ class MineralSiteService:
         if dedup_site_ids is not None:
             query = query.filter(MineralSite.dedup_site_id.in_(dedup_site_ids))
 
-        with Session(self.engine) as session:
+        with Session(self.engine, expire_on_commit=False) as session:
             sites = session.execute(query).unique().scalars().all()
             dms2sites = defaultdict(list)
             for site in sites:
@@ -133,6 +138,10 @@ class MineralSiteService:
         site.created_by = [user.get_uri()]
         return site
 
-    @staticmethod
-    def get_dedup_id(site_ids: Iterable[InternalID]):
-        return "dedup_" + min(site_ids)
+    def _select_mineral_site(self):
+        return (
+            select(MineralSite)
+            .join(MineralInventoryView, MineralSite.id == MineralInventoryView.site_id)
+            .options(contains_eager(MineralSite.inventory_views))
+            .execution_options(populate_existing=True)
+        )

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, Iterable, Optional
 
 import minmodkg.models.candidate_entity
 import minmodkg.models.mineral_inventory
@@ -32,7 +32,7 @@ class MineralSite(MappedAsDataclass, Base):
     __tablename__ = "mineral_site"
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    site_id: Mapped[InternalID] = mapped_column(index=True)
+    site_id: Mapped[InternalID] = mapped_column(unique=True)
     dedup_site_id: Mapped[
         Annotated[InternalID, "Id of the mineral site that this site is the same as"]
     ] = mapped_column(index=True)
@@ -133,7 +133,7 @@ class MineralSite(MappedAsDataclass, Base):
 
         out_site = MineralSite(
             site_id=site.id,
-            dedup_site_id=site.id,
+            dedup_site_id=MineralSite.get_dedup_id((site.id,)),
             source_id=site.source_id,
             record_id=str(site.record_id),
             name=site.name,
@@ -250,6 +250,10 @@ class MineralSite(MappedAsDataclass, Base):
         if "id" in d:
             obj.id = d["id"]
         return obj
+
+    @staticmethod
+    def get_dedup_id(site_ids: Iterable[InternalID]):
+        return "dedup_" + min(site_ids)
 
 
 class DataTranslation:

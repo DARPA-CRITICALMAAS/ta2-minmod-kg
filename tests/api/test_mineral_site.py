@@ -5,7 +5,7 @@ from time import sleep
 
 import pytest
 from fastapi.testclient import TestClient
-from minmodkg.api.models.create_mineral_site import UpsertMineralSite
+from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
 from minmodkg.api.models.user import UserCreate
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
@@ -28,7 +28,7 @@ class TestMineralSiteData:
     @pytest.fixture(autouse=True)
     def site1_(self, user1: UserCreate):
         self.site1_commodity = "Q578"
-        self.site1 = UpsertMineralSite(
+        self.site1 = InputPublicMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
             record_id="10014570",
             name="Eagle Mine",
@@ -58,26 +58,30 @@ class TestMineralSiteData:
             DedupMineralSite.get_id([self.site1_id])
         )
         self.site1_dedup_id = MINMOD_KG.ns.md.id(self.site1_dedup_uri)
-
-        self.site1_dump = self.site1.to_dict()
-        self.site1_dump.update(
-            {
-                "coordinates": {
-                    "lat": 46.900001525879,
-                    "lon": -87.099998474121,
-                },
-                "dedup_site_uri": self.site1_dedup_uri,
-                "created_by": [user1.get_uri()],
-                "id": self.site1_id,
-                "grade_tonnage": [{"commodity": self.site1_commodity}],
-            }
-        )
-        del self.site1_dump["modified_at"]
+        self.site1_dump = {
+            "id": self.site1_id,
+            "source_id": self.site1.source_id,
+            "record_id": self.site1.record_id,
+            "name": self.site1.name,
+            "location_info": {
+                "location": "POINT(-87.099998474121 46.900001525879)",
+            },
+            "mineral_inventory": [
+                inv.to_dict() for inv in self.site1.mineral_inventory
+            ],
+            "coordinates": {
+                "lat": 46.900001525879,
+                "lon": -87.099998474121,
+            },
+            "dedup_site_uri": self.site1_dedup_uri,
+            "created_by": [user1.get_uri()],
+            "grade_tonnage": [{"commodity": self.site1_commodity}],
+        }
 
     @pytest.fixture(autouse=True)
     def site2_(self, user2: UserCreate):
         self.site2_commodity = "Q569"
-        self.site2 = UpsertMineralSite(
+        self.site2 = InputPublicMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
             record_id="10109359",
             name="Beaver Mine",
@@ -127,7 +131,7 @@ class TestMineralSite(TestMineralSiteData):
         resp = check_req(
             lambda: auth_client.post(
                 "/api/v1/mineral-sites",
-                json=self.site1.model_dump(exclude_none=True),
+                json=self.site1.to_dict(),
             )
         ).json()
         self.site1.modified_at = resp["modified_at"]
@@ -170,7 +174,7 @@ class TestMineralSite(TestMineralSiteData):
     def test_create_exist(self, auth_client, kg: TripleStore):
         resp = auth_client.post(
             "/api/v1/mineral-sites",
-            json=self.site1.model_dump(exclude_none=True),
+            json=self.site1.to_dict(),
         )
         assert resp.json() == {"detail": "The site already exists."}
         assert resp.status_code == 403
@@ -224,7 +228,7 @@ class TestMineralSite(TestMineralSiteData):
         resp = check_req(
             lambda: auth_client.put(
                 f"/api/v1/mineral-sites/{self.site1_id}",
-                json=self.site1.model_dump(exclude_none=True),
+                json=self.site1.to_dict(),
             )
         ).json()
 
@@ -268,11 +272,12 @@ class TestMineralSite(TestMineralSiteData):
         resp = check_req(
             lambda: auth_client_2.post(
                 "/api/v1/mineral-sites",
-                json=self.site2.model_dump(exclude_none=True),
+                json=self.site2.to_dict(),
             )
         ).json()
         gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
         norm_site_wkt(resp, gold_resp["location_info"]["location"])
+
         assert resp == gold_resp
 
         for commodity in [self.site1_commodity, self.site2_commodity]:
@@ -282,6 +287,7 @@ class TestMineralSite(TestMineralSiteData):
                     params={"commodity": commodity},
                 )
             ).json()
+            print(">>>", resp)
             assert resp == {
                 "id": self.site1_dedup_id,
                 "name": "Beaver Mine",
