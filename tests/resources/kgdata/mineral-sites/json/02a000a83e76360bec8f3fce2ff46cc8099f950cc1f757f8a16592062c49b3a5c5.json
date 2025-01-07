@@ -1,0 +1,3089 @@
+[
+  {
+    "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+    "record_id": "02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
+    "name": "Shining Tree",
+    "location_info": {
+      "location": "POINT(-81.8 46.2)",
+      "country": [
+        {
+          "normalized_uri": "https://minmod.isi.edu/resource/Q1038",
+          "observed_name": "Canada",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        }
+      ],
+      "state_or_province": [
+        {
+          "normalized_uri": "https://minmod.isi.edu/resource/Q2661",
+          "observed_name": "Ontario",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3"
+        }
+      ]
+    },
+    "mineral_inventory": [
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 7242.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 3672.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 7242.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 910000.0
+        },
+        "grade": {
+          "value": 0.76
+        },
+        "cutoff_grade": {
+          "value": 0.4
+        },
+        "contained_metal": 6916.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 770000.0
+        },
+        "grade": {
+          "value": 0.82
+        },
+        "cutoff_grade": {
+          "value": 0.5
+        },
+        "contained_metal": 6314.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 650000.0
+        },
+        "grade": {
+          "value": 0.89
+        },
+        "cutoff_grade": {
+          "value": 0.6
+        },
+        "contained_metal": 5785.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 550000.0
+        },
+        "grade": {
+          "value": 0.94
+        },
+        "cutoff_grade": {
+          "value": 0.7
+        },
+        "contained_metal": 5170.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 470000.0
+        },
+        "grade": {
+          "value": 0.99
+        },
+        "cutoff_grade": {
+          "value": 0.8
+        },
+        "contained_metal": 4653.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 3672.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 910000.0
+        },
+        "grade": {
+          "value": 0.38
+        },
+        "cutoff_grade": {
+          "value": 0.4
+        },
+        "contained_metal": 3458.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 770000.0
+        },
+        "grade": {
+          "value": 0.41
+        },
+        "cutoff_grade": {
+          "value": 0.5
+        },
+        "contained_metal": 3157.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 650000.0
+        },
+        "grade": {
+          "value": 0.44
+        },
+        "cutoff_grade": {
+          "value": 0.6
+        },
+        "contained_metal": 2860.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 550000.0
+        },
+        "grade": {
+          "value": 0.46
+        },
+        "cutoff_grade": {
+          "value": 0.7
+        },
+        "contained_metal": 2530.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 470000.0
+        },
+        "grade": {
+          "value": 0.48
+        },
+        "cutoff_grade": {
+          "value": 0.8
+        },
+        "contained_metal": 2256.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1340000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.4
+        },
+        "contained_metal": 9514.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1050000.0
+        },
+        "grade": {
+          "value": 0.79
+        },
+        "cutoff_grade": {
+          "value": 0.5
+        },
+        "contained_metal": 8295.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 830000.0
+        },
+        "grade": {
+          "value": 0.87
+        },
+        "cutoff_grade": {
+          "value": 0.6
+        },
+        "contained_metal": 7221.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 690000.0
+        },
+        "grade": {
+          "value": 0.94
+        },
+        "cutoff_grade": {
+          "value": 0.7
+        },
+        "contained_metal": 6486.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 580000.0
+        },
+        "grade": {
+          "value": 0.99
+        },
+        "cutoff_grade": {
+          "value": 0.8
+        },
+        "contained_metal": 5742.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1340000.0
+        },
+        "grade": {
+          "value": 0.38
+        },
+        "cutoff_grade": {
+          "value": 0.4
+        },
+        "contained_metal": 5092.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1050000.0
+        },
+        "grade": {
+          "value": 0.42
+        },
+        "cutoff_grade": {
+          "value": 0.5
+        },
+        "contained_metal": 4410.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 830000.0
+        },
+        "grade": {
+          "value": 0.46
+        },
+        "cutoff_grade": {
+          "value": 0.6
+        },
+        "contained_metal": 3818.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 690000.0
+        },
+        "grade": {
+          "value": 0.49
+        },
+        "cutoff_grade": {
+          "value": 0.7
+        },
+        "contained_metal": 3381.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 580000.0
+        },
+        "grade": {
+          "value": 0.51
+        },
+        "cutoff_grade": {
+          "value": 0.8
+        },
+        "contained_metal": 2958.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.04
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 16.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 270000.0
+        },
+        "grade": {
+          "value": 0.03
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "contained_metal": 81.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.02
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 204.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.73
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 292.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 270000.0
+        },
+        "grade": {
+          "value": 0.55
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "contained_metal": 1485.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 3672.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 270000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 7242.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.05
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 20.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 360000.0
+        },
+        "grade": {
+          "value": 0.04
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "contained_metal": 144.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.03
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 447.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.7
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 280.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 360000.0
+        },
+        "grade": {
+          "value": 0.57
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "contained_metal": 2052.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 360000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.0
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 2730000.0
+        },
+        "grade": {
+          "value": 0.64
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 17472.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 2730000.0
+        },
+        "grade": {
+          "value": 0.34
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9282.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 7242.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 3672.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.71
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 7242.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 3672.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1020000.0
+        },
+        "grade": {
+          "value": 0.02
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 204.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.67
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 9983.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.36
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 5364.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 1490000.0
+        },
+        "grade": {
+          "value": 0.03
+        },
+        "cutoff_grade": {
+          "value": 0.3
+        },
+        "contained_metal": 447.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.73
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 292.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Indicated",
+            "observed_name": "indicated",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.04
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 16.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "nickel",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q578"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "unit": {
+            "normalized_uri": "https://minmod.isi.edu/resource/Q201",
+            "observed_name": "percent",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "copper",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q538"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.7
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 280.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      },
+      {
+        "commodity": {
+          "observed_name": "cobalt",
+          "confidence": 1,
+          "source": "Inferlink Extraction v3",
+          "normalized_uri": "https://minmod.isi.edu/resource/Q537"
+        },
+        "category": [
+          {
+            "normalized_uri": "https://minmod.isi.edu/resource/Inferred",
+            "observed_name": "inferred",
+            "confidence": 1,
+            "source": "Inferlink Extraction v3"
+          }
+        ],
+        "ore": {
+          "value": 40000.0
+        },
+        "grade": {
+          "value": 0.05
+        },
+        "cutoff_grade": {
+          "value": 1.5
+        },
+        "contained_metal": 20.0,
+        "reference": {
+          "document": {
+            "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+            "authors": [
+              "Wardrop Engineering Inc.",
+              "Rob Carter"
+            ],
+            "year": 2005,
+            "month": 11,
+            "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+            "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+          },
+          "page_info": [
+            {
+              "page": 47
+            }
+          ]
+        },
+        "date": "2005-11"
+      }
+    ],
+    "deposit_type_candidate": [
+      {
+        "observed_name": "Magmatic nickel-copper-cobalt with platinum group elements",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q319",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Base metal sulphides associated with felsic volcanic rocks",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q373",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Shear zone hosted gold mineralization",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q303",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Lode gold deposits",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q390",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Volcanogenic massive sulphide (VMS) base metal deposits",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q409",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Nickel-copper sulphide deposits",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q319",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Cobalt silver deposits",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q392",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      },
+      {
+        "observed_name": "Five element type deposits",
+        "normalized_uri": "https://minmod.isi.edu/resource/Q379",
+        "source": "Inferlink Extraction v3",
+        "confidence": 0.125
+      }
+    ],
+    "modified_at": "2024-12-10T23:21:22.029852Z",
+    "created_by": "https://minmod.isi.edu/users/s/inferlink",
+    "reference": [
+      {
+        "document": {
+          "title": "NI 43-101 Technical Report for the Shining Tree Project in North America dated February 2006.pdf",
+          "authors": [
+            "Wardrop Engineering Inc.",
+            "Rob Carter"
+          ],
+          "year": 2005,
+          "month": 11,
+          "description": "Independent resource estimation of the magmatic hosted nickel-copper mineralization on the Shining Tree Property.",
+          "uri": "https://api.cdr.land/v1/docs/documents/02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5"
+        }
+      }
+    ]
+  }
+]

@@ -167,6 +167,11 @@ class TripleStore:
 
         return self._sparql_update(query)
 
+    def delete_insert_where(
+        self,
+        delete: str | Triples,
+    ): ...
+
     def batch_insert(
         self,
         query: Triples | Graph,

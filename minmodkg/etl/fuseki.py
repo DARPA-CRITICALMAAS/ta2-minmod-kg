@@ -8,13 +8,14 @@ import httpx
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.models.base import MINMOD_NS
 from rdflib import Graph
+from tqdm import tqdm
+
 from statickg.models.file_and_path import BaseType, InputFile
 from statickg.services.data_loader import (
     DataLoaderService,
     DataLoaderServiceInvokeArgs,
     DBInfo,
 )
-from tqdm import tqdm
 
 
 class FusekiLoaderService(DataLoaderService):
@@ -22,6 +23,9 @@ class FusekiLoaderService(DataLoaderService):
     query_endpoint = "/minmod/sparql"
     update_endpoint = "/minmod/update"
     gsp_endpoint = "/minmod/data"
+
+    def get_db_service_id(self, db_store_dir: Path) -> str:
+        return f"kg-{db_store_dir.name}"
 
     def _wait_till_service_is_ready(self, dbinfo: DBInfo):
         """Wait until the service is ready"""

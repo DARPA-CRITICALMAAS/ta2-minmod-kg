@@ -40,7 +40,7 @@ class SourceServiceInvokeArgs(TypedDict):
     compute_missing_file_key: NotRequired[bool]
 
 
-class SourceService(BaseFileService[SourceServiceInvokeArgs]):
+class SourceService(BaseFileService[SourceServiceConstructArgs]):
     """Precompute the grade/tonnage data for each site.
 
     Then, we will use the

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from minmodkg.config import MINMOD_DEBUG, MINMOD_KG_VIEWDB
-from minmodkg.models.views.custom_types import ComputedLocation, DataclassType
+from minmodkg.models.views.custom_types import ComputedLocation, DataclassType, Event
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase, Session
 class Base(DeclarativeBase):
     type_annotation_map = {
         ComputedLocation: DataclassType(ComputedLocation),
+        Event: DataclassType(Event),
     }
 
 
