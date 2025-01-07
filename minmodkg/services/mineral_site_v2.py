@@ -82,7 +82,8 @@ class MineralSiteService:
             )
             session.commit()
 
-    def update_same_as(self, groups: list[list[InternalID]]):
+    def update_same_as(self, groups: list[list[InternalID]]) -> list[InternalID]:
+        output = []
         with Session(self.engine) as session:
             for group in groups:
                 dedup_site_id = min(group)
@@ -91,6 +92,7 @@ class MineralSiteService:
                     .where(MineralSite.site_id.in_(group))
                     .values(dedup_site_id=dedup_site_id)
                 )
+                output.append(dedup_site_id)
             session.add(
                 EventLog(
                     type="same-as:update",
@@ -100,6 +102,7 @@ class MineralSiteService:
                 )
             )
             session.commit()
+        return output
 
     def find_dedup_mineral_sites(
         self,

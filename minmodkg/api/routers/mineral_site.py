@@ -76,7 +76,8 @@ def update_same_as(
     mineral_site_service: MineralSiteServiceDep,
     current_user: CurrentUserDep,
 ):
-    mineral_site_service.update_same_as([g.sites for g in same_site_groups])
+    dedup_ids = mineral_site_service.update_same_as([g.sites for g in same_site_groups])
+    return [{"id": dedup_id} for dedup_id in dedup_ids]
 
 
 @router.post("/mineral-sites")
