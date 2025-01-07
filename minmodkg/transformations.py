@@ -90,11 +90,7 @@ def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) 
     if source_id.find("::") != -1:
         # we need to remove the category from the source_id
         category, source_id = source_id.split("::", 1)
-        assert category in {
-            "mining-report",
-            "article",
-            "database",
-        }
+        assert category in {"mining-report", "article", "database", "unpublished"}
 
     if source_id.startswith("http://"):
         if source_id.startswith("http://"):

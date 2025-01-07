@@ -141,7 +141,6 @@ class PublicMineralSite(BaseModel):
 @dataclass
 class InputPublicMineralSite(InputMineralSite):
     dedup_site_uri: Optional[IRI] = None
-    same_as: list[InternalID] = field(default_factory=list)
 
     def to_kgrel(
         self,
@@ -155,13 +154,16 @@ class InputPublicMineralSite(InputMineralSite):
         )
         if self.dedup_site_uri is not None:
             site.dedup_site_id = MINMOD_NS.md.id(self.dedup_site_uri)
-        print("@@@", site.dedup_site_id)
         return site
 
     def to_dict(self):
         d = super().to_dict()
         if self.dedup_site_uri is not None:
             d["dedup_site_uri"] = self.dedup_site_uri
-        if len(self.same_as) > 0:
-            d["same_as"] = self.same_as
         return d
+
+
+class UpdateDedupLink(BaseModel):
+    """A class represents the latest dedup links"""
+
+    sites: list[InternalID]

@@ -46,27 +46,16 @@ class MineralSiteService:
             session.bulk_save_objects([x for lst in site_invs for x in lst])
             session.commit()
 
-    def create(self, user: UserBase, site: MineralSite, same_as: list[InternalID]):
+    def create(self, user: UserBase, site: MineralSite):
         """Create a mineral site"""
         self._update_derived_data(site, user)
         with Session(self.engine, expire_on_commit=False) as session:
-            if len(same_as) > 0:
-                dedup_site_id = min(min(same_as), site.site_id)
-                session.execute(
-                    update(MineralSite)
-                    .where(MineralSite.site_id.in_(same_as))
-                    .values(dedup_site_id=dedup_site_id)
-                )
-                site.dedup_site_id = dedup_site_id
-            print("@@@", site.site_id, site.dedup_site_id, same_as)
-
             session.add(site)
             session.add(
                 EventLog(
                     type="site:add",
                     data={
                         "site": site.to_dict(),
-                        "same_as": same_as,
                     },
                 )
             )
@@ -115,19 +104,55 @@ class MineralSiteService:
         commodity: Optional[InternalID],
         dedup_site_ids: Optional[Sequence[InternalID]] = None,
     ) -> dict[InternalID, list[MineralSite]]:
-        query = (
-            select(MineralSite)
-            .join(MineralInventoryView, MineralSite.id == MineralInventoryView.site_id)
-            .options(contains_eager(MineralSite.inventory_views))
-            .execution_options(populate_existing=True)
-        )
-        if commodity is not None:
-            query = query.filter(MineralInventoryView.commodity == commodity)
+        # TODO: fix the query so we do not have to filter in python
+        # query = self._select_mineral_site()
+        # # TODO: fix the query so we do not have to filter in python
+        # # we have a problem that this query ignore sites that do not have the commodity
+        # # eventually missing sites that we should have
+        # if commodity is not None:
+        #     query = query.filter(MineralInventoryView.commodity == commodity)
         if dedup_site_ids is not None:
-            query = query.filter(MineralSite.dedup_site_id.in_(dedup_site_ids))
+            query = (
+                select(MineralSite)
+                .join(
+                    MineralInventoryView,
+                    MineralInventoryView.site_id == MineralSite.id,
+                    isouter=True,
+                )
+                .options(contains_eager(MineralSite.inventory_views))
+                .execution_options(populate_existing=True)
+                .where(MineralSite.dedup_site_id.in_(dedup_site_ids))
+            )
+        else:
+            subquery = (
+                select(MineralSite.dedup_site_id)
+                .distinct()
+                .join(
+                    MineralInventoryView, MineralInventoryView.site_id == MineralSite.id
+                )
+                .where(MineralInventoryView.commodity == commodity)
+            ).subquery()
+            query = (
+                select(MineralSite)
+                .join(subquery, MineralSite.dedup_site_id == subquery.c.dedup_site_id)
+                .join(
+                    MineralInventoryView,
+                    MineralInventoryView.site_id == MineralSite.id,
+                    isouter=True,
+                )
+                .options(contains_eager(MineralSite.inventory_views))
+                .execution_options(populate_existing=True)
+            )
 
         with Session(self.engine, expire_on_commit=False) as session:
             sites = session.execute(query).unique().scalars().all()
+            if commodity is not None:
+                for site in sites:
+                    site.inventory_views = [
+                        inv
+                        for inv in site.inventory_views
+                        if inv.commodity == commodity
+                    ]
             dms2sites = defaultdict(list)
             for site in sites:
                 dms2sites[site.dedup_site_id].append(site)
@@ -141,7 +166,11 @@ class MineralSiteService:
     def _select_mineral_site(self):
         return (
             select(MineralSite)
-            .join(MineralInventoryView, MineralSite.id == MineralInventoryView.site_id)
+            .join(
+                MineralInventoryView,
+                MineralSite.id == MineralInventoryView.site_id,
+                isouter=True,
+            )
             .options(contains_eager(MineralSite.inventory_views))
             .execution_options(populate_existing=True)
         )

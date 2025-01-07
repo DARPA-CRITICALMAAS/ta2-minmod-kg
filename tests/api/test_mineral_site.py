@@ -287,7 +287,6 @@ class TestMineralSite(TestMineralSiteData):
                     params={"commodity": commodity},
                 )
             ).json()
-            print(">>>", resp)
             assert resp == {
                 "id": self.site1_dedup_id,
                 "name": "Beaver Mine",

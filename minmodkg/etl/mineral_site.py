@@ -157,7 +157,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 seen_ids.add(site_id)
 
         for grp in groups:
-            dedup_id = MineralSiteService.get_dedup_id(grp)
+            dedup_id = RelMineralSite.get_dedup_id(grp)
             for site_id in grp:
                 sites[site_id]["dedup_id"] = dedup_id
 

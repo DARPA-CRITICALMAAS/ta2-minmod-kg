@@ -37,7 +37,10 @@ def get_sites(
     ids: Annotated[list[InternalID], Body(embed=True, alias="ids")],
     mineral_site_service: MineralSiteServiceDep,
 ):
-    return {k: v.to_dict() for k, v in mineral_site_service.find_by_ids(ids).items()}
+    return {
+        k: PublicMineralSite.from_kgrel(v).to_dict()
+        for k, v in mineral_site_service.find_by_ids(ids).items()
+    }
 
 
 @router.get("/mineral-sites/{site_id}")
@@ -69,11 +72,11 @@ def get_site(
 
 @router.post("/same-as")
 def update_same_as(
-    same_site_groups: list[list[InternalID]],
+    same_site_groups: list[UpdateDedupLink],
     mineral_site_service: MineralSiteServiceDep,
     current_user: CurrentUserDep,
 ):
-    mineral_site_service.update_same_as(same_site_groups)
+    mineral_site_service.update_same_as([g.sites for g in same_site_groups])
 
 
 @router.post("/mineral-sites")
@@ -94,7 +97,7 @@ def create_site(
             detail="The site already exists.",
         )
 
-    mineral_site_service.create(user, new_site, create_site.same_as)
+    mineral_site_service.create(user, new_site)
     return PublicMineralSite.from_kgrel(new_site).to_dict()
 
 
@@ -111,7 +114,13 @@ def update_site(
         crs_uri_to_name(snapshot_id),
     )
 
-    if not mineral_site_service.contain_site_id(new_site.site_id):
+    if site_id != new_site.site_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The site_id in the request body does not match the site_id in the URL.",
+        )
+
+    if not mineral_site_service.contain_site_id(site_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
