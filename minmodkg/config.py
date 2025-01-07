@@ -36,6 +36,9 @@ while LOD_PREFIX.endswith("/"):
 
 # for databases
 DBFILE = Path(cfg["dbfile"])
+if not DBFILE.is_absolute():
+    # this is a relative path to the config file
+    DBFILE = CFG_FILE.parent / DBFILE
 DBFILE.parent.mkdir(parents=True, exist_ok=True)
 
 # for login/security

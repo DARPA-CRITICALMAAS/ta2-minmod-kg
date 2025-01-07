@@ -9,21 +9,21 @@ services:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
         MEMORY: ${JVM_MEMORY:-12G}
-  kg-virtuoso:
-    image: minmod-virtuoso
-    build:
-      context: ./containers/virtuoso/
-      args:
-        UID: ${USER_ID}
-        GID: ${GROUP_ID}
-  kg-blazegraph:
-    image: minmod-blazegraph
-    build:
-      context: ./containers/blazegraph/
-      args:
-        UID: ${USER_ID}
-        GID: ${GROUP_ID}
-        MEMORY: ${JVM_MEMORY:-12G}
+  # kg-virtuoso:
+  #   image: minmod-virtuoso
+  #   build:
+  #     context: ./containers/virtuoso/
+  #     args:
+  #       UID: ${USER_ID}
+  #       GID: ${GROUP_ID}
+  # kg-blazegraph:
+  #   image: minmod-blazegraph
+  #   build:
+  #     context: ./containers/blazegraph/
+  #     args:
+  #       UID: ${USER_ID}
+  #       GID: ${GROUP_ID}
+  #       MEMORY: ${JVM_MEMORY:-12G}
   kg-postgres:
     image: minmod-postgres
     build:
