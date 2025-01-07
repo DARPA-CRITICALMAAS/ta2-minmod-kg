@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 
-from minmodkg.config import MINMOD_DEBUG, MINMOD_KG_VIEWDB
+from minmodkg.config import MINMOD_DEBUG, MINMOD_KGREL_DB
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Reference
@@ -27,7 +27,7 @@ class Base(DeclarativeBase):
     }
 
 
-dbconn = MINMOD_KG_VIEWDB
+dbconn = MINMOD_KGREL_DB
 if dbconn.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 else:

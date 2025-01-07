@@ -21,7 +21,7 @@ MINMOD_KG_CLSARGS = cfg["triplestore"]["args"]
 MINMOD_NS_CFG = cfg["namespace"]
 
 # for minmod KG views
-MINMOD_KG_VIEWDB = cfg["kgrel"]
+MINMOD_KGREL_DB = cfg["kgrel"]
 MINMOD_DEBUG = os.environ.get("MINMOD_DEBUG", "0") == "1"
 
 # for API prefixes

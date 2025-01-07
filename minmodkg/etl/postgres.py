@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 import serde.json
-
+from minmodkg.config import MINMOD_KGREL_DB
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.services.mineral_site_v2 import MineralSiteService
@@ -65,7 +65,8 @@ class PostgresLoaderService(DataLoaderService):
         assert endpoint is not None
 
         connection_url = (
-            "postgresql+psycopg://postgres:postgres@"
+            MINMOD_KGREL_DB.split("@", 1)[0]
+            + "@"
             + endpoint.hostname[len("http://") :]
             + ":"
             + str(endpoint.port)

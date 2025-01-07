@@ -3,7 +3,7 @@ triplestore:
   args:
     query_endpoint: http://kg:3030/minmod/sparql
     update_endpoint: http://kg:3030/minmod/update
-kgrel: postgresql+psycopg://postgres:postgres@kg-postgres:5432/minmod
+kgrel: postgresql+psycopg://minmod:criticalmaas2025@kg-postgres:5432/minmod
 namespace:
   mr: https://minmod.isi.edu/resource/
   mo: https://minmod.isi.edu/ontology/

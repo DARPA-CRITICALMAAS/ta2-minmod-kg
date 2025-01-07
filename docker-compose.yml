@@ -28,6 +28,10 @@ services:
     image: minmod-postgres
     build:
       context: ./containers/postgres/
+      args:
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
+    shm_size: 1G
   etl:
     image: minmod
     build:

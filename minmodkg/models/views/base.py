@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from minmodkg.config import MINMOD_DEBUG, MINMOD_KG_VIEWDB
+from minmodkg.config import MINMOD_DEBUG, MINMOD_KGREL_DB
 from minmodkg.models.views.custom_types import ComputedLocation, DataclassType, Event
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session
@@ -13,7 +13,7 @@ class Base(DeclarativeBase):
     }
 
 
-dbconn = MINMOD_KG_VIEWDB
+dbconn = MINMOD_KGREL_DB
 if dbconn.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 else:
