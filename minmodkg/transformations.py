@@ -88,12 +88,10 @@ def make_reference_ids(ref: dict, site_id: str, namespace: str = MR_NS):
 
 def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) -> str:
     if source_id.find("::") != -1:
-        # we need to remove the category from the source_id
-        parts = source_id.split("::")
-        if len(parts) == 2:
-            category, source_id = parts
-        else:
-            category, source_id, user = parts
+        # we need to remove the category from the source_id -- note that the new `source_id`
+        # may contain other `::` at the end to add username, etc; and we want the username to be part of the site id
+        # otherwise, we may have duplicated site ids
+        category, source_id = source_id.split("::", 1)
         assert category in {"mining-report", "article", "database", "unpublished"}
 
     if source_id.startswith("http://"):
