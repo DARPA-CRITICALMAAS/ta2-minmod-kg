@@ -12,6 +12,7 @@ from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInvento
 from minmodkg.typing import InternalID
 from sqlalchemy import Engine, delete, exists, select, update
 from sqlalchemy.orm import Session, contains_eager
+from tqdm import tqdm
 
 
 class MineralSiteService:
@@ -36,15 +37,17 @@ class MineralSiteService:
             sites = {site.site_id: site for site, in session.execute(query).unique()}
             return sites
 
-    def restore(self, sites: list[MineralSite]):
+    def restore(self, sites: list[MineralSite], batch_size: int = 1024):
         with Session(self.engine) as session:
-            site_invs = [site.inventory_views for site in sites]
-            session.bulk_save_objects(sites, return_defaults=True)
-            for site, invs in zip(sites, site_invs):
-                for inv in invs:
-                    inv.site_id = site.id
-            session.bulk_save_objects([x for lst in site_invs for x in lst])
-            session.commit()
+            for i in tqdm(list(range(0, len(sites), batch_size))):
+                batch = sites[i : i + batch_size]
+                batch_invs = [site.inventory_views for site in batch]
+                session.bulk_save_objects(batch, return_defaults=True)
+                for site, invs in zip(batch, batch_invs):
+                    for inv in invs:
+                        inv.site_id = site.id
+                session.bulk_save_objects([x for lst in batch_invs for x in lst])
+                session.commit()
 
     def create(self, user: UserBase, site: MineralSite):
         """Create a mineral site"""

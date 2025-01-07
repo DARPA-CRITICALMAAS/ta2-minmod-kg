@@ -236,7 +236,7 @@ class MineralSite(MappedAsDataclass, Base):
             inventories=[
                 MineralInventory.from_dict(x) for x in d.get("inventories", [])
             ],
-            reference=[Reference.from_dict(x) for x in d["reference"]],
+            reference=[Reference.from_dict(x) for x in d.get("reference", [])],
             created_by=d["created_by"],
             modified_at=datetime.fromisoformat(d["modified_at"]),
         )

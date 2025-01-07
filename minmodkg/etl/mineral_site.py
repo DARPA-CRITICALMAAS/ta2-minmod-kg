@@ -278,10 +278,10 @@ class PartitionFn:
             source_id: [[] for _ in range(self.num_buckets)] for source_id in source_ids
         }
         for r in lst:
-            bucketno = (
-                xxhash.xxh64(str(r["record_id"]).encode()).intdigest()
-                % self.num_buckets
-            )
+            # skip a record is fine
+            r["record_id"] = str(r["record_id"]).strip()
+            record_id = slugify(str(r["record_id"])).encode()
+            bucketno = xxhash.xxh64(record_id).intdigest() % self.num_buckets
             source2records[r["source_id"]][bucketno].append(r)
 
         for source_id, source_id_name in zip(source_ids, source_id_names):
@@ -340,10 +340,10 @@ class MergeFn:
     def invoke(
         self, infiles: list[InputFile], sameas_file: InputFile, outdir: Path
     ) -> Path:
-        id2sites = defaultdict(list)
+        rid2sites = defaultdict(list)
         for infile in sorted(infiles, key=lambda x: x.path):
             for r in serde.json.deser(infile.path):
-                id2sites[r["record_id"]].append(r)
+                rid2sites[slugify(r["record_id"])].append(r)
 
         dedup_map = {
             r["site_id"]: r["dedup_id"] for r in serde.json.deser(sameas_file.path)
@@ -354,7 +354,7 @@ class MergeFn:
 
         # merge the data
         output = []
-        for raw_sites in id2sites.values():
+        for raw_sites in rid2sites.values():
             site = MineralSite.from_dict(raw_sites[0])
             for raw_site in raw_sites[1:]:
                 site.merge_mut(MineralSite.from_dict(raw_site))

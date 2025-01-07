@@ -89,7 +89,11 @@ def make_reference_ids(ref: dict, site_id: str, namespace: str = MR_NS):
 def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) -> str:
     if source_id.find("::") != -1:
         # we need to remove the category from the source_id
-        category, source_id = source_id.split("::", 1)
+        parts = source_id.split("::")
+        if len(parts) == 2:
+            category, source_id = parts
+        else:
+            category, source_id, user = parts
         assert category in {"mining-report", "article", "database", "unpublished"}
 
     if source_id.startswith("http://"):
