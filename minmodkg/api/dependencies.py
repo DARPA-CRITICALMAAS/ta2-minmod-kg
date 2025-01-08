@@ -6,10 +6,10 @@ from typing import Annotated, Optional
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
-from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User
 from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models_v2.kgrel.base import get_rel_session
+from minmodkg.models_v2.kgrel.user import User
 from minmodkg.services.mineral_site_v2 import MineralSiteService
 from minmodkg.typing import InternalID
 from sqlalchemy.orm import Session
@@ -17,9 +17,10 @@ from sqlalchemy.orm import Session
 # for login/security
 token_from_cookie = APIKeyCookie(name="session")
 TokenDep = Annotated[str, Depends(token_from_cookie)]
+RelSessionDep = Annotated[Session, Depends(get_rel_session.__wrapped__)]
 
 
-async def get_current_user(session: SessionDep, token: TokenDep):
+async def get_current_user(session: RelSessionDep, token: TokenDep):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -48,7 +49,6 @@ def get_mineral_site_service():
     return MineralSiteService()
 
 
-RelSessionDep = Annotated[Session, Depends()]
 CurrentUserDep = Annotated[User, Depends(get_current_user)]
 MineralSiteServiceDep = Annotated[MineralSiteService, Depends(get_mineral_site_service)]
 

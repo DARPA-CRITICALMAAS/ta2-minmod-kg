@@ -15,11 +15,13 @@ class Role(str, Enum):
 
 
 class User(MappedAsDataclass, Base):
+    __tablename__ = "user"
+
     username: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
-    role: Mapped[Literal["admin", "user", "system"]] = mapped_column()
     password: Mapped[bytes] = mapped_column()
+    role: Mapped[Literal["admin", "user", "system"]] = mapped_column(default=Role.user)
 
     def get_uri(self):
         if self.role == Role.system:
@@ -32,11 +34,12 @@ class User(MappedAsDataclass, Base):
     def is_system(self):
         return self.role == Role.system
 
-    def encrypt_password(self):
-        self.password = bcrypt.hashpw(self.password, bcrypt.gensalt())
-
     def verify_password(self, password: str):
         return bcrypt.checkpw(password.encode(), self.password)
+
+    @staticmethod
+    def encrypt_password(password: str):
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
 
 def is_system_user(created_by: str):

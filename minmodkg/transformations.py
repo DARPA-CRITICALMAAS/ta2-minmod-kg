@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 from uuid import uuid4
 
-from minmodkg.api.models.user import is_valid_user_uri
 from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.reference import PageInfo
+from minmodkg.models_v2.kgrel.user import is_valid_user_uri
 from slugify import slugify
 
 MR_NS = MINMOD_KG.ns.mr.namespace

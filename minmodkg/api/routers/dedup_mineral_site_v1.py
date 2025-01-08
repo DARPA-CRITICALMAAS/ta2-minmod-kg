@@ -4,7 +4,6 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Body, HTTPException
 from minmodkg.api.dependencies import norm_commodity
-from minmodkg.api.models.user import is_system_user
 from minmodkg.misc import group_by_key
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.dedup_mineral_site import (
@@ -15,6 +14,7 @@ from minmodkg.models.dedup_mineral_site import (
     DedupMineralSitePublic,
 )
 from minmodkg.models.derived_mineral_site import GradeTonnage
+from minmodkg.models_v2.kgrel.user import is_system_user
 from minmodkg.typing import InternalID
 
 router = APIRouter(tags=["mineral_sites"])

@@ -9,8 +9,9 @@ import httpx
 import orjson
 import typer
 from minmodkg.api.internal.admin import create_user_priv
-from minmodkg.api.models.db import create_db_and_tables, get_session
-from minmodkg.api.models.user import UserCreate
+from minmodkg.api.models.public_user import PublicCreateUser
+from minmodkg.models_v2.kgrel.base import create_db_and_tables, get_rel_session
+from minmodkg.models_v2.kgrel.user import User
 from minmodkg.transformations import make_site_uri
 from slugify import slugify
 from tqdm import tqdm
@@ -29,9 +30,15 @@ def user(
 ):
     create_db_and_tables()
 
-    with contextmanager(get_session)() as session:
+    with get_rel_session() as session:
         create_user_priv(
-            UserCreate(username=username, name=name, email=email, password=password),
+            PublicCreateUser(
+                username=username,
+                name=name,
+                email=email,
+                role="user",
+                password=password,
+            ),
             session,
         )
 

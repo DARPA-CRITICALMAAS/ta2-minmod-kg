@@ -112,7 +112,7 @@ services:
         docker run --name {ID}
         -d -p {PORT}:5432
         -v {DB_DIR}:/database
-        --shm-size=2G
+        --shm-size=1G
         --network=minmod
         --network-alias=kg-postgres
         minmod-postgres
