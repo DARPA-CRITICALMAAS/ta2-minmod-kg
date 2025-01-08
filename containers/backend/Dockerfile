@@ -18,6 +18,8 @@ ARG UID=1000
 ARG GID=1000
 
 RUN groupadd -f -g $GID criticalmaas && useradd -ms /bin/bash criticalmaas -u $UID -g $GID
+# add user to docker group
+RUN usermod -aG docker criticalmaas
 
 USER criticalmaas
 
@@ -34,3 +36,5 @@ RUN cd /home/criticalmaas/kg && pip install .
 
 ADD --chown=criticalmaas:criticalmaas minmodkg /home/criticalmaas/kg/minmodkg
 ADD --chown=criticalmaas:criticalmaas extractors /home/criticalmaas/kg/extractors
+
+RUN cd /home/criticalmaas/kg && pip install .

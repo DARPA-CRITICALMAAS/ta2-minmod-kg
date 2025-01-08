@@ -32,14 +32,6 @@ services:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
     shm_size: 1G
-  etl:
-    image: minmod
-    build:
-      context: .
-      dockerfile: containers/etl/Dockerfile
-      args:
-        UID: ${USER_ID}
-        GID: ${GROUP_ID}
   nginx:
     image: minmod-nginx
     build:
@@ -53,8 +45,14 @@ services:
       - minmod
     cap_add:
       - NET_BIND_SERVICE
-  api:
-    image: minmod
+  backend:
+    image: minmod-backend
+    build:
+      context: .
+      dockerfile: containers/backend/Dockerfile
+      args:
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
     ports:
       - "8000:8000"
     networks:
@@ -62,7 +60,9 @@ services:
     environment:
       - CFG_FILE=/home/criticalmaas/config/config.yml
     volumes:
-      - ${CFG_DIR}:/home/criticalmaas/config
+      - type: bind
+        source: ${CFG_FILE}
+        target: /home/criticalmaas/config/config.yml
     command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
   dashboard:
     image: toan2/minmod-dashboard
