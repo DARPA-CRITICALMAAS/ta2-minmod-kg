@@ -31,7 +31,7 @@ services:
       args:
         UID: ${USER_ID}
         GID: ${GROUP_ID}
-    shm_size: 1G
+    shm_size: 2G
   etl:
     image: minmod
     build:
