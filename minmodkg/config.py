@@ -20,7 +20,7 @@ MINMOD_KG_CLSPATH = cfg["triplestore"]["classpath"]
 MINMOD_KG_CLSARGS = cfg["triplestore"]["args"]
 MINMOD_NS_CFG = cfg["namespace"]
 
-# for minmod KG views
+# for minmod KG rel
 MINMOD_KGREL_DB = cfg["kgrel"]
 MINMOD_DEBUG = os.environ.get("MINMOD_DEBUG", "0") == "1"
 
@@ -33,13 +33,6 @@ while API_PREFIX.endswith("/"):
 
 while LOD_PREFIX.endswith("/"):
     LOD_PREFIX = LOD_PREFIX[:-1]
-
-# for databases
-DBFILE = Path(cfg["dbfile"])
-if not DBFILE.is_absolute():
-    # this is a relative path to the config file
-    DBFILE = CFG_FILE.parent / DBFILE
-DBFILE.parent.mkdir(parents=True, exist_ok=True)
 
 # for login/security
 SECRET_KEY = cfg["secret_key"]

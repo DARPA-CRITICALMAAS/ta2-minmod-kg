@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from minmodkg.api.internal import admin
-from minmodkg.api.models.db import create_db_and_tables
 from minmodkg.api.routers import (
     dedup_mineral_site,
     lod,
@@ -15,6 +14,7 @@ from minmodkg.api.routers import (
     stats,
 )
 from minmodkg.config import API_PREFIX, LOD_PREFIX
+from minmodkg.models_v2.kgrel.base import create_db_and_tables
 
 
 @asynccontextmanager

@@ -10,7 +10,6 @@ from uuid import uuid4
 from drepr.main import convert
 from drepr.models.resource import ResourceDataObject
 from libactor.cache import BackendFactory, cache
-from minmodkg.api.models.user import UserBase
 from minmodkg.misc.rdf_store import norm_literal, norm_uriref
 from minmodkg.misc.utils import file_ident
 from minmodkg.models.base import MinModRDFModel, MinModRDFQueryBuilder
@@ -18,6 +17,7 @@ from minmodkg.models.candidate_entity import CandidateEntity
 from minmodkg.models.location_info import LocationInfo
 from minmodkg.models.mineral_inventory import MineralInventory
 from minmodkg.models.reference import Reference
+from minmodkg.models_v2.kgrel.user import User
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import IRI, InternalID, Triple
 from pydantic import Field
@@ -219,7 +219,7 @@ WHERE {
         )
         return triples
 
-    def update_derived_data(self, user: UserBase):
+    def update_derived_data(self, user: User):
         self.snapshot_id = str(uuid4()).replace("-", "")
         self.modified_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         self.created_by = [user.get_uri()]

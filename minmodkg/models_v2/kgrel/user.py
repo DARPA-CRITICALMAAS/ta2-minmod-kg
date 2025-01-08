@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
 from enum import Enum
-from hashlib import sha256
-from typing import Literal, Optional
-from uuid import uuid4
+from typing import Literal
 
 import bcrypt
-from sqlmodel import Field, SQLModel, String
+from minmodkg.models_v2.kgrel.base import Base
+from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
 class Role(str, Enum):
@@ -16,11 +14,14 @@ class Role(str, Enum):
     system = "system"
 
 
-class UserBase(SQLModel):
-    username: str = Field(max_length=100, primary_key=True)
-    name: str
-    email: str
-    role: Literal["admin", "user", "system"] = Field(default="user", sa_type=String)
+class User(MappedAsDataclass, Base):
+    __tablename__ = "user"
+
+    username: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    email: Mapped[str] = mapped_column(unique=True)
+    password: Mapped[bytes] = mapped_column()
+    role: Mapped[Literal["admin", "user", "system"]] = mapped_column(default=Role.user)
 
     def get_uri(self):
         if self.role == Role.system:
@@ -30,32 +31,15 @@ class UserBase(SQLModel):
         assert self.role == Role.admin, self.role
         return f"https://minmod.isi.edu/users/a/{self.username}"
 
-
-class User(UserBase, table=True):
-    password: bytes = Field(max_length=64)
-
     def is_system(self):
         return self.role == Role.system
-
-    def encrypt_password(self):
-        self.password = bcrypt.hashpw(self.password, bcrypt.gensalt())
 
     def verify_password(self, password: str):
         return bcrypt.checkpw(password.encode(), self.password)
 
-
-class UserPublic(UserBase):
-    uri: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserUpdate(UserBase):
-    name: Optional[str]
-    email: Optional[str]
-    password: Optional[str]
+    @staticmethod
+    def encrypt_password(password: str):
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
 
 def is_system_user(created_by: str):

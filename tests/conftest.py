@@ -11,16 +11,16 @@ import minmodkg.models_v2.kgrel.base
 import pytest
 from fastapi.testclient import TestClient
 from minmodkg import config
-from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.main import app
-from minmodkg.api.models.db import Session, UserCreate, create_db_and_tables, engine
 from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
 from minmodkg.models.base import MINMOD_KG
+from minmodkg.models_v2.kgrel.user import User
 from rdflib import Graph
 from sqlalchemy import Engine
+from sqlalchemy.orm import Session
 from timer import Timer
 
 
@@ -29,48 +29,29 @@ def resource_dir():
     return Path(__file__).parent / "resources"
 
 
-@pytest.fixture(scope="session")
-def user1() -> UserCreate:
-    return UserCreate(
+@pytest.fixture(scope="class")
+def user1() -> User:
+    return User(
         username="admin",
         name="Administrator",
         email="admin@example.com",
-        password="admin123@!",
+        password=User.encrypt_password("admin123@!"),
     )
 
 
-@pytest.fixture(scope="session")
-def user2() -> UserCreate:
-    return UserCreate(
+@pytest.fixture(scope="class")
+def user2() -> User:
+    return User(
         username="tester",
         name="Tester",
         email="tester@example.com",
-        password="tester123@!",
+        password=User.encrypt_password("tester123@!"),
     )
 
 
-@pytest.fixture(scope="session")
-def user1_uri(user1: UserCreate):
-    return user1.get_uri()
-
-
-@pytest.fixture(scope="session")
-def user2_uri(user2: UserCreate):
-    return user2.get_uri()
-
-
-@pytest.fixture(scope="session")
-def db(user1: UserCreate, user2: UserCreate):
-    create_db_and_tables()
-    with Session(engine) as session:
-        create_user_priv(
-            user1,
-            session,
-        )
-        create_user_priv(
-            user2,
-            session,
-        )
+@pytest.fixture(scope="class")
+def users(user1: User, user2: User):
+    return [user1, user2]
 
 
 @pytest.fixture(scope="session")
@@ -162,21 +143,24 @@ def kg(resource_dir: Path, kg_singleton: TripleStore):
 
 
 @pytest.fixture(scope="class")
-def kgrel(resource_dir: Path, kgrel_singleton: Engine):
-    with kgrel_singleton.connect() as conn:
+def kgrel(resource_dir: Path, kgrel_singleton: Engine, users: list[User]):
+    with Session(kgrel_singleton, expire_on_commit=False) as session:
         for tbl in reversed(minmodkg.models_v2.kgrel.base.Base.metadata.sorted_tables):
-            conn.execute(tbl.delete())
+            session.execute(tbl.delete())
+        session.add_all(users)
+        session.commit()
+
     yield kgrel_singleton
 
 
 @pytest.fixture(scope="class")
-def client(kg):
+def client(kg, kgrel):
     with TestClient(app) as client:
         yield client
 
 
 @pytest.fixture(scope="class")
-def auth_client(db, user1):
+def auth_client(kgrel, user1):
     access_token = jwt.encode(
         {
             "username": user1.username,
@@ -193,7 +177,7 @@ def auth_client(db, user1):
 
 
 @pytest.fixture(scope="class")
-def auth_client_2(db, user2):
+def auth_client_2(kgrel, user2):
     access_token = jwt.encode(
         {
             "username": user2.username,

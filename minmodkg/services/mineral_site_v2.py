@@ -4,10 +4,10 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Iterable, Optional, Sequence
 
-from minmodkg.api.models.user import UserBase
 from minmodkg.models_v2.kgrel.base import engine
 from minmodkg.models_v2.kgrel.event import EventLog
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
 from sqlalchemy import Engine, delete, exists, select, update
@@ -49,7 +49,7 @@ class MineralSiteService:
                 session.bulk_save_objects([x for lst in batch_invs for x in lst])
                 session.commit()
 
-    def create(self, user: UserBase, site: MineralSite):
+    def create(self, user: User, site: MineralSite):
         """Create a mineral site"""
         self._update_derived_data(site, user)
         with Session(self.engine, expire_on_commit=False) as session:
@@ -64,7 +64,7 @@ class MineralSiteService:
             )
             session.commit()
 
-    def update(self, user: UserBase, site: MineralSite):
+    def update(self, user: User, site: MineralSite):
         self._update_derived_data(site, user)
         with Session(self.engine, expire_on_commit=False) as session:
             # TODO: improve me! -- should this be done outside?
@@ -164,7 +164,7 @@ class MineralSiteService:
                 dms2sites[site.dedup_site_id].append(site)
             return dms2sites
 
-    def _update_derived_data(self, site: MineralSite, user: UserBase):
+    def _update_derived_data(self, site: MineralSite, user: User):
         site.modified_at = datetime.now(timezone.utc)
         site.created_by = [user.get_uri()]
         return site

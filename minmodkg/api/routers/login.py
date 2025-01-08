@@ -5,10 +5,10 @@ from typing import Annotated
 
 import jwt
 from fastapi import APIRouter, Body, HTTPException, Response, status
-from minmodkg.api.dependencies import CurrentUserDep
-from minmodkg.api.models.db import SessionDep
-from minmodkg.api.models.user import User, UserPublic, get_username
+from minmodkg.api.dependencies import CurrentUserDep, RelSessionDep
+from minmodkg.api.models.public_user import PublicUser
 from minmodkg.config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, SECRET_KEY
+from minmodkg.models_v2.kgrel.user import User, get_username
 from sqlmodel import col, select
 
 router = APIRouter(tags=["login"])
@@ -16,7 +16,7 @@ router = APIRouter(tags=["login"])
 
 @router.post("/login")
 def login(
-    session: SessionDep,
+    session: RelSessionDep,
     response: Response,
     username: Annotated[str, Body()],
     password: Annotated[str, Body()],
@@ -48,17 +48,15 @@ def login(
 @router.get("/users/find_by_ids")
 def get_users_by_ids(
     user_uris: Annotated[list[str], Body(embed=True)],
-    session: SessionDep,
-):
+    session: RelSessionDep,
+) -> list[PublicUser]:
     statement = select(User).where(
-        col(User.username).in_([get_username(uri) for uri in user_uris])
+        User.username.in_([get_username(uri) for uri in user_uris])
     )
-    output = session.exec(statement)
-    return output
+    output = session.execute(statement).scalars().all()
+    return [PublicUser.from_kgrel(u) for u in output]
 
 
-@router.get("/whoami", response_model=UserPublic)
+@router.get("/whoami")
 def whoami(user: CurrentUserDep):
-    output = user.model_dump()
-    output["uri"] = user.get_uri()
-    return output
+    return PublicUser.from_kgrel(user)

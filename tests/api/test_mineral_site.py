@@ -6,27 +6,23 @@ from time import sleep
 import pytest
 from fastapi.testclient import TestClient
 from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
-from minmodkg.api.models.user import UserCreate
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
-from minmodkg.models_v2.inputs.mineral_site import MineralSite
 from minmodkg.models_v2.inputs.reference import Document, Reference
+from minmodkg.models_v2.kgrel.user import User
 from minmodkg.transformations import make_site_uri
-from rdflib import RDF, RDFS
-from rdflib import Literal as RDFLiteral
-from rdflib import Namespace, URIRef
 from shapely import Point
-from shapely.wkt import dumps, loads
+from shapely.wkt import loads
 from tests.utils import check_req
 
 
 class TestMineralSiteData:
     @pytest.fixture(autouse=True)
-    def site1_(self, user1: UserCreate):
+    def site1_(self, user1: User):
         self.site1_commodity = "Q578"
         self.site1 = InputPublicMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
@@ -79,7 +75,7 @@ class TestMineralSiteData:
         }
 
     @pytest.fixture(autouse=True)
-    def site2_(self, user2: UserCreate):
+    def site2_(self, user2: User):
         self.site2_commodity = "Q569"
         self.site2 = InputPublicMineralSite(
             source_id="database::https://mrdata.usgs.gov/mrds",
@@ -180,7 +176,7 @@ class TestMineralSite(TestMineralSiteData):
         assert resp.status_code == 403
 
     @pytest.mark.skip
-    def test_get_site_changes(self, auth_client, kg: TripleStore, user1: UserCreate):
+    def test_get_site_changes(self, auth_client, kg: TripleStore, user1: User):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
         self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(

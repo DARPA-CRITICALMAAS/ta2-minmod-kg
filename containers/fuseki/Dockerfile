@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jdk
 
 ARG UID=1000
 ARG GID=1000
-ARG MEMORY=12G
+ARG MEMORY=4G
 
 # custom code for eclipse-temurin:21-jdk to free up 1000:1000
 RUN userdel ubuntu

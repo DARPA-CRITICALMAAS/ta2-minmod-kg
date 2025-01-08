@@ -5,7 +5,6 @@ from typing import Callable, ContextManager
 from uuid import uuid4
 
 from minmodkg.api.dependencies import get_snapshot_id
-from minmodkg.api.models.user import UserBase
 from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.utils import norm_literal
