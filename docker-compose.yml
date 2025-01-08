@@ -45,7 +45,7 @@ services:
       - minmod
     cap_add:
       - NET_BIND_SERVICE
-  backend:
+  api:
     image: minmod-backend
     build:
       context: .
