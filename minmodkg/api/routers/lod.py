@@ -312,7 +312,7 @@ def render_dict_html(
         if not isinstance(d, (dict, list)):
             return H.p(d)
         if isinstance(d, list):
-            return H.table(_class="table")(*[H.tr(make_tree(x)) for x in d])
+            return H.table(_class="table")(*[H.tr(H.td(make_tree(x))) for x in d])
         children = []
         for k, v in d.items():
             children.append(
