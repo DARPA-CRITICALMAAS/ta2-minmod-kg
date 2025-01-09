@@ -7,6 +7,7 @@ from typing import Annotated
 
 import httpx
 import orjson
+import serde.csv
 import serde.json
 import typer
 from minmodkg.api.internal.admin import create_user_priv
@@ -52,8 +53,35 @@ def load_user(
 
     users = [User.from_dict(u) for u in serde.json.deser(input_file)]
     with get_rel_session() as session:
-        session.add_all(users)
+        for u in users:
+            session.add(users)
         session.commit()
+
+
+@app.command()
+def batch_add_users(
+    input_file: Path,
+    new_users_file: Path,
+):
+    if input_file.exists():
+        raw_users = serde.json.deser(input_file)
+    else:
+        raw_users = []
+
+    new_users = serde.csv.deser(new_users_file, deser_as_record=True)
+    for user in new_users:
+        raw_users.append(
+            User(
+                username=user["username"],
+                name=user["name"],
+                email=user["email"],
+                password=User.encrypt_password(user["password"]),
+                role="user",
+            ).to_dict()
+        )
+
+    serde.json.ser(raw_users, input_file.parent / (input_file.name + ".new"), indent=2)
+    os.rename(input_file.parent / (input_file.name + ".new"), input_file)
 
 
 @app.command()
