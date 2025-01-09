@@ -41,12 +41,12 @@ class User(MappedAsDataclass, Base):
     def encrypt_password(password: str):
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-    def to_dict(self):
+    def to_dict(self, encode_pwd: bool = True):
         return {
             "username": self.username,
             "name": self.name,
             "email": self.email,
-            "password": self.password.hex(),
+            "password": self.password.hex() if encode_pwd else self.password,
             "role": self.role,
         }
 

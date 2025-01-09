@@ -54,7 +54,7 @@ def load_user(
 
     users = [User.from_dict(u) for u in serde.json.deser(input_file)]
     with get_rel_session() as session:
-        stmt = upsert(User).values([u.to_dict() for u in users])
+        stmt = upsert(User).values([u.to_dict(encode_pwd=False) for u in users])
         stmt = stmt.on_conflict_do_update(
             index_elements=[User.username],
             set_={
