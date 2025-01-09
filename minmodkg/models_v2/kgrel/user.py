@@ -41,6 +41,25 @@ class User(MappedAsDataclass, Base):
     def encrypt_password(password: str):
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
+    def to_dict(self):
+        return {
+            "username": self.username,
+            "name": self.name,
+            "email": self.email,
+            "password": self.password.hex(),
+            "role": self.role,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            username=d["username"],
+            name=d["name"],
+            email=d["email"],
+            password=bytes.fromhex(d["password"]),
+            role=d["role"],
+        )
+
 
 def is_system_user(created_by: str):
     return created_by.startswith("https://minmod.isi.edu/users/s/")

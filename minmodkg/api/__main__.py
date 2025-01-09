@@ -7,6 +7,7 @@ from typing import Annotated
 
 import httpx
 import orjson
+import serde.json
 import typer
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.models.public_user import PublicCreateUser
@@ -41,6 +42,45 @@ def user(
             ),
             session,
         )
+
+
+@app.command()
+def load_user(
+    input_file: Path,
+):
+    create_db_and_tables()
+
+    users = [User.from_dict(u) for u in serde.json.deser(input_file)]
+    with get_rel_session() as session:
+        session.add_all(users)
+        session.commit()
+
+
+@app.command()
+def add_user(
+    input_file: Path,
+    username: Annotated[str, typer.Option("-u", help="Username")],
+    name: Annotated[str, typer.Option("-n", help="Name")],
+    email: Annotated[str, typer.Option("-e", help="Email")],
+    password: Annotated[
+        str, typer.Option(prompt=True, confirmation_prompt=True, hide_input=True)
+    ],
+):
+    user = User(
+        username=username,
+        name=name,
+        email=email,
+        password=User.encrypt_password(password),
+        role="user",
+    )
+
+    if input_file.exists():
+        raw_users = serde.json.deser(input_file)
+    else:
+        raw_users = []
+    raw_users.append(user.to_dict())
+    serde.json.ser(raw_users, input_file.parent / (input_file.name + ".new"), indent=2)
+    os.rename(input_file.parent / (input_file.name + ".new"), input_file)
 
 
 @app.command()
@@ -103,4 +143,5 @@ def upload_mineral_sites(
 
 
 if __name__ == "__main__":
+    app()
     app()
