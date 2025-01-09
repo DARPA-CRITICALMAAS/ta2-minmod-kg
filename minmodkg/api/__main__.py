@@ -78,8 +78,14 @@ def batch_add_users(
     else:
         raw_users = []
 
+    exist_users = {u["username"] for u in raw_users}
+
     new_users = serde.csv.deser(new_users_file, deser_as_record=True)
     for user in new_users:
+        if user["username"] in exist_users:
+            raise ValueError(f"User {user['username']} already exists")
+
+        exist_users.add(user["username"])
         raw_users.append(
             User(
                 username=user["username"],
@@ -116,6 +122,9 @@ def add_user(
         raw_users = serde.json.deser(input_file)
     else:
         raw_users = []
+    exist_users = {u["username"] for u in raw_users}
+    if user.username in exist_users:
+        raise ValueError(f"User {user.username} already exists")
     raw_users.append(user.to_dict())
     serde.json.ser(raw_users, input_file.parent / (input_file.name + ".new"), indent=2)
     os.rename(input_file.parent / (input_file.name + ".new"), input_file)
