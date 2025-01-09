@@ -137,6 +137,7 @@ def clear_users():
     create_db_and_tables()
     with get_rel_session() as session:
         session.execute(delete(User))
+        session.commit()
 
 
 @app.command()
