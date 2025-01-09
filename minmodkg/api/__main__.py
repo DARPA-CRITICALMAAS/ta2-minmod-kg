@@ -16,7 +16,9 @@ from minmodkg.models_v2.kgrel.base import create_db_and_tables, get_rel_session
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.transformations import make_site_uri
 from slugify import slugify
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert as upsert
+from sqlmodel import select
 from tqdm import tqdm
 
 app = typer.Typer(pretty_exceptions_short=True, pretty_exceptions_enable=False)
@@ -128,6 +130,13 @@ def add_user(
     raw_users.append(user.to_dict())
     serde.json.ser(raw_users, input_file.parent / (input_file.name + ".new"), indent=2)
     os.rename(input_file.parent / (input_file.name + ".new"), input_file)
+
+
+@app.command()
+def clear_users():
+    create_db_and_tables()
+    with get_rel_session() as session:
+        session.execute(delete(User))
 
 
 @app.command()
