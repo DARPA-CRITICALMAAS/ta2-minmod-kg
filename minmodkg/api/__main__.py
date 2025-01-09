@@ -53,8 +53,8 @@ def load_user(
 
     users = [User.from_dict(u) for u in serde.json.deser(input_file)]
     with get_rel_session() as session:
-        for u in users:
-            session.add(users)
+        for u in tqdm(users):
+            session.add(u)
         session.commit()
 
 
