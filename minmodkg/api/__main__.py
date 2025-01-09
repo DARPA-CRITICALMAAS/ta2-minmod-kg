@@ -16,6 +16,7 @@ from minmodkg.models_v2.kgrel.base import create_db_and_tables, get_rel_session
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.transformations import make_site_uri
 from slugify import slugify
+from sqlalchemy.dialects.postgresql import insert as upsert
 from tqdm import tqdm
 
 app = typer.Typer(pretty_exceptions_short=True, pretty_exceptions_enable=False)
@@ -53,8 +54,20 @@ def load_user(
 
     users = [User.from_dict(u) for u in serde.json.deser(input_file)]
     with get_rel_session() as session:
-        for u in tqdm(users):
-            session.add(u)
+        stmt = (
+            upsert(User)
+            .values([u.to_dict() for u in users])
+            .on_conflict_do_update(
+                index_elements=[User.username],
+                set_={
+                    User.name: upsert.excluded.name,
+                    User.email: upsert.excluded.email,
+                    User.password: upsert.excluded.password,
+                    User.role: upsert.excluded.role,
+                },
+            )
+        )
+        session.execute(stmt)
         session.commit()
 
 
