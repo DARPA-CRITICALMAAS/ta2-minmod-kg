@@ -72,7 +72,6 @@ class DedupMineralSitePublic(BaseModel):
             _tmp_deposit_types.values()
         )
 
-        # TODO: get the source score
         ranked_site_and_scores = [
             (site, min(site_score[0], 1.0))
             for site, site_score in sorted(
@@ -80,7 +79,7 @@ class DedupMineralSitePublic(BaseModel):
                     (
                         site,
                         get_ms_source_score(
-                            None,
+                            site.source_score,
                             site.created_by,
                             site.modified_at,
                             default_source_score,

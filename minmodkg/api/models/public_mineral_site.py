@@ -146,11 +146,13 @@ class InputPublicMineralSite(InputMineralSite):
         self,
         material_form: dict[str, float],
         crs_names: dict[str, str],
+        source_score: dict[str, float],
     ) -> MineralSite:
         site = MineralSite.from_raw_site(
             self,
             material_form=material_form,
             crs_names=crs_names,
+            source_score=source_score,
         )
         if self.dedup_site_uri is not None:
             site.dedup_site_id = MINMOD_NS.md.id(self.dedup_site_uri)

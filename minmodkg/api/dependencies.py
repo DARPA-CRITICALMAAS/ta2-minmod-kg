@@ -10,7 +10,7 @@ from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models_v2.kgrel.base import get_rel_session
 from minmodkg.models_v2.kgrel.user import User
-from minmodkg.services.mineral_site_v2 import MineralSiteService
+from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
 from sqlalchemy.orm import Session
 

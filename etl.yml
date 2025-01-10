@@ -27,10 +27,6 @@ services:
     classpath: minmodkg.etl.source.SourceService
     args:
       parallel: true
-  - name: kg.views.mineral_site
-    classpath: minmodkg.etl.mineral_site_view.MineralSiteViewService
-    args:
-      parallel: true
   - name: copy
     classpath: statickg.services.copy.CopyService
   - name: version
@@ -44,7 +40,7 @@ services:
   - name: kgrel.data.mineral_site
     classpath: minmodkg.etl.mineral_site.MineralSiteETLService
     args:
-      parallel: true
+      parallel: false
   - name: kg.loader.fuseki
     classpath: minmodkg.etl.fuseki.FusekiLoaderService
     args:
@@ -144,12 +140,6 @@ pipeline:
       output:
         base: ::DATA_DIR::same-as/
         format: "{fileparent}_{filestem}.json"
-  - service: kgrel.data.mineral_site
-    args:
-      input: ::REPO::data/mineral-sites/*/*/*.json
-      output: ::DATA_DIR::relation-mineral-sites
-      predefined_entity_dir: ::DATA_DIR::predefined-entities/
-      same_as_group: ::DATA_DIR::same-as/final/groups.json
   - service: kg.data.source_mineral_site
     args:
       input: ::REPO::data/mineral-sites/*/*/*.json
@@ -157,15 +147,14 @@ pipeline:
         base: ::DATA_DIR::mineral-site-sources
         format: "{filegrandparent}/{fileparent}_{filestem}.json"
       predefined_entities: ::DATA_DIR::predefined-entities/
-      default_source_score: 0.5
-  # - service: kg.views.mineral_site
-  #   args:
-  #     predefined_entities: ::DATA_DIR::predefined-entities/
-  #     same_as_group: ::DATA_DIR::same-as/final/groups.json
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::view-mineral-sites/
-  #       format: "{filegrandparent}/{fileparent}_{filestem}.json"
+  - service: kgrel.data.mineral_site
+    args:
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output: ::DATA_DIR::relation-mineral-sites
+      source_file: ::DATA_DIR::mineral-site-sources/final/sources.json
+      material_form_file: ::DATA_DIR::predefined-entities/material_form.ttl
+      epsg_file: ::DATA_DIR::predefined-entities/epsg.ttl
+      same_as_group: ::DATA_DIR::same-as/final/groups.json
   - service: copy
     args:
       input: ::CFG_DIR::schema/ontology.ttl

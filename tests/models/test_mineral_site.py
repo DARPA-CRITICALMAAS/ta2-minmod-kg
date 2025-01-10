@@ -6,6 +6,7 @@ import serde.json
 from minmodkg.api.routers.mineral_site import (
     crs_uri_to_name,
     material_form_uri_to_conversion,
+    source_uri_to_score,
 )
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from sqlalchemy import select
@@ -17,11 +18,14 @@ class TestMineralSite:
     def test_create_mineral_site(self, resource_dir: Path, kg, kgrel):
         crss = crs_uri_to_name(None)
         material_form = material_form_uri_to_conversion(None)
+        source_score = source_uri_to_score(None)
 
         id2site = {}
         for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
             for raw_site in serde.json.deser(file):
-                site = MineralSite.from_raw_site(raw_site, material_form, crss)
+                site = MineralSite.from_raw_site(
+                    raw_site, material_form, crss, source_score
+                )
                 id2site[site.site_id] = site
                 with Session(kgrel, expire_on_commit=False) as session:
                     session.add(site)

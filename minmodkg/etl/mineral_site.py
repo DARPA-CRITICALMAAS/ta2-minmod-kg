@@ -10,9 +10,9 @@ import xxhash
 from joblib import delayed
 from libactor.cache import cache
 from minmodkg.models.base import MINMOD_NS
+from minmodkg.models.source import Source
 from minmodkg.models_v2.inputs.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
-from minmodkg.services.mineral_site_v2 import MineralSiteService
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from rdflib import RDFS, Graph
@@ -33,7 +33,9 @@ class MineralSiteETLServiceConstructArgs(TypedDict):
 
 
 class MineralSiteETLServiceInvokeArgs(TypedDict):
-    predefined_entity_dir: RelPath
+    source_file: RelPath
+    material_form_file: RelPath
+    epsg_file: RelPath
     input: RelPath | list[RelPath]
     output: RelPath
     same_as_group: RelPath
@@ -201,11 +203,16 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         merged_outdir = outdir / "merged"
         merged_outdir.mkdir(parents=True, exist_ok=True)
 
-        predefined_entity_dir = args["predefined_entity_dir"].get_path()
+        material_form_file = args["material_form_file"].get_path()
+        epsg_file = args["epsg_file"].get_path()
+        source_file = args["source_file"].get_path()
+
         it: Iterable = get_parallel_executor(self.parallel)(
             delayed(MergeFn.exec)(
                 self.workdir,
-                predefined_entity_dir,
+                material_form_file=material_form_file,
+                epsg_file=epsg_file,
+                source_file=source_file,
                 infiles=infiles,
                 sameas_file=same_as_files[out_relpath],
                 outdir=merged_outdir / out_relpath,
@@ -301,35 +308,59 @@ class MergeFn:
 
     instances = {}
 
-    def __init__(self, workdir: Path, predefined_entity_dir: Path):
+    def __init__(
+        self,
+        workdir: Path,
+        material_form_file: Path,
+        epsg_file: Path,
+        source_file: Path,
+    ):
         self.workdir = workdir
 
         g = Graph()
-        g.parse(predefined_entity_dir / "material_form.ttl", format="ttl")
+        g.parse(material_form_file, format="ttl")
         self.material_form_conversion = {
             str(subj): float(obj.value)  # type: ignore
             for subj, obj in g.subject_objects(MINMOD_NS.mo.uri("conversion"))
         }
 
         g = Graph()
-        g.parse(predefined_entity_dir / "epsg.ttl", format="ttl")
+        g.parse(epsg_file, format="ttl")
         self.epsg_name = {
             str(subj): str(obj.value)  # type: ignore
             for subj, obj in g.subject_objects(RDFS.label)
         }
 
+        self.source_score = {
+            (s := Source.from_dict(d)).uri: s.score
+            for d in serde.json.deser(source_file)
+        }
+
     @staticmethod
-    def get_instance(workdir: Path, predefined_entity_dir: Path) -> MergeFn:
+    def get_instance(
+        workdir: Path, material_form_file: Path, epsg_file: Path, source_file: Path
+    ) -> MergeFn:
         if workdir not in MergeFn.instances:
-            MergeFn.instances[workdir] = MergeFn(workdir, predefined_entity_dir)
+            MergeFn.instances[workdir] = MergeFn(
+                workdir, material_form_file, epsg_file, source_file
+            )
         return MergeFn.instances[workdir]
 
     @classmethod
-    def exec(cls, workdir: Path, predefined_entity_dir: Path, **kwargs) -> Path:
-        return cls.get_instance(workdir, predefined_entity_dir).invoke(**kwargs)
+    def exec(
+        cls,
+        workdir: Path,
+        material_form_file: Path,
+        epsg_file: Path,
+        source_file: Path,
+        **kwargs,
+    ) -> Path:
+        return cls.get_instance(
+            workdir, material_form_file, epsg_file, source_file
+        ).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="merge-v101.sqlite"),
+        backend=FileSqliteBackend.factory(filename="merge-v104.sqlite"),
         cache_ser_args={
             "infiles": lambda lst: orjson.dumps(
                 sorted(x.get_ident() for x in lst)
@@ -360,7 +391,10 @@ class MergeFn:
                 site.merge_mut(MineralSite.from_dict(raw_site))
 
             norm_site = RelMineralSite.from_raw_site(
-                site.to_dict(), self.material_form_conversion, self.epsg_name
+                site.to_dict(),
+                self.material_form_conversion,
+                self.epsg_name,
+                self.source_score,
             )
             norm_site.dedup_site_id = dedup_map[norm_site.site_id]
             output.append(norm_site.to_dict())

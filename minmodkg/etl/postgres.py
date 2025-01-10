@@ -7,7 +7,7 @@ import serde.json
 from minmodkg.config import MINMOD_KGREL_DB
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
-from minmodkg.services.mineral_site_v2 import MineralSiteService
+from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import create_engine
 from tqdm import tqdm
 

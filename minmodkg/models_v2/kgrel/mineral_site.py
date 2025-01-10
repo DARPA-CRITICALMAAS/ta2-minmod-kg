@@ -23,6 +23,7 @@ from minmodkg.models_v2.inputs.reference import (
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
 from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
@@ -37,6 +38,7 @@ class MineralSite(MappedAsDataclass, Base):
         Annotated[InternalID, "Id of the mineral site that this site is the same as"]
     ] = mapped_column(index=True)
     source_id: Mapped[URN] = mapped_column()
+    source_score: Mapped[Optional[float]] = mapped_column()
     record_id: Mapped[str] = mapped_column()
     name: Mapped[str | None] = mapped_column()
     aliases: Mapped[list[str]] = mapped_column(JSON)
@@ -64,6 +66,7 @@ class MineralSite(MappedAsDataclass, Base):
         raw_site: dict | InMineralSite,
         material_form: dict[str, float],
         crs_names: dict[str, str],
+        source_score: dict[IRI, float],
     ) -> MineralSite:
         site = (
             InMineralSite.from_dict(raw_site)
@@ -135,6 +138,7 @@ class MineralSite(MappedAsDataclass, Base):
             site_id=site.id,
             dedup_site_id=MineralSite.get_dedup_id((site.id,)),
             source_id=site.source_id,
+            source_score=source_score.get(get_source_uri(site.source_id)),
             record_id=str(site.record_id),
             name=site.name,
             aliases=site.aliases,
@@ -194,6 +198,7 @@ class MineralSite(MappedAsDataclass, Base):
                 ("site_id", self.site_id),
                 ("dedup_site_id", self.dedup_site_id),
                 ("source_id", self.source_id),
+                ("source_score", self.source_score),
                 ("record_id", self.record_id),
                 ("name", self.name),
                 ("aliases", self.aliases),
@@ -222,6 +227,7 @@ class MineralSite(MappedAsDataclass, Base):
             site_id=d["site_id"],
             dedup_site_id=d["dedup_site_id"],
             source_id=d["source_id"],
+            source_score=d.get("source_score"),
             record_id=d["record_id"],
             name=d.get("name"),
             aliases=d.get("aliases", []),

@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Body, HTTPException, Query
 from minmodkg.api.dependencies import norm_commodity
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
-from minmodkg.services.mineral_site_v2 import MineralSiteService
+from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
 
 router = APIRouter(tags=["mineral_sites"])

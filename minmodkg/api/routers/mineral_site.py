@@ -13,7 +13,11 @@ from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     PublicMineralSite,
 )
-from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
+from minmodkg.api.routers.predefined_entities import (
+    get_crs,
+    get_material_forms,
+    get_sources,
+)
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
@@ -90,6 +94,7 @@ def create_site(
     new_site = create_site.to_kgrel(
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
+        source_uri_to_score(snapshot_id),
     )
 
     if mineral_site_service.contain_site_id(new_site.site_id):
@@ -113,6 +118,7 @@ def update_site(
     new_site = update_site.to_kgrel(
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
+        source_uri_to_score(snapshot_id),
     )
 
     if site_id != new_site.site_id:
@@ -139,3 +145,8 @@ def crs_uri_to_name(snapshot_id: str):
 @lru_cache(maxsize=1)
 def material_form_uri_to_conversion(snapshot_id: str):
     return {mf.uri: mf.conversion for mf in get_material_forms(snapshot_id)}
+
+
+@lru_cache(maxsize=1)
+def source_uri_to_score(snapshot_id: str):
+    return {source.uri: source.score for source in get_sources(snapshot_id)}

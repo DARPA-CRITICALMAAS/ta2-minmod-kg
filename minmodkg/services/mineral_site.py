@@ -1,142 +1,161 @@
 from __future__ import annotations
 
-from functools import lru_cache
-from typing import Callable, ContextManager
-from uuid import uuid4
+from collections import defaultdict
+from datetime import datetime, timezone
+from typing import Iterable, Optional, Sequence
 
-from minmodkg.api.dependencies import get_snapshot_id
-from minmodkg.api.models.user import UserBase
-from minmodkg.api.routers.predefined_entities import get_crs, get_material_forms
-from minmodkg.misc.rdf_store.triple_store import TripleStore
-from minmodkg.misc.utils import norm_literal
-from minmodkg.models.base import MINMOD_KG
-from minmodkg.models.dedup_mineral_site import DedupMineralSite
-from minmodkg.models.mineral_site import MineralSite
-from minmodkg.models.views.computed_mineral_site import ComputedMineralSite
-from minmodkg.typing import InternalID, Triple
-from rdflib import Graph
-from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from minmodkg.models_v2.kgrel.base import engine
+from minmodkg.models_v2.kgrel.event import EventLog
+from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.typing import InternalID
+from sqlalchemy import Engine, delete, exists, select, update
+from sqlalchemy.orm import Session, contains_eager
+from tqdm import tqdm
 
 
 class MineralSiteService:
-    def __init__(
-        self,
-        kgview_session: Callable[[], ContextManager[Session]],
-        kg: TripleStore,
-        user: UserBase,
-    ):
-        self.kgview_session = kgview_session
-        self.kg = kg
-        self.user = user
-        self.snapshot_id = get_snapshot_id()
-        self.material_form = material_form_uri_to_conversion(self.snapshot_id)
-        self.crss = crs_uri_to_name(self.snapshot_id)
 
-    def create(self, site: MineralSite, same_as: list[InternalID]):
-        """Create a mineral site and mark it as same as other sites"""
-        # update automatic values
-        site.update_derived_data(self.user)
-        if site.dedup_site_uri is None:
-            site.dedup_site_uri = DedupMineralSite.qbuilder.class_namespace.uristr(
-                DedupMineralSite.get_id([site.id])
-            )
+    def __init__(self, _engine: Optional[Engine] = None):
+        self.engine = _engine or engine
 
-        # persist the site into the view databases -- but make sure that we have a stale version
-        site_view = ComputedMineralSite.from_mineral_site(
-            site, self.material_form, self.crss
-        )
-        site_view.is_updated = False
+    def contain_site_id(self, site_id: InternalID) -> bool:
+        q = exists().where(MineralSite.site_id == site_id).select()
+        with Session(self.engine) as session:
+            return session.execute(q).scalar_one()
 
-        with self.kgview_session() as session:
+    def find_by_id(self, site_id: InternalID) -> Optional[MineralSite]:
+        query = self._select_mineral_site().where(MineralSite.site_id == site_id)
+        with Session(self.engine, expire_on_commit=False) as session:
+            site = session.execute(query).unique().scalar_one_or_none()
+            return site
+
+    def find_by_ids(self, ids: list[InternalID]) -> dict[str, MineralSite]:
+        query = self._select_mineral_site().where(MineralSite.site_id.in_(ids))
+        with Session(self.engine, expire_on_commit=False) as session:
+            sites = {site.site_id: site for site, in session.execute(query).unique()}
+            return sites
+
+    def restore(self, sites: list[MineralSite], batch_size: int = 1024):
+        with Session(self.engine) as session:
+            for i in tqdm(list(range(0, len(sites), batch_size))):
+                batch = sites[i : i + batch_size]
+                batch_invs = [site.inventory_views for site in batch]
+                session.bulk_save_objects(batch, return_defaults=True)
+                for site, invs in zip(batch, batch_invs):
+                    for inv in invs:
+                        inv.site_id = site.id
+                session.bulk_save_objects([x for lst in batch_invs for x in lst])
+                session.commit()
+
+    def create(self, user: User, site: MineralSite):
+        """Create a mineral site"""
+        self._update_derived_data(site, user)
+        with Session(self.engine, expire_on_commit=False) as session:
             session.add(site)
+            session.add(EventLog.from_site_add(site))
             session.commit()
 
-        # now save the site
-        self.kg.insert(site.to_triples())
-
-        # save the site view -- do it as in a single query
-        # as we may have a rare case where someone update the site right after we save it
-        # if that case happens, the snapshot id will be different and this update will be void
-        # keeping the data consistent
-        with self.kgview_session() as session:
+    def update(self, user: User, site: MineralSite):
+        self._update_derived_data(site, user)
+        with Session(self.engine, expire_on_commit=False) as session:
+            # TODO: improve me! -- should this be done outside?
             session.execute(
-                (
-                    update(ComputedMineralSite)
-                    .where(
-                        ComputedMineralSite.id == site_view.id,
-                        ComputedMineralSite.snapshot_id == site_view.snapshot_id,
-                    )
-                    .values(is_updated=True)
-                )
+                delete(MineralSite).where(MineralSite.site_id == site.site_id)
             )
+            session.add(site)
+            session.add(EventLog.from_site_update(site))
             session.commit()
 
-    def update(self, site: MineralSite):
-        site.update_derived_data(self.user)
-        assert site.snapshot_id is not None
-
-        with self.kgview_session() as session:
-            site_view: ComputedMineralSite = session.execute(
-                select(ComputedMineralSite).where(
-                    ComputedMineralSite.site_id == site.id
+    def update_same_as(self, groups: list[list[InternalID]]) -> list[InternalID]:
+        output = []
+        with Session(self.engine) as session:
+            for group in groups:
+                dedup_site_id = min(group)
+                session.execute(
+                    update(MineralSite)
+                    .where(MineralSite.site_id.in_(group))
+                    .values(dedup_site_id=dedup_site_id)
                 )
-            ).one()[0]
+                output.append(dedup_site_id)
+            session.add(EventLog.from_same_as_update(groups))
+            session.commit()
+        return output
 
-            with self.kg.transaction([site.uri]).transaction():
-                # we can lock the site here to prevent concurrent updates
-                # at this point, it's likely to be success, tell the view db that we are updating
-                site_view.snapshot_id = site.snapshot_id
-                site_view.is_updated = False
-                session.commit()
-
-                # now we execute the kg update
-                del_triples, add_triples = get_site_changes(
-                    current_site=MineralSite.get_graph_by_uri(site.uri),
-                    new_site=site.to_graph(),
+    def find_dedup_mineral_sites(
+        self,
+        *,
+        commodity: Optional[InternalID],
+        dedup_site_ids: Optional[Sequence[InternalID]] = None,
+    ) -> dict[InternalID, list[MineralSite]]:
+        # TODO: fix the query so we do not have to filter in python
+        # query = self._select_mineral_site()
+        # # TODO: fix the query so we do not have to filter in python
+        # # we have a problem that this query ignore sites that do not have the commodity
+        # # eventually missing sites that we should have
+        # if commodity is not None:
+        #     query = query.filter(MineralInventoryView.commodity == commodity)
+        if dedup_site_ids is not None:
+            query = (
+                select(MineralSite)
+                .join(
+                    MineralInventoryView,
+                    MineralInventoryView.site_id == MineralSite.id,
+                    isouter=True,
                 )
-                self.kg.delete_insert(del_triples, add_triples)
-
-                # now we update the view db
-                new_site_view = ComputedMineralSite.from_mineral_site(
-                    site, self.material_form, self.crss
+                .options(contains_eager(MineralSite.inventory_views))
+                .execution_options(populate_existing=True)
+                .where(MineralSite.dedup_site_id.in_(dedup_site_ids))
+            )
+        else:
+            subquery = (
+                select(MineralSite.dedup_site_id)
+                .distinct()
+                .join(
+                    MineralInventoryView, MineralInventoryView.site_id == MineralSite.id
                 )
-                new_site_view.id = site_view.id
-                session.add(new_site_view)
-                session.commit()
+                .where(MineralInventoryView.commodity == commodity)
+            ).subquery()
+            query = (
+                select(MineralSite)
+                .join(subquery, MineralSite.dedup_site_id == subquery.c.dedup_site_id)
+                .join(
+                    MineralInventoryView,
+                    MineralInventoryView.site_id == MineralSite.id,
+                    isouter=True,
+                )
+                .options(contains_eager(MineralSite.inventory_views))
+                .execution_options(populate_existing=True)
+            )
 
-    def update_same_as(self, groups: list[list[InternalID]]):
-        pass
-        # step 1: gather all objects that will be updated
-        # site_ids = set()
-        # for group in groups:
+        with Session(self.engine, expire_on_commit=False) as session:
+            sites = session.execute(query).unique().scalars().all()
+            if commodity is not None:
+                for site in sites:
+                    site.inventory_views = [
+                        inv
+                        for inv in site.inventory_views
+                        if inv.commodity == commodity
+                    ]
+            dms2sites = defaultdict(list)
+            for site in sites:
+                dms2sites[site.dedup_site_id].append(site)
+            return dms2sites
 
-        # self.kg.delete_insert()
-        # """DELETE { ?}"""
+    def _update_derived_data(self, site: MineralSite, user: User):
+        site.modified_at = datetime.now(timezone.utc)
+        site.created_by = [user.get_uri()]
+        return site
 
-
-@lru_cache(maxsize=1)
-def crs_uri_to_name(snapshot_id: str):
-    return {crs.uri: crs.name for crs in get_crs(snapshot_id)}
-
-
-@lru_cache(maxsize=1)
-def material_form_uri_to_conversion(snapshot_id: str):
-    return {mf.uri: mf.conversion for mf in get_material_forms(snapshot_id)}
-
-
-def get_site_changes(
-    current_site: Graph, new_site: Graph
-) -> tuple[list[Triple], list[Triple]]:
-    ns_manager = MINMOD_KG.ns.rdflib_namespace_manager
-    current_triples = {(s, p, norm_literal(o)) for s, p, o in current_site}
-    new_triples = {(s, p, norm_literal(o)) for s, p, o in new_site}
-    del_triples = [
-        (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
-        for s, p, o in current_triples.difference(new_triples)
-    ]
-    add_triples = [
-        (s.n3(ns_manager), p.n3(ns_manager), o.n3(ns_manager))
-        for s, p, o in new_triples.difference(current_triples)
-    ]
-    return del_triples, add_triples
+    def _select_mineral_site(self):
+        return (
+            select(MineralSite)
+            .join(
+                MineralInventoryView,
+                MineralSite.id == MineralInventoryView.site_id,
+                isouter=True,
+            )
+            .options(contains_eager(MineralSite.inventory_views))
+            .execution_options(populate_existing=True)
+        )

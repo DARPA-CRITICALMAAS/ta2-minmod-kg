@@ -146,6 +146,10 @@ class SourceService(BaseFileService[SourceServiceConstructArgs]):
         for source in id2source.values():
             triples = Source.from_dict(source).to_triples(triples)
 
+        serde.json.ser(
+            list(id2source.values()), output_fmter.outdir / "sources.json", indent=2
+        )
+
         with open(output_fmter.outdir / "sources.ttl", "w") as f:
             f.write(MINMOD_KG.prefix_part)
             for s, p, o in triples:
