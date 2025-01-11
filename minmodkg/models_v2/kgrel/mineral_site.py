@@ -25,7 +25,7 @@ from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
-from sqlalchemy import JSON
+from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
 
 
@@ -36,7 +36,7 @@ class MineralSite(MappedAsDataclass, Base):
     site_id: Mapped[InternalID] = mapped_column(unique=True)
     dedup_site_id: Mapped[
         Annotated[InternalID, "Id of the mineral site that this site is the same as"]
-    ] = mapped_column(index=True)
+    ] = mapped_column(ForeignKey("dedup_mineral_site.id"), index=True)
     source_id: Mapped[URN] = mapped_column()
     source_score: Mapped[Optional[float]] = mapped_column()
     record_id: Mapped[str] = mapped_column()

@@ -67,6 +67,16 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
     return groups
 
 
+def group_by(output: list[V], key_fn: Callable[[V], str]) -> dict[str, list[V]]:
+    groups = {}
+    for row in output:
+        val = key_fn(row)
+        if val not in groups:
+            groups[val] = []
+        groups[val].append(row)
+    return groups
+
+
 def assert_not_none(x: Optional[V]) -> V:
     assert x is not None
     return x
