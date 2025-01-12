@@ -44,9 +44,13 @@ class Location:
 
 
 @dataclass
-class LocationView:
+class GeoCoordinate:
     lat: Optional[Annotated[float, "Latitude"]] = None
     lon: Optional[Annotated[float, "Longitude"]] = None
+
+
+@dataclass
+class LocationView(GeoCoordinate):
     country: list[InternalID] = field(default_factory=list)
     state_or_province: list[InternalID] = field(default_factory=list)
 
