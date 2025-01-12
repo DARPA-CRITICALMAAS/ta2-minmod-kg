@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections import defaultdict
 from pathlib import Path
 from typing import Literal
 
@@ -19,10 +20,6 @@ from statickg.services.data_loader import (
     DataLoaderServiceInvokeArgs,
     DBInfo,
 )
-
-
-class PostgresLoaderServiceInvokeArgs(DataLoaderServiceInvokeArgs):
-    table: Literal["MineralSite", "DedupMineralSite"]
 
 
 class PostgresLoaderService(DataLoaderService):
@@ -48,7 +45,7 @@ class PostgresLoaderService(DataLoaderService):
 
     def replace_files(
         self,
-        args: PostgresLoaderServiceInvokeArgs,
+        args: DataLoaderServiceInvokeArgs,
         dbinfo: DBInfo,
         files: list[InputFile],
     ):
@@ -57,7 +54,7 @@ class PostgresLoaderService(DataLoaderService):
 
     def load_files(
         self,
-        args: PostgresLoaderServiceInvokeArgs,
+        args: DataLoaderServiceInvokeArgs,
         dbinfo: DBInfo,
         files: list[InputFile],
     ):
@@ -66,19 +63,12 @@ class PostgresLoaderService(DataLoaderService):
         self.start_service(dbinfo)
         engine = self.get_engine(dbinfo)
 
-        if args["table"] == "DedupMineralSite":
-            records = [
-                DedupMineralSite.from_dict(record)
-                for file in tqdm(files, desc="Loading files")
-                for record in serde.json.deser(file.path)
-            ]
-        else:
-            records = [
-                MineralSite.from_dict(record)
-                for file in tqdm(files, desc="Loading files")
-                for record in serde.json.deser(file.path)
-            ]
-        MineralSiteService(engine).restore(records)
+        tables = defaultdict(list)
+        for file in tqdm(files, desc="Loading files"):
+            for table, records in serde.json.deser(file.path).items():
+                tables[table].extend(records)
+
+        MineralSiteService(engine).restore_v2(tables)
 
     def get_engine(self, dbinfo: DBInfo):
         endpoint = dbinfo.endpoint

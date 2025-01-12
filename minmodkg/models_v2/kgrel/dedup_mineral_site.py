@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Callable, Generic, Optional
+from typing import Callable, Generic, Optional, TypedDict
 
+from minmodkg.config import DEFAULT_SOURCE_SCORE
 from minmodkg.misc.utils import assert_not_none, makedict
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.base import Base
@@ -49,10 +51,8 @@ class DedupMineralSite(MappedAsDataclass, Base):
     )
 
     @classmethod
-    def get_site_score(cls, site: MineralSite, default_score: float):
-        return cls._get_site_score(
-            site.source_score, site.created_by, site.modified_at, default_score
-        )
+    def get_site_score(cls, site: MineralSite):
+        return cls._get_site_score(site.source_score, site.created_by, site.modified_at)
 
     @classmethod
     def _get_site_score(
@@ -60,10 +60,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
         score: Optional[float],
         created_by: list[str],
         modified_at: datetime,
-        default_score: float,
     ):
         if score is None or score < 0:
-            score = default_score
+            score = DEFAULT_SOURCE_SCORE
         assert 0 <= score <= 1.0
         if any(not is_system_user(x) for x in created_by):
             # expert get the highest priority
@@ -75,16 +74,13 @@ class DedupMineralSite(MappedAsDataclass, Base):
         dedup_sites: list[DedupMineralSite],
         *,
         is_site_ranked: bool,
-        default_source_score: float = 0.5,
     ) -> DedupMineralSite:
         assert is_site_ranked, "Only support merging ranked sites"
         rank_dedup_sites = sorted(
             (
                 (
                     dedup_site,
-                    DedupMineralSite.get_site_score(
-                        dedup_site.sites[0], default_source_score
-                    ),
+                    DedupMineralSite.get_site_score(dedup_site.sites[0]),
                 )
                 for dedup_site in dedup_sites
             ),
@@ -149,7 +145,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
             site
             for site, _ in sorted(
                 (
-                    (site, DedupMineralSite.get_site_score(site, default_source_score))
+                    (site, DedupMineralSite.get_site_score(site))
                     for dedup_site, _ in rank_dedup_sites
                     for site in dedup_site.sites
                 ),
@@ -157,13 +153,13 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 reverse=True,
             )
         ]
+        merged_dedup_site.update_inventories(is_site_ranked=True)
         return merged_dedup_site
 
     @classmethod
     def from_sites(
         cls,
         sites: list[MineralSite],
-        default_source_score: float = 0.5,
     ) -> DedupMineralSite:
         _rank_ss = sorted(
             (
@@ -171,7 +167,6 @@ class DedupMineralSite(MappedAsDataclass, Base):
                     site,
                     cls.get_site_score(
                         site,
-                        default_source_score,
                     ),
                 )
                 for site in sites
@@ -212,7 +207,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
         )
 
         dedup_site = DedupMineralSite(
-            id=rank_sites[0].site_id,
+            id=rank_sites[0].dedup_site_id,
             name=RefValue.from_sites(rank_sites, lambda site: site.name),
             type=RefValue.from_sites(rank_sites, lambda site: site.type),
             rank=RefValue.from_sites(rank_sites, lambda site: site.rank),
@@ -224,6 +219,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
             modified_at=max(site.modified_at for site in sites),
         )
         dedup_site.sites = rank_sites
+        dedup_site.update_inventories(is_site_ranked=True)
         return dedup_site
 
     @staticmethod
@@ -250,6 +246,74 @@ class DedupMineralSite(MappedAsDataclass, Base):
         return sorted(
             _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
         )[:5]
+
+    def update_inventories(self, *, is_site_ranked: bool):
+        """Update the inventories so that we always prefer the data presented by the users.
+        If there are mutliple commodities reported by the users or by the system, we choose the one
+        with the most recent date (if there is no date, we choose the one with the highest contained metal)
+        """
+        self.ensure_ranked_sites(is_site_ranked)
+        Data4CmpInv = TypedDict(
+            "Data4CmpInv", {"inv": MineralInventoryView, "is_from_user": bool}
+        )
+        comm2inv: dict[InternalID, Data4CmpInv] = {}
+
+        for site in self.sites:
+            is_from_user = any(not is_system_user(u) for u in site.created_by)
+            for inv in site.inventory_views:
+                if inv.commodity not in comm2inv:
+                    comm2inv[inv.commodity] = {"inv": inv, "is_from_user": is_from_user}
+                    continue
+
+                inv_cmp_data = comm2inv[inv.commodity]
+
+                if inv_cmp_data["is_from_user"] != is_from_user:
+                    if is_from_user:
+                        # we prefer data from the users, even if the user data has no grade-tonnage
+                        # the reason is this allow the users to delete invalid gt when the correct data isn't available
+                        comm2inv[inv.commodity] = {
+                            "inv": inv,
+                            "is_from_user": is_from_user,
+                        }
+                    # the current one is from the user, it's better than the data from the model
+                    # so no update
+                    continue
+
+                # now the data are both from the same source (users or systems)
+                cmp_inv = inv_cmp_data["inv"]
+
+                if inv.contained_metal is not None:
+                    if cmp_inv.contained_metal is None:
+                        # anything with grade-tonnage is better than no grade-tonnage
+                        comm2inv[inv.commodity] = {
+                            "inv": inv,
+                            "is_from_user": is_from_user,
+                        }
+                        continue
+
+                    if inv.date is not None and (
+                        cmp_inv.date is None or inv.date > cmp_inv.date
+                    ):
+                        # chose the most recent date if available
+                        comm2inv[inv.commodity] = {
+                            "inv": inv,
+                            "is_from_user": is_from_user,
+                        }
+                        continue
+
+                    # choose the one with highest contained metal
+                    if inv.contained_metal > cmp_inv.contained_metal:
+                        comm2inv[inv.commodity] = {
+                            "inv": inv,
+                            "is_from_user": is_from_user,
+                        }
+                        continue
+
+        inventory_views = []
+        for inv in comm2inv.values():
+            inv["inv"].dedup_site_id = self.id
+            inventory_views.append(inv["inv"])
+        self.inventory_views = inventory_views
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(
@@ -305,3 +369,18 @@ class DedupMineralSite(MappedAsDataclass, Base):
             MineralInventoryView.from_dict(inv) for inv in d.get("inventory_views", [])
         ]
         return dedup_site
+
+    def ensure_ranked_sites(self, is_site_ranked: bool):
+        id2score = {
+            site.site_id: self.get_site_score(
+                site,
+            )
+            for site in self.sites
+        }
+        if is_site_ranked:
+            assert all(
+                id2score[self.sites[i + 1].site_id] <= id2score[self.sites[i].site_id]
+                for i in range(0, len(self.sites) - 1)
+            )
+        else:
+            self.sites.sort(key=lambda site: id2score[site.site_id], reverse=True)

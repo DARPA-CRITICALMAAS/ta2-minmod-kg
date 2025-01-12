@@ -24,6 +24,9 @@ MINMOD_NS_CFG = cfg["namespace"]
 MINMOD_KGREL_DB = cfg["kgrel"]
 MINMOD_DEBUG = os.environ.get("MINMOD_DEBUG", "0") == "1"
 
+# for dedup algorithm
+DEFAULT_SOURCE_SCORE = 0.5
+
 # for API prefixes
 API_PREFIX = cfg["api_prefix"]
 LOD_PREFIX = cfg["lod_prefix"]

@@ -29,7 +29,7 @@ class MineralInventoryView(MappedAsDataclass, Base):
     site: Mapped[MineralSite] = relationship(
         default=None, back_populates="inventory_views", lazy="raise_on_sql"
     )
-    dedup_site_id: Mapped[Optional[int]] = mapped_column(
+    dedup_site_id: Mapped[Optional[InternalID]] = mapped_column(
         ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), default=None
     )
     dedup_site: Mapped[Optional[DedupMineralSite]] = relationship(
@@ -50,6 +50,7 @@ class MineralInventoryView(MappedAsDataclass, Base):
                 ("tonnage", self.tonnage),
                 ("grade", self.grade),
                 ("date", self.date),
+                ("dedup_site_id", self.dedup_site_id),
             )
         )
 
@@ -61,6 +62,7 @@ class MineralInventoryView(MappedAsDataclass, Base):
             tonnage=d.get("tonnage"),
             grade=d.get("grade"),
             date=d.get("date"),
+            dedup_site_id=d.get("dedup_site_id"),
         )
         if "id" in d:
             view.id = d["id"]

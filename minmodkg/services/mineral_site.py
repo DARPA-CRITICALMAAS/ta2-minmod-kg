@@ -11,7 +11,7 @@ from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import Engine, delete, exists, select, update
+from sqlalchemy import Engine, delete, exists, insert, select, update
 from sqlalchemy.orm import Session, contains_eager
 from tqdm import tqdm
 
@@ -40,18 +40,56 @@ class MineralSiteService:
 
     def restore_v2(
         self,
-        *,
-        sites: list[MineralSite],
-        invs: list[MineralInventoryView],
-        dedup_sites: list[DedupMineralSite],
+        tables: dict[str, list],
         batch_size: int = 1024,
     ):
         with Session(self.engine) as session:
-            for i in tqdm(
-                list(range(0, len(dedup_sites), batch_size)), desc="Saving dedup sites"
-            ):
-                batch = dedup_sites[i : i + batch_size]
-                session.bulk_save_objects(batch)
+            for table_name in ["DedupMineralSite", "MineralSite"]:
+                if table_name not in tables:
+                    continue
+                records = tables[table_name]
+
+            table = "DedupMineralSite"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch1 = records[i : i + batch_size]
+                    batch1 = [DedupMineralSite.from_dict(r) for r in batch1]
+                    # can't use the newer API because I haven't figured out how to make SqlAlchemy
+                    # automatically handle the custom types (TypeDecorator) yet.
+                    session.bulk_save_objects(batch1)
+
+            table = "MineralSite"
+            site2id = {}
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch2 = records[i : i + batch_size]
+                    batch2 = [MineralSite.from_dict(r) for r in batch2]
+                    session.bulk_save_objects(batch2, return_defaults=True)
+                    for r in batch2:
+                        site2id[r.site_id] = r.id
+
+            table = "MineralInventoryView"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch3 = []
+                    for r in records[i : i + batch_size]:
+                        sid = site2id[r["site"]]
+                        for inv in r["invs"]:
+                            inv["site_id"] = sid
+                            batch3.append(inv)
+
+                    session.execute(insert(MineralInventoryView), batch3)
+
+            session.commit()
 
     def restore(self, sites: list[MineralSite], batch_size: int = 1024):
         with Session(self.engine) as session:

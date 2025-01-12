@@ -127,12 +127,12 @@ pipeline:
     args:
       input: ::REPO::data/entities/*.csv
       output: ::DATA_DIR::predefined-entities/
-  - service: kg.data.mineral_site
-    args:
-      - input: ::REPO::data/mineral-sites/*/*/*.json
-        output:
-          base: ::DATA_DIR::mineral-sites
-          format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
+  # - service: kg.data.mineral_site
+  #   args:
+  #     - input: ::REPO::data/mineral-sites/*/*/*.json
+  #       output:
+  #         base: ::DATA_DIR::mineral-sites
+  #         format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
   - service: kg.data.same_as
     args:
       input: ::REPO::data/same-as/umn/*.csv
@@ -149,7 +149,7 @@ pipeline:
       predefined_entities: ::DATA_DIR::predefined-entities/
   - service: kgrel.data.mineral_site
     args:
-      input: ::REPO::data/mineral-sites/*/*/*.json
+      input: ::REPO::data/mineral-sites/inferlink/*/*.json
       output: ::DATA_DIR::relation-mineral-sites
       source_file: ::DATA_DIR::mineral-site-sources/final/sources.json
       material_form_file: ::DATA_DIR::predefined-entities/material_form.ttl
@@ -179,8 +179,5 @@ pipeline:
   #     deploy: { port: 3030 }
   - service: kg.loader.postgres
     args:
-      # table: MineralSite
-      # input: ::DATA_DIR::relation-mineral-sites/merged/**/*.json*
-      table: DedupMineralSite
       input: ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
       deploy: { port: 5432 }

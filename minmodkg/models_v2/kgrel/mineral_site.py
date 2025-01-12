@@ -258,8 +258,8 @@ class MineralSite(MappedAsDataclass, Base):
             obj.inventory_views = [
                 MineralInventoryView.from_dict(x) for x in d["inventory_views"]
             ]
-            # for inv in obj.inventory_views:
-            #     inv.site = obj
+            for inv in obj.inventory_views:
+                inv.site = obj
         if "id" in d:
             obj.id = d["id"]
         return obj

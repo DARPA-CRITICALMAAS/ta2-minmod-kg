@@ -302,11 +302,31 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 dedup_sites[d.id].append(d)
 
         output_dedup_sites = []
+        output_sites = []
+        output_inventories = []
         for lst in dedup_sites.values():
             dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
-            output_dedup_sites.append(dedup_site.to_dict())
+            dump_dedup_site = dedup_site.to_dict()
+            dump_sites = dump_dedup_site.pop("sites")
+            dump_dedup_site.pop("inventory_views", None)
+            dump_inventories = [
+                {"invs": ms.pop("inventory_views"), "site": ms["site_id"]}
+                for ms in dump_sites
+                if len(ms.get("inventory_views", [])) > 0
+            ]
 
-        serde.json.ser(output_dedup_sites, kgrel_outdir / "dedup_sites.json.lz4")
+            output_dedup_sites.append(dump_dedup_site)
+            output_sites.extend(dump_sites)
+            output_inventories.extend(dump_inventories)
+
+        serde.json.ser(
+            {
+                "DedupMineralSite": output_dedup_sites,
+                "MineralSite": output_sites,
+                "MineralInventoryView": output_inventories,
+            },
+            kgrel_outdir / "dedup_sites.json",
+        )
 
 
 class PartitionFn:
