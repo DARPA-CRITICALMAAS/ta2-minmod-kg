@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime
-from typing import Annotated, Iterable, Optional
+from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
 import minmodkg.models.candidate_entity
 import minmodkg.models.mineral_inventory
@@ -28,15 +28,15 @@ from minmodkg.typing import IRI, URN, InternalID
 from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
 
+if TYPE_CHECKING:
+    from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
+
 
 class MineralSite(MappedAsDataclass, Base):
     __tablename__ = "mineral_site"
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     site_id: Mapped[InternalID] = mapped_column(unique=True)
-    dedup_site_id: Mapped[
-        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
-    ] = mapped_column(ForeignKey("dedup_mineral_site.id"), index=True)
     source_id: Mapped[URN] = mapped_column()
     source_score: Mapped[Optional[float]] = mapped_column()
     record_id: Mapped[str] = mapped_column()
@@ -56,6 +56,13 @@ class MineralSite(MappedAsDataclass, Base):
 
     created_by: Mapped[list[IRI]] = mapped_column(JSON)
     modified_at: Mapped[datetime] = mapped_column()
+
+    dedup_site_id: Mapped[
+        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
+    ] = mapped_column(ForeignKey("dedup_mineral_site.id"), index=True)
+    dedup_site: Mapped[DedupMineralSite] = relationship(
+        init=False, back_populates="sites", lazy="raise_on_sql"
+    )
 
     def set_id(self, id: int) -> MineralSite:
         self.id = id

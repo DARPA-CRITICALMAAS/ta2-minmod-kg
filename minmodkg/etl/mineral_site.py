@@ -136,8 +136,8 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 site = MineralSite.from_dict(r)
                 output[site.id] = {
                     "site_id": site.id,
-                    "source_id": r.source_id,
-                    "record_id": r.record_id,
+                    "source_id": site.source_id,
+                    "record_id": site.record_id,
                     "extra": {
                         # needed to compute the dedup information
                         # "source_score": r["source_score"],
@@ -287,29 +287,26 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 ).items()
             ]
 
-            return dedup_sites, sites
+            return dedup_sites
 
-        it: Iterable = get_parallel_executor(self.parallel)(
+        it: Iterable[list[DedupMineralSite]] = get_parallel_executor(self.parallel)(
             delayed(map_dedup_site)(infile.path) for infile in infiles
-        )
+        )  # type: ignore
 
         # merge all the results
         dedup_sites = defaultdict(list)
-        sites = {}
-        inventories = []
-        for dms, ms in tqdm(
+        for dms in tqdm(
             it, total=len(infiles), desc="Reading KGRel input", disable=self.verbose < 1
         ):
             for d in dms:
-                dedup_sites[d.dedup_id].append(d)
-            for m in ms:
-                assert m.site_id not in sites
-                sites[m.site_id] = m
+                dedup_sites[d.id].append(d)
 
         output_dedup_sites = []
         for lst in dedup_sites.values():
-            dedup_site = DedupMineralSite.from_dedup_sites(lst)
+            dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
             output_dedup_sites.append(dedup_site.to_dict())
+
+        serde.json.ser(output_dedup_sites, kgrel_outdir / "dedup_sites.json.lz4")
 
 
 class PartitionFn:

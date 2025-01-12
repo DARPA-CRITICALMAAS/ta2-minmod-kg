@@ -164,21 +164,23 @@ pipeline:
       entity: https://minmod.isi.edu/resource/kg
       entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
       output: ::DATA_DIR::version.ttl
-  - service: kg.loader.fuseki
-    # service: kg.loader.blazegraph
-    # - service: kg.loader.virtuoso
-    args:
-      input:
-        - ::DATA_DIR::ontology.ttl
-        - ::DATA_DIR::predefined-entities/*.ttl
-        - ::DATA_DIR::mineral-sites/*/*.ttl
-        - ::DATA_DIR::same-as/final/*.ttl
-        - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
-        - ::DATA_DIR::mineral-site-sources/final/*.ttl
-      replaceable_input: ::DATA_DIR::version.ttl
-      deploy: { port: 3030 }
+  # - service: kg.loader.fuseki
+  #   # service: kg.loader.blazegraph
+  #   # - service: kg.loader.virtuoso
+  #   args:
+  #     input:
+  #       - ::DATA_DIR::ontology.ttl
+  #       - ::DATA_DIR::predefined-entities/*.ttl
+  #       - ::DATA_DIR::mineral-sites/*/*.ttl
+  #       - ::DATA_DIR::same-as/final/*.ttl
+  #       - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
+  #       - ::DATA_DIR::mineral-site-sources/final/*.ttl
+  #     replaceable_input: ::DATA_DIR::version.ttl
+  #     deploy: { port: 3030 }
   - service: kg.loader.postgres
     args:
-      input:
-        - ::DATA_DIR::relation-mineral-sites/merged/**/*.json*
+      # table: MineralSite
+      # input: ::DATA_DIR::relation-mineral-sites/merged/**/*.json*
+      table: DedupMineralSite
+      input: ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
       deploy: { port: 5432 }

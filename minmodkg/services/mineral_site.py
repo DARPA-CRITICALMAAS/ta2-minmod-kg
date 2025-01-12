@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Iterable, Optional, Sequence
 
 from minmodkg.models_v2.kgrel.base import engine
+from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.event import EventLog
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.user import User
@@ -36,6 +37,21 @@ class MineralSiteService:
         with Session(self.engine, expire_on_commit=False) as session:
             sites = {site.site_id: site for site, in session.execute(query).unique()}
             return sites
+
+    def restore_v2(
+        self,
+        *,
+        sites: list[MineralSite],
+        invs: list[MineralInventoryView],
+        dedup_sites: list[DedupMineralSite],
+        batch_size: int = 1024,
+    ):
+        with Session(self.engine) as session:
+            for i in tqdm(
+                list(range(0, len(dedup_sites), batch_size)), desc="Saving dedup sites"
+            ):
+                batch = dedup_sites[i : i + batch_size]
+                session.bulk_save_objects(batch)
 
     def restore(self, sites: list[MineralSite], batch_size: int = 1024):
         with Session(self.engine) as session:

@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 import orjson
-from minmodkg.models_v2.kgrel.custom_types.location import Location, LocationView
+from minmodkg.models_v2.kgrel.custom_types.dedup_site_deposit_type import (
+    DedupMineralSiteDepositType,
+)
+from minmodkg.models_v2.kgrel.custom_types.location import (
+    GeoCoordinate,
+    Location,
+    LocationView,
+)
+from minmodkg.models_v2.kgrel.custom_types.ref_value import RefValue
 from sqlalchemy import LargeBinary, TypeDecorator
 
 
@@ -54,4 +62,7 @@ __all__ = [
     "ListDataclassType",
     "Location",
     "LocationView",
+    "GeoCoordinate",
+    "RefValue",
+    "DedupMineralSiteDepositType",
 ]

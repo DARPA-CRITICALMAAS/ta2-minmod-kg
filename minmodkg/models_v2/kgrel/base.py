@@ -8,10 +8,14 @@ from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Reference
 from minmodkg.models_v2.kgrel.custom_types import (
     DataclassType,
+    DedupMineralSiteDepositType,
+    GeoCoordinate,
     ListDataclassType,
     Location,
     LocationView,
+    RefValue,
 )
+from minmodkg.typing import InternalID
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
@@ -21,6 +25,13 @@ class Base(DeclarativeBase):
         CandidateEntity: DataclassType(CandidateEntity),
         Location: DataclassType(Location),
         LocationView: DataclassType(LocationView),
+        RefValue: DataclassType(RefValue),
+        RefValue[str]: DataclassType(RefValue[str]),
+        RefValue[GeoCoordinate]: DataclassType(RefValue[GeoCoordinate]),
+        RefValue[list["InternalID"]]: DataclassType(RefValue[list["InternalID"]]),
+        list[DedupMineralSiteDepositType]: ListDataclassType(
+            DedupMineralSiteDepositType
+        ),
         list[CandidateEntity]: ListDataclassType(CandidateEntity),
         list[MineralInventory]: ListDataclassType(MineralInventory),
         list[Reference]: ListDataclassType(Reference),
