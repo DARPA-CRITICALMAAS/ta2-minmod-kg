@@ -12,9 +12,10 @@ from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.custom_types import (
     DedupMineralSiteDepositType,
     GeoCoordinate,
+    RefGeoCoordinate,
+    RefListID,
     RefValue,
 )
-from minmodkg.models_v2.kgrel.custom_types.ref_value import RefGeoCoordinate
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.user import is_system_user
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
@@ -39,10 +40,8 @@ class DedupMineralSite(MappedAsDataclass, Base):
     deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
 
     coordinates: Mapped[Optional[RefGeoCoordinate]] = mapped_column()
-    # country: Mapped[RefValue[list[InternalID]]] = mapped_column()
-    # state_or_province: Mapped[RefValue[list[InternalID]]] = mapped_column()
-    country: Mapped[RefValue[list[str]]] = mapped_column()
-    state_or_province: Mapped[RefValue[list[str]]] = mapped_column()
+    country: Mapped[RefListID] = mapped_column()
+    state_or_province: Mapped[RefListID] = mapped_column()
 
     is_deleted: Mapped[bool] = mapped_column(default=False)
     modified_at: Mapped[datetime] = mapped_column(
@@ -201,19 +200,19 @@ class DedupMineralSite(MappedAsDataclass, Base):
 
         country = next(
             (
-                RefValue(site.location_view.country, site.site_id)
+                RefListID(site.location_view.country, site.site_id)
                 for site in rank_sites
                 if len(site.location_view.country) > 0
             ),
-            RefValue([], rank_sites[0].site_id),
+            RefListID([], rank_sites[0].site_id),
         )
         state_or_province = next(
             (
-                RefValue(site.location_view.state_or_province, site.site_id)
+                RefListID(site.location_view.state_or_province, site.site_id)
                 for site in rank_sites
                 if len(site.location_view.state_or_province) > 0
             ),
-            RefValue([], rank_sites[0].site_id),
+            RefListID([], rank_sites[0].site_id),
         )
 
         dedup_site = DedupMineralSite(
@@ -370,8 +369,8 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 if d.get("coordinates") is not None
                 else None
             ),
-            country=RefValue.from_dict(d.get("country", [])),
-            state_or_province=RefValue.from_dict(d.get("state_or_province", [])),
+            country=RefListID.from_dict(d.get("country", [])),
+            state_or_province=RefListID.from_dict(d.get("state_or_province", [])),
             is_deleted=d["is_deleted"],
             modified_at=datetime.fromisoformat(d["modified_at"]),
         )

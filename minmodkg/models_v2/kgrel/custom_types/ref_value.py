@@ -34,6 +34,10 @@ class RefValue(Generic[T]):
 
 
 @dataclass
+class RefListID(RefValue[list[InternalID]]): ...
+
+
+@dataclass
 class RefGeoCoordinate(RefValue[GeoCoordinate]):
     def to_dict(self):
         return {"value": self.value.to_dict(), "refid": self.refid}

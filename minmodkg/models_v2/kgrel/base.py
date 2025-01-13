@@ -13,10 +13,10 @@ from minmodkg.models_v2.kgrel.custom_types import (
     Location,
     LocationView,
     RefGeoCoordinate,
+    RefListID,
     RefValue,
     SiteAndScore,
 )
-from minmodkg.typing import InternalID
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
@@ -29,8 +29,7 @@ class Base(DeclarativeBase):
         RefValue: DataclassType(RefValue),
         RefValue[str]: DataclassType(RefValue[str]),
         RefGeoCoordinate: DataclassType(RefGeoCoordinate),
-        RefValue[list[str]]: DataclassType(RefValue[list[str]]),
-        # RefValue[list["InternalID"]]: DataclassType(RefValue[list["InternalID"]]),
+        RefListID: DataclassType(RefListID),
         SiteAndScore: DataclassType(SiteAndScore),
         list[DedupMineralSiteDepositType]: ListDataclassType(
             DedupMineralSiteDepositType

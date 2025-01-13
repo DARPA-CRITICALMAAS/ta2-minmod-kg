@@ -30,7 +30,7 @@ from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
 
 COMPRESSION: str = ".lz4"
-COMPRESSION: str = ".gz"
+# COMPRESSION: str = ""
 
 
 class MineralSiteETLServiceConstructArgs(TypedDict):

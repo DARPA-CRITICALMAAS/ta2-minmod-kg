@@ -9,7 +9,11 @@ from minmodkg.models_v2.kgrel.custom_types.location import (
     Location,
     LocationView,
 )
-from minmodkg.models_v2.kgrel.custom_types.ref_value import RefGeoCoordinate, RefValue
+from minmodkg.models_v2.kgrel.custom_types.ref_value import (
+    RefGeoCoordinate,
+    RefListID,
+    RefValue,
+)
 from minmodkg.models_v2.kgrel.custom_types.site_and_score import SiteAndScore
 from sqlalchemy import LargeBinary, TypeDecorator
 
@@ -66,6 +70,7 @@ __all__ = [
     "GeoCoordinate",
     "RefValue",
     "RefGeoCoordinate",
+    "RefListID",
     "DedupMineralSiteDepositType",
     "SiteAndScore",
 ]

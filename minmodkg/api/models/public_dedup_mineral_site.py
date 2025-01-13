@@ -54,6 +54,7 @@ class DedupMineralSitePublic(BaseModel):
             loc.lat = dms.coordinates.value.lat
             loc.lon = dms.coordinates.value.lon
 
+        print(dms.coordinates)
         if loc.is_empty():
             loc = None
 
