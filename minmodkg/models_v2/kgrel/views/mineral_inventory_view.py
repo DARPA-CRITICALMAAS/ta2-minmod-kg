@@ -26,9 +26,6 @@ class MineralInventoryView(MappedAsDataclass, Base):
     site_id: Mapped[int] = mapped_column(
         ForeignKey("mineral_site.id", ondelete="CASCADE"), default=None
     )
-    site: Mapped[MineralSite] = relationship(
-        default=None, back_populates="inventory_views", lazy="raise_on_sql"
-    )
     dedup_site_id: Mapped[Optional[InternalID]] = mapped_column(
         ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), default=None
     )

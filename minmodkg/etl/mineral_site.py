@@ -29,8 +29,8 @@ from statickg.models.file_and_path import InputFile, RelPath
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
 
-# COMPRESSION: str = ""
 COMPRESSION: str = ".lz4"
+# COMPRESSION: str = ""
 
 
 class MineralSiteETLServiceConstructArgs(TypedDict):

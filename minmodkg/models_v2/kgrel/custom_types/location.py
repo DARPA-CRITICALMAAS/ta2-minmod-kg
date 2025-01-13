@@ -48,6 +48,13 @@ class GeoCoordinate:
     lat: Optional[Annotated[float, "Latitude"]] = None
     lon: Optional[Annotated[float, "Longitude"]] = None
 
+    def to_dict(self):
+        return makedict.without_none((("lat", self.lat), ("lon", self.lon)))
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return GeoCoordinate(lat=d.get("lat"), lon=d.get("lon"))
+
 
 @dataclass
 class LocationView(GeoCoordinate):

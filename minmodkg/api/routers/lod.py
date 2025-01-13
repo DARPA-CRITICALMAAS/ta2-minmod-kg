@@ -86,7 +86,7 @@ def get_derived(
         )
         if len(same_as_sites) == 0:
             raise HTTPException(status_code=404, detail="Resource not found")
-        dedup_site = DedupMineralSitePublic.from_kgrel(
+        dedup_site = DedupMineralSitePublic.from_kgrel_sites(
             same_as_sites[resource_id], commodity=None
         )
         if format == "json":

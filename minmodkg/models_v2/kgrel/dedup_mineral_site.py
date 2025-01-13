@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, Generic, Optional, TypedDict
 
@@ -14,6 +14,7 @@ from minmodkg.models_v2.kgrel.custom_types import (
     GeoCoordinate,
     RefValue,
 )
+from minmodkg.models_v2.kgrel.custom_types.ref_value import RefGeoCoordinate
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.user import is_system_user
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
@@ -23,6 +24,7 @@ from sqlalchemy.orm import (
     MappedAsDataclass,
     composite,
     mapped_column,
+    reconstructor,
     relationship,
 )
 
@@ -36,19 +38,25 @@ class DedupMineralSite(MappedAsDataclass, Base):
     rank: Mapped[Optional[RefValue[str]]] = mapped_column()
     deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
 
-    coordinates: Mapped[Optional[RefValue[GeoCoordinate]]] = mapped_column()
+    coordinates: Mapped[Optional[RefGeoCoordinate]] = mapped_column()
     country: Mapped[RefValue[list[InternalID]]] = mapped_column()
     state_or_province: Mapped[RefValue[list[InternalID]]] = mapped_column()
 
     is_deleted: Mapped[bool] = mapped_column(default=False)
-    modified_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    modified_at: Mapped[datetime] = mapped_column(
+        default=datetime.now(timezone.utc), sort_order=1
+    )
 
-    sites: Mapped[list[MineralSite]] = relationship(
-        init=False, back_populates="dedup_site", lazy="raise_on_sql"
+    # doing this instead of using relationship because of the query
+    sites: list[MineralSite] = field(init=False, default_factory=list)
+    inventory_views: list[MineralInventoryView] = field(
+        init=False, default_factory=list
     )
-    inventory_views: Mapped[list[MineralInventoryView]] = relationship(
-        init=False, lazy="raise_on_sql"
-    )
+
+    @reconstructor
+    def init_on_load(self):
+        self.sites = []
+        self.inventory_views = []
 
     @classmethod
     def get_site_score(cls, site: MineralSite):
@@ -178,7 +186,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
 
         coordinates = next(
             (
-                RefValue(
+                RefGeoCoordinate(
                     GeoCoordinate(site.location_view.lat, site.location_view.lon),
                     site.site_id,
                 )
@@ -261,6 +269,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
         for site in self.sites:
             is_from_user = any(not is_system_user(u) for u in site.created_by)
             for inv in site.inventory_views:
+                inv.dedup_site_id = None
                 if inv.commodity not in comm2inv:
                     comm2inv[inv.commodity] = {"inv": inv, "is_from_user": is_from_user}
                     continue
@@ -355,7 +364,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 for dt in d.get("deposit_types", [])
             ],
             coordinates=(
-                RefValue.from_dict(d["coordinates"])
+                RefGeoCoordinate.from_dict(d["coordinates"])
                 if d.get("coordinates") is not None
                 else None
             ),

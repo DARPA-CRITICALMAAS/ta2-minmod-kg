@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic
 
+from minmodkg.models_v2.kgrel.custom_types.location import GeoCoordinate
 from minmodkg.typing import InternalID, T
 
 if TYPE_CHECKING:
@@ -30,3 +31,13 @@ class RefValue(Generic[T]):
     @classmethod
     def from_dict(cls, d):
         return cls(d["value"], d["refid"])
+
+
+@dataclass
+class RefGeoCoordinate(RefValue[GeoCoordinate]):
+    def to_dict(self):
+        return {"value": self.value.to_dict(), "refid": self.refid}
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(GeoCoordinate.from_dict(d["value"]), d["refid"])

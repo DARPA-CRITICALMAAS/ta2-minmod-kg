@@ -18,16 +18,24 @@ def dedup_mineral_sites_v2(
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
     if commodity is None:
-        dms2sites = MineralSiteService().find_dedup_mineral_sites(commodity=commodity)
+        res = MineralSiteService().find_dedup_mineral_sites(
+            commodity=commodity, limit=limit, offset=offset, return_count=True
+        )
     else:
         commodity = norm_commodity(commodity)
-        dms2sites = MineralSiteService().find_dedup_mineral_sites(commodity=commodity)
-    output = [
-        DedupMineralSitePublic.from_kgrel(same_sites, commodity)
-        for same_sites in dms2sites.values()
-    ]
+        res = MineralSiteService().find_dedup_mineral_sites(
+            commodity=commodity, limit=limit, offset=offset, return_count=True
+        )
 
-    return [x.model_dump(exclude_none=True) for x in output]
+    return {
+        "items": [
+            DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(
+                exclude_none=True
+            )
+            for dms in res["items"].values()
+        ],
+        "total": res["total"],
+    }
 
 
 @router.post("/dedup-mineral-sites/find_by_ids")
@@ -35,14 +43,14 @@ def api_get_dedup_mineral_sites(
     ids: Annotated[list[InternalID], Body(embed=True)],
     commodity: Annotated[InternalID, Body(embed=True)],
 ) -> dict[InternalID, dict]:
-    dms2sites = MineralSiteService().find_dedup_mineral_sites(
+    res = MineralSiteService().find_dedup_mineral_sites(
         commodity=commodity, dedup_site_ids=ids
     )
     return {
-        dedup_id: DedupMineralSitePublic.from_kgrel(same_sites, commodity).model_dump(
+        dms_id: DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(
             exclude_none=True
         )
-        for dedup_id, same_sites in dms2sites.items()
+        for dms_id, dms in res["items"].items()
     }
 
 
@@ -53,12 +61,12 @@ def api_get_dedup_mineral_site(
 ):
     if commodity is not None:
         commodity = norm_commodity(commodity)
-    dms2sites = MineralSiteService().find_dedup_mineral_sites(
+    qres = MineralSiteService().find_dedup_mineral_sites(
         commodity=commodity, dedup_site_ids=[dedup_site_id]
     )
     output = {
-        dedup_id: DedupMineralSitePublic.from_kgrel(same_sites, commodity)
-        for dedup_id, same_sites in dms2sites.items()
+        dms_id: DedupMineralSitePublic.from_kgrel(dms, commodity)
+        for dms_id, dms in qres["items"].items()
     }
 
     if len(output) == 0:

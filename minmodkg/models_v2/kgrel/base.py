@@ -9,11 +9,12 @@ from minmodkg.models_v2.inputs.reference import Reference
 from minmodkg.models_v2.kgrel.custom_types import (
     DataclassType,
     DedupMineralSiteDepositType,
-    GeoCoordinate,
     ListDataclassType,
     Location,
     LocationView,
+    RefGeoCoordinate,
     RefValue,
+    SiteAndScore,
 )
 from minmodkg.typing import InternalID
 from sqlalchemy import create_engine
@@ -27,8 +28,9 @@ class Base(DeclarativeBase):
         LocationView: DataclassType(LocationView),
         RefValue: DataclassType(RefValue),
         RefValue[str]: DataclassType(RefValue[str]),
-        RefValue[GeoCoordinate]: DataclassType(RefValue[GeoCoordinate]),
+        RefGeoCoordinate: DataclassType(RefGeoCoordinate),
         RefValue[list["InternalID"]]: DataclassType(RefValue[list["InternalID"]]),
+        SiteAndScore: DataclassType(SiteAndScore),
         list[DedupMineralSiteDepositType]: ListDataclassType(
             DedupMineralSiteDepositType
         ),

@@ -2,18 +2,24 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Iterable, Optional, Sequence
+from typing import Iterable, Optional, Sequence, TypedDict
 
 from minmodkg.models_v2.kgrel.base import engine
+from minmodkg.models_v2.kgrel.custom_types.location import LocationView
 from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.event import EventLog
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import Engine, delete, exists, insert, select, update
-from sqlalchemy.orm import Session, contains_eager
+from sqlalchemy import Engine, delete, exists, func, insert, select, update
+from sqlalchemy.orm import Session, contains_eager, load_only
 from tqdm import tqdm
+
+FindDedupMineralSiteResult = TypedDict(
+    "FindDedupMineralSiteResult",
+    {"items": dict[InternalID, DedupMineralSite], "total": int},
+)
 
 
 class MineralSiteService:
@@ -137,65 +143,191 @@ class MineralSiteService:
             session.commit()
         return output
 
+    def find_dedup_mineral_sites_v1(
+        self,
+        *,
+        commodity: Optional[InternalID],
+        dedup_site_ids: Optional[Sequence[InternalID]] = None,
+        limit: int = 0,
+        offset: int = 0,
+        return_count: bool = False,
+    ) -> FindDedupMineralSiteResult:
+        query = (
+            select(
+                DedupMineralSite,
+            )
+            .join(
+                MineralInventoryView,
+                MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+            )
+            .join(MineralSite, MineralSite.dedup_site_id == DedupMineralSite.id)
+            .options(contains_eager(DedupMineralSite.inventory_views))
+            .options(
+                contains_eager(DedupMineralSite.sites).load_only(
+                    MineralSite.id,
+                    MineralSite.source_score,
+                    MineralSite.created_by,
+                    MineralSite.modified_at,
+                    MineralSite.site_id,
+                    MineralSite.dedup_site_id,
+                ),
+            )
+            .execution_options(populate_existing=True)
+        )
+
+        count_query = None
+        if return_count:
+            count_query = (
+                select(func.count())
+                .select_from(DedupMineralSite)
+                .join(
+                    MineralInventoryView,
+                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                )
+            )
+
+        if commodity is not None:
+            query = query.where(MineralInventoryView.commodity == commodity)
+            if count_query is not None:
+                count_query = count_query.where(
+                    MineralInventoryView.commodity == commodity
+                )
+
+        if dedup_site_ids is not None:
+            query = query.where(DedupMineralSite.id.is_in(dedup_site_ids))
+
+        if limit > 0:
+            query = query.limit(limit)
+        if offset > 0:
+            query = query.offset(offset)
+
+        with Session(self.engine, expire_on_commit=False) as session:
+            dedup_sites = session.execute(query).unique().scalars().all()
+            total = (
+                session.execute(count_query).scalar_one()
+                if count_query is not None
+                else 0
+            )
+            return {"items": {dms.id: dms for dms in dedup_sites}, "total": total}
+
     def find_dedup_mineral_sites(
         self,
         *,
         commodity: Optional[InternalID],
         dedup_site_ids: Optional[Sequence[InternalID]] = None,
-    ) -> dict[InternalID, list[MineralSite]]:
-        # TODO: fix the query so we do not have to filter in python
-        # query = self._select_mineral_site()
-        # # TODO: fix the query so we do not have to filter in python
-        # # we have a problem that this query ignore sites that do not have the commodity
-        # # eventually missing sites that we should have
-        # if commodity is not None:
-        #     query = query.filter(MineralInventoryView.commodity == commodity)
-        if dedup_site_ids is not None:
-            query = (
-                select(MineralSite)
-                .join(
-                    MineralInventoryView,
-                    MineralInventoryView.site_id == MineralSite.id,
-                    isouter=True,
-                )
-                .options(contains_eager(MineralSite.inventory_views))
-                .execution_options(populate_existing=True)
-                .where(MineralSite.dedup_site_id.in_(dedup_site_ids))
+        limit: int = 0,
+        offset: int = 0,
+        return_count: bool = False,
+    ) -> FindDedupMineralSiteResult:
+        query = (
+            select(
+                DedupMineralSite,
+                func.jsonb_agg(
+                    func.jsonb_build_object(
+                        "commodity",
+                        MineralInventoryView.commodity,
+                        "contained_metal",
+                        MineralInventoryView.contained_metal,
+                        "tonnage",
+                        MineralInventoryView.tonnage,
+                        "grade",
+                        MineralInventoryView.grade,
+                        "date",
+                        MineralInventoryView.date,
+                    ),
+                ),
+                func.jsonb_agg(
+                    func.jsonb_build_object(
+                        "site_id",
+                        MineralSite.site_id,
+                        "source_score",
+                        MineralSite.source_score,
+                        "created_by",
+                        MineralSite.created_by,
+                        "modified_at",
+                        MineralSite.modified_at,
+                    ),
+                ),
             )
-        else:
-            subquery = (
-                select(MineralSite.dedup_site_id)
-                .distinct()
-                .join(
-                    MineralInventoryView, MineralInventoryView.site_id == MineralSite.id
-                )
-                .where(MineralInventoryView.commodity == commodity)
-            ).subquery()
-            query = (
-                select(MineralSite)
-                .join(subquery, MineralSite.dedup_site_id == subquery.c.dedup_site_id)
+            .join(
+                MineralInventoryView,
+                MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+            )
+            .join(MineralSite, MineralSite.dedup_site_id == DedupMineralSite.id)
+            .group_by(DedupMineralSite.id)
+            .order_by(DedupMineralSite.modified_at.desc())
+        )
+
+        count_query = None
+        if return_count:
+            count_query = (
+                select(func.count())
+                .select_from(DedupMineralSite)
                 .join(
                     MineralInventoryView,
-                    MineralInventoryView.site_id == MineralSite.id,
-                    isouter=True,
+                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
                 )
-                .options(contains_eager(MineralSite.inventory_views))
-                .execution_options(populate_existing=True)
             )
 
+        if commodity is not None:
+            query = query.where(MineralInventoryView.commodity == commodity)
+            if count_query is not None:
+                count_query = count_query.where(
+                    MineralInventoryView.commodity == commodity
+                )
+
+        if dedup_site_ids is not None:
+            query = query.where(DedupMineralSite.id.is_in(dedup_site_ids))
+
+        if limit > 0:
+            query = query.limit(limit)
+        if offset > 0:
+            query = query.offset(offset)
+
         with Session(self.engine, expire_on_commit=False) as session:
-            sites = session.execute(query).unique().scalars().all()
-            if commodity is not None:
-                for site in sites:
-                    site.inventory_views = [
-                        inv
-                        for inv in site.inventory_views
-                        if inv.commodity == commodity
-                    ]
-            dms2sites = defaultdict(list)
-            for site in sites:
-                dms2sites[site.dedup_site_id].append(site)
-            return dms2sites
+            dedup_sites = []
+            for dms, invs, sites in session.execute(query).all():
+                dms: DedupMineralSite
+                dms.sites = [
+                    MineralSite(
+                        site_id=ms["site_id"],
+                        dedup_site_id=dms.id,
+                        source_id="",
+                        source_score=ms["source_score"],
+                        record_id="",
+                        name=None,
+                        aliases=[],
+                        rank=None,
+                        type=None,
+                        location=None,
+                        location_view=LocationView(),
+                        created_by=ms["created_by"],
+                        modified_at=ms["modified_at"],
+                        deposit_type_candidates=[],
+                        inventories=[],
+                        reference=[],
+                    )
+                    for ms in sites
+                ]
+                dms.inventory_views = [
+                    MineralInventoryView(
+                        commodity=inv["commodity"],
+                        contained_metal=inv["contained_metal"],
+                        tonnage=inv["tonnage"],
+                        grade=inv["grade"],
+                        date=inv["date"],
+                    )
+                    for inv in invs
+                ]
+
+                dedup_sites.append(dms)
+
+            total = (
+                session.execute(count_query).scalar_one()
+                if count_query is not None
+                else 0
+            )
+            return {"items": {dms.id: dms for dms in dedup_sites}, "total": total}
 
     def _update_derived_data(self, site: MineralSite, user: User):
         site.modified_at = datetime.now(timezone.utc)

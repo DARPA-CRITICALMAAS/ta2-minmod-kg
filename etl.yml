@@ -153,7 +153,7 @@ pipeline:
       predefined_entities: ::DATA_DIR::predefined-entities/
   - service: kgrel.data.mineral_site
     args:
-      input: ::REPO::data/mineral-sites/inferlink/*/*.json
+      input: ::REPO::data/mineral-sites/*/*/*.json
       output: ::DATA_DIR::relation-mineral-sites
       source_file: ::DATA_DIR::mineral-site-sources/final/sources.json
       material_form_file: ::DATA_DIR::predefined-entities/material_form.ttl
