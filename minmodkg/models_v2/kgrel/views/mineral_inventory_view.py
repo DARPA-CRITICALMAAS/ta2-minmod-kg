@@ -9,6 +9,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
 
 if TYPE_CHECKING:
+    from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
     from minmodkg.models_v2.kgrel.mineral_site import MineralSite
 
 
@@ -25,8 +26,8 @@ class MineralInventoryView(MappedAsDataclass, Base):
     site_id: Mapped[int] = mapped_column(
         ForeignKey("mineral_site.id", ondelete="CASCADE"), default=None
     )
-    site: Mapped[MineralSite] = relationship(
-        default=None, back_populates="inventory_views", lazy="raise_on_sql"
+    dedup_site_id: Mapped[Optional[InternalID]] = mapped_column(
+        ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), default=None
     )
 
     def set_id(self, id: Optional[int]):
@@ -43,6 +44,7 @@ class MineralInventoryView(MappedAsDataclass, Base):
                 ("tonnage", self.tonnage),
                 ("grade", self.grade),
                 ("date", self.date),
+                ("dedup_site_id", self.dedup_site_id),
             )
         )
 
@@ -54,6 +56,7 @@ class MineralInventoryView(MappedAsDataclass, Base):
             tonnage=d.get("tonnage"),
             grade=d.get("grade"),
             date=d.get("date"),
+            dedup_site_id=d.get("dedup_site_id"),
         )
         if "id" in d:
             view.id = d["id"]

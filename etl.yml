@@ -41,6 +41,10 @@ services:
     classpath: minmodkg.etl.mineral_site.MineralSiteETLService
     args:
       parallel: false
+  - name: kgrel.data.entities
+    classpath: minmodkg.etl.kgrel_entity.KGRelEntityETLService
+    args:
+      parallel: false
   - name: kg.loader.fuseki
     classpath: minmodkg.etl.fuseki.FusekiLoaderService
     args:
@@ -155,6 +159,10 @@ pipeline:
       material_form_file: ::DATA_DIR::predefined-entities/material_form.ttl
       epsg_file: ::DATA_DIR::predefined-entities/epsg.ttl
       same_as_group: ::DATA_DIR::same-as/final/groups.json
+  - service: kgrel.data.entities
+    args:
+      predefined_entity_dir: ::DATA_DIR::predefined-entities
+      output: ::DATA_DIR::relation-predefined-entities
   - service: copy
     args:
       input: ::CFG_DIR::schema/ontology.ttl
@@ -180,5 +188,6 @@ pipeline:
   - service: kg.loader.postgres
     args:
       input:
-        - ::DATA_DIR::relation-mineral-sites/merged/**/*.json*
+        - ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
+        - ::DATA_DIR::relation-predefined-entities/*.json*
       deploy: { port: 5432 }

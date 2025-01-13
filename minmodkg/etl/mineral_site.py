@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Mapping, NotRequired, TypedDict
+from typing import Iterable, Mapping, NotRequired, Optional, TypedDict
 
 import orjson
 import serde.json
 import xxhash
 from joblib import delayed
 from libactor.cache import cache
+from minmodkg.misc.utils import group_by
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models.source import Source
 from minmodkg.models_v2.inputs.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
@@ -25,6 +28,9 @@ from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import InputFile, RelPath
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
+
+COMPRESSION: str = ".lz4"
+# COMPRESSION: str = ""
 
 
 class MineralSiteETLServiceConstructArgs(TypedDict):
@@ -72,10 +78,12 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         timer = Timer()
         with timer.watch_and_report("Partitioning the data"):
             partition_output = self.partition(args, infiles)
-        with timer.watch_and_report("Resolving the same as"):
-            same_as_output = self.resolve_same_as(args, partition_output)
+        with timer.watch_and_report("Deduping the data"):
+            dedup_output = self.dedup(args, partition_output)
         with timer.watch_and_report("Merging the data"):
-            self.merge(args, partition_output, same_as_output)
+            merge_output = self.merge(args, partition_output, dedup_output)
+        with timer.watch_and_report("Preparing KGRel input"):
+            self.prep_kgrel_input(args, merge_output)
 
     def partition(
         self, args: MineralSiteETLServiceInvokeArgs, infiles: list[InputFile]
@@ -116,11 +124,35 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             )
         return output
 
-    def resolve_same_as(
+    def dedup(
         self,
         args: MineralSiteETLServiceInvokeArgs,
         partition_files: dict[Path, list[InputFile]],
     ) -> dict[Path, InputFile]:
+        def read_site_data(
+            infile: Path,
+        ) -> tuple[Path, dict[InternalID, dict]]:
+            """Read the site ids from the file"""
+            lst = serde.json.deser(infile)
+            output = {}
+            for r in lst:
+                site = MineralSite.from_dict(r)
+                output[site.id] = {
+                    "site_id": site.id,
+                    "source_id": site.source_id,
+                    "record_id": site.record_id,
+                    "extra": {
+                        # needed to compute the dedup information
+                        # "source_score": r["source_score"],
+                        # "created_by": r.created_by,
+                        # "modified_at": datetime.fromisoformat(r.modified_at),
+                        # "name": r.name is not None,
+                        # "rank": r.site_rank is not None,
+                        # "type": r.site_type is not None,
+                    },
+                }
+            return (infile, output)
+
         same_as_outdir = args["output"].get_path() / "same_as"
         same_as_outdir.mkdir(parents=True, exist_ok=True)
 
@@ -130,7 +162,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 file2partition[file.path] = group
 
         it: Iterable = get_parallel_executor(self.parallel)(
-            delayed(read_site_ids)(infile.path)
+            delayed(read_site_data)(infile.path)
             for infiles in partition_files.values()
             for infile in infiles
         )
@@ -158,6 +190,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 assert site_id not in seen_ids
                 seen_ids.add(site_id)
 
+        # assign dedup id to each site
         for grp in groups:
             dedup_id = RelMineralSite.get_dedup_id(grp)
             for site_id in grp:
@@ -229,19 +262,74 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             merged_outfiles.add(file)
         self.remove_unknown_files(merged_outfiles, merged_outdir)
 
+        output: list[InputFile] = []
+        for outfile in merged_outfiles:
+            output.append(
+                InputFile.from_relpath(
+                    RelPath(
+                        basetype=args["output"].basetype,
+                        basepath=args["output"].basepath,
+                        relpath=str(outfile.relative_to(args["output"].basepath)),
+                    )
+                )
+            )
+        return output
 
-def read_site_ids(infile: Path) -> tuple[Path, dict[InternalID, dict]]:
-    """Read the site ids from the file"""
-    lst = serde.json.deser(infile)
-    output = {}
-    for r in lst:
-        site_id = make_site_uri(r["source_id"], r["record_id"], namespace="")
-        output[site_id] = {
-            "site_id": site_id,
-            "source_id": r["source_id"],
-            "record_id": r["record_id"],
-        }
-    return (infile, output)
+    def prep_kgrel_input(
+        self, args: MineralSiteETLServiceInvokeArgs, infiles: list[InputFile]
+    ):
+        kgrel_outdir = args["output"].get_path() / "kgrel"
+        kgrel_outdir.mkdir(parents=True, exist_ok=True)
+
+        def map_dedup_site(file: Path):
+            sites = [RelMineralSite.from_dict(d) for d in serde.json.deser(file)]
+            dedup_sites = [
+                DedupMineralSite.from_sites(sites)
+                for dedup_id, sites in group_by(
+                    sites, lambda site: site.dedup_site_id
+                ).items()
+            ]
+
+            return dedup_sites
+
+        it: Iterable[list[DedupMineralSite]] = get_parallel_executor(self.parallel)(
+            delayed(map_dedup_site)(infile.path) for infile in infiles
+        )  # type: ignore
+
+        # merge all the results
+        dedup_sites = defaultdict(list)
+        for dms in tqdm(
+            it, total=len(infiles), desc="Reading KGRel input", disable=self.verbose < 1
+        ):
+            for d in dms:
+                dedup_sites[d.id].append(d)
+
+        output_dedup_sites = []
+        output_sites = []
+        output_inventories = []
+        for lst in dedup_sites.values():
+            dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
+            dump_dedup_site = dedup_site.to_dict()
+            dump_sites = dump_dedup_site.pop("sites")
+            dump_dedup_site.pop("inventory_views", None)
+            dump_inventories = [
+                {"invs": ms.pop("inventory_views"), "site": ms["site_id"]}
+                for ms in dump_sites
+                if len(ms.get("inventory_views", [])) > 0
+            ]
+
+            output_dedup_sites.append(dump_dedup_site)
+            output_sites.extend(dump_sites)
+            output_inventories.extend(dump_inventories)
+
+        serde.json.ser(
+            {
+                "DedupMineralSite": output_dedup_sites,
+                "MineralSite": output_sites,
+                "MineralInventoryView": output_inventories,
+            },
+            kgrel_outdir / ("dedup_sites.json" + COMPRESSION),
+        )
 
 
 class PartitionFn:
@@ -278,7 +366,7 @@ class PartitionFn:
             slugify(source_id).replace("-", "_") for source_id in source_ids
         ]
 
-        outfile_subpath = infile.relpath.replace("/", "__") + ".gz"
+        outfile_subpath = infile.relpath.replace("/", "__") + COMPRESSION
 
         outfiles: list[Path] = []
         source2records = {
@@ -381,7 +469,7 @@ class MergeFn:
         }
 
         outdir.mkdir(parents=True, exist_ok=True)
-        outfile = outdir / "merged.json.gz"
+        outfile = outdir / ("merged.json" + COMPRESSION)
 
         # merge the data
         output = []

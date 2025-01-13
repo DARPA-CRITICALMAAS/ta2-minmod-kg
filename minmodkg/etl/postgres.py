@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import time
+from collections import defaultdict
 from pathlib import Path
+from typing import Literal
 
 import serde.json
 from minmodkg.config import MINMOD_KGREL_DB
 from minmodkg.models_v2.kgrel.base import Base
+from minmodkg.models_v2.kgrel.commodity import Commodity
+from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.services.mineral_site import MineralSiteService
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine, insert
+from sqlalchemy.orm import Session
 from tqdm import tqdm
 
 from statickg.models.file_and_path import InputFile
@@ -41,24 +47,31 @@ class PostgresLoaderService(DataLoaderService):
         print("Service is ready")
 
     def replace_files(
-        self, args: DataLoaderServiceInvokeArgs, dbinfo: DBInfo, files: list[InputFile]
+        self,
+        args: DataLoaderServiceInvokeArgs,
+        dbinfo: DBInfo,
+        files: list[InputFile],
     ):
         """Replace the content of the files in the database. We expect the the entities in the files are the same, only the content is different."""
         raise Exception("PostgresLoaderService does not need to replace files")
 
     def load_files(
-        self, args: DataLoaderServiceInvokeArgs, dbinfo: DBInfo, files: list[InputFile]
+        self,
+        args: DataLoaderServiceInvokeArgs,
+        dbinfo: DBInfo,
+        files: list[InputFile],
     ):
         """Load files into the database"""
         assert len(files) > 0
         self.start_service(dbinfo)
         engine = self.get_engine(dbinfo)
-        records = [
-            MineralSite.from_dict(record)
-            for file in tqdm(files, desc="Loading files")
-            for record in serde.json.deser(file.path)
-        ]
-        MineralSiteService(engine).restore(records)
+
+        tables = defaultdict(list)
+        for file in tqdm(files, desc="Loading files"):
+            for table, records in serde.json.deser(file.path).items():
+                tables[table].extend(records)
+
+        self.restore(engine, tables)
 
     def get_engine(self, dbinfo: DBInfo):
         endpoint = dbinfo.endpoint
@@ -75,3 +88,57 @@ class PostgresLoaderService(DataLoaderService):
         engine = create_engine(connection_url)
         Base.metadata.create_all(engine)
         return engine
+
+    def restore(self, engine: Engine, tables: dict[str, list], batch_size: int = 1024):
+        with Session(engine) as session:
+            table = "Commodity"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch1 = records[i : i + batch_size]
+                    batch1 = [Commodity.from_dict(r) for r in batch1]
+                    session.bulk_save_objects(batch1)
+
+            table = "DedupMineralSite"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch1 = records[i : i + batch_size]
+                    batch1 = [DedupMineralSite.from_dict(r) for r in batch1]
+                    # can't use the newer API because I haven't figured out how to make SqlAlchemy
+                    # automatically handle the custom types (TypeDecorator) yet.
+                    session.bulk_save_objects(batch1)
+
+            table = "MineralSite"
+            site2id = {}
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch2 = records[i : i + batch_size]
+                    batch2 = [MineralSite.from_dict(r) for r in batch2]
+                    session.bulk_save_objects(batch2, return_defaults=True)
+                    for r in batch2:
+                        site2id[r.site_id] = r.id
+
+            table = "MineralInventoryView"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch3 = []
+                    for r in records[i : i + batch_size]:
+                        sid = site2id[r["site"]]
+                        for inv in r["invs"]:
+                            inv["site_id"] = sid
+                            batch3.append(inv)
+
+                    session.execute(insert(MineralInventoryView), batch3)
+
+            session.commit()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime
-from typing import Annotated, Iterable, Optional
+from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
 import minmodkg.models.candidate_entity
 import minmodkg.models.mineral_inventory
@@ -25,8 +25,11 @@ from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
-from sqlalchemy import JSON
+from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 
 
 class MineralSite(MappedAsDataclass, Base):
@@ -34,9 +37,6 @@ class MineralSite(MappedAsDataclass, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     site_id: Mapped[InternalID] = mapped_column(unique=True)
-    dedup_site_id: Mapped[
-        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
-    ] = mapped_column(index=True)
     source_id: Mapped[URN] = mapped_column()
     source_score: Mapped[Optional[float]] = mapped_column()
     record_id: Mapped[str] = mapped_column()
@@ -50,12 +50,17 @@ class MineralSite(MappedAsDataclass, Base):
     deposit_type_candidates: Mapped[list[CandidateEntity]] = mapped_column()
     inventories: Mapped[list[MineralInventory]] = mapped_column()
     inventory_views: Mapped[list[MineralInventoryView]] = relationship(
-        init=False, back_populates="site", lazy="raise_on_sql"
+        init=False, lazy="raise_on_sql"
     )
     reference: Mapped[list[Reference]] = mapped_column()
 
     created_by: Mapped[list[IRI]] = mapped_column(JSON)
     modified_at: Mapped[datetime] = mapped_column()
+
+    dedup_site_id: Mapped[
+        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
+    ] = mapped_column(ForeignKey("dedup_mineral_site.id"), index=True)
+    dedup_site: Mapped[DedupMineralSite] = relationship(init=False, lazy="raise_on_sql")
 
     def set_id(self, id: int) -> MineralSite:
         self.id = id
@@ -173,7 +178,6 @@ class MineralSite(MappedAsDataclass, Base):
                     tonnage=total_tonnage,
                     grade=total_grade,
                     date=None,
-                    site=out_site,
                 )
             )
         for comm in commodities:
@@ -185,7 +189,6 @@ class MineralSite(MappedAsDataclass, Base):
                         tonnage=None,
                         grade=None,
                         date=None,
-                        site=out_site,
                     )
                 )
         out_site.inventory_views = inv_views
@@ -208,7 +211,14 @@ class MineralSite(MappedAsDataclass, Base):
                     "location",
                     (self.location.to_dict() if self.location is not None else None),
                 ),
-                ("location_view", self.location_view.to_dict()),
+                (
+                    "location_view",
+                    (
+                        self.location_view.to_dict()
+                        if self.location_view.is_empty()
+                        else None
+                    ),
+                ),
                 (
                     "deposit_type_candidates",
                     [x.to_dict() for x in self.deposit_type_candidates],
@@ -234,7 +244,7 @@ class MineralSite(MappedAsDataclass, Base):
             rank=d.get("rank"),
             type=d.get("type"),
             location=Location.from_dict(d["location"]) if d.get("location") else None,
-            location_view=LocationView.from_dict(d["location_view"]),
+            location_view=LocationView.from_dict(d.get("location_view", {})),
             deposit_type_candidates=[
                 CandidateEntity.from_dict(x)
                 for x in d.get("deposit_type_candidates", [])
@@ -251,8 +261,6 @@ class MineralSite(MappedAsDataclass, Base):
             obj.inventory_views = [
                 MineralInventoryView.from_dict(x) for x in d["inventory_views"]
             ]
-            # for inv in obj.inventory_views:
-            #     inv.site = obj
         if "id" in d:
             obj.id = d["id"]
         return obj

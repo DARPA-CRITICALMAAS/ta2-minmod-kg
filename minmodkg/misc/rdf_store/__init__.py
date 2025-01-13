@@ -12,7 +12,11 @@ from rdflib.term import Node
 
 
 def norm_literal(value: Annotated[Any, Literal]) -> Any:
-    return None if value is None else (value.value or str(value))
+    return (
+        None
+        if value is None
+        else (value.value if value.value is not None else str(value.value))
+    )
 
 
 def norm_uriref(value: Annotated[Any, URIRef]) -> Optional[URIRef]:
