@@ -30,7 +30,7 @@ class Base(DeclarativeBase):
         RefValue[str]: DataclassType(RefValue[str]),
         RefGeoCoordinate: DataclassType(RefGeoCoordinate),
         RefValue[list[str]]: DataclassType(RefValue[list[str]]),
-        RefValue[list["InternalID"]]: DataclassType(RefValue[list["InternalID"]]),
+        # RefValue[list["InternalID"]]: DataclassType(RefValue[list["InternalID"]]),
         SiteAndScore: DataclassType(SiteAndScore),
         list[DedupMineralSiteDepositType]: ListDataclassType(
             DedupMineralSiteDepositType

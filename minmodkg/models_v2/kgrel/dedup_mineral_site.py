@@ -39,8 +39,10 @@ class DedupMineralSite(MappedAsDataclass, Base):
     deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
 
     coordinates: Mapped[Optional[RefGeoCoordinate]] = mapped_column()
-    country: Mapped[RefValue[list[InternalID]]] = mapped_column()
-    state_or_province: Mapped[RefValue[list[InternalID]]] = mapped_column()
+    # country: Mapped[RefValue[list[InternalID]]] = mapped_column()
+    # state_or_province: Mapped[RefValue[list[InternalID]]] = mapped_column()
+    country: Mapped[RefValue[list[str]]] = mapped_column()
+    state_or_province: Mapped[RefValue[list[str]]] = mapped_column()
 
     is_deleted: Mapped[bool] = mapped_column(default=False)
     modified_at: Mapped[datetime] = mapped_column(
