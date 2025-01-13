@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from datetime import datetime
 from typing import Optional
 
-from minmodkg.models.base import MINMOD_NS
 from minmodkg.models.derived_mineral_site import GradeTonnage
-from minmodkg.models_v2.kgrel.custom_types.location import LocationView
 from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
-from minmodkg.models_v2.kgrel.user import is_system_user
-from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class DedupMineralSiteDepositType(BaseModel):
