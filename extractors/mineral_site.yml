@@ -225,19 +225,19 @@ semantic_model:
   mo:Measure:ore:
     properties:
       - [drepr:uri, ore_id]
-      - [mo:value, ore_value, xsd:decimal]
+      - [mo:value, ore_value, xsd:double]
     links:
       - [mo:unit, mo:UnitCandidate:ore_unit]
   mo:Measure:grade:
     properties:
       - [drepr:uri, grade_id]
-      - [mo:value, grade_value, xsd:decimal]
+      - [mo:value, grade_value, xsd:double]
     links:
       - [mo:unit, mo:UnitCandidate:grade_unit]
   mo:Measure:cutoff_grade:
     properties:
       - [drepr:uri, cutoff_grade_id]
-      - [mo:value, cutoff_grade_value, xsd:decimal]
+      - [mo:value, cutoff_grade_value, xsd:double]
     links:
       - [mo:unit, mo:UnitCandidate:cutoff_grade_unit]
   mo:ResourceReserveCategoryCandidate:category:
