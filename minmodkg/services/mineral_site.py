@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Iterable, Optional, Sequence, TypedDict
+from typing import Optional, Sequence, TypedDict
 
 from minmodkg.models_v2.kgrel.base import engine
 from minmodkg.models_v2.kgrel.custom_types.location import LocationView
@@ -13,7 +12,7 @@ from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
 from sqlalchemy import Engine, delete, exists, func, insert, select, update
-from sqlalchemy.orm import Session, contains_eager, load_only
+from sqlalchemy.orm import Session, contains_eager
 from tqdm import tqdm
 
 FindDedupMineralSiteResult = TypedDict(
@@ -142,73 +141,6 @@ class MineralSiteService:
             session.add(EventLog.from_same_as_update(groups))
             session.commit()
         return output
-
-    def find_dedup_mineral_sites_v1(
-        self,
-        *,
-        commodity: Optional[InternalID],
-        dedup_site_ids: Optional[Sequence[InternalID]] = None,
-        limit: int = 0,
-        offset: int = 0,
-        return_count: bool = False,
-    ) -> FindDedupMineralSiteResult:
-        query = (
-            select(
-                DedupMineralSite,
-            )
-            .join(
-                MineralInventoryView,
-                MineralInventoryView.dedup_site_id == DedupMineralSite.id,
-            )
-            .join(MineralSite, MineralSite.dedup_site_id == DedupMineralSite.id)
-            .options(contains_eager(DedupMineralSite.inventory_views))
-            .options(
-                contains_eager(DedupMineralSite.sites).load_only(
-                    MineralSite.id,
-                    MineralSite.source_score,
-                    MineralSite.created_by,
-                    MineralSite.modified_at,
-                    MineralSite.site_id,
-                    MineralSite.dedup_site_id,
-                ),
-            )
-            .execution_options(populate_existing=True)
-        )
-
-        count_query = None
-        if return_count:
-            count_query = (
-                select(func.count())
-                .select_from(DedupMineralSite)
-                .join(
-                    MineralInventoryView,
-                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
-                )
-            )
-
-        if commodity is not None:
-            query = query.where(MineralInventoryView.commodity == commodity)
-            if count_query is not None:
-                count_query = count_query.where(
-                    MineralInventoryView.commodity == commodity
-                )
-
-        if dedup_site_ids is not None:
-            query = query.where(DedupMineralSite.id.is_in(dedup_site_ids))
-
-        if limit > 0:
-            query = query.limit(limit)
-        if offset > 0:
-            query = query.offset(offset)
-
-        with Session(self.engine, expire_on_commit=False) as session:
-            dedup_sites = session.execute(query).unique().scalars().all()
-            total = (
-                session.execute(count_query).scalar_one()
-                if count_query is not None
-                else 0
-            )
-            return {"items": {dms.id: dms for dms in dedup_sites}, "total": total}
 
     def find_dedup_mineral_sites(
         self,

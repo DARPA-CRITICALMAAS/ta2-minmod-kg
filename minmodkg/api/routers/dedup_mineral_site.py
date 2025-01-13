@@ -16,26 +16,28 @@ def dedup_mineral_sites_v2(
     commodity: Optional[str] = None,
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
+    return_count: Annotated[bool, Query()] = False,
 ):
     if commodity is None:
         res = MineralSiteService().find_dedup_mineral_sites(
-            commodity=commodity, limit=limit, offset=offset, return_count=True
+            commodity=commodity, limit=limit, offset=offset, return_count=return_count
         )
     else:
         commodity = norm_commodity(commodity)
         res = MineralSiteService().find_dedup_mineral_sites(
-            commodity=commodity, limit=limit, offset=offset, return_count=True
+            commodity=commodity, limit=limit, offset=offset, return_count=return_count
         )
 
-    return {
-        "items": [
-            DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(
-                exclude_none=True
-            )
-            for dms in res["items"].values()
-        ],
-        "total": res["total"],
-    }
+    items = [
+        DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(exclude_none=True)
+        for dms in res["items"].values()
+    ]
+    if return_count:
+        return {
+            "items": items,
+            "total": res["total"],
+        }
+    return items
 
 
 @router.post("/dedup-mineral-sites/find_by_ids")
