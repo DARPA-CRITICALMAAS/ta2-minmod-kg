@@ -215,7 +215,7 @@ class MineralSite(MappedAsDataclass, Base):
                     "location_view",
                     (
                         self.location_view.to_dict()
-                        if self.location_view.is_empty()
+                        if not self.location_view.is_empty()
                         else None
                     ),
                 ),
