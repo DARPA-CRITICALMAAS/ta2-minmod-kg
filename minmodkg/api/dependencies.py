@@ -9,9 +9,11 @@ from fastapi.security import APIKeyCookie
 from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.models.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models_v2.kgrel.base import get_rel_session
+from minmodkg.models_v2.kgrel.commodity import Commodity
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 # for login/security
@@ -83,9 +85,8 @@ def is_minmod_id(text: str) -> bool:
 def get_commodity_by_name(
     name: str,
 ) -> Optional[InternalID]:
-    query = f'SELECT ?uri WHERE {{ ?uri a {MINMOD_NS.mo.alias}:Commodity ; {MINMOD_NS.rdfs.alias}:label ?name . FILTER(LCASE(STR(?name)) = "{name.lower()}") }} LIMIT 1'
-    qres = MINMOD_KG.query(query)
-    if len(qres) == 0:
-        return None
-    uri = qres[0]["uri"]
-    return MINMOD_NS.mr.id(uri)
+    with get_rel_session() as session:
+        commodity_id = session.scalar(
+            select(Commodity.id).where(Commodity.lower_name == name.lower())
+        )
+        return commodity_id

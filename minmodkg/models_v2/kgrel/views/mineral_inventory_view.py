@@ -32,9 +32,6 @@ class MineralInventoryView(MappedAsDataclass, Base):
     dedup_site_id: Mapped[Optional[InternalID]] = mapped_column(
         ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), default=None
     )
-    dedup_site: Mapped[Optional[DedupMineralSite]] = relationship(
-        default=None, back_populates="inventory_views", lazy="raise_on_sql"
-    )
 
     def set_id(self, id: Optional[int]):
         if id is not None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Mapping, NotRequired, TypedDict
+from typing import Iterable, Mapping, NotRequired, Optional, TypedDict
 
 import orjson
 import serde.json
@@ -28,6 +28,9 @@ from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import InputFile, RelPath
 from statickg.models.repository import Repository
 from statickg.services.interface import BaseFileService, BaseService
+
+# COMPRESSION: str = ""
+COMPRESSION: str = ".lz4"
 
 
 class MineralSiteETLServiceConstructArgs(TypedDict):
@@ -325,7 +328,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 "MineralSite": output_sites,
                 "MineralInventoryView": output_inventories,
             },
-            kgrel_outdir / "dedup_sites.json",
+            kgrel_outdir / ("dedup_sites.json" + COMPRESSION),
         )
 
 
@@ -363,7 +366,7 @@ class PartitionFn:
             slugify(source_id).replace("-", "_") for source_id in source_ids
         ]
 
-        outfile_subpath = infile.relpath.replace("/", "__") + ".gz"
+        outfile_subpath = infile.relpath.replace("/", "__") + COMPRESSION
 
         outfiles: list[Path] = []
         source2records = {
@@ -466,7 +469,7 @@ class MergeFn:
         }
 
         outdir.mkdir(parents=True, exist_ok=True)
-        outfile = outdir / "merged.json.gz"
+        outfile = outdir / ("merged.json" + COMPRESSION)
 
         # merge the data
         output = []

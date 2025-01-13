@@ -47,7 +47,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
         init=False, back_populates="dedup_site", lazy="raise_on_sql"
     )
     inventory_views: Mapped[list[MineralInventoryView]] = relationship(
-        init=False, back_populates="dedup_site", lazy="raise_on_sql"
+        init=False, lazy="raise_on_sql"
     )
 
     @classmethod
