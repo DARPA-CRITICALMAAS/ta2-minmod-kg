@@ -43,7 +43,17 @@ def get_resource(
     remove_hostname: Annotated[Literal["yes", "no"], Query()] = "no",
 ):
     uri = MINMOD_NS.mr.uri(resource_id)
+
     if not MINMOD_KG.has(uri):
+        if resource_id.startswith("site__"):
+            msi = MineralSiteService().find_by_id(resource_id)
+            if msi is not None:
+                return render_dict_html(
+                    msi.ms.name or "",
+                    uri,
+                    msi.to_dict(),
+                )
+
         raise HTTPException(status_code=404, detail="Resource not found")
 
     if format == "html":
