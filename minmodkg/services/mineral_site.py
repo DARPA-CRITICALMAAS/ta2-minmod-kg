@@ -13,7 +13,7 @@ from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInv
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import Engine, Select, delete, func, select, update
+from sqlalchemy import Engine, Select, delete, distinct, func, select, update
 from sqlalchemy.orm import Session
 
 RawMineralInventoryView = dict
@@ -231,28 +231,25 @@ class MineralSiteService:
             .join(
                 MineralInventoryView,
                 MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                isouter=commodity is not None,
             )
             .group_by(DedupMineralSite.id)
-            .order_by(DedupMineralSite.modified_at.desc())
         )
 
         count_query = None
         if return_count:
-            count_query = (
-                select(func.count())
-                .select_from(DedupMineralSite)
-                .join(
-                    MineralInventoryView,
-                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
-                )
+            count_query = select(func.count(distinct(DedupMineralSite.id))).select_from(
+                DedupMineralSite
             )
 
         if commodity is not None:
             query = query.where(MineralInventoryView.commodity == commodity)
             if count_query is not None:
-                count_query = count_query.where(
-                    MineralInventoryView.commodity == commodity
-                )
+                count_query = count_query.join(
+                    MineralInventoryView,
+                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                    isouter=True,
+                ).where(MineralInventoryView.commodity == commodity)
 
         if dedup_site_ids is not None:
             query = query.where(DedupMineralSite.id.in_(dedup_site_ids))
@@ -263,7 +260,7 @@ class MineralSiteService:
             query = query.offset(offset)
 
         with Session(self.engine, expire_on_commit=False) as session:
-            lst_dms_and_invs = []
+            lst_dms_and_invs: list[DedupMineralSiteAndInventory] = []
             for dms, invs in session.execute(query).all():
                 dms: DedupMineralSite
                 inventory_views = [
@@ -280,14 +277,16 @@ class MineralSiteService:
                 lst_dms_and_invs.append(
                     DedupMineralSiteAndInventory(dms=dms, invs=inventory_views)
                 )
-
             total = (
                 session.execute(count_query).scalar_one()
                 if count_query is not None
                 else 0
             )
             return {
-                "items": {dms.id: dms_and_invs for dms_and_invs in lst_dms_and_invs},
+                "items": {
+                    dms_and_invs.dms.id: dms_and_invs
+                    for dms_and_invs in lst_dms_and_invs
+                },
                 "total": total,
             }
 

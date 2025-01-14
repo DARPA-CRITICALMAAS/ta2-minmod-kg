@@ -58,7 +58,7 @@ class MineralSiteAndInventory:
     @classmethod
     def from_dict(cls, d: dict):
         return cls(
-            ms=MineralSite.from_dict(d),
+            ms=MineralSite.from_dict(d["ms"]),
             invs=[MineralInventoryView.from_dict(inv) for inv in d.get("invs", [])],
         )
 

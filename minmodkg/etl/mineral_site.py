@@ -282,46 +282,51 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         kgrel_outdir = args["output"].get_path() / "kgrel"
         kgrel_outdir.mkdir(parents=True, exist_ok=True)
 
-        def map_dedup_site(file: Path):
-            sites = [RelMineralSite.from_dict(d) for d in serde.json.deser(file)]
+        MapDedupSiteResult = TypedDict(
+            "MapDedupSiteResult",
+            {
+                "DedupMineralSite": list[DedupMineralSite],
+                "MineralSiteAndInventory": list[MineralSiteAndInventory],
+            },
+        )
+
+        def map_dedup_site(file: Path) -> MapDedupSiteResult:
+            sites = [
+                MineralSiteAndInventory.from_dict(d) for d in serde.json.deser(file)
+            ]
             dedup_sites = [
                 DedupMineralSite.from_sites(sites)
                 for dedup_id, sites in group_by(
-                    sites, lambda site: site.dedup_site_id
+                    sites, lambda site: site.ms.dedup_site_id
                 ).items()
             ]
 
-            return dedup_sites
+            return {"DedupMineralSite": dedup_sites, "MineralSiteAndInventory": sites}
 
-        it: Iterable[list[DedupMineralSite]] = get_parallel_executor(self.parallel)(
+        it: Iterable[MapDedupSiteResult] = get_parallel_executor(self.parallel)(
             delayed(map_dedup_site)(infile.path) for infile in infiles
         )  # type: ignore
 
         # merge all the results
-        dedup_sites = defaultdict(list)
-        for dms in tqdm(
+        dedup_sites: dict[InternalID, list[DedupMineralSite]] = defaultdict(list)
+        sites: list[MineralSiteAndInventory] = []
+        for d in tqdm(
             it, total=len(infiles), desc="Reading KGRel input", disable=self.verbose < 1
         ):
-            for d in dms:
-                dedup_sites[d.id].append(d)
+            for dms in d["DedupMineralSite"]:
+                dedup_sites[dms.id].append(dms)
+            sites.extend(d["MineralSiteAndInventory"])
 
         output_dedup_sites = []
         output_sites = []
         output_inventories = []
         for lst in dedup_sites.values():
             dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
-            dump_dedup_site = dedup_site.to_dict()
-            dump_sites = dump_dedup_site.pop("sites")
-            dump_dedup_site.pop("inventory_views", None)
-            dump_inventories = [
-                {"invs": ms.pop("inventory_views"), "site": ms["site_id"]}
-                for ms in dump_sites
-                if len(ms.get("inventory_views", [])) > 0
-            ]
+            output_dedup_sites.append(dedup_site.to_dict())
 
-            output_dedup_sites.append(dump_dedup_site)
-            output_sites.extend(dump_sites)
-            output_inventories.extend(dump_inventories)
+        for msi in sites:
+            output_sites.append(msi.ms.to_dict())
+            output_inventories.append({"invs": msi.invs, "site": msi.ms.site_id})
 
         serde.json.ser(
             {

@@ -234,8 +234,6 @@ def render_entity_html(
             return H.p(style="font-style: italic")("skiped as visited before")
 
         visited.add(subj)
-        print("Visit", subj, len(list(g.predicate_objects(subj))))
-
         children = []
         if isinstance(subj, URIRef):
             subj_name = subj.n3(g.namespace_manager)

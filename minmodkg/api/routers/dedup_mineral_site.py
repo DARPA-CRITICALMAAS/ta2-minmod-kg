@@ -29,7 +29,7 @@ def dedup_mineral_sites_v2(
         )
 
     items = [
-        DedupMineralSitePublic.from_kgrel(dmsi, commodity).model_dump(exclude_none=True)
+        DedupMineralSitePublic.from_kgrel(dmsi, commodity).to_dict()
         for dmsi in res["items"].values()
     ]
     if return_count:
@@ -49,9 +49,7 @@ def api_get_dedup_mineral_sites(
         commodity=commodity, dedup_site_ids=ids
     )
     return {
-        dms_id: DedupMineralSitePublic.from_kgrel(dmsi, commodity).model_dump(
-            exclude_none=True
-        )
+        dms_id: DedupMineralSitePublic.from_kgrel(dmsi, commodity).to_dict()
         for dms_id, dmsi in res["items"].items()
     }
 
@@ -73,4 +71,4 @@ def api_get_dedup_mineral_site(
 
     if len(output) == 0:
         raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")
-    return output[dedup_site_id].model_dump(exclude_none=True)
+    return output[dedup_site_id].to_dict()
