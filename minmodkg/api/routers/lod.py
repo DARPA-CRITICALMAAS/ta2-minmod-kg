@@ -81,21 +81,15 @@ def get_derived(
     remove_hostname: Annotated[Literal["yes", "no"], Query()] = "no",
 ):  # -> HTMLResponse | dict[Any, Any]:
     if resource_id.startswith("dedup_site__"):
-        same_as_sites = MineralSiteService().find_dedup_mineral_sites(
-            commodity=None, dedup_site_ids=[resource_id]
-        )
-        if len(same_as_sites) == 0:
+        dmsi = MineralSiteService().find_dedup_by_id(resource_id)
+        if dmsi is None:
             raise HTTPException(status_code=404, detail="Resource not found")
-        dedup_site = DedupMineralSitePublic.from_kgrel_sites(
-            same_as_sites[resource_id], commodity=None
-        )
+        dedup_site = DedupMineralSitePublic.from_kgrel(dmsi, commodity=None)
         if format == "json":
-            return dedup_site.model_dump(exclude_none=True)
+            return dedup_site.to_dict()
         if format == "html":
             return render_dict_html(
-                dedup_site.name,
-                MINMOD_NS.md.uri(resource_id),
-                dedup_site.model_dump(exclude_none=True),
+                dedup_site.name, MINMOD_NS.md.uri(resource_id), dedup_site.to_dict()
             )
 
     uri = MINMOD_NS.md.uri(resource_id)
