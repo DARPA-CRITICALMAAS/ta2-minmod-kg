@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "minmodapi"
+version = "1.0.0"
+description = "Client API for the MinMod API"
+authors = ["Binh Vu <bvu687@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "^0.28.1"
+python-slugify = "^8.0.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

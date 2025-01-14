@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Response, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.api.dependencies import (
     CurrentUserDep,
     MineralSiteServiceDep,
@@ -32,8 +32,10 @@ class UpdateDedupLink(BaseModel):
 
 
 @router.get("/mineral-sites/make-id")
-def get_site_uri(source_id: str, record_id: str):
-    return make_site_uri(source_id, record_id)
+def get_site_uri(source_id: str, record_id: str, return_uri: bool = False):
+    if return_uri:
+        return make_site_uri(source_id, record_id)
+    return make_site_uri(source_id, record_id, namespace="")
 
 
 @router.post("/mineral-sites/find_by_ids")
@@ -45,6 +47,17 @@ def get_sites(
         k: OutputPublicMineralSite.from_kgrel(v).to_dict()
         for k, v in mineral_site_service.find_by_ids(ids).items()
     }
+
+
+@router.head("/mineral-sites/{site_id}")
+def has_site(
+    site_id: InternalID,
+    mineral_site_service: MineralSiteServiceDep,
+):
+    site_db_id = mineral_site_service.get_site_db_id(site_id)
+    if site_db_id is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    return Response(status_code=status.HTTP_200_OK)
 
 
 @router.get("/mineral-sites/{site_id}")
@@ -100,7 +113,7 @@ def create_site(
     site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
     if site_db_id is not None:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_409_CONFLICT,
             detail="The site already exists.",
         )
 
@@ -114,6 +127,7 @@ def update_site(
     update_site: InputPublicMineralSite,
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
+    snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
     snapshot_id = get_snapshot_id()
     upd_msi = update_site.to_kgrel(

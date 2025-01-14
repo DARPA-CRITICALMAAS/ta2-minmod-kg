@@ -5,7 +5,12 @@ from datetime import datetime, timezone
 from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Optional, Union
 
-from minmodkg.misc.utils import extend_unique, makedict
+from minmodkg.misc.utils import (
+    extend_unique,
+    format_datetime,
+    format_nanoseconds,
+    makedict,
+)
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
@@ -32,10 +37,8 @@ class MineralSite:
     reference: list[Reference] = field(default_factory=list)
 
     created_by: list[str] = field(default_factory=list)
-    modified_at: Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%SZ format"] = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
+    modified_at: Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"] = field(
+        default_factory=lambda: format_datetime(datetime.now(timezone.utc))
     )
 
     @cached_property
@@ -155,5 +158,5 @@ class MineralSite:
             mineral_inventory=site.inventories,
             reference=site.reference,
             created_by=site.created_by,
-            modified_at=site.modified_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            modified_at=format_nanoseconds(site.modified_at),
         )

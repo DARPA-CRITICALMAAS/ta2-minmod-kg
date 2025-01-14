@@ -201,4 +201,3 @@ def upload_mineral_sites(
 
 if __name__ == "__main__":
     app()
-    app()

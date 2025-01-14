@@ -155,7 +155,7 @@ def extend_unique(
 
 
 def format_datetime(dt: datetime):
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def datetime_to_nanoseconds(dt: datetime):
@@ -163,7 +163,7 @@ def datetime_to_nanoseconds(dt: datetime):
 
 
 def format_nanoseconds(ns: int) -> str:
-    return datetime.fromtimestamp(ns / 1e9).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.fromtimestamp(ns / 1e9).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def exclude_none_or_empty_list(obj: dict):
