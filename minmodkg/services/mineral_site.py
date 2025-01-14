@@ -147,8 +147,25 @@ class MineralSiteService:
             # step 2: write data
             session.execute(dms.get_update_query())
             session.execute(site_and_inv.ms.get_update_query())
-            for ms in all_sites:
-                session.add_all(ms.invs)
+            session.execute(
+                update(MineralInventoryView),
+                [
+                    {
+                        "id": inv.id,
+                        "dedup_site_id": inv.dedup_site_id,
+                    }
+                    for ms in all_sites[:-1]
+                    for inv in ms.invs
+                ],
+            )
+            update_invs = []
+            for inv in site_and_inv.invs:
+                if inv.id is not None:
+                    update_invs.append(inv.get_update_args())
+                else:
+                    session.add(inv)
+            if len(update_invs) > 0:
+                session.execute(update(MineralInventoryView), update_invs)
             session.add(EventLog.from_site_update(site_and_inv))
 
             # step 3: commit data

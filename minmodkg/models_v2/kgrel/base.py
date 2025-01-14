@@ -51,6 +51,9 @@ class Base(DeclarativeBase):
 
         return q.values(**args)
 
+    def get_update_args(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
+
 
 dbconn = MINMOD_KGREL_DB
 if dbconn.startswith("sqlite"):
