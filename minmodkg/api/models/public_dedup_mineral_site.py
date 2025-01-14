@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from typing import Optional
 
+from minmodkg.misc.utils import format_datetime, format_nanoseconds
 from minmodkg.models.derived_mineral_site import GradeTonnage
-from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models_v2.kgrel.dedup_mineral_site import (
+    DedupMineralSite,
+    DedupMineralSiteAndInventory,
+)
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
 
@@ -46,7 +50,8 @@ class DedupMineralSitePublic(BaseModel):
     modified_at: str
 
     @staticmethod
-    def from_kgrel(dms: DedupMineralSite, commodity: Optional[InternalID]):
+    def from_kgrel(dmsi: DedupMineralSiteAndInventory, commodity: Optional[InternalID]):
+        dms = dmsi.dms
         loc = DedupMineralSiteLocation(
             country=dms.country.value, state_or_province=dms.state_or_province.value
         )
@@ -68,7 +73,7 @@ class DedupMineralSitePublic(BaseModel):
                 DedupMineralSiteDepositType(
                     id=dt.id, source=dt.source, confidence=dt.confidence
                 )
-                for dt in dms.deposit_types
+                for dt in dms.ranked_deposit_types
             ],
             grade_tonnage=[
                 GradeTonnage(
@@ -78,13 +83,11 @@ class DedupMineralSitePublic(BaseModel):
                     total_grade=inv.grade,
                     date=inv.date,
                 )
-                for inv in dms.inventory_views
+                for inv in dmsi.invs
             ],
             sites=[
-                DedupMineralSiteIdAndScore(
-                    id=site.site_id, score=DedupMineralSite.get_site_score(site)[0]
-                )
-                for site in dms.sites
+                DedupMineralSiteIdAndScore(id=site.site_id, score=site.score.score)
+                for site in dms.ranked_sites
             ],
-            modified_at=dms.modified_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            modified_at=format_nanoseconds(dms.modified_at),
         )

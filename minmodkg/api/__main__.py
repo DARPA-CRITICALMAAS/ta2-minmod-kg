@@ -71,7 +71,7 @@ def load_user(
 
 
 @app.command()
-def batch_add_users(
+def batch_add_user(
     input_file: Path,
     new_users_file: Path,
 ):
@@ -133,7 +133,7 @@ def add_user(
 
 
 @app.command()
-def clear_users():
+def clear_user():
     create_db_and_tables()
     with get_rel_session() as session:
         session.execute(delete(User))

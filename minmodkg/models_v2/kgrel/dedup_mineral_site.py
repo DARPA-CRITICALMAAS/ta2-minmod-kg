@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Callable, Generic, Optional, TypedDict
+from typing import Optional, Sequence, TypedDict
 
-from minmodkg.config import DEFAULT_SOURCE_SCORE
-from minmodkg.misc.utils import assert_not_none, makedict
+from minmodkg.misc.utils import makedict
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.custom_types import (
@@ -15,19 +13,20 @@ from minmodkg.models_v2.kgrel.custom_types import (
     RefGeoCoordinate,
     RefListID,
     RefValue,
+    SiteAndScore,
+    SiteScore,
 )
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
-from minmodkg.models_v2.kgrel.user import is_system_user
+from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
-from minmodkg.typing import InternalID, T
-from sqlalchemy.orm import (
-    Mapped,
-    MappedAsDataclass,
-    composite,
-    mapped_column,
-    reconstructor,
-    relationship,
-)
+from minmodkg.typing import InternalID
+from sqlalchemy import BigInteger
+from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
+
+
+@dataclass
+class DedupMineralSiteAndInventory:
+    dms: DedupMineralSite
+    invs: list[MineralInventoryView]
 
 
 class DedupMineralSite(MappedAsDataclass, Base):
@@ -37,46 +36,16 @@ class DedupMineralSite(MappedAsDataclass, Base):
     name: Mapped[Optional[RefValue[str]]] = mapped_column()
     type: Mapped[Optional[RefValue[str]]] = mapped_column()
     rank: Mapped[Optional[RefValue[str]]] = mapped_column()
-    deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
+    ranked_deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
 
     coordinates: Mapped[Optional[RefGeoCoordinate]] = mapped_column()
     country: Mapped[RefListID] = mapped_column()
     state_or_province: Mapped[RefListID] = mapped_column()
 
+    ranked_sites: Mapped[list[SiteAndScore]] = mapped_column()
+
+    modified_at: Mapped[int] = mapped_column(BigInteger)
     is_deleted: Mapped[bool] = mapped_column(default=False)
-    modified_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(timezone.utc), sort_order=1
-    )
-
-    # doing this instead of using relationship because of the query
-    sites: list[MineralSite] = field(init=False, default_factory=list)
-    inventory_views: list[MineralInventoryView] = field(
-        init=False, default_factory=list
-    )
-
-    @reconstructor
-    def init_on_load(self):
-        self.sites = []
-        self.inventory_views = []
-
-    @classmethod
-    def get_site_score(cls, site: MineralSite):
-        return cls._get_site_score(site.source_score, site.created_by, site.modified_at)
-
-    @classmethod
-    def _get_site_score(
-        cls,
-        score: Optional[float],
-        created_by: list[str],
-        modified_at: datetime,
-    ):
-        if score is None or score < 0:
-            score = DEFAULT_SOURCE_SCORE
-        assert 0 <= score <= 1.0
-        if any(not is_system_user(x) for x in created_by):
-            # expert get the highest priority
-            return (1.0, modified_at)
-        return (min(score, 0.99), modified_at)
 
     @staticmethod
     def from_dedup_sites(
@@ -89,7 +58,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
             (
                 (
                     dedup_site,
-                    DedupMineralSite.get_site_score(dedup_site.sites[0]),
+                    dedup_site.ranked_sites[0].score,
                 )
                 for dedup_site in dedup_sites
             ),
@@ -99,7 +68,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
 
         _tmp_deposit_types: dict[str, DedupMineralSiteDepositType] = {}
         for dedup_site in dedup_sites:
-            for dt in dedup_site.deposit_types:
+            for dt in dedup_site.ranked_deposit_types:
                 if (
                     dt.id not in _tmp_deposit_types
                     or dt.confidence > _tmp_deposit_types[dt.id].confidence
@@ -120,7 +89,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 (site.type for site, _ in rank_dedup_sites if site.type is not None),
                 None,
             ),
-            deposit_types=sorted(
+            ranked_deposit_types=sorted(
                 _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
             )[:5],
             coordinates=next(
@@ -147,35 +116,28 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ),
                 dedup_sites[0].state_or_province,
             ),
+            ranked_sites=sorted(
+                (ms for dms in dedup_sites for ms in dms.ranked_sites),
+                key=lambda x: x.score,
+                reverse=True,
+            ),
             is_deleted=False,
             modified_at=max(dedup_site.modified_at for dedup_site in dedup_sites),
         )
-        merged_dedup_site.sites = [
-            site
-            for site, _ in sorted(
-                (
-                    (site, DedupMineralSite.get_site_score(site))
-                    for dedup_site, _ in rank_dedup_sites
-                    for site in dedup_site.sites
-                ),
-                key=lambda x: x[1],
-                reverse=True,
-            )
-        ]
-        merged_dedup_site.update_inventories(is_site_ranked=True)
         return merged_dedup_site
 
     @classmethod
     def from_sites(
         cls,
-        sites: list[MineralSite],
+        sites: Sequence[MineralSiteAndInventory],
+        dedup_site_id: Optional[InternalID] = None,
     ) -> DedupMineralSite:
-        _rank_ss = sorted(
+        _rank_ss: list[tuple[MineralSite, SiteScore]] = sorted(
             (
                 (
-                    site,
-                    cls.get_site_score(
-                        site,
+                    site.ms,
+                    SiteScore.get_score(
+                        site.ms,
                     ),
                 )
                 for site in sites
@@ -184,6 +146,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
             reverse=True,
         )
         rank_sites = [site for site, _ in _rank_ss]
+        rank_site_scores = [
+            SiteAndScore(site.site_id, score) for site, score in _rank_ss
+        ]
 
         coordinates = next(
             (
@@ -216,60 +181,58 @@ class DedupMineralSite(MappedAsDataclass, Base):
         )
 
         dedup_site = DedupMineralSite(
-            id=rank_sites[0].dedup_site_id,
+            id=(
+                dedup_site_id
+                if dedup_site_id is not None
+                else rank_sites[0].dedup_site_id
+            ),
             name=RefValue.from_sites(rank_sites, lambda site: site.name),
             type=RefValue.from_sites(rank_sites, lambda site: site.type),
             rank=RefValue.from_sites(rank_sites, lambda site: site.rank),
-            deposit_types=cls.top_5_deposit_types(rank_sites),
+            ranked_deposit_types=top_5_deposit_types(rank_sites),
             coordinates=coordinates,
             country=country,
             state_or_province=state_or_province,
+            ranked_sites=rank_site_scores,
             is_deleted=False,
-            modified_at=max(site.modified_at for site in sites),
+            modified_at=max(msi.ms.modified_at for msi in sites),
         )
-        dedup_site.sites = rank_sites
-        dedup_site.update_inventories(is_site_ranked=True)
+        dedup_site.update_inventories({msi.ms.site_id: msi.invs for msi in sites})
         return dedup_site
 
-    @staticmethod
-    def top_5_deposit_types(
-        sites: list[MineralSite],
-    ) -> list[DedupMineralSiteDepositType]:
-        _tmp_deposit_types: dict[str, DedupMineralSiteDepositType] = {}
+    def update_site(self, site: MineralSite):
+        new_site_score = SiteScore.get_score(site)
+        site_to_score = {ms.site_id: ms.score for ms in self.ranked_sites}
+        if site.name is not None:
+            if self.name is None or new_site_score > site_to_score[self.name.refid]:
+                self.name = RefValue(site.name, site.site_id)
 
-        for site in sites:
-            for dt in site.deposit_type_candidates:
-                if dt.normalized_uri is None:
-                    continue
-                dt_id = MINMOD_NS.mr.id(dt.normalized_uri)
-                if (
-                    dt_id not in _tmp_deposit_types
-                    or dt.confidence > _tmp_deposit_types[dt_id].confidence
-                ):
-                    _tmp_deposit_types[dt_id] = DedupMineralSiteDepositType(
-                        id=dt_id,
-                        source=dt.source,
-                        confidence=dt.confidence,
-                    )
+        if site.type is not None:
+            if self.type is None or new_site_score > site_to_score[self.type.refid]:
+                self.type = RefValue(site.type, site.site_id)
 
-        return sorted(
-            _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
-        )[:5]
+        if site.rank is not None:
+            if self.rank is None or new_site_score > site_to_score[self.rank.refid]:
+                self.rank = RefValue(site.rank, site.site_id)
 
-    def update_inventories(self, *, is_site_ranked: bool):
+        raise NotImplementedError()
+
+    def update_inventories(
+        self,
+        id_to_inventories: dict[InternalID, list[MineralInventoryView]],
+    ):
         """Update the inventories so that we always prefer the data presented by the users.
         If there are mutliple commodities reported by the users or by the system, we choose the one
         with the most recent date (if there is no date, we choose the one with the highest contained metal)
         """
-        self.ensure_ranked_sites(is_site_ranked)
         Data4CmpInv = TypedDict(
             "Data4CmpInv", {"inv": MineralInventoryView, "is_from_user": bool}
         )
         comm2inv: dict[InternalID, Data4CmpInv] = {}
 
-        for site in self.sites:
-            is_from_user = any(not is_system_user(u) for u in site.created_by)
-            for inv in site.inventory_views:
+        for site in self.ranked_sites:
+            is_from_user = site.score.is_from_user()
+            for inv in id_to_inventories[site.site_id]:
                 inv.dedup_site_id = None
                 if inv.commodity not in comm2inv:
                     comm2inv[inv.commodity] = {"inv": inv, "is_from_user": is_from_user}
@@ -319,11 +282,8 @@ class DedupMineralSite(MappedAsDataclass, Base):
                         }
                         continue
 
-        inventory_views = []
         for inv in comm2inv.values():
             inv["inv"].dedup_site_id = self.id
-            inventory_views.append(inv["inv"])
-        self.inventory_views = inventory_views
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(
@@ -334,7 +294,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ("rank", self.rank.to_dict() if self.rank is not None else None),
                 (
                     "deposit_types",
-                    [dt.to_dict() for dt in self.deposit_types],
+                    [dt.to_dict() for dt in self.ranked_deposit_types],
                 ),
                 (
                     "coordinates",
@@ -346,10 +306,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ),
                 ("country", self.country.to_dict()),
                 ("state_or_province", self.state_or_province.to_dict()),
+                ("ranked_sites", [site.to_dict() for site in self.ranked_sites]),
                 ("is_deleted", self.is_deleted),
-                ("modified_at", self.modified_at.isoformat()),
-                ("sites", [site.to_dict() for site in self.sites]),
-                ("inventory_views", [inv.to_dict() for inv in self.inventory_views]),
+                ("modified_at", self.modified_at),
             )
         )
 
@@ -360,7 +319,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
             name=RefValue.from_dict(d["name"]) if d.get("name") is not None else None,
             type=RefValue.from_dict(d["type"]) if d.get("type") is not None else None,
             rank=RefValue.from_dict(d["rank"]) if d.get("rank") is not None else None,
-            deposit_types=[
+            ranked_deposit_types=[
                 DedupMineralSiteDepositType.from_dict(dt)
                 for dt in d.get("deposit_types", [])
             ],
@@ -371,26 +330,35 @@ class DedupMineralSite(MappedAsDataclass, Base):
             ),
             country=RefListID.from_dict(d.get("country", [])),
             state_or_province=RefListID.from_dict(d.get("state_or_province", [])),
+            ranked_sites=[
+                SiteAndScore.from_dict(site) for site in d.get("ranked_sites", [])
+            ],
             is_deleted=d["is_deleted"],
-            modified_at=datetime.fromisoformat(d["modified_at"]),
+            modified_at=d["modified_at"],
         )
-        dedup_site.sites = [MineralSite.from_dict(site) for site in d.get("sites", [])]
-        dedup_site.inventory_views = [
-            MineralInventoryView.from_dict(inv) for inv in d.get("inventory_views", [])
-        ]
         return dedup_site
 
-    def ensure_ranked_sites(self, is_site_ranked: bool):
-        id2score = {
-            site.site_id: self.get_site_score(
-                site,
-            )
-            for site in self.sites
-        }
-        if is_site_ranked:
-            assert all(
-                id2score[self.sites[i + 1].site_id] <= id2score[self.sites[i].site_id]
-                for i in range(0, len(self.sites) - 1)
-            )
-        else:
-            self.sites.sort(key=lambda site: id2score[site.site_id], reverse=True)
+
+def top_5_deposit_types(
+    sites: list[MineralSite],
+) -> list[DedupMineralSiteDepositType]:
+    _tmp_deposit_types: dict[str, DedupMineralSiteDepositType] = {}
+
+    for site in sites:
+        for dt in site.deposit_type_candidates:
+            if dt.normalized_uri is None:
+                continue
+            dt_id = MINMOD_NS.mr.id(dt.normalized_uri)
+            if (
+                dt_id not in _tmp_deposit_types
+                or dt.confidence > _tmp_deposit_types[dt_id].confidence
+            ):
+                _tmp_deposit_types[dt_id] = DedupMineralSiteDepositType(
+                    id=dt_id,
+                    source=dt.source,
+                    confidence=dt.confidence,
+                )
+
+    return sorted(
+        _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
+    )[:5]

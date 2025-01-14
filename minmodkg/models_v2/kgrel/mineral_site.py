@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
@@ -8,7 +9,7 @@ import minmodkg.models.candidate_entity
 import minmodkg.models.mineral_inventory
 import minmodkg.models.reference
 from minmodkg.grade_tonnage_model import GradeTonnageModel
-from minmodkg.misc.utils import makedict
+from minmodkg.misc.utils import datetime_to_nanoseconds, makedict
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.measure import Measure
@@ -25,46 +26,41 @@ from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
-from sqlalchemy import JSON, ForeignKey
-from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
+from sqlalchemy import JSON, BigInteger, ForeignKey
+from sqlalchemy.orm import (
+    Mapped,
+    MappedAsDataclass,
+    mapped_column,
+    reconstructor,
+    relationship,
+)
 
 if TYPE_CHECKING:
     from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 
 
-class MineralSite(MappedAsDataclass, Base):
-    __tablename__ = "mineral_site"
+@dataclass
+class MineralSiteAndInventory:
+    ms: MineralSite
+    invs: list[MineralInventoryView]
 
-    id: Mapped[int] = mapped_column(primary_key=True, init=False)
-    site_id: Mapped[InternalID] = mapped_column(unique=True)
-    source_id: Mapped[URN] = mapped_column()
-    source_score: Mapped[Optional[float]] = mapped_column()
-    record_id: Mapped[str] = mapped_column()
-    name: Mapped[str | None] = mapped_column()
-    aliases: Mapped[list[str]] = mapped_column(JSON)
-    rank: Mapped[str | None] = mapped_column()
-    type: Mapped[str | None] = mapped_column()
-
-    location: Mapped[Location | None] = mapped_column()
-    location_view: Mapped[LocationView] = mapped_column()
-    deposit_type_candidates: Mapped[list[CandidateEntity]] = mapped_column()
-    inventories: Mapped[list[MineralInventory]] = mapped_column()
-    inventory_views: Mapped[list[MineralInventoryView]] = relationship(
-        init=False, lazy="raise_on_sql"
-    )
-    reference: Mapped[list[Reference]] = mapped_column()
-
-    created_by: Mapped[list[IRI]] = mapped_column(JSON)
-    modified_at: Mapped[datetime] = mapped_column()
-
-    dedup_site_id: Mapped[
-        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
-    ] = mapped_column(ForeignKey("dedup_mineral_site.id"), index=True)
-    dedup_site: Mapped[DedupMineralSite] = relationship(init=False, lazy="raise_on_sql")
-
-    def set_id(self, id: int) -> MineralSite:
-        self.id = id
+    def set_id(self, ms_id: int) -> MineralSiteAndInventory:
+        self.ms.id = ms_id
+        for inv in self.invs:
+            inv.site_id = ms_id
         return self
+
+    def to_dict(self):
+        return makedict.without_none_or_empty_list(
+            (("ms", self.ms.to_dict()), ("invs", [inv.to_dict() for inv in self.invs]))
+        )
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            ms=MineralSite.from_dict(d),
+            invs=[MineralInventoryView.from_dict(inv) for inv in d.get("invs", [])],
+        )
 
     @staticmethod
     def from_raw_site(
@@ -72,29 +68,16 @@ class MineralSite(MappedAsDataclass, Base):
         material_form: dict[str, float],
         crs_names: dict[str, str],
         source_score: dict[IRI, float],
-    ) -> MineralSite:
-        site = (
-            InMineralSite.from_dict(raw_site)
-            if isinstance(raw_site, dict)
-            else raw_site
+    ) -> MineralSiteAndInventory:
+        ms = MineralSite.from_raw_site(raw_site, crs_names, source_score)
+
+        invs: dict[InternalID, list[GradeTonnageModel.MineralInventory]] = defaultdict(
+            list
         )
-        location = None
-        location_view = LocationView()
-
-        if site.location_info is not None:
-            location = Location(
-                country=site.location_info.country,
-                state_or_province=site.location_info.state_or_province,
-                crs=site.location_info.crs,
-                coordinates=site.location_info.location,
-            )
-            location_view = LocationView.from_location(location, crs_names)
-
-        invs: dict[InternalID, list] = defaultdict(list)
         grade_tonnage_model = GradeTonnageModel()
         commodities = set()
 
-        for inv_id, inv in enumerate(site.mineral_inventory):
+        for inv_id, inv in enumerate(ms.inventories):
             if inv.commodity.normalized_uri is None:
                 continue
 
@@ -139,25 +122,6 @@ class MineralSite(MappedAsDataclass, Base):
                 )
             )
 
-        out_site = MineralSite(
-            site_id=site.id,
-            dedup_site_id=MineralSite.get_dedup_id((site.id,)),
-            source_id=site.source_id,
-            source_score=source_score.get(get_source_uri(site.source_id)),
-            record_id=str(site.record_id),
-            name=site.name,
-            aliases=site.aliases,
-            rank=site.site_rank,
-            type=site.site_type,
-            location=location,
-            location_view=location_view,
-            deposit_type_candidates=site.deposit_type_candidate,
-            inventories=site.mineral_inventory,
-            reference=site.reference,
-            created_by=site.created_by,
-            modified_at=datetime.fromisoformat(site.modified_at),
-        )
-
         inv_views = []
         for commodity, gt_invs in invs.items():
             grade_tonnage = grade_tonnage_model(gt_invs)
@@ -191,7 +155,85 @@ class MineralSite(MappedAsDataclass, Base):
                         date=None,
                     )
                 )
-        out_site.inventory_views = inv_views
+
+        return MineralSiteAndInventory(ms, inv_views)
+
+
+class MineralSite(MappedAsDataclass, Base):
+    __tablename__ = "mineral_site"
+
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
+    site_id: Mapped[InternalID] = mapped_column(unique=True)
+    dedup_site_id: Mapped[
+        Annotated[InternalID, "Id of the mineral site that this site is the same as"]
+    ] = mapped_column(
+        ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), index=True
+    )
+    source_id: Mapped[URN] = mapped_column()
+    source_score: Mapped[Optional[float]] = mapped_column()
+    record_id: Mapped[str] = mapped_column()
+    name: Mapped[str | None] = mapped_column()
+    aliases: Mapped[list[str]] = mapped_column(JSON)
+    rank: Mapped[str | None] = mapped_column()
+    type: Mapped[str | None] = mapped_column()
+
+    location: Mapped[Location | None] = mapped_column()
+    location_view: Mapped[LocationView] = mapped_column()
+    deposit_type_candidates: Mapped[list[CandidateEntity]] = mapped_column()
+    inventories: Mapped[list[MineralInventory]] = mapped_column()
+    reference: Mapped[list[Reference]] = mapped_column()
+
+    created_by: Mapped[list[IRI]] = mapped_column(JSON)
+    # timestamp in nano seconds
+    modified_at: Mapped[int] = mapped_column(BigInteger)
+
+    def set_id(self, id: int) -> MineralSite:
+        self.id = id
+        return self
+
+    @staticmethod
+    def from_raw_site(
+        raw_site: dict | InMineralSite,
+        crs_names: dict[str, str],
+        source_score: dict[IRI, float],
+    ) -> MineralSite:
+        site = (
+            InMineralSite.from_dict(raw_site)
+            if isinstance(raw_site, dict)
+            else raw_site
+        )
+        location = None
+        location_view = LocationView()
+
+        if site.location_info is not None:
+            location = Location(
+                country=site.location_info.country,
+                state_or_province=site.location_info.state_or_province,
+                crs=site.location_info.crs,
+                coordinates=site.location_info.location,
+            )
+            location_view = LocationView.from_location(location, crs_names)
+
+        out_site = MineralSite(
+            site_id=site.id,
+            dedup_site_id=MineralSite.get_dedup_id((site.id,)),
+            source_id=site.source_id,
+            source_score=source_score.get(get_source_uri(site.source_id)),
+            record_id=str(site.record_id),
+            name=site.name,
+            aliases=site.aliases,
+            rank=site.site_rank,
+            type=site.site_type,
+            location=location,
+            location_view=location_view,
+            deposit_type_candidates=site.deposit_type_candidate,
+            inventories=site.mineral_inventory,
+            reference=site.reference,
+            created_by=site.created_by,
+            modified_at=datetime_to_nanoseconds(
+                datetime.fromisoformat(site.modified_at)
+            ),
+        )
         return out_site
 
     def to_dict(self):
@@ -223,11 +265,9 @@ class MineralSite(MappedAsDataclass, Base):
                     "deposit_type_candidates",
                     [x.to_dict() for x in self.deposit_type_candidates],
                 ),
-                ("inventories", [x.to_dict() for x in self.inventories]),
-                ("inventory_views", [x.to_dict() for x in self.inventory_views]),
                 ("reference", [x.to_dict() for x in self.reference]),
                 ("created_by", self.created_by),
-                ("modified_at", self.modified_at.strftime("%Y-%m-%dT%H:%M:%SZ")),
+                ("modified_at", self.modified_at),
             )
         )
 
@@ -254,13 +294,8 @@ class MineralSite(MappedAsDataclass, Base):
             ],
             reference=[Reference.from_dict(x) for x in d.get("reference", [])],
             created_by=d["created_by"],
-            modified_at=datetime.fromisoformat(d["modified_at"]),
+            modified_at=d["modified_at"],
         )
-
-        if "inventory_views" in d:
-            obj.inventory_views = [
-                MineralInventoryView.from_dict(x) for x in d["inventory_views"]
-            ]
         if "id" in d:
             obj.id = d["id"]
         return obj

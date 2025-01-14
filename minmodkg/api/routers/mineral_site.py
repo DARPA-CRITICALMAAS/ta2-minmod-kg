@@ -11,7 +11,7 @@ from minmodkg.api.dependencies import (
 )
 from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
-    PublicMineralSite,
+    OutputPublicMineralSite,
 )
 from minmodkg.api.routers.predefined_entities import (
     get_crs,
@@ -42,7 +42,7 @@ def get_sites(
     mineral_site_service: MineralSiteServiceDep,
 ):
     return {
-        k: PublicMineralSite.from_kgrel(v).to_dict()
+        k: OutputPublicMineralSite.from_kgrel(v).to_dict()
         for k, v in mineral_site_service.find_by_ids(ids).items()
     }
 
@@ -60,7 +60,7 @@ def get_site(
             detail="The requested site does not exist.",
         )
     if format == "json":
-        return PublicMineralSite.from_kgrel(mineral_site).to_dict()
+        return OutputPublicMineralSite.from_kgrel(mineral_site).to_dict()
     elif format == "ttl":
         raise NotImplementedError()
         return Response(
@@ -91,20 +91,21 @@ def create_site(
     user: CurrentUserDep,
 ):
     snapshot_id = get_snapshot_id()
-    new_site = create_site.to_kgrel(
+    new_msi = create_site.to_kgrel(
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
         source_uri_to_score(snapshot_id),
     )
 
-    if mineral_site_service.contain_site_id(new_site.site_id):
+    site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
+    if site_db_id is not None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site already exists.",
         )
 
-    mineral_site_service.create(user, new_site)
-    return PublicMineralSite.from_kgrel(new_site).to_dict()
+    mineral_site_service.create(user, new_msi)
+    return OutputPublicMineralSite.from_kgrel(new_msi).to_dict()
 
 
 @router.put("/mineral-sites/{site_id}")
@@ -115,26 +116,27 @@ def update_site(
     user: CurrentUserDep,
 ):
     snapshot_id = get_snapshot_id()
-    new_site = update_site.to_kgrel(
+    upd_msi = update_site.to_kgrel(
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
         source_uri_to_score(snapshot_id),
     )
 
-    if site_id != new_site.site_id:
+    if site_id != upd_msi.ms.site_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The site_id in the request body does not match the site_id in the URL.",
         )
 
-    if not mineral_site_service.contain_site_id(site_id):
+    site_db_id = mineral_site_service.get_site_db_id(site_id)
+    if site_db_id is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="The site already exists.",
+            detail="The site doesn't exist",
         )
 
-    mineral_site_service.update(user, new_site)
-    return PublicMineralSite.from_kgrel(new_site).to_dict()
+    mineral_site_service.update(user, upd_msi.set_id(site_db_id))
+    return OutputPublicMineralSite.from_kgrel(upd_msi).to_dict()
 
 
 @lru_cache(maxsize=1)

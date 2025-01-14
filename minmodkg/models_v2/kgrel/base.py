@@ -17,7 +17,7 @@ from minmodkg.models_v2.kgrel.custom_types import (
     RefValue,
     SiteAndScore,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 from sqlalchemy.orm import DeclarativeBase, Session
 
 
@@ -31,6 +31,7 @@ class Base(DeclarativeBase):
         RefGeoCoordinate: DataclassType(RefGeoCoordinate),
         RefListID: DataclassType(RefListID),
         SiteAndScore: DataclassType(SiteAndScore),
+        list[SiteAndScore]: ListDataclassType(SiteAndScore),
         list[DedupMineralSiteDepositType]: ListDataclassType(
             DedupMineralSiteDepositType
         ),
@@ -38,6 +39,17 @@ class Base(DeclarativeBase):
         list[MineralInventory]: ListDataclassType(MineralInventory),
         list[Reference]: ListDataclassType(Reference),
     }
+
+    def get_update_query(self):
+        q = update(self.__class__)
+        args = {}
+        for col in self.__table__.columns:
+            val = getattr(self, col.name)
+            if col.primary_key:
+                q = q.where(getattr(self.__class__, col.name) == val)
+            args[col.name] = val
+
+        return q.values(**args)
 
 
 dbconn = MINMOD_KGREL_DB

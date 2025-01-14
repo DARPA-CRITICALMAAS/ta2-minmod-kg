@@ -14,7 +14,7 @@ from minmodkg.models_v2.kgrel.custom_types.ref_value import (
     RefListID,
     RefValue,
 )
-from minmodkg.models_v2.kgrel.custom_types.site_and_score import SiteAndScore
+from minmodkg.models_v2.kgrel.custom_types.site_and_score import SiteAndScore, SiteScore
 from sqlalchemy import LargeBinary, TypeDecorator
 
 
@@ -73,4 +73,5 @@ __all__ = [
     "RefListID",
     "DedupMineralSiteDepositType",
     "SiteAndScore",
+    "SiteScore",
 ]

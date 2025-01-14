@@ -4,14 +4,17 @@ import subprocess
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any, Generator
 
 import httpx
 import jwt
 import minmodkg.models_v2.kgrel.base
 import pytest
+import serde.json
 from fastapi.testclient import TestClient
 from minmodkg import config
 from minmodkg.api.main import app
+from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
 from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
@@ -143,7 +146,9 @@ def kg(resource_dir: Path, kg_singleton: TripleStore):
 
 
 @pytest.fixture(scope="class")
-def kgrel(resource_dir: Path, kgrel_singleton: Engine, users: list[User]):
+def kgrel(
+    resource_dir: Path, kgrel_singleton: Engine, users: list[User]
+) -> Generator[Engine, Any, None]:
     with Session(kgrel_singleton, expire_on_commit=False) as session:
         for tbl in reversed(minmodkg.models_v2.kgrel.base.Base.metadata.sorted_tables):
             session.execute(tbl.delete())

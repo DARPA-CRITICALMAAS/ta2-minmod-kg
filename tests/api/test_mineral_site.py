@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import time
+from pathlib import Path
 from time import sleep
 
 import pytest
+import serde.json
 from fastapi.testclient import TestClient
 from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
+from minmodkg.api.routers.mineral_site import (
+    crs_uri_to_name,
+    material_form_uri_to_conversion,
+    source_uri_to_score,
+)
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
 from minmodkg.models.dedup_mineral_site import DedupMineralSite
@@ -13,7 +20,9 @@ from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Document, Reference
+from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models_v2.kgrel.user import User
+from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.transformations import make_site_uri
 from shapely import Point
 from shapely.wkt import loads
@@ -175,46 +184,6 @@ class TestMineralSite(TestMineralSiteData):
         assert resp.json() == {"detail": "The site already exists."}
         assert resp.status_code == 403
 
-    @pytest.mark.skip
-    def test_get_site_changes(self, auth_client, kg: TripleStore, user1: User):
-        sleep(1.0)  # to ensure the modified_at is different
-        self.site1.name = "Frog Mine"
-        self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
-            DedupMineralSite.get_id([self.site1_id])
-        )
-
-        new_site1 = self.site1.model_copy()
-        del_triples, add_triples = UpdateMineralSite.get_triples(
-            self.site1_id, self.site1_uri, new_site1, user1
-        )
-        subj = MINMOD_KG.ns.mr[self.site1_id]
-        assert set(del_triples) == {
-            (
-                subj,
-                "mo:modified_at",
-                [triple[2] for triple in del_triples if triple[1] == "mo:modified_at"][
-                    0
-                ],
-            ),
-            (
-                subj,
-                "rdfs:label",
-                '"Eagle Mine"',
-            ),
-        }
-        assert set(add_triples) == {
-            (
-                subj,
-                "mo:modified_at",
-                f'"{new_site1.modified_at}"',
-            ),
-            (
-                subj,
-                "rdfs:label",
-                '"Frog Mine"',
-            ),
-        }
-
     def test_update_site(self, auth_client, kg: TripleStore):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
@@ -311,16 +280,33 @@ class TestMineralSite(TestMineralSiteData):
 
 
 class TestMineralSiteLinking:
-    def test_update_same_as(self, auth_client, kg):
+    def test_update_same_as(self, resource_dir: Path, user1, auth_client, kg, kgrel):
         time.sleep(1.0)  # to ensure the modified_at is different
+        crss = crs_uri_to_name(None)
+        material_form = material_form_uri_to_conversion(None)
+        source_score = source_uri_to_score(None)
+
+        mineral_site_service = MineralSiteService(kgrel)
+        id2site = {}
+        for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
+            for raw_site in serde.json.deser(file):
+                msi = MineralSiteAndInventory.from_raw_site(
+                    raw_site,
+                    material_form=material_form,
+                    crs_names=crss,
+                    source_score=source_score,
+                )
+                id2site[msi.ms.site_id] = msi.ms
+                mineral_site_service.create(user1, msi)
+
         resp = check_req(
             lambda: auth_client.post(
                 "/api/v1/same-as",
                 json=[
                     {
                         "sites": [
-                            "site__doi-org-10-5066-p9htergk__29834",
-                            "site__doi-org-10-5066-p9htergk__29328",
+                            "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
+                            "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
                         ]
                     }
                 ],

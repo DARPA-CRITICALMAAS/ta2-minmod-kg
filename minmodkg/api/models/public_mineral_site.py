@@ -4,14 +4,15 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
-from minmodkg.misc.utils import makedict
+from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.mineral_site import MineralSite as InputMineralSite
 from minmodkg.models_v2.inputs.reference import Reference
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.typing import IRI, InternalID
 from pydantic import BaseModel, Field
 
@@ -29,7 +30,7 @@ class Coordinates(BaseModel):
     lon: Annotated[float, "Longitude"]
 
 
-class PublicMineralSite(BaseModel):
+class OutputPublicMineralSite(BaseModel):
     id: InternalID
     source_id: str
     record_id: Union[str, int]
@@ -44,47 +45,45 @@ class PublicMineralSite(BaseModel):
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
     reference: list[Reference] = Field(default_factory=list)
     modified_at: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
+        default_factory=lambda: format_datetime(datetime.now(timezone.utc))
     )
 
     coordinates: Optional[Coordinates] = None
     grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
 
     @staticmethod
-    def from_kgrel(site: MineralSite):
-        return PublicMineralSite(
-            id=site.site_id,
-            source_id=site.source_id,
-            record_id=site.record_id,
-            dedup_site_uri=MINMOD_NS.md.uristr(site.dedup_site_id),
-            name=site.name,
-            created_by=site.created_by,
-            aliases=site.aliases,
-            site_rank=site.rank,
-            site_type=site.type,
+    def from_kgrel(site: MineralSiteAndInventory):
+        ms = site.ms
+        return OutputPublicMineralSite(
+            id=ms.site_id,
+            source_id=ms.source_id,
+            record_id=ms.record_id,
+            dedup_site_uri=MINMOD_NS.md.uristr(ms.dedup_site_id),
+            name=ms.name,
+            created_by=ms.created_by,
+            aliases=ms.aliases,
+            site_rank=ms.rank,
+            site_type=ms.type,
             location_info=(
                 LocationInfo(
-                    country=site.location.country,
-                    state_or_province=site.location.state_or_province,
-                    crs=site.location.crs,
-                    location=site.location.coordinates,
+                    country=ms.location.country,
+                    state_or_province=ms.location.state_or_province,
+                    crs=ms.location.crs,
+                    location=ms.location.coordinates,
                 )
-                if site.location is not None
+                if ms.location is not None
                 else None
             ),
-            deposit_type_candidate=site.deposit_type_candidates,
-            mineral_inventory=site.inventories,
-            reference=site.reference,
-            modified_at=site.modified_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            deposit_type_candidate=ms.deposit_type_candidates,
+            mineral_inventory=ms.inventories,
+            reference=ms.reference,
+            modified_at=format_nanoseconds(ms.modified_at),
             coordinates=(
                 Coordinates(
-                    lat=site.location_view.lat,
-                    lon=site.location_view.lon,
+                    lat=ms.location_view.lat,
+                    lon=ms.location_view.lon,
                 )
-                if site.location_view.lat is not None
-                and site.location_view.lon is not None
+                if ms.location_view.lat is not None and ms.location_view.lon is not None
                 else None
             ),
             grade_tonnage=[
@@ -95,9 +94,12 @@ class PublicMineralSite(BaseModel):
                     total_grade=gt.grade,
                     date=gt.date,
                 )
-                for gt in site.inventory_views
+                for gt in site.invs
             ],
         )
+
+    def clone(self):
+        return self.model_copy()
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(
@@ -142,20 +144,30 @@ class PublicMineralSite(BaseModel):
 class InputPublicMineralSite(InputMineralSite):
     dedup_site_uri: Optional[IRI] = None
 
+    def __post_init__(self):
+        if self.dedup_site_uri is None:
+            self.dedup_site_uri = MINMOD_NS.md.uristr(
+                MineralSite.get_dedup_id((self.id,))
+            )
+
+    @property
+    def dedup_site_id(self):
+        assert self.dedup_site_uri is not None
+        return MINMOD_NS.md.id(self.dedup_site_uri)
+
     def to_kgrel(
         self,
         material_form: dict[str, float],
         crs_names: dict[str, str],
         source_score: dict[str, float],
-    ) -> MineralSite:
-        site = MineralSite.from_raw_site(
+    ) -> MineralSiteAndInventory:
+        site = MineralSiteAndInventory.from_raw_site(
             self,
             material_form=material_form,
             crs_names=crs_names,
             source_score=source_score,
         )
-        if self.dedup_site_uri is not None:
-            site.dedup_site_id = MINMOD_NS.md.id(self.dedup_site_uri)
+        site.ms.dedup_site_id = self.dedup_site_id
         return site
 
     def to_dict(self):

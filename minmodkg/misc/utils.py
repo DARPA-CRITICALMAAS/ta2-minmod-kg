@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
@@ -151,6 +152,18 @@ def extend_unique(
                 unique_lst.append(item)
                 keys.add(k)
     return unique_lst
+
+
+def format_datetime(dt: datetime):
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def datetime_to_nanoseconds(dt: datetime):
+    return int(dt.timestamp() * 1e9)
+
+
+def format_nanoseconds(ns: int) -> str:
+    return datetime.fromtimestamp(ns / 1e9).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def exclude_none_or_empty_list(obj: dict):

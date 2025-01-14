@@ -4,9 +4,9 @@ import time
 from typing import Literal
 
 from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.typing import InternalID
-from sqlalchemy import JSON, Text
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
@@ -19,7 +19,7 @@ class EventLog(MappedAsDataclass, Base):
     timestamp: Mapped[float] = mapped_column(default_factory=time.time)
 
     @classmethod
-    def from_site_add(cls, site: MineralSite) -> EventLog:
+    def from_site_add(cls, site: MineralSiteAndInventory) -> EventLog:
         return EventLog(
             type="site:add",
             data={
@@ -28,7 +28,7 @@ class EventLog(MappedAsDataclass, Base):
         )
 
     @classmethod
-    def from_site_update(cls, site: MineralSite) -> EventLog:
+    def from_site_update(cls, site: MineralSiteAndInventory) -> EventLog:
         return EventLog(
             type="site:update",
             data={

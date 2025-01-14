@@ -1,0 +1,183 @@
+from __future__ import annotations
+
+import time
+from pathlib import Path
+from time import sleep
+
+import pytest
+import serde.json
+from fastapi.testclient import TestClient
+from minmodkg.api.models.public_mineral_site import (
+    Coordinates,
+    GradeTonnage,
+    InputPublicMineralSite,
+    OutputPublicMineralSite,
+)
+from minmodkg.api.routers.mineral_site import (
+    crs_uri_to_name,
+    material_form_uri_to_conversion,
+    source_uri_to_score,
+)
+from minmodkg.misc.rdf_store import TripleStore
+from minmodkg.misc.utils import assert_not_none, format_datetime
+from minmodkg.models.base import MINMOD_KG
+from minmodkg.models.dedup_mineral_site import DedupMineralSite
+from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
+from minmodkg.models_v2.inputs.location_info import LocationInfo
+from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
+from minmodkg.models_v2.inputs.reference import Document, Reference
+from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.models_v2.kgrel.user import User
+from minmodkg.services.mineral_site import MineralSiteService
+from minmodkg.transformations import make_site_uri
+from shapely import Point
+from shapely.wkt import loads
+from sqlalchemy import Engine
+from tests.utils import check_req
+
+
+class TestMSData:
+    @pytest.fixture(autouse=True)
+    def site1_(self, user1: User):
+        self.site1_commodity = "Q578"
+        self.site1 = InputPublicMineralSite(
+            source_id="database::https://mrdata.usgs.gov/mrds",
+            record_id="10014570",
+            name="Eagle Mine",
+            location_info=LocationInfo(
+                location="POINT(-87.099998474121 46.900001525879)",
+            ),
+            created_by=[user1.get_uri()],
+            mineral_inventory=[
+                MineralInventory(
+                    commodity=CandidateEntity(
+                        source="database::https://mrdata.usgs.gov/mrds",
+                        confidence=1.0,
+                        observed_name="Nickel",
+                        normalized_uri=MINMOD_KG.ns.mr.uristr(self.site1_commodity),
+                    ),
+                    reference=Reference(
+                        document=Document(uri="https://mrdata.usgs.gov/mrds")
+                    ),
+                )
+            ],
+        )
+        self.site1_output = OutputPublicMineralSite(
+            id=self.site1.id,
+            source_id=self.site1.source_id,
+            record_id=self.site1.record_id,
+            dedup_site_uri=self.site1.dedup_site_uri,
+            name=self.site1.name,
+            created_by=[user1.get_uri()],
+            aliases=self.site1.aliases,
+            site_rank=self.site1.site_rank,
+            site_type=self.site1.site_type,
+            location_info=self.site1.location_info,
+            deposit_type_candidate=self.site1.deposit_type_candidate,
+            mineral_inventory=self.site1.mineral_inventory,
+            reference=self.site1.reference,
+            coordinates=Coordinates(
+                lat=46.900001525879,
+                lon=-87.099998474121,
+            ),
+            grade_tonnage=[GradeTonnage(commodity=self.site1_commodity)],
+        )
+
+    # @pytest.fixture(autouse=True)
+    # def site2_(self, user2: User):
+    #     self.site2_commodity = "Q569"
+    #     self.site2 = InputPublicMineralSite(
+    #         source_id="database::https://mrdata.usgs.gov/mrds",
+    #         record_id="10109359",
+    #         name="Beaver Mine",
+    #         location_info=LocationInfo(
+    #             location="POINT(-118.7805 44.71207)",
+    #         ),
+    #         created_by=[user2.get_uri()],
+    #         mineral_inventory=[
+    #             MineralInventory(
+    #                 commodity=CandidateEntity(
+    #                     source="database::https://mrdata.usgs.gov/mrds",
+    #                     confidence=1.0,
+    #                     observed_name="Lithium",
+    #                     normalized_uri=MINMOD_KG.ns.mr.uristr(self.site2_commodity),
+    #                 ),
+    #                 reference=Reference(
+    #                     document=Document(uri="https://mrdata.usgs.gov/mrds")
+    #                 ),
+    #             )
+    #         ],
+    #         dedup_site_uri=self.site1_dedup_uri,
+    #     )
+    #     self.site2_id = make_site_uri(
+    #         self.site2.source_id, self.site2.record_id, namespace=""
+    #     )
+    #     self.site2_uri = make_site_uri(self.site2.source_id, self.site2.record_id)
+    #     self.site2_dump = self.site2.to_dict()
+    #     self.site2_dump.update(
+    #         {
+    #             "coordinates": {
+    #                 "lat": 44.71207,
+    #                 "lon": -118.7805,
+    #             },
+    #             "dedup_site_uri": self.site2.dedup_site_uri,
+    #             "created_by": [user2.get_uri()],
+    #             "id": self.site2_id,
+    #             "grade_tonnage": [{"commodity": self.site2_commodity}],
+    #         }
+    #     )
+    #     del self.site2_dump["modified_at"]
+
+    def to_kgrel(self, site: InputPublicMineralSite):
+        return site.to_kgrel(
+            material_form_uri_to_conversion(None),
+            crs_uri_to_name(None),
+            source_uri_to_score(None),
+        )
+
+
+class TestCreateMineralSite(TestMSData):
+
+    def test_create_mineral_site_first(
+        self, user1: User, kg: TripleStore, kgrel: Engine
+    ):
+        service = MineralSiteService(kgrel)
+        service.create(user1, self.to_kgrel(self.site1))
+
+        out_ms = OutputPublicMineralSite.from_kgrel(
+            assert_not_none(service.find_by_id(self.site1.id))
+        )
+        assert out_ms.to_dict() == dict(
+            self.site1_output.to_dict(),
+            modified_at=out_ms.modified_at,
+        )
+
+
+class TestLinkMineralSite(TestMSData):
+    def test_update_same_as(self, resource_dir: Path, user1, auth_client, kg, kgrel):
+        time.sleep(1.0)  # to ensure the modified_at is different
+        crss = crs_uri_to_name(None)
+        material_form = material_form_uri_to_conversion(None)
+        source_score = source_uri_to_score(None)
+
+        mineral_site_service = MineralSiteService(kgrel)
+        id2site = {}
+        for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
+            for raw_site in serde.json.deser(file):
+                msi = MineralSiteAndInventory.from_raw_site(
+                    raw_site,
+                    material_form=material_form,
+                    crs_names=crss,
+                    source_score=source_score,
+                )
+                id2site[msi.ms.site_id] = msi.ms
+                mineral_site_service.create(user1, msi)
+
+        mineral_site_service.update_same_as(
+            [
+                [
+                    "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
+                    "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
+                ]
+            ]
+        )

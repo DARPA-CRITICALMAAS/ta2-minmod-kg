@@ -5,6 +5,7 @@ from typing import Literal
 
 import bcrypt
 from minmodkg.models_v2.kgrel.base import Base
+from minmodkg.models_v2.kgrel.user_extra import is_system_user
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
@@ -59,10 +60,6 @@ class User(MappedAsDataclass, Base):
             password=bytes.fromhex(d["password"]),
             role=d["role"],
         )
-
-
-def is_system_user(created_by: str):
-    return created_by.startswith("https://minmod.isi.edu/users/s/")
 
 
 def is_valid_user_uri(uri: str):

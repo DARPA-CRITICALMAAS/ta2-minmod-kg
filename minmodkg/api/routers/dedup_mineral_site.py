@@ -29,8 +29,8 @@ def dedup_mineral_sites_v2(
         )
 
     items = [
-        DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(exclude_none=True)
-        for dms in res["items"].values()
+        DedupMineralSitePublic.from_kgrel(dmsi, commodity).model_dump(exclude_none=True)
+        for dmsi in res["items"].values()
     ]
     if return_count:
         return {
@@ -49,10 +49,10 @@ def api_get_dedup_mineral_sites(
         commodity=commodity, dedup_site_ids=ids
     )
     return {
-        dms_id: DedupMineralSitePublic.from_kgrel(dms, commodity).model_dump(
+        dms_id: DedupMineralSitePublic.from_kgrel(dmsi, commodity).model_dump(
             exclude_none=True
         )
-        for dms_id, dms in res["items"].items()
+        for dms_id, dmsi in res["items"].items()
     }
 
 
@@ -67,8 +67,8 @@ def api_get_dedup_mineral_site(
         commodity=commodity, dedup_site_ids=[dedup_site_id]
     )
     output = {
-        dms_id: DedupMineralSitePublic.from_kgrel(dms, commodity)
-        for dms_id, dms in qres["items"].items()
+        dms_id: DedupMineralSitePublic.from_kgrel(dmsi, commodity)
+        for dms_id, dmsi in qres["items"].items()
     }
 
     if len(output) == 0:

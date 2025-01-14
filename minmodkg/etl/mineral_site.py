@@ -16,6 +16,7 @@ from minmodkg.models.source import Source
 from minmodkg.models_v2.inputs.mineral_site import MineralSite
 from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
+from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from rdflib import RDFS, Graph
@@ -478,13 +479,13 @@ class MergeFn:
             for raw_site in raw_sites[1:]:
                 site.merge_mut(MineralSite.from_dict(raw_site))
 
-            norm_site = RelMineralSite.from_raw_site(
+            norm_site = MineralSiteAndInventory.from_raw_site(
                 site.to_dict(),
                 self.material_form_conversion,
                 self.epsg_name,
                 self.source_score,
             )
-            norm_site.dedup_site_id = dedup_map[norm_site.site_id]
+            norm_site.ms.dedup_site_id = dedup_map[norm_site.ms.site_id]
             output.append(norm_site.to_dict())
 
         serde.json.ser(output, outfile)
