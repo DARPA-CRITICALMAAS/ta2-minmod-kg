@@ -42,7 +42,7 @@ def login(
         key="session",
         value=access_token,
     )
-    return "Logged in"
+    return PublicUser.from_kgrel(user)
 
 
 @router.get("/users/find_by_ids")
