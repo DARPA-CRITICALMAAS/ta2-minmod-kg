@@ -13,7 +13,7 @@ from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInv
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import Engine, Select, delete, distinct, func, select, update
+from sqlalchemy import Engine, Row, Select, delete, distinct, func, select, update
 from sqlalchemy.orm import Session
 
 RawMineralInventoryView = dict
@@ -62,11 +62,7 @@ class MineralSiteService:
             row = session.execute(query).one_or_none()
             if row is None:
                 return None
-
-            return DedupMineralSiteAndInventory(
-                dms=row[0],
-                invs=[MineralInventoryView.from_dict(inv) for inv in row[1]],
-            )
+            return self._norm_dedup_mineral_site(row)
 
     def find_by_ids(
         self, ids: list[InternalID]
@@ -260,23 +256,9 @@ class MineralSiteService:
             query = query.offset(offset)
 
         with Session(self.engine, expire_on_commit=False) as session:
-            lst_dms_and_invs: list[DedupMineralSiteAndInventory] = []
-            for dms, invs in session.execute(query).all():
-                dms: DedupMineralSite
-                inventory_views = [
-                    MineralInventoryView(
-                        commodity=inv["commodity"],
-                        contained_metal=inv["contained_metal"],
-                        tonnage=inv["tonnage"],
-                        grade=inv["grade"],
-                        date=inv["date"],
-                    )
-                    for inv in invs
-                ]
-
-                lst_dms_and_invs.append(
-                    DedupMineralSiteAndInventory(dms=dms, invs=inventory_views)
-                )
+            lst_dms_and_invs: list[DedupMineralSiteAndInventory] = [
+                self._norm_dedup_mineral_site(row) for row in session.execute(query)
+            ]
             total = (
                 session.execute(count_query).scalar_one()
                 if count_query is not None
@@ -297,7 +279,7 @@ class MineralSiteService:
 
     def _select_mineral_site(
         self,
-    ) -> Select[Tuple[MineralSite, RawMineralInventoryView]]:
+    ) -> Select[Tuple[MineralSite, list[RawMineralInventoryView]]]:
         return (
             select(
                 MineralSite,
@@ -314,18 +296,36 @@ class MineralSiteService:
     def _read_mineral_sites(
         self,
         session: Session,
-        query: Select[Tuple[MineralSite, RawMineralInventoryView]],
+        query: Select[Tuple[MineralSite, list[RawMineralInventoryView]]],
     ) -> list[MineralSiteAndInventory]:
         out = []
         for row in session.execute(query).all():
             msi = MineralSiteAndInventory(
                 ms=row[0],
-                invs=[MineralInventoryView.from_dict(inv) for inv in row[1]],
+                invs=[
+                    inv
+                    for raw_inv in row[1]
+                    if (inv := MineralInventoryView.from_dict(raw_inv)).commodity
+                    is not None
+                ],
             )
             for inv in msi.invs:
                 inv.site_id = msi.ms.id
             out.append(msi)
         return out
+
+    def _norm_dedup_mineral_site(
+        self, row: Row[tuple[DedupMineralSite, list[RawMineralInventoryView]]]
+    ) -> DedupMineralSiteAndInventory:
+        dms: DedupMineralSite = row[0]
+        invs = []
+        for rawinv in row[1]:
+            inv = MineralInventoryView.from_dict(rawinv)
+            inv.dedup_site_id = dms.id
+            if inv.commodity is None:
+                continue
+            invs.append(inv)
+        return DedupMineralSiteAndInventory(dms=dms, invs=invs)
 
     @property
     def inv_agg(self):
