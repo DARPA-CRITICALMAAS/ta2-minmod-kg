@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
 from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
@@ -148,12 +149,20 @@ class OutputPublicMineralSite(BaseModel):
 
 @dataclass
 class InputPublicMineralSite(InputMineralSite):
+    created_by: Union[str, list[str]] = field(default_factory=list)
     dedup_site_uri: Optional[IRI] = None
 
     def __post_init__(self):
         if self.dedup_site_uri is None:
             self.dedup_site_uri = MINMOD_NS.md.uristr(
                 MineralSite.get_dedup_id((self.id,))
+            )
+        if isinstance(self.created_by, str):
+            self.created_by = [self.created_by]
+        if not isinstance(self.created_by, list):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="created_by must be a string or a list of strings.",
             )
 
     @property

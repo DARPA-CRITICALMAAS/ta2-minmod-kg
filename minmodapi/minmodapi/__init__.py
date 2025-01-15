@@ -6,7 +6,7 @@ import time
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Callable
+from typing import Annotated, Callable, Optional
 
 import httpx
 from slugify import slugify
@@ -21,6 +21,13 @@ InternalID = Annotated[
 class SiteIdentification:
     site_id: InternalID
     snapshot_id: int
+    endpoint: str
+
+    def get_browse_link(self):
+        return f"{self.endpoint}/resource/{self.site_id}"
+
+    def get_api_link(self):
+        return f"{self.endpoint}/api/v1/mineral-sites/{self.site_id}"
 
 
 class MinModAPI:
@@ -67,10 +74,12 @@ class MinModAPI:
             except ConflictError as e:
                 # the site has been added by someone else -- so we need to retry.
                 ms = self.get_site(msid)
-                site_ident = SiteIdentification(ms["id"], ms["snapshot_id"])
+                site_ident = SiteIdentification(
+                    ms["id"], ms["snapshot_id"], self.endpoint
+                )
         else:
             ms = self.get_site(msid)
-            site_ident = SiteIdentification(ms["id"], ms["snapshot_id"])
+            site_ident = SiteIdentification(ms["id"], ms["snapshot_id"], self.endpoint)
 
         if verbose:
             print(
@@ -89,7 +98,9 @@ class MinModAPI:
             except ConflictError as e:
                 # the site has been updated by someone else since the last time we fetch -- so we need to retry.
                 ms = self.get_site(msid)
-                site_ident = SiteIdentification(ms["id"], ms["snapshot_id"])
+                site_ident = SiteIdentification(
+                    ms["id"], ms["snapshot_id"], self.endpoint
+                )
 
                 time.sleep(0.5)
                 continue
@@ -115,7 +126,9 @@ class MinModAPI:
             )
         resp.raise_for_status()
         resp_data = resp.json()
-        return SiteIdentification(resp_data["id"], resp_data["snapshot_id"])
+        return SiteIdentification(
+            resp_data["id"], resp_data["snapshot_id"], self.endpoint
+        )
 
     def add_site(self, site_id: InternalID, site: dict) -> SiteIdentification:
         """Add a mineral site and return the site ID (not URI) and its snapshot id."""
@@ -131,7 +144,9 @@ class MinModAPI:
             )
         resp.raise_for_status()
         resp_data = resp.json()
-        return SiteIdentification(resp_data["id"], resp_data["snapshot_id"])
+        return SiteIdentification(
+            resp_data["id"], resp_data["snapshot_id"], self.endpoint
+        )
 
     def has_site(self, site_id: InternalID) -> bool:
         """Check if a mineral site exists."""
@@ -145,12 +160,14 @@ class MinModAPI:
         return True
 
     def get_site(self, site_id: InternalID) -> dict:
-        resp = httpx.head(
+        resp = httpx.get(
             f"{self.endpoint}/api/v1/mineral-sites/{site_id}",
             **self.httpx_args(),
         )
-        if resp.status_code != 200:
+        if resp.status_code == 404:
             raise KeyError(f"The site `{site_id}` does not exist.")
+        if resp.status_code != 200:
+            raise Exception("Failed to fetch the site. Reason: " + resp.text)
         return resp.json()
 
     def make_site_id(self, source_id: str, record_id: str) -> InternalID:
@@ -205,3 +222,35 @@ class MinModAPI:
 
 
 class ConflictError(Exception): ...
+
+
+def merge_deposit_type(existing_site: dict, new_site: dict):
+    """This function merges the deposit type candidate predictions of the existing site with the new site.
+    Other information such as mineral inventory, name, location, etc. are overridden by the new site.
+    """
+    # override everything except for deposit_type_candidate and created_by
+    # code created by Xiao Lin <xiao@sri.com>
+    for k in new_site:
+        # ignore empty items
+        if new_site[k] is None:
+            continue
+
+        if k == "deposit_type_candidate":
+            if not k in existing_site:
+                existing_site[k] = new_site[k]
+            else:
+                existing_site[k] += new_site[k]
+
+            # Remove identical records to prevent pollution
+            deposit_type_predictions = existing_site[k]
+            deposit_type_predictions = {
+                json.dumps(x): x for x in deposit_type_predictions
+            }
+            deposit_type_predictions = [
+                deposit_type_predictions[x] for x in deposit_type_predictions
+            ]
+            existing_site[k] = deposit_type_predictions
+        elif k == "created_by":
+            pass
+        else:
+            existing_site[k] = new_site[k]

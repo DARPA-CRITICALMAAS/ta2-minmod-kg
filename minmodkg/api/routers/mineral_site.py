@@ -39,7 +39,9 @@ class UpdateDedupLink(BaseModel):
 def get_site_uri(source_id: str, record_id: str, return_uri: bool = False):
     if return_uri:
         return make_site_uri(source_id, record_id)
-    return make_site_uri(source_id, record_id, namespace="")
+    return Response(
+        make_site_uri(source_id, record_id, namespace=""), media_type="text/plain"
+    )
 
 
 @router.post("/mineral-sites/find_by_ids")

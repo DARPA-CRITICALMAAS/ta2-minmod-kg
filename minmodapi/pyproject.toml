@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minmodapi"
-version = "1.0.0"
+version = "1.1.0"
 description = "Client API for the MinMod API"
 authors = ["Binh Vu <bvu687@gmail.com>"]
 license = "MIT"
