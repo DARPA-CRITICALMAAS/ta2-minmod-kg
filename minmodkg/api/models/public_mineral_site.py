@@ -50,7 +50,7 @@ class OutputPublicMineralSite(BaseModel):
 
     coordinates: Optional[Coordinates] = None
     grade_tonnage: list[GradeTonnage] = Field(default_factory=list)
-    snapshot_id: int = 0
+    snapshot_id: str = ""
 
     @staticmethod
     def from_kgrel(site: MineralSiteAndInventory):
@@ -97,7 +97,7 @@ class OutputPublicMineralSite(BaseModel):
                 )
                 for gt in site.invs
             ],
-            snapshot_id=ms.modified_at,
+            snapshot_id=str(ms.modified_at),
         )
 
     def clone(self):

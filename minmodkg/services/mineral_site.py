@@ -26,6 +26,14 @@ FindDedupMineralSiteResult = TypedDict(
 )
 
 
+class ExpiredSnapshotIdError(Exception):
+    pass
+
+
+class UnsupportOperationError(Exception):
+    pass
+
+
 class MineralSiteService:
 
     def __init__(self, _engine: Optional[Engine] = None):
@@ -117,10 +125,36 @@ class MineralSiteService:
             # step 3: commit data
             session.commit()
 
-    def update(self, user: User, site_and_inv: MineralSiteAndInventory):
+    def update(
+        self,
+        user: User,
+        site_and_inv: MineralSiteAndInventory,
+        site_snapshot_id: Optional[int] = None,
+    ):
         self._update_derived_data(site_and_inv.ms, user)
         with Session(self.engine, expire_on_commit=False) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
+
+            # step -1: pull up the data and check to make sure that they don't change
+            # the dedup site information and if the site snapshot id matches
+            prev_dms_id, prev_snapshot_id = session.execute(
+                select(MineralSite.dedup_site_id, MineralSite.modified_at).where(
+                    MineralSite.id == site_and_inv.ms.id
+                )
+            ).one()
+            if prev_dms_id != site_and_inv.ms.dedup_site_id:
+                raise UnsupportOperationError(
+                    "This service does not support updating dedup site id, use `update_same_as` instead."
+                )
+            if site_snapshot_id is not None and prev_snapshot_id != site_snapshot_id:
+                raise ExpiredSnapshotIdError(
+                    f"The new snapshot of the site is {prev_snapshot_id}"
+                )
+
+            self._read_mineral_sites(
+                session,
+                self._select_mineral_site().where(MineralSite.id == site_and_inv.ms.id),
+            )
 
             # step 0: we clean up the mineral inventory views of the site
             session.execute(

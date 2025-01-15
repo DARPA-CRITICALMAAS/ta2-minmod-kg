@@ -18,6 +18,10 @@ from minmodkg.api.routers.predefined_entities import (
     get_material_forms,
     get_sources,
 )
+from minmodkg.services.mineral_site import (
+    ExpiredSnapshotIdError,
+    UnsupportOperationError,
+)
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
@@ -129,11 +133,11 @@ def update_site(
     user: CurrentUserDep,
     snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
-    snapshot_id = get_snapshot_id()
+    kg_snapshot_id = get_snapshot_id()
     upd_msi = update_site.to_kgrel(
-        material_form_uri_to_conversion(snapshot_id),
-        crs_uri_to_name(snapshot_id),
-        source_uri_to_score(snapshot_id),
+        material_form_uri_to_conversion(kg_snapshot_id),
+        crs_uri_to_name(kg_snapshot_id),
+        source_uri_to_score(kg_snapshot_id),
     )
 
     if site_id != upd_msi.ms.site_id:
@@ -149,7 +153,21 @@ def update_site(
             detail="The site doesn't exist",
         )
 
-    mineral_site_service.update(user, upd_msi.set_id(site_db_id))
+    try:
+        mineral_site_service.update(
+            user, upd_msi.set_id(site_db_id), site_snapshot_id=snapshot_id
+        )
+    except ExpiredSnapshotIdError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e),
+        )
+    except UnsupportOperationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
     return OutputPublicMineralSite.from_kgrel(upd_msi).to_dict()
 
 
