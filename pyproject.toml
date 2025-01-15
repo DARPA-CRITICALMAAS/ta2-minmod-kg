@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minmodkg"
-version = "1.5.6"
+version = "1.5.7"
 description = "code repository for TA2 Knowledge Graph (MinMod) construction & deployment"
 authors = ["Binh Vu <bvu687@gmail.com>"]
 license = "MIT"
@@ -12,7 +12,7 @@ python = "^3.11"
 statickg = "^1.12.0"
 fastapi = { extras = ["standard"], version = "^0.115.3" }
 networkx = "^2.8.8"
-httpx = "^0.27.0"
+httpx = "^0.28.1"
 htbuilder = "^0.6.2"
 pandas = "^2.2.2"
 shapely = "^2.0.5"
