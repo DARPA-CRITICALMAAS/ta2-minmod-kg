@@ -14,17 +14,18 @@ preprocessing:
 attributes:
   id: [1.., 0]
   name: [1.., 1]
+  parent: [1.., 2]
   aliases:
-    path: [1.., 2]
-    missing_values: [""]
-  geokb_name:
     path: [1.., 3]
     missing_values: [""]
-  geokb_id:
+  geokb_name:
     path: [1.., 4]
     missing_values: [""]
-  is_critical_commodity:
+  geokb_id:
     path: [1.., 5]
+    missing_values: [""]
+  is_critical_commodity:
+    path: [1.., 6]
 alignments:
   - type: auto
 semantic_model:
@@ -34,6 +35,7 @@ semantic_model:
       - [rdfs:label, name, xsd:string]
       - [skos:altLabel, aliases, xsd:string]
       - [skos:altLabel, geokb_name, xsd:string]
+      - [mno:parent, parent, xsd:string]
       - [owl:sameAs, geokb_id, drepr:uri]
       - [mno:is_critical_commodity, is_critical_commodity, xsd:boolean]
   prefixes:
