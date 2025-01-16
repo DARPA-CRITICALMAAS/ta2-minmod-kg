@@ -254,3 +254,11 @@ def merge_deposit_type(existing_site: dict, new_site: dict):
             pass
         else:
             existing_site[k] = new_site[k]
+
+
+def replace_site(existing_site: dict, new_site: dict):
+    """This function replaces the existing site with the new site."""
+    dedup_site_uri = existing_site["dedup_site_uri"]
+    existing_site.clear()
+    existing_site.update(new_site)
+    existing_site["dedup_site_uri"] = dedup_site_uri
