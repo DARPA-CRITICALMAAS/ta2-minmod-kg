@@ -192,12 +192,12 @@ semantic_model:
   mo:RockType:1:
     properties:
       - [mo:rock_type, site_host_rock_type]
-      - [mo:rock_unit, site_host_rock_name]
+      - [mo:rock_unit, site_host_rock_unit]
 
   mo:RockType:2:
     properties:
       - [mo:rock_type, site_assoc_rock_type]
-      - [mo:rock_unit, site_assoc_rock_name]
+      - [mo:rock_unit, site_assoc_rock_unit]
 
   # ------------------------------------------------------------
   # DepositTypeCandidate
