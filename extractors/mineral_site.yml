@@ -18,6 +18,17 @@ attributes:
   site_rank: [.., ["site_rank"]]
   site_modified_at: [.., "modified_at"]
   site_created_by: [.., "created_by"]
+  site_discovered_year: [.., ["discovered_year"]]
+  site_mineral_form: [.., ["mineral_form"], ..]
+  site_alternation: [.., ["geology_info"], "alteration"]
+  site_concentration_process: [.., ["geology_info"], "concentration_process"]
+  site_ore_control: [.., ["geology_info"], "ore_control"]
+  site_structure: [.., ["geology_info"], "structure"]
+  site_tectonic: [.., ["geology_info"], "tectonic"]
+  site_host_rock_type: [.., ["geology_info"], ["host_rock"], "type"]
+  site_host_rock_unit: [.., ["geology_info"], ["host_rock"], "unit"]
+  site_assoc_rock_type: [.., ["geology_info"], ["associated_rock"], "type"]
+  site_assoc_rock_unit: [.., ["geology_info"], ["associated_rock"], "unit"]
 
   # ------------------------------------------------------------
   # DepositTypeCandidate
@@ -156,11 +167,37 @@ semantic_model:
       - [mo:site_rank, site_rank]
       - [mo:modified_at, site_modified_at]
       - [mo:created_by, site_created_by]
+      - [mo:discovered_year, site_discovered_year]
+      - [mo:mineral_form, site_mineral_form]
     links:
       - [mo:deposit_type_candidate, mo:DepositTypeCandidate:1]
       - [mo:location_info, mo:LocationInfo:1]
+      - [mo:geology_info, mo:GeologyInfo:1]
       - [mo:mineral_inventory, mo:MineralInventory:1]
       - [mo:reference, mo:Reference:site]
+
+  # ------------------------------------------------------------
+  # GeologyInfo
+  mo:GeologyInfo:1:
+    properties:
+      - [mo:alternation, site_alternation]
+      - [mo:concentration_process, site_concentration_process]
+      - [mo:ore_control, site_ore_control]
+      - [mo:structure, site_structure]
+      - [mo:tectonic, site_tectonic]
+    links:
+      - [mo:host_rock, mo:RockType:1]
+      - [mo:associated_rock, mo:RockType:2]
+
+  mo:RockType:1:
+    properties:
+      - [mo:rock_type, site_host_rock_type]
+      - [mo:rock_unit, site_host_rock_name]
+
+  mo:RockType:2:
+    properties:
+      - [mo:rock_type, site_assoc_rock_type]
+      - [mo:rock_unit, site_assoc_rock_name]
 
   # ------------------------------------------------------------
   # DepositTypeCandidate
