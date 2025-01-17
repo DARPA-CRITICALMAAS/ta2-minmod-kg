@@ -174,6 +174,10 @@ def exclude_none_or_empty_list(obj: dict):
     }
 
 
+def not_empty_str(s: Any) -> bool:
+    return isinstance(s, str) and len(s.strip()) > 0
+
+
 class makedict:
     @staticmethod
     def without_none(seq: Sequence[tuple[str, Any]]) -> dict[str, Any]:

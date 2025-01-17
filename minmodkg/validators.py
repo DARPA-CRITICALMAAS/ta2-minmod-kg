@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import cached_property
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Callable, NotRequired, TypedDict
@@ -16,8 +16,7 @@ import typer
 from drepr.main import convert
 from joblib import Parallel, delayed
 from loguru import logger
-from minmodkg.config import CFG_FILE
-from minmodkg.models.mineral_site import MineralSite
+from minmodkg.models_v2.inputs.mineral_site import MineralSiteValidator
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
 
@@ -36,7 +35,7 @@ class FilenameValidatorServiceInvokeArgs(TypedDict):
     input: RelPath | list[RelPath]
 
 
-class FilenameValidatorService(BaseFileService[FilenameValidatorServiceInvokeArgs]):
+class FilenameValidatorService(BaseFileService[FilenameValidatorServiceConstructArgs]):
 
     def forward(
         self,
@@ -224,7 +223,7 @@ class ContentValidator:
         # ------- schema check - pass 1 -------
         print("Check if the data is complied with JSON schema (part 1)...")
         for site in orjson.loads(site_file.get_path().read_bytes()):
-            MineralSite.from_raw_site(site)
+            MineralSiteValidator.validate(site)
 
         # ------- schema check - pass 2 -------
         print("Check if the data is valid with D-REPR (part 2)...")

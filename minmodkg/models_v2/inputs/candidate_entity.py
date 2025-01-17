@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from minmodkg.misc.utils import makedict
 
@@ -9,8 +10,8 @@ from minmodkg.misc.utils import makedict
 class CandidateEntity:
     source: str
     confidence: float
-    observed_name: str | None = None
-    normalized_uri: str | None = None
+    observed_name: Optional[str] = None
+    normalized_uri: Optional[str] = None
 
     def to_dict(self):
         return makedict.without_none(

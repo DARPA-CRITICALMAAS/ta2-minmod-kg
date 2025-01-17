@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import TYPE_CHECKING, Annotated, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
 
+from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (
     extend_unique,
     format_datetime,
@@ -16,7 +17,7 @@ from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Reference
 from minmodkg.transformations import make_site_uri
-from minmodkg.typing import InternalID
+from minmodkg.typing import InternalID, NotEmptyStr
 from rdflib import URIRef
 
 if TYPE_CHECKING:
@@ -26,17 +27,17 @@ if TYPE_CHECKING:
 @dataclass
 class MineralSite:
     source_id: str
-    record_id: Union[str, int]
-    name: Optional[str] = None
-    aliases: list[str] = field(default_factory=list)
-    site_rank: Optional[str] = None
-    site_type: Optional[str] = None
+    record_id: str
+    name: Optional[NotEmptyStr] = None
+    aliases: list[NotEmptyStr] = field(default_factory=list)
+    site_rank: Optional[NotEmptyStr] = None
+    site_type: Optional[NotEmptyStr] = None
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = field(default_factory=list)
     mineral_inventory: list[MineralInventory] = field(default_factory=list)
     reference: list[Reference] = field(default_factory=list)
 
-    created_by: list[str] = field(default_factory=list)
+    created_by: list[NotEmptyStr] = field(default_factory=list)
     modified_at: Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"] = field(
         default_factory=lambda: format_datetime(datetime.now(timezone.utc))
     )
@@ -160,3 +161,11 @@ class MineralSite:
             created_by=site.created_by,
             modified_at=format_nanoseconds(site.modified_at),
         )
+
+
+class MineralSiteValidator:
+    structure_validator = get_dataclass_deserializer(MineralSite)
+
+    @classmethod
+    def validate(cls, mineral_site: Any):
+        return cls.structure_validator(mineral_site)
