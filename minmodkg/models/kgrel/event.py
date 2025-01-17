@@ -3,8 +3,8 @@ from __future__ import annotations
 import time
 from typing import Literal
 
-from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.typing import InternalID
 from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column

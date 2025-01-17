@@ -5,10 +5,10 @@ from typing import Optional
 
 from fastapi import APIRouter
 from minmodkg.api.dependencies import get_snapshot_id
-from minmodkg.models_v2.inputs.crs import CRS
-from minmodkg.models_v2.inputs.material_form import MaterialForm
-from minmodkg.models_v2.inputs.source import Source
-from minmodkg.models_v2.kg.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models.inputs.crs import CRS
+from minmodkg.models.inputs.material_form import MaterialForm
+from minmodkg.models.inputs.source import Source
+from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 
 router = APIRouter(tags=["predefined-entities"])
 

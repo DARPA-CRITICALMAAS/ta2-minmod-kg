@@ -6,8 +6,8 @@ from typing import Mapping, NotRequired, TypedDict
 import serde.json
 from libactor.cache import cache
 from minmodkg.misc.rdf_store import norm_literal
-from minmodkg.models_v2.kg.base import MINMOD_NS
-from minmodkg.models_v2.kgrel.commodity import Commodity
+from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kgrel.commodity import Commodity
 from rdflib import RDF, RDFS, Graph, URIRef
 
 from statickg.helper import FileSqliteBackend

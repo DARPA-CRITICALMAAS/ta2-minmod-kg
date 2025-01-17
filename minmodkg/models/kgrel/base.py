@@ -3,10 +3,10 @@ from __future__ import annotations
 from contextlib import contextmanager
 
 from minmodkg.config import MINMOD_DEBUG, MINMOD_KGREL_DB
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
-from minmodkg.models_v2.inputs.reference import Reference
-from minmodkg.models_v2.kgrel.custom_types import (
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.mineral_inventory import MineralInventory
+from minmodkg.models.inputs.reference import Reference
+from minmodkg.models.kgrel.custom_types import (
     DataclassType,
     DedupMineralSiteDepositType,
     ListDataclassType,

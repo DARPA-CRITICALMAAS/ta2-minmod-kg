@@ -8,7 +8,7 @@ from fastapi import APIRouter, Body, HTTPException, Response, status
 from minmodkg.api.dependencies import CurrentUserDep, RelSessionDep
 from minmodkg.api.models.public_user import PublicUser
 from minmodkg.config import JWT_ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, SECRET_KEY
-from minmodkg.models_v2.kgrel.user import User, get_username
+from minmodkg.models.kgrel.user import User, get_username
 from sqlmodel import col, select
 
 router = APIRouter(tags=["login"])

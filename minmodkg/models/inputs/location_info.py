@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from minmodkg.misc.utils import extend_unique, makedict
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
 
 
 @dataclass

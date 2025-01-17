@@ -10,7 +10,7 @@ import rdflib.term
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
-from minmodkg.models_v2.kg.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import IRI
 from rdflib import OWL, RDF, RDFS, BNode, Graph

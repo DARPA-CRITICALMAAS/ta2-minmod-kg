@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic
 
-from minmodkg.models_v2.kgrel.custom_types.location import GeoCoordinate
+from minmodkg.models.kgrel.custom_types.location import GeoCoordinate
 from minmodkg.typing import InternalID, T
 
 if TYPE_CHECKING:
-    from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+    from minmodkg.models.kgrel.mineral_site import MineralSite
 
 
 @dataclass

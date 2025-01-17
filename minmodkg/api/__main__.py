@@ -12,8 +12,8 @@ import serde.json
 import typer
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.models.public_user import PublicCreateUser
-from minmodkg.models_v2.kgrel.base import create_db_and_tables, get_rel_session
-from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models.kgrel.base import create_db_and_tables, get_rel_session
+from minmodkg.models.kgrel.user import User
 from minmodkg.transformations import make_site_uri
 from slugify import slugify
 from sqlalchemy import delete

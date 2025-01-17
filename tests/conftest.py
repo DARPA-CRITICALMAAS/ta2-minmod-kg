@@ -8,7 +8,7 @@ from typing import Any, Generator
 
 import httpx
 import jwt
-import minmodkg.models_v2.kgrel.base
+import minmodkg.models.kgrel.base
 import pytest
 import serde.json
 from fastapi.testclient import TestClient
@@ -19,8 +19,8 @@ from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
-from minmodkg.models_v2.kg.base import MINMOD_KG
-from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kgrel.user import User
 from rdflib import Graph
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
@@ -115,14 +115,14 @@ def kgrel_singleton(resource_dir: Path):
     print("\nWaiting for KGRel to start", end="", flush=True)
     for i in range(100):
         try:
-            minmodkg.models_v2.kgrel.base.create_db_and_tables()
+            minmodkg.models.kgrel.base.create_db_and_tables()
             break
         except Exception as e:
             print(".", end="", flush=True)
             time.sleep(0.5)
     print(" DONE!", flush=True)
 
-    yield minmodkg.models_v2.kgrel.base.engine
+    yield minmodkg.models.kgrel.base.engine
 
     subprocess.check_output("docker container rm -f test-kgrel", shell=True)
 
@@ -150,7 +150,7 @@ def kgrel(
     resource_dir: Path, kgrel_singleton: Engine, users: list[User]
 ) -> Generator[Engine, Any, None]:
     with Session(kgrel_singleton, expire_on_commit=False) as session:
-        for tbl in reversed(minmodkg.models_v2.kgrel.base.Base.metadata.sorted_tables):
+        for tbl in reversed(minmodkg.models.kgrel.base.Base.metadata.sorted_tables):
             session.execute(tbl.delete())
         session.add_all(users)
         session.commit()

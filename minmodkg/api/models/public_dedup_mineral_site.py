@@ -4,9 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from minmodkg.misc.utils import format_nanoseconds, makedict
-from minmodkg.models_v2.kgrel.dedup_mineral_site import (
-    DedupMineralSiteAndInventory,
-)
+from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSiteAndInventory
 from minmodkg.typing import InternalID
 
 

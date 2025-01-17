@@ -9,8 +9,8 @@ import serde.pickle
 from joblib import Parallel, delayed
 from libactor.cache import cache
 from minmodkg.misc.utils import assert_isinstance
-from minmodkg.models_v2.inputs.source import Source, SourceConfig, SourceFactory
-from minmodkg.models_v2.kg.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models.inputs.source import Source, SourceConfig, SourceFactory
+from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from rdflib import RDF, Graph, URIRef
 from timer import Timer
 from tqdm import tqdm

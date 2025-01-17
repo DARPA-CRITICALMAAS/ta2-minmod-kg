@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models.kgrel.user import User
 from minmodkg.typing import IRI
 from pydantic import BaseModel
 

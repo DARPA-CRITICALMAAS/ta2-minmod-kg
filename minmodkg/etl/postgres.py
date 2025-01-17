@@ -7,11 +7,11 @@ from typing import Literal
 
 import serde.json
 from minmodkg.config import MINMOD_KGREL_DB
-from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.commodity import Commodity
-from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite
-from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.commodity import Commodity
+from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models.kgrel.mineral_site import MineralSite
+from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import Engine, create_engine, insert
 from sqlalchemy.orm import Session

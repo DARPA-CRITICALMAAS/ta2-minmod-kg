@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from minmodkg.api.dependencies import CurrentUserDep, RelSessionDep
 from minmodkg.api.models.public_user import PublicCreateUser, PublicUser
-from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models.kgrel.user import User
 from sqlmodel import select
 
 router = APIRouter(tags=["admin"])

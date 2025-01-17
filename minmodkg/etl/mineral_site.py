@@ -11,12 +11,12 @@ import xxhash
 from joblib import delayed
 from libactor.cache import cache
 from minmodkg.misc.utils import group_by
-from minmodkg.models_v2.inputs.mineral_site import MineralSite
-from minmodkg.models_v2.inputs.source import Source
-from minmodkg.models_v2.kg.base import MINMOD_NS
-from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.models.inputs.mineral_site import MineralSite
+from minmodkg.models.inputs.source import Source
+from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
+from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from rdflib import RDFS, Graph

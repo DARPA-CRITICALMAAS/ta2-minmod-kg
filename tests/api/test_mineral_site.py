@@ -14,13 +14,13 @@ from minmodkg.api.routers.mineral_site import (
     source_uri_to_score,
 )
 from minmodkg.misc.rdf_store import TripleStore
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.location_info import LocationInfo
-from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
-from minmodkg.models_v2.inputs.reference import Document, Reference
-from minmodkg.models_v2.kg.base import MINMOD_KG
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models_v2.kgrel.user import User
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.location_info import LocationInfo
+from minmodkg.models.inputs.mineral_inventory import MineralInventory
+from minmodkg.models.inputs.reference import Document, Reference
+from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.transformations import make_site_uri
 from shapely import Point

@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from minmodkg.misc.utils import makedict
-from minmodkg.models_v2.kgrel.base import Base
+from minmodkg.models.kgrel.base import Base
 from minmodkg.typing import InternalID
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
-    from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+    from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+    from minmodkg.models.kgrel.mineral_site import MineralSite
 
 
 class MineralInventoryView(MappedAsDataclass, Base):

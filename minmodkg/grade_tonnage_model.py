@@ -7,7 +7,7 @@ from functools import cached_property, cmp_to_key, total_ordering
 from typing import Iterable, Literal, Optional
 
 from minmodkg.misc import UnconvertibleUnitError, group_by_attr
-from minmodkg.models_v2.kg.base import MINMOD_NS
+from minmodkg.models.kg.base import MINMOD_NS
 
 MR_NS = MINMOD_NS.mr
 Mt_unit = MR_NS.uristr("Q202")

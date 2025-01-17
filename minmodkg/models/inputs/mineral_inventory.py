@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from minmodkg.misc.utils import makedict
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.measure import Measure
-from minmodkg.models_v2.inputs.reference import Reference
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.measure import Measure
+from minmodkg.models.inputs.reference import Reference
 
 
 @dataclass

@@ -8,7 +8,7 @@ from minmodkg.api.routers.mineral_site import (
     material_form_uri_to_conversion,
     source_uri_to_score,
 )
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import select
 from sqlalchemy.orm import Session

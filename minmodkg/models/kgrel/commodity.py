@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from minmodkg.models_v2.kgrel.base import Base
+from minmodkg.models.kgrel.base import Base
 from minmodkg.typing import InternalID
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 

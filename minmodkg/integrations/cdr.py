@@ -21,7 +21,7 @@ from minmodkg.integrations.cdr_schemas import (
     DepositType,
     DepositTypeCandidate,
 )
-from minmodkg.models_v2.kg.base import MINMOD_NS
+from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.typing import InternalID
 from tqdm import tqdm
 

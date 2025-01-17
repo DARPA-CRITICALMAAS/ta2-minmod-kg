@@ -14,7 +14,7 @@ from minmodkg.api.routers import (
     stats,
 )
 from minmodkg.config import API_PREFIX, LOD_PREFIX
-from minmodkg.models_v2.kgrel.base import create_db_and_tables
+from minmodkg.models.kgrel.base import create_db_and_tables
 
 
 @asynccontextmanager

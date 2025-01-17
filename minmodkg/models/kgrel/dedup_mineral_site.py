@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 from typing import Optional, Sequence, TypedDict
 
 from minmodkg.misc.utils import makedict
-from minmodkg.models_v2.kg.base import MINMOD_NS
-from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.custom_types import (
+from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.custom_types import (
     DedupMineralSiteDepositType,
     GeoCoordinate,
     RefGeoCoordinate,
@@ -16,8 +16,8 @@ from minmodkg.models_v2.kgrel.custom_types import (
     SiteAndScore,
     SiteScore,
 )
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
 from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column

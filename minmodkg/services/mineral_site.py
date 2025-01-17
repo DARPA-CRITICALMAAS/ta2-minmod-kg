@@ -3,15 +3,15 @@ from __future__ import annotations
 import time
 from typing import Optional, Sequence, Tuple, TypedDict
 
-from minmodkg.models_v2.kgrel.base import engine
-from minmodkg.models_v2.kgrel.dedup_mineral_site import (
+from minmodkg.models.kgrel.base import engine
+from minmodkg.models.kgrel.dedup_mineral_site import (
     DedupMineralSite,
     DedupMineralSiteAndInventory,
 )
-from minmodkg.models_v2.kgrel.event import EventLog
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models_v2.kgrel.user import User
-from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.kgrel.event import EventLog
+from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.user import User
+from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
 from sqlalchemy import Engine, Row, Select, delete, distinct, func, select, update
 from sqlalchemy.orm import Session

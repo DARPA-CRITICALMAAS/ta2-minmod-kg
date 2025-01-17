@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from minmodkg.config import DEFAULT_SOURCE_SCORE
-from minmodkg.models_v2.kgrel.user_extra import is_system_user
+from minmodkg.models.kgrel.user_extra import is_system_user
 from minmodkg.typing import InternalID
 
 if TYPE_CHECKING:
-    from minmodkg.models_v2.kgrel.mineral_site import MineralSite
+    from minmodkg.models.kgrel.mineral_site import MineralSite
 
 
 @dataclass(order=True)

@@ -9,7 +9,7 @@ from typing import Optional
 import httpx
 import timer
 from joblib import Parallel, delayed
-from minmodkg.models_v2.kg.base import MINMOD_NS
+from minmodkg.models.kg.base import MINMOD_NS
 from tqdm import tqdm
 
 if "CDR_AUTH_TOKEN" in os.environ:

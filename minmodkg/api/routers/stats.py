@@ -4,7 +4,7 @@ from functools import lru_cache
 
 from fastapi import APIRouter
 from minmodkg.api.dependencies import get_snapshot_id
-from minmodkg.models_v2.kg.base import MINMOD_KG
+from minmodkg.models.kg.base import MINMOD_KG
 
 router = APIRouter(tags=["statistics"])
 

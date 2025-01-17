@@ -4,8 +4,8 @@ from enum import Enum
 from typing import Literal
 
 import bcrypt
-from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.user_extra import is_system_user
+from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.user_extra import is_system_user
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 

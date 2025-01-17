@@ -12,16 +12,16 @@ from minmodkg.misc.utils import (
     format_nanoseconds,
     makedict,
 )
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.location_info import LocationInfo
-from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
-from minmodkg.models_v2.inputs.reference import Reference
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.location_info import LocationInfo
+from minmodkg.models.inputs.mineral_inventory import MineralInventory
+from minmodkg.models.inputs.reference import Reference
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID, NotEmptyStr
 from rdflib import URIRef
 
 if TYPE_CHECKING:
-    from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
+    from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
 
 
 @dataclass

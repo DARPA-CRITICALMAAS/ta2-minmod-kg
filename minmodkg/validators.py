@@ -16,7 +16,7 @@ import typer
 from drepr.main import convert
 from joblib import Parallel, delayed
 from loguru import logger
-from minmodkg.models_v2.inputs.mineral_site import MineralSiteValidator
+from minmodkg.models.inputs.mineral_site import MineralSiteValidator
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
 

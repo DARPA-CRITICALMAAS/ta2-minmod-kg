@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
 from minmodkg.grade_tonnage_model import GradeTonnageModel
 from minmodkg.misc.utils import datetime_to_nanoseconds, makedict
-from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
-from minmodkg.models_v2.inputs.mineral_site import MineralSite as InMineralSite
-from minmodkg.models_v2.inputs.reference import Reference
-from minmodkg.models_v2.kg.base import MINMOD_NS
-from minmodkg.models_v2.kgrel.base import Base
-from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
-from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.mineral_inventory import MineralInventory
+from minmodkg.models.inputs.mineral_site import MineralSite as InMineralSite
+from minmodkg.models.inputs.reference import Reference
+from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.custom_types import Location, LocationView
+from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
 from sqlalchemy import JSON, BigInteger, ForeignKey
