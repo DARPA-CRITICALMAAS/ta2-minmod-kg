@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 # install required system libraries
-RUN apt update && apt install -y ca-certificates curl git lz4 && \
+RUN apt update && apt install -y ca-certificates curl git git-lfs lz4 && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
     chmod a+r /etc/apt/keyrings/docker.asc && \
