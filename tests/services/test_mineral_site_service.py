@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from time import sleep
 
 import pytest
 import serde.json
-from fastapi.testclient import TestClient
 from minmodkg.api.models.public_mineral_site import (
     Coordinates,
     GradeTonnage,
@@ -19,9 +17,8 @@ from minmodkg.api.routers.mineral_site import (
     source_uri_to_score,
 )
 from minmodkg.misc.rdf_store import TripleStore
-from minmodkg.misc.utils import assert_not_none, format_datetime
+from minmodkg.misc.utils import assert_not_none
 from minmodkg.models.base import MINMOD_KG
-from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
@@ -29,11 +26,7 @@ from minmodkg.models_v2.inputs.reference import Document, Reference
 from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
-from minmodkg.transformations import make_site_uri
-from shapely import Point
-from shapely.wkt import loads
 from sqlalchemy import Engine
-from tests.utils import check_req
 
 
 class TestMSData:

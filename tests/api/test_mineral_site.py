@@ -15,12 +15,11 @@ from minmodkg.api.routers.mineral_site import (
 )
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.models.base import MINMOD_KG
-from minmodkg.models.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Document, Reference
-from minmodkg.models_v2.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.transformations import make_site_uri
@@ -60,7 +59,7 @@ class TestMineralSiteData:
         )
         self.site1_uri = make_site_uri(self.site1.source_id, self.site1.record_id)
         self.site1_dedup_uri = MINMOD_KG.ns.md.uristr(
-            DedupMineralSite.get_id([self.site1_id])
+            MineralSite.get_dedup_id([self.site1_id])
         )
         self.site1_dedup_id = MINMOD_KG.ns.md.id(self.site1_dedup_uri)
         self.site1_dump = {
@@ -188,7 +187,7 @@ class TestMineralSite(TestMineralSiteData):
         sleep(1.0)  # to ensure the modified_at is different
         self.site1.name = "Frog Mine"
         self.site1.dedup_site_uri = MINMOD_KG.ns.md.uristr(
-            DedupMineralSite.get_id([self.site1_id])
+            MineralSite.get_dedup_id([self.site1_id])
         )
         resp = check_req(
             lambda: auth_client.put(
