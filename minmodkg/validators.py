@@ -16,6 +16,8 @@ import typer
 from drepr.main import convert
 from joblib import Parallel, delayed
 from loguru import logger
+from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
+from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.models.inputs.mineral_site import MineralSiteValidator
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
@@ -33,6 +35,9 @@ class FilenameValidatorServiceConstructArgs(TypedDict):
 
 class FilenameValidatorServiceInvokeArgs(TypedDict):
     input: RelPath | list[RelPath]
+
+
+TempMineralSiteValidator = get_dataclass_deserializer(InputPublicMineralSite)
 
 
 class FilenameValidatorService(BaseFileService[FilenameValidatorServiceConstructArgs]):
@@ -223,7 +228,8 @@ class ContentValidator:
         # ------- schema check - pass 1 -------
         print("Check if the data is complied with JSON schema (part 1)...")
         for site in orjson.loads(site_file.get_path().read_bytes()):
-            MineralSiteValidator.validate(site)
+            # MineralSiteValidator.validate(site)
+            TempMineralSiteValidator(site)
 
         # ------- schema check - pass 2 -------
         print("Check if the data is valid with D-REPR (part 2)...")

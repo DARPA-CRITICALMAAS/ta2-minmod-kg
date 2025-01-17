@@ -6,7 +6,7 @@ from typing import Literal
 from minmodkg.models.kgrel.base import Base
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.typing import InternalID
-from sqlalchemy import JSON
+from sqlalchemy import JSON, BigInteger
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
@@ -16,7 +16,7 @@ class EventLog(MappedAsDataclass, Base):
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     type: Mapped[Literal["site:add", "site:update", "same-as:update"]] = mapped_column()
     data: Mapped[dict] = mapped_column(JSON)
-    timestamp: Mapped[float] = mapped_column(default_factory=time.time)
+    timestamp: Mapped[int] = mapped_column(BigInteger, default_factory=time.time_ns)
 
     @classmethod
     def from_site_add(cls, site: MineralSiteAndInventory) -> EventLog:

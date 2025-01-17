@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Optional
 
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (
@@ -13,6 +13,7 @@ from minmodkg.misc.utils import (
     makedict,
 )
 from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.geology_info import GeologyInfo
 from minmodkg.models.inputs.location_info import LocationInfo
 from minmodkg.models.inputs.mineral_inventory import MineralInventory
 from minmodkg.models.inputs.reference import Reference
@@ -32,10 +33,13 @@ class MineralSite:
     aliases: list[NotEmptyStr] = field(default_factory=list)
     site_rank: Optional[NotEmptyStr] = None
     site_type: Optional[NotEmptyStr] = None
+    mineral_form: list[NotEmptyStr] = field(default_factory=list)
+    geology_info: Optional[GeologyInfo] = None
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = field(default_factory=list)
     mineral_inventory: list[MineralInventory] = field(default_factory=list)
     reference: list[Reference] = field(default_factory=list)
+    discovered_year: Optional[int] = None
 
     created_by: list[NotEmptyStr] = field(default_factory=list)
     modified_at: Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"] = field(
@@ -165,6 +169,7 @@ class MineralSite:
 
 class MineralSiteValidator:
     structure_validator = get_dataclass_deserializer(MineralSite)
+    # structure_validator = get_dataclass_deserializer(InputPublicMineralSite)
 
     @classmethod
     def validate(cls, mineral_site: Any):

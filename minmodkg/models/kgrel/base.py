@@ -4,6 +4,7 @@ from contextlib import contextmanager
 
 from minmodkg.config import MINMOD_DEBUG, MINMOD_KGREL_DB
 from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.geology_info import GeologyInfo
 from minmodkg.models.inputs.mineral_inventory import MineralInventory
 from minmodkg.models.inputs.reference import Reference
 from minmodkg.models.kgrel.custom_types import (
@@ -38,6 +39,7 @@ class Base(DeclarativeBase):
         list[CandidateEntity]: ListDataclassType(CandidateEntity),
         list[MineralInventory]: ListDataclassType(MineralInventory),
         list[Reference]: ListDataclassType(Reference),
+        GeologyInfo: DataclassType(GeologyInfo),
     }
 
     def get_update_query(self):

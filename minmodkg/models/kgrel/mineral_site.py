@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 from minmodkg.grade_tonnage_model import GradeTonnageModel
 from minmodkg.misc.utils import datetime_to_nanoseconds, makedict
 from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.inputs.geology_info import GeologyInfo
 from minmodkg.models.inputs.mineral_inventory import MineralInventory
 from minmodkg.models.inputs.mineral_site import MineralSite as InMineralSite
 from minmodkg.models.inputs.reference import Reference
@@ -168,6 +169,10 @@ class MineralSite(MappedAsDataclass, Base):
     inventories: Mapped[list[MineralInventory]] = mapped_column()
     reference: Mapped[list[Reference]] = mapped_column()
 
+    mineral_form: Mapped[list[str]] = mapped_column(JSON)
+    geology_info: Mapped[Optional[GeologyInfo]] = mapped_column()
+    discovered_year: Mapped[int | None] = mapped_column()
+
     created_by: Mapped[list[IRI]] = mapped_column(JSON)
     # timestamp in nano seconds
     modified_at: Mapped[int] = mapped_column(BigInteger)
@@ -212,6 +217,9 @@ class MineralSite(MappedAsDataclass, Base):
             location=location,
             location_view=location_view,
             deposit_type_candidates=site.deposit_type_candidate,
+            geology_info=site.geology_info,
+            mineral_form=site.mineral_form,
+            discovered_year=site.discovered_year,
             inventories=site.mineral_inventory,
             reference=site.reference,
             created_by=site.created_by,
@@ -251,6 +259,16 @@ class MineralSite(MappedAsDataclass, Base):
                     [x.to_dict() for x in self.deposit_type_candidates],
                 ),
                 ("reference", [x.to_dict() for x in self.reference]),
+                (
+                    "geology_info",
+                    (
+                        self.geology_info.to_dict()
+                        if self.geology_info is not None
+                        else None
+                    ),
+                ),
+                ("mineral_form", self.mineral_form),
+                ("discovered_year", self.discovered_year),
                 ("created_by", self.created_by),
                 ("modified_at", self.modified_at),
             )
@@ -277,6 +295,13 @@ class MineralSite(MappedAsDataclass, Base):
             inventories=[
                 MineralInventory.from_dict(x) for x in d.get("inventories", [])
             ],
+            geology_info=(
+                GeologyInfo.from_dict(d["geology_info"])
+                if d.get("geology_info")
+                else None
+            ),
+            mineral_form=d.get("mineral_form", []),
+            discovered_year=d["discovered_year"],
             reference=[Reference.from_dict(x) for x in d.get("reference", [])],
             created_by=d["created_by"],
             modified_at=d["modified_at"],
