@@ -40,11 +40,11 @@ services:
   - name: kgrel.data.mineral_site
     classpath: minmodkg.etl.mineral_site.MineralSiteETLService
     args:
-      parallel: false
+      parallel: true
   - name: kgrel.data.entities
     classpath: minmodkg.etl.kgrel_entity.KGRelEntityETLService
     args:
-      parallel: false
+      parallel: true
   - name: kg.loader.fuseki
     classpath: minmodkg.etl.fuseki.FusekiLoaderService
     args:
