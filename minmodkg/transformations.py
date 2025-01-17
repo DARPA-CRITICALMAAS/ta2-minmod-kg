@@ -38,6 +38,17 @@ def make_site_ids(value: dict, namespace: str = MR_NS):
 
     value["source_uri"] = get_source_uri(value["source_id"])
 
+    if "geology_info" in value:
+        value["geology_info"]["id"] = f"{namespace}{site_id}__geology"
+        if "host_rock" in value["geology_info"]:
+            value["geology_info"]["host_rock"][
+                "id"
+            ] = f"{namespace}{site_id}__geology__host_rock"
+        if "associated_rock" in value["geology_info"]:
+            value["geology_info"]["associated_rock"][
+                "id"
+            ] = f"{namespace}{site_id}__geology__associated_rock"
+
 
 def get_source_uri(source_id: str):
     return "https://minmod.isi.edu/resource/source__" + slugify(source_id)
