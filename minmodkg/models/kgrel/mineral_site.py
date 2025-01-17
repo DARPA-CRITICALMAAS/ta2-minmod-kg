@@ -301,7 +301,7 @@ class MineralSite(MappedAsDataclass, Base):
                 else None
             ),
             mineral_form=d.get("mineral_form", []),
-            discovered_year=d["discovered_year"],
+            discovered_year=d.get("discovered_year"),
             reference=[Reference.from_dict(x) for x in d.get("reference", [])],
             created_by=d["created_by"],
             modified_at=d["modified_at"],
