@@ -6,8 +6,8 @@ from typing import Annotated, Optional
 import shapely.wkt
 from minmodkg.misc.geo import reproject_geometry
 from minmodkg.misc.utils import extend_unique, makedict
-from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.typing import InternalID
 
 

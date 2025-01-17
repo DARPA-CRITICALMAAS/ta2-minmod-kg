@@ -19,7 +19,7 @@ from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
-from minmodkg.models.base import MINMOD_KG
+from minmodkg.models_v2.kg.base import MINMOD_KG
 from minmodkg.models_v2.kgrel.user import User
 from rdflib import Graph
 from sqlalchemy import Engine

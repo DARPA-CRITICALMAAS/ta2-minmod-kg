@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 from uuid import uuid4
 
-from minmodkg.models.base import MINMOD_KG
-from minmodkg.models.reference import PageInfo
+from minmodkg.models_v2.inputs.reference import PageInfo
+from minmodkg.models_v2.kg.base import MINMOD_KG
 from minmodkg.models_v2.kgrel.user import is_valid_user_uri
 from slugify import slugify
 
@@ -140,7 +140,7 @@ def make_reference_uri(ref: dict, doc_id: str, namespace: str = MR_NS):
         pageinfo_id = hashlib.sha256(
             b"|".join(
                 (
-                    PageInfo.model_validate(page_info).to_enc_str().encode()
+                    PageInfo.from_dict(page_info).to_enc_str().encode()
                     for page_info in ref["page_info"]
                 )
             )

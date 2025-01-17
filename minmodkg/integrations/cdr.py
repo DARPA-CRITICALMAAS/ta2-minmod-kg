@@ -7,9 +7,8 @@ from typing import Optional, Union
 import httpx
 import orjson
 import serde.json
-import shapely.wkt
 import timer
-from minmodkg.grade_tonnage_model import Mt_unit, percent_unit
+from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.integrations.cdr_helper import (
     MINMOD_API,
     MINMOD_SYSTEM,
@@ -22,8 +21,7 @@ from minmodkg.integrations.cdr_schemas import (
     DepositType,
     DepositTypeCandidate,
 )
-from minmodkg.models.base import MINMOD_NS
-from minmodkg.models.dedup_mineral_site import DedupMineralSitePublic
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.typing import InternalID
 from tqdm import tqdm
 
@@ -170,7 +168,7 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
     inputs = []
     for dedup_site in dedup_sites:
         for fmt_dedup_site in format_dedup_site(
-            DedupMineralSitePublic.model_validate(dedup_site),
+            DedupMineralSitePublic.from_dict(dedup_site),
             commodity_id2name,
             country_id2name,
             province_id2name,

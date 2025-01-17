@@ -123,6 +123,9 @@ class BoundingBox:
     def to_tuple(self):
         return (self.x_max, self.x_min, self.y_max, self.y_min)
 
+    def to_enc_str(self):
+        return f"BB:{self.x_max:.3f}_{self.x_min:.3f}_{self.y_max:.3f}_{self.y_min:.3f}"
+
 
 @dataclass
 class PageInfo:
@@ -156,6 +159,11 @@ class PageInfo:
             self.page,
             self.bounding_box.to_tuple() if self.bounding_box is not None else None,
         )
+
+    def to_enc_str(self):
+        if self.bounding_box is None:
+            return str(self.page)
+        return f"PI:{self.page}|{self.bounding_box.to_enc_str()}"
 
 
 @dataclass

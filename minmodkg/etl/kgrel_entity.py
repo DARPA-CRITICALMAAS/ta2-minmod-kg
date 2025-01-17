@@ -1,31 +1,16 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Mapping, NotRequired, TypedDict
+from typing import Mapping, NotRequired, TypedDict
 
-import orjson
 import serde.json
-import xxhash
-from joblib import delayed
 from libactor.cache import cache
-from minmodkg.misc.rdf_store import norm_literal, norm_uriref
-from minmodkg.misc.utils import group_by
-from minmodkg.models.base import MINMOD_NS
-from minmodkg.models.source import Source
-from minmodkg.models_v2.inputs.mineral_site import MineralSite
+from minmodkg.misc.rdf_store import norm_literal
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.commodity import Commodity
-from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
-from minmodkg.models_v2.kgrel.mineral_site import MineralSite as RelMineralSite
-from minmodkg.transformations import make_site_uri
-from minmodkg.typing import InternalID
 from rdflib import RDF, RDFS, Graph, URIRef
-from slugify import slugify
-from timer import Timer
-from tqdm import tqdm
 
-from statickg.helper import FileSqliteBackend, get_parallel_executor
+from statickg.helper import FileSqliteBackend
 from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import InputFile, RelPath
 from statickg.models.repository import Repository

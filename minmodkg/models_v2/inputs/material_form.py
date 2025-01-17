@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from minmodkg.typing import IRI
-from pydantic import BaseModel
 
 
-class MaterialForm(BaseModel):
+@dataclass
+class MaterialForm:
     uri: IRI
     name: str
     formula: str

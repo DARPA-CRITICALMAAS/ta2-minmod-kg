@@ -7,7 +7,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
-from minmodkg.models.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models_v2.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models_v2.kgrel.base import get_rel_session
 from minmodkg.models_v2.kgrel.commodity import Commodity
 from minmodkg.models_v2.kgrel.user import User

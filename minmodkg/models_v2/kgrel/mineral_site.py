@@ -1,42 +1,27 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
-import minmodkg.models.candidate_entity
-import minmodkg.models.mineral_inventory
-import minmodkg.models.reference
 from minmodkg.grade_tonnage_model import GradeTonnageModel
 from minmodkg.misc.utils import datetime_to_nanoseconds, makedict
-from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
-from minmodkg.models_v2.inputs.measure import Measure
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.mineral_site import MineralSite as InMineralSite
-from minmodkg.models_v2.inputs.reference import (
-    BoundingBox,
-    Document,
-    PageInfo,
-    Reference,
-)
+from minmodkg.models_v2.inputs.reference import Reference
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.custom_types import Location, LocationView
 from minmodkg.models_v2.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
 from sqlalchemy import JSON, BigInteger, ForeignKey
-from sqlalchemy.orm import (
-    Mapped,
-    MappedAsDataclass,
-    mapped_column,
-    reconstructor,
-    relationship,
-)
+from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 if TYPE_CHECKING:
-    from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
+    pass
 
 
 @dataclass
@@ -303,70 +288,3 @@ class MineralSite(MappedAsDataclass, Base):
     @staticmethod
     def get_dedup_id(site_ids: Iterable[InternalID]):
         return "dedup_" + min(site_ids)
-
-
-class DataTranslation:
-
-    @classmethod
-    def convert_reference(cls, ref: minmodkg.models.reference.Reference) -> Reference:
-        return Reference(
-            document=Document(
-                doi=ref.document.doi,
-                uri=ref.document.uri,
-                title=ref.document.title,
-            ),
-            page_info=[
-                PageInfo(
-                    page=pi.page,
-                    bounding_box=(
-                        cls.convert_bounding_box(pi.bounding_box)
-                        if pi.bounding_box is not None
-                        else None
-                    ),
-                )
-                for pi in ref.page_info
-            ],
-            comment=ref.comment,
-            property=ref.property,
-        )
-
-    @classmethod
-    def convert_bounding_box(
-        cls, bb: minmodkg.models.reference.BoundingBox
-    ) -> BoundingBox:
-        return BoundingBox(
-            x_max=bb.x_max,
-            x_min=bb.x_min,
-            y_max=bb.y_max,
-            y_min=bb.y_min,
-        )
-
-    @classmethod
-    def convert_candidate_entity(
-        cls,
-        ent: minmodkg.models.candidate_entity.CandidateEntity,
-    ) -> CandidateEntity:
-        if ent is None:
-            return None
-        return CandidateEntity(
-            source=ent.source,
-            confidence=ent.confidence,
-            observed_name=ent.observed_name,
-            normalized_uri=ent.normalized_uri,
-        )
-
-    @classmethod
-    def convert_measure(
-        cls,
-        measure: minmodkg.models.mineral_inventory.Measure,
-    ) -> Measure:
-        if measure is None:
-            return None
-        return Measure(
-            value=measure.value,
-            unit=(
-                cls.convert_candidate_entity(measure.unit)
-                if measure.unit is not None
-                else None
-            ),
-        )

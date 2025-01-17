@@ -11,7 +11,7 @@ import serde.csv
 import serde.json
 from joblib import Parallel, delayed
 from libactor.cache import cache
-from minmodkg.models.base import MINMOD_KG
+from minmodkg.models_v2.kg.base import MINMOD_KG
 from rdflib import OWL
 from slugify import slugify
 from timer import Timer

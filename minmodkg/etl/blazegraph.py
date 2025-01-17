@@ -6,15 +6,16 @@ from pathlib import Path
 
 import httpx
 from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
-from minmodkg.models.base import MINMOD_NS
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from rdflib import Graph
+from tqdm import tqdm
+
 from statickg.models.file_and_path import BaseType, InputFile
 from statickg.services.data_loader import (
     DataLoaderService,
     DataLoaderServiceInvokeArgs,
     DBInfo,
 )
-from tqdm import tqdm
 
 
 class BlazeGraphLoaderService(DataLoaderService):

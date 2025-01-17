@@ -6,12 +6,12 @@ from typing import Annotated, Optional, Union
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
-from minmodkg.models.base import MINMOD_NS
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.mineral_site import MineralSite as InputMineralSite
 from minmodkg.models_v2.inputs.reference import Reference
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.typing import IRI, InternalID

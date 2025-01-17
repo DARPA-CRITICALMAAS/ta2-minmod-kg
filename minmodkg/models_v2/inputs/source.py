@@ -6,7 +6,7 @@ from typing import Optional
 from minmodkg.misc.prefix_index import LongestPrefixIndex
 from minmodkg.misc.rdf_store import norm_literal
 from minmodkg.misc.utils import filter_duplication
-from minmodkg.models.base import MinModRDFModel
+from minmodkg.models_v2.kg.base import MinModRDFModel
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID, Triple
 from rdflib import Graph

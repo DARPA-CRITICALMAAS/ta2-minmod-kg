@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Optional, Sequence, TypedDict
 
 from minmodkg.misc.utils import makedict
-from minmodkg.models.base import MINMOD_NS
+from minmodkg.models_v2.kg.base import MINMOD_NS
 from minmodkg.models_v2.kgrel.base import Base
 from minmodkg.models_v2.kgrel.custom_types import (
     DedupMineralSiteDepositType,

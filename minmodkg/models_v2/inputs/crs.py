@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from minmodkg.typing import IRI
-from pydantic import BaseModel
 
 
-class CRS(BaseModel):
+@dataclass
+class CRS:
     uri: IRI
     name: str

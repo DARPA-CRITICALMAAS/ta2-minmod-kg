@@ -3,13 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
+from minmodkg.misc.utils import format_nanoseconds, makedict
 from minmodkg.models_v2.kgrel.dedup_mineral_site import (
-    DedupMineralSite,
     DedupMineralSiteAndInventory,
 )
 from minmodkg.typing import InternalID
-from pydantic import BaseModel
 
 
 @dataclass
@@ -24,6 +22,10 @@ class DedupMineralSiteDepositType:
             "source": self.source,
             "confidence": self.confidence,
         }
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(id=d["id"], source=d["source"], confidence=d["confidence"])
 
 
 @dataclass
@@ -51,6 +53,15 @@ class DedupMineralSiteLocation:
             )
         )
 
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            lat=d.get("lat"),
+            lon=d.get("lon"),
+            country=d["country"],
+            state_or_province=d["state_or_province"],
+        )
+
 
 @dataclass
 class DedupMineralSiteIdAndScore:
@@ -59,6 +70,10 @@ class DedupMineralSiteIdAndScore:
 
     def to_dict(self):
         return {"id": self.id, "score": self.score}
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(id=d["id"], score=d["score"])
 
 
 @dataclass
@@ -78,6 +93,16 @@ class GradeTonnage:
                 ("total_grade", self.total_grade),
                 ("date", self.date),
             )
+        )
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            commodity=d["commodity"],
+            total_contained_metal=d.get("total_contained_metal"),
+            total_tonnage=d.get("total_tonnage"),
+            total_grade=d.get("total_grade"),
+            date=d.get("date"),
         )
 
 
@@ -149,3 +174,23 @@ class DedupMineralSitePublic:
         if self.location is not None:
             out["location"] = self.location.to_dict()
         return out
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            id=d["id"],
+            name=d["name"],
+            type=d["type"],
+            rank=d["rank"],
+            sites=[DedupMineralSiteIdAndScore.from_dict(s) for s in d["sites"]],
+            deposit_types=[
+                DedupMineralSiteDepositType.from_dict(dt) for dt in d["deposit_types"]
+            ],
+            location=(
+                DedupMineralSiteLocation.from_dict(d["location"])
+                if "location" in d
+                else None
+            ),
+            grade_tonnage=[GradeTonnage.from_dict(gt) for gt in d["grade_tonnage"]],
+            modified_at=d["modified_at"],
+        )

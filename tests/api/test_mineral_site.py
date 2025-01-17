@@ -14,11 +14,11 @@ from minmodkg.api.routers.mineral_site import (
     source_uri_to_score,
 )
 from minmodkg.misc.rdf_store import TripleStore
-from minmodkg.models.base import MINMOD_KG
 from minmodkg.models_v2.inputs.candidate_entity import CandidateEntity
 from minmodkg.models_v2.inputs.location_info import LocationInfo
 from minmodkg.models_v2.inputs.mineral_inventory import MineralInventory
 from minmodkg.models_v2.inputs.reference import Document, Reference
+from minmodkg.models_v2.kg.base import MINMOD_KG
 from minmodkg.models_v2.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models_v2.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
@@ -140,7 +140,11 @@ class TestMineralSite(TestMineralSiteData):
         ).json()
         self.site1.modified_at = resp["modified_at"]
 
-        gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
+        gold_resp = dict(
+            **self.site1_dump,
+            modified_at=resp["modified_at"],
+            snapshot_id=resp["snapshot_id"],
+        )
         norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
 
@@ -181,7 +185,7 @@ class TestMineralSite(TestMineralSiteData):
             json=self.site1.to_dict(),
         )
         assert resp.json() == {"detail": "The site already exists."}
-        assert resp.status_code == 403
+        assert resp.status_code == 409
 
     def test_update_site(self, auth_client, kg: TripleStore):
         sleep(1.0)  # to ensure the modified_at is different
@@ -196,7 +200,11 @@ class TestMineralSite(TestMineralSiteData):
             )
         ).json()
 
-        gold_resp = dict(**self.site1_dump, modified_at=resp["modified_at"])
+        gold_resp = dict(
+            **self.site1_dump,
+            modified_at=resp["modified_at"],
+            snapshot_id=resp["snapshot_id"],
+        )
         gold_resp["name"] = "Frog Mine"
         norm_site_wkt(resp, gold_resp["location_info"]["location"])
         assert resp == gold_resp
@@ -239,7 +247,11 @@ class TestMineralSite(TestMineralSiteData):
                 json=self.site2.to_dict(),
             )
         ).json()
-        gold_resp = dict(**self.site2_dump, modified_at=resp["modified_at"])
+        gold_resp = dict(
+            **self.site2_dump,
+            modified_at=resp["modified_at"],
+            snapshot_id=resp["snapshot_id"],
+        )
         norm_site_wkt(resp, gold_resp["location_info"]["location"])
 
         assert resp == gold_resp
