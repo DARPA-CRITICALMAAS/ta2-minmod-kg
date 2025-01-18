@@ -1,18 +1,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Annotated, Optional
 
+from minmodkg.misc.rdf_store.rdf_model import Property, RDFModel
 from minmodkg.misc.utils import extend_unique, makedict
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
+from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.candidate_entity import CandidateEntity
 
 
 @dataclass
-class LocationInfo:
-    country: list[CandidateEntity] = field(default_factory=list)
-    state_or_province: list[CandidateEntity] = field(default_factory=list)
-    crs: Optional[CandidateEntity] = None
-    location: Optional[str] = None
+class LocationInfo(RDFModel):
+    country: Annotated[
+        list[CandidateEntity],
+        Property(ns=NS_MO, name="country", is_object_property=True, is_list=True),
+    ] = field(default_factory=list)
+    state_or_province: Annotated[
+        list[CandidateEntity],
+        Property(
+            ns=NS_MO, name="state_or_province", is_object_property=True, is_list=True
+        ),
+    ] = field(default_factory=list)
+    crs: Annotated[
+        Optional[CandidateEntity],
+        Property(ns=NS_MO, name="crs", is_object_property=True),
+    ] = None
+    location: Annotated[Optional[str], Property(ns=NS_MO, name="location")] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

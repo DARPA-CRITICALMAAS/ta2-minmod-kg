@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 from uuid import uuid4
 
-from minmodkg.models.inputs.reference import PageInfo
 from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kg.reference import PageInfo
 from minmodkg.models.kgrel.user import is_valid_user_uri
 from slugify import slugify
 

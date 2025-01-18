@@ -11,9 +11,9 @@ import xxhash
 from joblib import delayed
 from libactor.cache import cache
 from minmodkg.misc.utils import group_by
-from minmodkg.models.inputs.mineral_site import MineralSite
-from minmodkg.models.inputs.source import Source
 from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kg.mineral_site import MineralSite
+from minmodkg.models.kg.source import Source
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory

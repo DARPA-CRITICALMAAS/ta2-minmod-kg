@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Optional, Sequence, Tuple, TypedDict
 
 from minmodkg.models.kgrel.base import engine
@@ -10,7 +9,6 @@ from minmodkg.models.kgrel.dedup_mineral_site import (
 )
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models.kgrel.user import User
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
 from sqlalchemy import Engine, Row, Select, delete, distinct, func, select, update
@@ -81,9 +79,8 @@ class MineralSiteService:
                 msi.ms.site_id: msi for msi in self._read_mineral_sites(session, query)
             }
 
-    def create(self, user: User, site_and_inv: MineralSiteAndInventory):
+    def create(self, site_and_inv: MineralSiteAndInventory):
         """Create a mineral site"""
-        self._update_derived_data(site_and_inv.ms, user)
         with Session(self.engine, expire_on_commit=False) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
 
@@ -127,11 +124,9 @@ class MineralSiteService:
 
     def update(
         self,
-        user: User,
         site_and_inv: MineralSiteAndInventory,
         site_snapshot_id: Optional[int] = None,
     ):
-        self._update_derived_data(site_and_inv.ms, user)
         with Session(self.engine, expire_on_commit=False) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
 
@@ -322,11 +317,6 @@ class MineralSiteService:
                 },
                 "total": total,
             }
-
-    def _update_derived_data(self, site: MineralSite, user: User):
-        site.modified_at = time.time_ns()
-        site.created_by = [user.get_uri()]
-        return site
 
     def _select_mineral_site(
         self,

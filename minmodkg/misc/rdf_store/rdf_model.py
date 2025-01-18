@@ -1,35 +1,66 @@
 from __future__ import annotations
 
-from abc import abstractmethod
-from contextlib import contextmanager
-from dataclasses import dataclass
-from datetime import datetime
-from functools import cached_property, lru_cache
-from time import time
+from dataclasses import dataclass, field
 from typing import (
+    TYPE_CHECKING,
     Annotated,
     Any,
     ClassVar,
-    Iterable,
-    Literal,
+    Generic,
     Optional,
-    Self,
-    Sequence,
     TypeVar,
+    get_args,
+    get_origin,
+    get_type_hints,
 )
 from uuid import uuid4
 
-import httpx
-from minmodkg.misc.exceptions import DBError, TransactionError
+from drepr.writers.turtle_writer import MyLiteral
 from minmodkg.misc.rdf_store.namespace import Namespace, SingleNS
 from minmodkg.misc.rdf_store.triple_store import TripleStore
-from minmodkg.misc.utils import group_by_key
-from minmodkg.typing import IRI, InternalID, RelIRI, SPARQLMainQuery, Triple, Triples
-from pydantic import BaseModel
-from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
-from rdflib.namespace import NamespaceManager
-from rdflib.term import Literal as RDFLiteral
-from rdflib.term import Node
+from minmodkg.models.kg.base import NS_RDF
+from minmodkg.typing import IRI
+from rdflib import RDF, XSD, Graph
+from rdflib import Literal as RDFLiteral
+from rdflib import URIRef
+
+
+@dataclass
+class Subject:
+    ns: SingleNS
+    name: str
+    key: Optional[str] = None
+
+    rel_uri: str = field(init=False)
+    uriref: URIRef = field(init=False)
+
+    def __post_init__(self):
+        self.rel_uri = self.ns[self.name]
+        self.uriref = self.ns.uri(self.name)
+
+
+@dataclass
+class Property:
+    ns: SingleNS
+    name: str
+    is_object_property: bool = False
+    is_list: bool = False
+    datatype: Optional[URIRef] = None
+    rel_uri: str = field(init=False)
+    uriref: URIRef = field(init=False)
+
+    def __post_init__(self):
+        self.rel_uri = self.ns[self.name]
+        self.uriref = self.ns.uri(self.name)
+
+
+@dataclass
+class P:
+    ns: Optional[SingleNS] = None
+    name: Optional[str] = None
+    is_object_property: Optional[bool] = None
+    is_list: Optional[bool] = None
+    datatype: Optional[URIRef] = None
 
 
 @dataclass
@@ -38,268 +69,180 @@ class RDFMetadata:
     store: TripleStore
 
 
-class BaseRDFModel(BaseModel):
-    rdfdata: ClassVar[RDFMetadata]
-    qbuilder: ClassVar[BaseRDFQueryBuilder]
+@dataclass
+class ResourceSchema:
+    subj: Subject
+    dataprops: dict[str, Property] = field(init=False, default_factory=dict)
+    objectprops: dict[str, Property] = field(init=False, default_factory=dict)
 
-    @classmethod
-    def from_dict(cls, json: dict) -> Self:
-        return cls.model_validate(json)
+    def get_uri(self, resource: Any) -> str:
+        if self.subj.key is not None:
+            return getattr(resource, self.subj.key)
+        if not hasattr(resource, "__uri__"):
+            setattr(
+                resource,
+                "__uri__",
+                self.subj.ns[self.subj.name + "_" + str(uuid4()).replace("-", "_")],
+            )
+        return getattr(resource, "__uri__")
 
-    @classmethod
-    def validate_dict(cls, json: dict) -> Self:
-        return cls.model_validate(json)
+    def get_uriref(self, resource: Any) -> URIRef:
+        if self.subj.key is not None:
+            return URIRef(getattr(resource, self.subj.key))
+        if not hasattr(resource, "__uri__"):
+            setattr(
+                resource,
+                "__uri__",
+                self.subj.ns.uri(self.subj.name + "_" + str(uuid4()).replace("-", "_")),
+            )
+        return getattr(resource, "__uri__")
 
-    def to_dict(self) -> dict:
-        return self.model_dump(exclude_none=True)
-
-    @classmethod
-    def from_graph(cls, uid: Node, g: Graph) -> Self:
-        raise NotImplementedError()
-
-    def to_triples(self, triples: Optional[list[Triple]] = None) -> list[Triple]:
-        """Convert this model to list of triples. If the input `triples` is not None, append new triples to it and return the same input list"""
-        raise NotImplementedError()
-
-    def to_graph(self) -> Graph:
-        ns = self.rdfdata.ns
-        g = Graph()
-        for s, p, o in self.to_triples():
-            if s.startswith("http://") or s.startswith("https://"):
-                subj = URIRef(s)
-            else:
-                prefix, name = s.split(":")
-                subj = ns.namespaces[prefix].uri(name)
-
-            if p.startswith("http://") or p.startswith("https://"):
-                pred = URIRef(p)
-            else:
-                prefix, name = p.split(":")
-                pred = ns.namespaces[prefix].uri(name)
-
-            if o.startswith("http://") or o.startswith("https://"):
-                obj = URIRef(o)
-            elif o[0] == '"':
-                # TODO: fix bug if we need to escape the quote
-                obj = RDFLiteral(o[1:-1])
-            elif o[0].isdigit() or o[0] == "-":
-                obj = RDFLiteral(
-                    o,
-                    datatype=(
-                        XSD.int
-                        if (o.find(".") == -1 and o.find("e-") == -1)
-                        else XSD.decimal
-                    ),
-                )
-            else:
-                prefix, name = o.split(":", 1)
-                obj = ns.namespaces[prefix].uri(name)
-
-            g.add((subj, pred, obj))
-        return g
-
-    @classmethod
-    def has_uri(cls, uri: IRI | URIRef) -> bool:
-        return cls.rdfdata.store.has(uri)
-
-    @classmethod
-    def has_id(cls, id: InternalID) -> bool:
-        return cls.rdfdata.store.has(cls.qbuilder.class_namespace.uri(id))
-
-    @classmethod
-    def get_by_id(cls, id: InternalID) -> Self:
-        uri = cls.qbuilder.class_namespace.uri(id)
-        return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
-
-    @classmethod
-    def get_by_uri(cls, uri: IRI | URIRef) -> Self:
-        return cls.from_graph(URIRef(uri), cls.get_graph_by_uri(uri))
-
-    @classmethod
-    def get_by_uris(cls, uris: Sequence[IRI | URIRef]) -> list[Self]:
-        g = cls.get_graph_by_uris(uris)
-        return [cls.from_graph(URIRef(uri), g) for uri in uris]
-
-    @classmethod
-    def get_graph_by_id(cls, id: InternalID) -> Graph:
-        return cls.get_graph_by_uri(cls.qbuilder.class_namespace.uri(id))
-
-    @classmethod
-    def get_graph_by_uri(cls, uri: IRI | URIRef) -> Graph:
-        query = cls.qbuilder.create_get_by_uri(uri)
-        return cls.rdfdata.store.construct(query)
-
-    @classmethod
-    def get_graph_by_uris(cls, uris: Sequence[IRI | URIRef]) -> Graph:
-        query = cls.qbuilder.create_get_by_uris(uris)
-        return cls.rdfdata.store.construct(query)
-
-    @classmethod
-    def remove_irrelevant_triples(cls, g: Graph):
-        """Keep only triples that are relevant to an instance of this class. This function keeps RDF.type triples, because they are necessary to determine the class of the instance.
-
-        Note that this function is initially used in detect del/add triples to update KG, as if we do not careful
-        when loading graphs, we may load extra triples and delete them accidentally.
-        However, we decide to temporary not use it as we may have some values to delete unwanted triples to keep the
-        KG clean.
+    def add_property(self, attrname: str, prop: Property):
         """
-        Class = cls.qbuilder.class_namespace.rel2abs(cls.qbuilder.class_reluri)
-
-        # retrieve the subject of this class first
-        (subj,) = list(g.subjects(RDF.type, Class))
-        raise NotImplementedError()
-
-
-class BaseRDFQueryBuilder:
-    rdfdata: ClassVar[RDFMetadata]
-    class_namespace: SingleNS
-    class_reluri: RelIRI
-    fields: list[PropertyRule]
-
-    class HPg:
-        """Hierarchical Paragraph.
-
-        In this class, any child text share the same indent level, however, the child HPg has a higher indent level.
+        Args:
+            attrname: name of the property in the Python class.
         """
+        if prop.is_object_property:
+            self.objectprops[attrname] = prop
+        else:
+            self.dataprops[attrname] = prop
 
-        def __init__(
-            self, children: Optional[list[BaseRDFQueryBuilder.HPg | str] | str] = None
-        ):
-            if children is None:
-                children = []
-            elif isinstance(children, str):
-                children = [children]
-            self.children: list[BaseRDFQueryBuilder.HPg | str] = children
 
-        def to_str(self, tab_size: int = 2, indent: int = 0):
-            out = []
-            for child in self.children:
-                if isinstance(child, str):
-                    out.append(" " * indent + child)
-                else:
-                    out.append(child.to_str(tab_size=tab_size, indent=indent + 2))
-            return "\n".join(out)
+class RDFModel:
 
-        def extend(self, another: BaseRDFQueryBuilder.HPg):
-            self.children.extend(another.children)
-            return self
+    registry: ClassVar[dict[type, ResourceSchema]]
+    namespace: ClassVar[Namespace]
 
-    @dataclass
-    class PropertyRule:
-        ns: SingleNS
-        name: str
-        is_optional: bool = False
-        target: Optional[BaseRDFQueryBuilder] = None
+    if TYPE_CHECKING:
+        __subj__: ClassVar[Subject]
+        __schema__: ClassVar[ResourceSchema]
+        # for getting back the object from the RDF graph
+        __rdf_graph_deser__: ClassVar[int]
+        # unique identifier of an instance of the model
+        # if the model does not have an ID
+        __uri__: ClassVar[IRI]
 
-        def construct(self, source_var: str):
-            """Return the CONSTRUCT part for this property"""
-            HPg = BaseRDFQueryBuilder.HPg
-            target_var = source_var + "__" + self.name
-            property = self.ns[self.name]
-            if self.target is None:
-                return HPg(f"?{source_var} {property} ?{target_var} .")
-            else:
-                return HPg(
-                    [
-                        f"?{source_var} {property} ?{target_var} .",
-                        self.target.construct(target_var),
-                    ]
-                )
+    def __init_subclass__(cls, *kw: Any) -> None:
+        if not hasattr(cls, "__subj__"):
+            raise KeyError("Subclass of RDFModel must defined __subj__")
 
-        def match(self, source_var: str):
-            """Return the match part for this property, the match part is used in WHERE clause"""
-            HPg = BaseRDFQueryBuilder.HPg
-            target_var = source_var + "__" + self.name
-            property = self.ns[self.name]
+        if not hasattr(RDFModel, "registry"):
+            RDFModel.registry = {}
 
-            if self.target is None:
-                if self.is_optional:
-                    return HPg(
-                        [
-                            "OPTIONAL {",
-                            HPg(f"?{source_var} {property} ?{target_var} ."),
-                            "}",
-                        ]
+        schema = ResourceSchema(subj=cls.__subj__)
+
+        field_types = get_type_hints(cls, include_extras=True)
+        for field_name, field_type in field_types.items():
+            args = get_args(field_type)
+            origin = get_origin(field_type)
+
+            if origin is not Annotated:
+                continue
+
+            for arg in args:
+                if isinstance(arg, Property):
+                    schema.add_property(field_name, arg)
+                    break
+                if isinstance(arg, P):
+                    schema.add_property(
+                        field_name,
+                        Property(
+                            ns=arg.ns or schema.subj.ns,
+                            name=arg.name or field_name,
+                            is_object_property=arg.is_object_property or False,
+                            is_list=arg.is_list or False,
+                            datatype=arg.datatype,
+                        ),
                     )
-                else:
-                    return HPg(f"?{source_var} {property} ?{target_var} .")
-            else:
-                if self.is_optional:
-                    return HPg(
-                        [
-                            "OPTIONAL {",
-                            HPg(
-                                [
-                                    f"?{source_var} {property} ?{target_var} .",
-                                    self.target.match(target_var),
-                                ]
+                    break
+
+        RDFModel.registry[cls] = schema
+        cls.__schema__ = schema
+        super().__init_subclass__(*kw)
+
+    def to_triples(self):
+        schema = self.__schema__
+
+        subj = schema.get_uri(self)
+        triples = [(subj, NS_RDF.type, schema.subj.rel_uri)]
+
+        for name, prop in schema.dataprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    triples.append(
+                        (
+                            subj,
+                            prop.rel_uri,
+                            MyLiteral(x, datatype=prop.datatype).n3(
+                                RDFModel.namespace.rdflib_namespace_manager
                             ),
-                            "}",
-                        ]
+                        )
                     )
-                else:
-                    return HPg(
-                        [
-                            f"?{source_var} {property} ?{target_var} .",
-                            self.target.match(target_var),
-                        ]
+            else:
+                triples.append(
+                    (
+                        subj,
+                        prop.rel_uri,
+                        MyLiteral(value, datatype=prop.datatype).n3(
+                            RDFModel.namespace.rdflib_namespace_manager
+                        ),
                     )
+                )
+        for name, prop in schema.objectprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    triples.append((subj, prop.rel_uri, x.__schema__.get_uri(x)))
+                    triples.extend(x.to_triples())
+            else:
+                triples.append((subj, prop.rel_uri, value.__schema__.get_uri(value)))
+                triples.extend(value.to_triples())
+        return triples
 
-    def get_default_source_var(self):
-        return "u"
+    def to_graph(self, g: Optional[Graph] = None):
+        if g is None:
+            g = Graph()
 
-    @lru_cache()
-    def construct(self, source_var: Optional[str] = None) -> HPg:
-        """Return the CONSTRUCT part for this class"""
-        source_var = source_var or self.get_default_source_var()
-        out = self.HPg()
-        out.extend(
-            self.HPg(f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} .")
-        )
-        for field in self.fields:
-            out.extend(field.construct(source_var))
-        return out
+        schema = self.__schema__
+        subj = schema.get_uriref(self)
+        g.add((subj, RDF.type, schema.subj.uriref))
 
-    @lru_cache()
-    def where(self, source_var: str) -> HPg:
-        source_var = source_var or self.get_default_source_var()
-        return self.HPg(
-            f"?{source_var} {self.rdfdata.ns.rdf.type} {self.class_reluri} ."
-        ).extend(self.match(source_var))
+        for name, prop in schema.dataprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    g.add(
+                        (
+                            subj,
+                            prop.uriref,
+                            RDFLiteral(x, datatype=prop.datatype),
+                        )
+                    )
+            else:
+                g.add(
+                    (
+                        subj,
+                        prop.uriref,
+                        RDFLiteral(value, datatype=prop.datatype),
+                    )
+                )
 
-    @lru_cache()
-    def match(self, source_var: str) -> HPg:
-        """Return the match part to match this object as if it is target of another object
-
-        For example:
-            # outer query
-            ?ms :deposit_type_candidate ?can_ent
-
-            # inner query (match_target for ?can_ent)
-            ?can_ent :source ?source .
-            ?can_ent :target ?target .
-            ?can_ent :observed_name ?type .
-            ?can_ent :normalized_uri ?uri .
-        """
-        out = self.HPg()
-        for field in self.fields:
-            out.extend(field.match(source_var))
-        return out
-
-    def create_get_by_uri(self, uri: IRI | URIRef) -> str:
-        source_var = self.get_default_source_var()
-        return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { <%s> }\n}" % (
-            self.construct(source_var).to_str(indent=2),
-            self.where(source_var).to_str(indent=2),
-            source_var,
-            uri,
-        )
-
-    def create_get_by_uris(self, uris: Sequence[IRI | URIRef]) -> str:
-        source_var = self.get_default_source_var()
-        return "CONSTRUCT {\n%s\n} WHERE {\n%s\n  VALUES ?%s { %s }\n}" % (
-            self.construct(source_var).to_str(indent=2),
-            self.where(source_var).to_str(indent=2),
-            source_var,
-            " ".join(f"<{uri}>" for uri in uris),
-        )
+        for name, prop in schema.objectprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    g.add((subj, prop.uriref, x.__schema__.get_uriref(x)))
+                    x.to_graph(g)
+            else:
+                g.add((subj, prop.uriref, value.__schema__.get_uriref(value)))
+                value.to_graph(g)
+        return g

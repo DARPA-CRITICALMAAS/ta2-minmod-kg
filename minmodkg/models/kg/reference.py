@@ -2,18 +2,22 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Annotated, Optional
 
+from minmodkg.misc.rdf_store.rdf_model import Property, RDFModel, Subject
 from minmodkg.misc.utils import makedict
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.measure import Measure
+from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.measure import Measure
 
 
 @dataclass
-class Document:
-    doi: Optional[str] = None
-    uri: Optional[str] = None
-    title: Optional[str] = None
+class Document(RDFModel):
+    __subj__ = Subject(ns=NS_MO, name="Document")
+
+    doi: Annotated[Optional[str], Property(ns=NS_MO, name="doi")] = None
+    uri: Annotated[Optional[str], Property(ns=NS_MO, name="uri")] = None
+    title: Annotated[Optional[str], Property(ns=NS_MO, name="title")] = None
 
     def to_dict(self):
         return makedict.without_none(
@@ -97,11 +101,13 @@ class Document:
 
 
 @dataclass
-class BoundingBox:
-    x_max: float
-    x_min: float
-    y_max: float
-    y_min: float
+class BoundingBox(RDFModel):
+    __subj__ = Subject(ns=NS_MO, name="BoundingBox")
+
+    x_max: Annotated[float, Property(ns=NS_MO, name="x_max")]
+    x_min: Annotated[float, Property(ns=NS_MO, name="x_min")]
+    y_max: Annotated[float, Property(ns=NS_MO, name="y_max")]
+    y_min: Annotated[float, Property(ns=NS_MO, name="y_min")]
 
     def to_dict(self):
         return {
@@ -128,9 +134,14 @@ class BoundingBox:
 
 
 @dataclass
-class PageInfo:
-    page: int
-    bounding_box: Optional[BoundingBox] = None
+class PageInfo(RDFModel):
+    __subj__ = Subject(ns=NS_MO, name="PageInfo")
+
+    page: Annotated[int, Property(ns=NS_MO, name="page")]
+    bounding_box: Annotated[
+        Optional[BoundingBox],
+        Property(ns=NS_MO, name="bounding_box", is_object_property=True),
+    ] = None
 
     def to_dict(self):
         return makedict.without_none(
@@ -167,11 +178,18 @@ class PageInfo:
 
 
 @dataclass
-class Reference:
-    document: Document
-    page_info: list[PageInfo] = field(default_factory=list)
-    comment: Optional[str] = None
-    property: Optional[str] = None
+class Reference(RDFModel):
+    __subj__ = Subject(ns=NS_MO, name="Reference")
+
+    document: Annotated[
+        Document, Property(ns=NS_MO, name="document", is_object_property=True)
+    ]
+    page_info: Annotated[
+        list[PageInfo],
+        Property(ns=NS_MO, name="page_info", is_list=True, is_object_property=True),
+    ] = field(default_factory=list)
+    comment: Annotated[Optional[str], Property(ns=NS_MO, name="comment")] = None
+    property: Annotated[Optional[str], Property(ns=NS_MO, name="property")] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

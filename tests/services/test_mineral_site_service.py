@@ -18,11 +18,11 @@ from minmodkg.api.routers.mineral_site import (
 )
 from minmodkg.misc.rdf_store import TripleStore
 from minmodkg.misc.utils import assert_not_none
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.location_info import LocationInfo
-from minmodkg.models.inputs.mineral_inventory import MineralInventory
-from minmodkg.models.inputs.reference import Document, Reference
-from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kg.base import NS_MR
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.location_info import LocationInfo
+from minmodkg.models.kg.mineral_inventory import MineralInventory
+from minmodkg.models.kg.reference import Document, Reference
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
@@ -47,7 +47,7 @@ class TestMSData:
                         source="database::https://mrdata.usgs.gov/mrds",
                         confidence=1.0,
                         observed_name="Nickel",
-                        normalized_uri=MINMOD_KG.ns.mr.uristr(self.site1_commodity),
+                        normalized_uri=NS_MR.uristr(self.site1_commodity),
                     ),
                     reference=Reference(
                         document=Document(uri="https://mrdata.usgs.gov/mrds")
@@ -121,8 +121,9 @@ class TestMSData:
     #     )
     #     del self.site2_dump["modified_at"]
 
-    def to_kgrel(self, site: InputPublicMineralSite):
+    def to_kgrel(self, user: User, site: InputPublicMineralSite):
         return site.to_kgrel(
+            user,
             material_form_uri_to_conversion(None),
             crs_uri_to_name(None),
             source_uri_to_score(None),
@@ -135,7 +136,7 @@ class TestCreateMineralSite(TestMSData):
         self, user1: User, kg: TripleStore, kgrel: Engine
     ):
         service = MineralSiteService(kgrel)
-        service.create(user1, self.to_kgrel(self.site1))
+        service.create(self.to_kgrel(user1, self.site1))
 
         out_ms = OutputPublicMineralSite.from_kgrel(
             assert_not_none(service.find_by_id(self.site1.id))
@@ -148,25 +149,9 @@ class TestCreateMineralSite(TestMSData):
 
 
 class TestLinkMineralSite(TestMSData):
-    def test_update_same_as(self, resource_dir: Path, user1, auth_client, kg, kgrel):
+    def test_update_same_as(self, resource_dir: Path, kgrel_with_data):
         time.sleep(1.0)  # to ensure the modified_at is different
-        crss = crs_uri_to_name(None)
-        material_form = material_form_uri_to_conversion(None)
-        source_score = source_uri_to_score(None)
-
-        mineral_site_service = MineralSiteService(kgrel)
-        id2site = {}
-        for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
-            for raw_site in serde.json.deser(file):
-                msi = MineralSiteAndInventory.from_raw_site(
-                    raw_site,
-                    material_form=material_form,
-                    crs_names=crss,
-                    source_score=source_score,
-                )
-                id2site[msi.ms.site_id] = msi.ms
-                mineral_site_service.create(user1, msi)
-
+        mineral_site_service = MineralSiteService(kgrel_with_data)
         mineral_site_service.update_same_as(
             [
                 [

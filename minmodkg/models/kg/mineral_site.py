@@ -6,19 +6,21 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Any, Optional
 
 from minmodkg.misc.deserializer import get_dataclass_deserializer
+from minmodkg.misc.rdf_store.rdf_model import P, Property, RDFModel, Subject
 from minmodkg.misc.utils import (
     extend_unique,
     format_datetime,
     format_nanoseconds,
     makedict,
 )
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.geology_info import GeologyInfo
-from minmodkg.models.inputs.location_info import LocationInfo
-from minmodkg.models.inputs.mineral_inventory import MineralInventory
-from minmodkg.models.inputs.reference import Reference
+from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.geology_info import GeologyInfo
+from minmodkg.models.kg.location_info import LocationInfo
+from minmodkg.models.kg.mineral_inventory import MineralInventory
+from minmodkg.models.kg.reference import Reference
 from minmodkg.transformations import make_site_uri
-from minmodkg.typing import InternalID, NotEmptyStr
+from minmodkg.typing import IRI, InternalID, NotEmptyStr
 from rdflib import URIRef
 
 if TYPE_CHECKING:
@@ -26,25 +28,37 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class MineralSite:
-    source_id: str
-    record_id: str
-    name: Optional[NotEmptyStr] = None
-    aliases: list[NotEmptyStr] = field(default_factory=list)
-    site_rank: Optional[NotEmptyStr] = None
-    site_type: Optional[NotEmptyStr] = None
-    mineral_form: list[NotEmptyStr] = field(default_factory=list)
-    geology_info: Optional[GeologyInfo] = None
-    location_info: Optional[LocationInfo] = None
-    deposit_type_candidate: list[CandidateEntity] = field(default_factory=list)
-    mineral_inventory: list[MineralInventory] = field(default_factory=list)
-    reference: list[Reference] = field(default_factory=list)
-    discovered_year: Optional[int] = None
+class MineralSite(RDFModel):
+    __subj__ = Subject(ns=NS_MO, name="MineralSite", key="uri")
 
-    created_by: list[NotEmptyStr] = field(default_factory=list)
-    modified_at: Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"] = field(
-        default_factory=lambda: format_datetime(datetime.now(timezone.utc))
+    source_id: Annotated[NotEmptyStr, P()]
+    record_id: Annotated[NotEmptyStr, P()]
+    name: Annotated[Optional[NotEmptyStr], P()] = None
+    aliases: Annotated[list[NotEmptyStr], P(is_list=True)] = field(default_factory=list)
+    site_rank: Annotated[Optional[NotEmptyStr], P()] = None
+    site_type: Annotated[Optional[NotEmptyStr], P()] = None
+    mineral_form: Annotated[list[NotEmptyStr], P(is_list=True)] = field(
+        default_factory=list
     )
+    geology_info: Annotated[Optional[GeologyInfo], P(is_object_property=True)] = None
+    location_info: Annotated[Optional[LocationInfo], P(is_object_property=True)] = None
+    deposit_type_candidate: Annotated[
+        list[CandidateEntity], P(is_object_property=True, is_list=True)
+    ] = field(default_factory=list)
+    mineral_inventory: Annotated[
+        list[MineralInventory], P(is_object_property=True, is_list=True)
+    ] = field(default_factory=list)
+    reference: Annotated[list[Reference], P(is_object_property=True, is_list=True)] = (
+        field(default_factory=list)
+    )
+    discovered_year: Annotated[Optional[int], P()] = None
+
+    created_by: Annotated[list[NotEmptyStr], P(is_list=True)] = field(
+        default_factory=list
+    )
+    modified_at: Annotated[
+        Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"], P()
+    ] = field(default_factory=lambda: format_datetime(datetime.now(timezone.utc)))
 
     @cached_property
     def uri(self) -> URIRef:

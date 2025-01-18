@@ -5,6 +5,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
 
+from drepr.writers.turtle_writer import MyLiteral
 from rdflib import XSD, Graph, Literal
 from rdflib.term import Node
 
@@ -15,9 +16,9 @@ def norm_literal(val: Node) -> Node:
     """Normalize the literal value between triple store and python. For example, xsd.decimal saved to Virtuoso is converted into xsd.double when read back."""
     if isinstance(val, Literal):
         if val.datatype in {XSD.decimal, XSD.float, XSD.double}:
-            return Literal(val.value, datatype=XSD.double)
+            return MyLiteral(val.value, datatype=XSD.double)
         elif val.datatype is None or val.datatype == XSD.string:
-            return Literal(str(val.value), datatype=None, lang=val.language)
+            return MyLiteral(str(val.value), datatype=None, lang=val.language)
     return val
 
 
@@ -174,8 +175,15 @@ def exclude_none_or_empty_list(obj: dict):
     }
 
 
-def not_empty_str(s: Any) -> bool:
-    return isinstance(s, str) and len(s.strip()) > 0
+class Deserializer:
+
+    def __call__(self, value: Any) -> Any:
+        raise NotImplementedError()
+
+
+class NotEmptyStr(Deserializer):
+    def __call__(self, s: Any) -> bool:
+        return isinstance(s, str) and len(s.strip()) > 0
 
 
 class makedict:

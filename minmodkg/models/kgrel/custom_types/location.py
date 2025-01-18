@@ -6,8 +6,9 @@ from typing import Annotated, Optional
 import shapely.wkt
 from minmodkg.misc.geo import reproject_geometry
 from minmodkg.misc.utils import extend_unique, makedict
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kg.base import NS_MR
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.typing import InternalID
 
 
@@ -40,6 +41,14 @@ class Location:
             ],
             crs=CandidateEntity.from_dict(d["crs"]) if d.get("crs") else None,
             coordinates=d.get("coordinates"),
+        )
+
+    def to_kg(self) -> LocationInfo:
+        return LocationInfo(
+            country=self.country,
+            state_or_province=self.state_or_province,
+            crs=self.crs,
+            location=self.coordinates,
         )
 
 
@@ -129,12 +138,12 @@ class LocationView(GeoCoordinate):
                 view.lon = centroid.x
 
         view.country = [
-            MINMOD_NS.mr.id(ent.normalized_uri)
+            NS_MR.id(ent.normalized_uri)
             for ent in location.country
             if ent.normalized_uri is not None
         ]
         view.state_or_province = [
-            MINMOD_NS.mr.id(ent.normalized_uri)
+            NS_MR.id(ent.normalized_uri)
             for ent in location.state_or_province
             if ent.normalized_uri is not None
         ]

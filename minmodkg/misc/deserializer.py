@@ -17,6 +17,8 @@ from typing import (
     is_typeddict,
 )
 
+from minmodkg.misc.utils import Deserializer as AnnDeserializer
+
 Deserializer = Callable[[Any], Any]
 DatetimeReg = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z")
 
@@ -217,11 +219,12 @@ def get_deserializer_from_type(
     # handle annotated
     if origin is Annotated:
         # we expect the second argument to be the type deserializer
-        if not callable(args[1]):
+        fn = next(iter(a for a in args[1:] if isinstance(a, AnnDeserializer)), None)
+        if fn is None:
             raise Exception(
-                "invalid annotation of annotated type. expect one type and one deserializer"
+                "invalid annotation of annotated type. expect one deserializer instanceof Deserializer"
             )
-        return args[1]
+        return fn
 
     # handle a special case of variable-length tuple of homogeneous type
     # https://docs.python.org/3/library/typing.html#typing.Tuple

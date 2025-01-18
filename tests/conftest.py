@@ -15,12 +15,19 @@ from fastapi.testclient import TestClient
 from minmodkg import config
 from minmodkg.api.main import app
 from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
+from minmodkg.api.routers.mineral_site import (
+    crs_uri_to_name,
+    material_form_uri_to_conversion,
+    source_uri_to_score,
+)
 from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
 from minmodkg.misc.rdf_store.fuseki import FusekiDB
 from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
 from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.user import User
+from minmodkg.services.mineral_site import MineralSiteService
 from rdflib import Graph
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
@@ -156,6 +163,29 @@ def kgrel(
         session.commit()
 
     yield kgrel_singleton
+
+
+@pytest.fixture(scope="class")
+def kgrel_with_data(
+    resource_dir: Path, kg, kgrel: Engine
+) -> Generator[Engine, Any, None]:
+    crss = crs_uri_to_name(None)
+    material_form = material_form_uri_to_conversion(None)
+    source_score = source_uri_to_score(None)
+
+    mineral_site_service = MineralSiteService(kgrel)
+
+    for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
+        for raw_site in serde.json.deser(file):
+            msi = MineralSiteAndInventory.from_raw_site(
+                raw_site,
+                material_form=material_form,
+                crs_names=crss,
+                source_score=source_score,
+            )
+            mineral_site_service.create(msi)
+
+    yield kgrel
 
 
 @pytest.fixture(scope="class")

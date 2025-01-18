@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Annotated, Sequence, TypeVar
 
-from minmodkg.misc.utils import not_empty_str
+from minmodkg.misc.utils import NotEmptyStr as NotEmptyStrDeser
 
 T = TypeVar("T")
 V = TypeVar("V")
 
 NamespaceAlias = Annotated[str, "A shorter name for the corresponding namespace"]
-NotEmptyStr = Annotated[str, not_empty_str]
+NotEmptyStr = Annotated[str, NotEmptyStrDeser()]
 IRI = Annotated[str, "Internationalized Resource Identifier"]
 URN = Annotated[str, "Uniform Resource Name"]
 RelIRI = Annotated[str, "Relative Internationalized Resource Identifier"]

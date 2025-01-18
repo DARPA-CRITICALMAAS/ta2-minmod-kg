@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.location_info import LocationInfo
-from minmodkg.models.inputs.mineral_inventory import MineralInventory
-from minmodkg.models.inputs.mineral_site import MineralSite as InputMineralSite
-from minmodkg.models.inputs.reference import Reference
 from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.location_info import LocationInfo
+from minmodkg.models.kg.mineral_inventory import MineralInventory
+from minmodkg.models.kg.mineral_site import MineralSite as InputMineralSite
+from minmodkg.models.kg.reference import Reference
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.user import User
 from minmodkg.typing import IRI, InternalID
 from pydantic import BaseModel, Field
 
@@ -172,6 +174,7 @@ class InputPublicMineralSite(InputMineralSite):
 
     def to_kgrel(
         self,
+        user: User,
         material_form: dict[str, float],
         crs_names: dict[str, str],
         source_score: dict[str, float],
@@ -183,6 +186,8 @@ class InputPublicMineralSite(InputMineralSite):
             source_score=source_score,
         )
         site.ms.dedup_site_id = self.dedup_site_id
+        site.ms.modified_at = time.time_ns()
+        site.ms.created_by = [user.get_uri()]
         return site
 
     def to_dict(self):

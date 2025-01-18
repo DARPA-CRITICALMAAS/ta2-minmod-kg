@@ -14,11 +14,11 @@ from minmodkg.api.routers.mineral_site import (
     source_uri_to_score,
 )
 from minmodkg.misc.rdf_store import TripleStore
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.location_info import LocationInfo
-from minmodkg.models.inputs.mineral_inventory import MineralInventory
-from minmodkg.models.inputs.reference import Document, Reference
 from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.location_info import LocationInfo
+from minmodkg.models.kg.mineral_inventory import MineralInventory
+from minmodkg.models.kg.reference import Document, Reference
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService

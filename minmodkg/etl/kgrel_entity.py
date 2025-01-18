@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Mapping, NotRequired, TypedDict
 
+import serde.csv
 import serde.json
 from libactor.cache import cache
 from minmodkg.misc.rdf_store import norm_literal
@@ -103,5 +104,9 @@ class TransformFn:
             outfile = outdir / "commodity.json"
             serde.json.ser({"Commodity": records}, outfile)
             return outfile
+        if infile.path.name == "commodity.csv":
+            raw_records = serde.csv.deser(infile.path, deser_as_record=True)
+
+            records = []
 
         raise NotImplementedError()

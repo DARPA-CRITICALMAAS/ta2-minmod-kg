@@ -111,6 +111,7 @@ def create_site(
 ):
     snapshot_id = get_snapshot_id()
     new_msi = create_site.to_kgrel(
+        user,
         material_form_uri_to_conversion(snapshot_id),
         crs_uri_to_name(snapshot_id),
         source_uri_to_score(snapshot_id),
@@ -123,7 +124,7 @@ def create_site(
             detail="The site already exists.",
         )
 
-    mineral_site_service.create(user, new_msi)
+    mineral_site_service.create(new_msi)
     return OutputPublicMineralSite.from_kgrel(new_msi).to_dict()
 
 
@@ -137,6 +138,7 @@ def update_site(
 ):
     kg_snapshot_id = get_snapshot_id()
     upd_msi = update_site.to_kgrel(
+        user,
         material_form_uri_to_conversion(kg_snapshot_id),
         crs_uri_to_name(kg_snapshot_id),
         source_uri_to_score(kg_snapshot_id),
@@ -157,7 +159,7 @@ def update_site(
 
     try:
         mineral_site_service.update(
-            user, upd_msi.set_id(site_db_id), site_snapshot_id=snapshot_id
+            upd_msi.set_id(site_db_id), site_snapshot_id=snapshot_id
         )
     except ExpiredSnapshotIdError as e:
         raise HTTPException(

@@ -6,13 +6,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Annotated, Iterable, Optional
 
 from minmodkg.grade_tonnage_model import GradeTonnageModel
-from minmodkg.misc.utils import datetime_to_nanoseconds, makedict
-from minmodkg.models.inputs.candidate_entity import CandidateEntity
-from minmodkg.models.inputs.geology_info import GeologyInfo
-from minmodkg.models.inputs.mineral_inventory import MineralInventory
-from minmodkg.models.inputs.mineral_site import MineralSite as InMineralSite
-from minmodkg.models.inputs.reference import Reference
-from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.misc.utils import datetime_to_nanoseconds, format_nanoseconds, makedict
+from minmodkg.models.kg.base import NS_MR
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.geology_info import GeologyInfo
+from minmodkg.models.kg.mineral_inventory import MineralInventory
+from minmodkg.models.kg.mineral_site import MineralSite as InMineralSite
+from minmodkg.models.kg.reference import Reference
 from minmodkg.models.kgrel.base import Base
 from minmodkg.models.kgrel.custom_types import Location, LocationView
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
@@ -67,7 +67,7 @@ class MineralSiteAndInventory:
             if inv.commodity.normalized_uri is None:
                 continue
 
-            commodity = MINMOD_NS.mr.id(inv.commodity.normalized_uri)
+            commodity = NS_MR.id(inv.commodity.normalized_uri)
             commodities.add(commodity)
 
             if (
@@ -313,3 +313,22 @@ class MineralSite(MappedAsDataclass, Base):
     @staticmethod
     def get_dedup_id(site_ids: Iterable[InternalID]):
         return "dedup_" + min(site_ids)
+
+    def to_kg(self) -> InMineralSite:
+        return InMineralSite(
+            source_id=self.source_id,
+            record_id=self.record_id,
+            name=self.name,
+            aliases=self.aliases,
+            site_rank=self.rank,
+            site_type=self.type,
+            mineral_form=self.mineral_form,
+            geology_info=self.geology_info,
+            location_info=self.location.to_kg() if self.location is not None else None,
+            deposit_type_candidate=self.deposit_type_candidates,
+            mineral_inventory=self.inventories,
+            reference=self.reference,
+            discovered_year=self.discovered_year,
+            created_by=self.created_by,
+            modified_at=format_nanoseconds(self.modified_at),
+        )
