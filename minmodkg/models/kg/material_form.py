@@ -10,7 +10,7 @@ from minmodkg.typing import IRI
 
 @dataclass
 class MaterialForm(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="MaterialForm", key="uri")
+    __subj__ = Subject(cls_ns=NS_MO, name="MaterialForm", key="uri")
 
     uri: IRI
     name: Annotated[str, Property(ns=NS_MO, name="name")]

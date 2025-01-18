@@ -13,7 +13,7 @@ from minmodkg.models.kg.measure import Measure
 
 @dataclass
 class Document(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="Document")
+    __subj__ = Subject(cls_ns=NS_MO, name="Document")
 
     doi: Annotated[Optional[str], Property(ns=NS_MO, name="doi")] = None
     uri: Annotated[Optional[str], Property(ns=NS_MO, name="uri")] = None
@@ -102,7 +102,7 @@ class Document(RDFModel):
 
 @dataclass
 class BoundingBox(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="BoundingBox")
+    __subj__ = Subject(cls_ns=NS_MO, name="BoundingBox")
 
     x_max: Annotated[float, Property(ns=NS_MO, name="x_max")]
     x_min: Annotated[float, Property(ns=NS_MO, name="x_min")]
@@ -135,7 +135,7 @@ class BoundingBox(RDFModel):
 
 @dataclass
 class PageInfo(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="PageInfo")
+    __subj__ = Subject(cls_ns=NS_MO, name="PageInfo")
 
     page: Annotated[int, Property(ns=NS_MO, name="page")]
     bounding_box: Annotated[
@@ -179,7 +179,7 @@ class PageInfo(RDFModel):
 
 @dataclass
 class Reference(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="Reference")
+    __subj__ = Subject(cls_ns=NS_MO, name="Reference")
 
     document: Annotated[
         Document, Property(ns=NS_MO, name="document", is_object_property=True)

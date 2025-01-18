@@ -13,7 +13,7 @@ from minmodkg.models.kg.reference import Reference
 
 @dataclass
 class MineralInventory(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="MineralInventory")
+    __subj__ = Subject(cls_ns=NS_MO, name="MineralInventory")
 
     commodity: Annotated[
         CandidateEntity, Property(ns=NS_MO, name="commodity", is_object_property=True)

@@ -11,7 +11,7 @@ from minmodkg.models.kg.candidate_entity import CandidateEntity
 
 @dataclass
 class Measure(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="Measure")
+    __subj__ = Subject(cls_ns=NS_MO, name="Measure")
 
     value: Annotated[Optional[float], Property(ns=NS_MO, name="value")] = None
     unit: Annotated[

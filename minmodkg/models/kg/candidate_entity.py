@@ -10,7 +10,7 @@ from minmodkg.models.kg.base import NS_MO
 
 @dataclass
 class CandidateEntity(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="CandidateEntity")
+    __subj__ = Subject(cls_ns=NS_MO, name="CandidateEntity")
 
     source: Annotated[str, Property(ns=NS_MO, name="source")]
     confidence: Annotated[float, Property(ns=NS_MO, name="confidence")]

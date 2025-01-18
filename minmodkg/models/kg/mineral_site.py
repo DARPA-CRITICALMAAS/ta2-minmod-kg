@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class MineralSite(RDFModel):
-    __subj__ = Subject(ns=NS_MO, name="MineralSite", key="uri")
+    __subj__ = Subject(cls_ns=NS_MO, name="MineralSite", key="uri")
 
     source_id: Annotated[NotEmptyStr, P()]
     record_id: Annotated[NotEmptyStr, P()]

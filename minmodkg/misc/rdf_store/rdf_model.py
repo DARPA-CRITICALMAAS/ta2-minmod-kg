@@ -27,7 +27,8 @@ from rdflib import URIRef
 
 @dataclass
 class Subject:
-    ns: SingleNS
+    cls_ns: SingleNS
+    key_ns: SingleNS
     name: str
     key: Optional[str] = None
 
@@ -35,8 +36,8 @@ class Subject:
     uriref: URIRef = field(init=False)
 
     def __post_init__(self):
-        self.rel_uri = self.ns[self.name]
-        self.uriref = self.ns.uri(self.name)
+        self.rel_uri = self.key_ns[self.name]
+        self.uriref = self.key_ns.uri(self.name)
 
 
 @dataclass
@@ -82,7 +83,7 @@ class ResourceSchema:
             setattr(
                 resource,
                 "__uri__",
-                self.subj.ns[self.subj.name + "_" + str(uuid4()).replace("-", "_")],
+                self.subj.cls_ns[self.subj.name + "_" + str(uuid4()).replace("-", "_")],
             )
         return getattr(resource, "__uri__")
 
@@ -93,7 +94,9 @@ class ResourceSchema:
             setattr(
                 resource,
                 "__uri__",
-                self.subj.ns.uri(self.subj.name + "_" + str(uuid4()).replace("-", "_")),
+                self.subj.cls_ns.uri(
+                    self.subj.name + "_" + str(uuid4()).replace("-", "_")
+                ),
             )
         return getattr(resource, "__uri__")
 
@@ -147,7 +150,7 @@ class RDFModel:
                     schema.add_property(
                         field_name,
                         Property(
-                            ns=arg.ns or schema.subj.ns,
+                            ns=arg.ns or schema.subj.cls_ns,
                             name=arg.name or field_name,
                             is_object_property=arg.is_object_property or False,
                             is_list=arg.is_list or False,
