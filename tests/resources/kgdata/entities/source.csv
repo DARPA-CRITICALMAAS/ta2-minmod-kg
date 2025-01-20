@@ -1,0 +1,39 @@
+uri,name,type,created_by,description,score,connection
+https://mrdata.usgs.gov/phosphate,mrdata-phosphate,database,https://minmod.isi.edu/users/s/umn,"World phosphate mines, deposits, and occurrences",0.5,webpage:::https://mrdata.usgs.gov/phosphate/show-phosphate.php?rec_no={record_id}
+https://mrdata.usgs.gov/pp577,mrdata-pp577,database,https://minmod.isi.edu/users/s/umn,Mica deposits of the Blue Ridge in North Carolina,0.5,webpage:::https://mrdata.usgs.gov/pp577/show-pp577.php?id={record_id}
+https://mrdata.usgs.gov/ofr20151121,mrdata-ofr20151121,database,https://minmod.isi.edu/users/s/umn,Phosphate occurrence and potential of south Asia,0.5,
+https://mrdata.usgs.gov/laterite,mrdata-laterite,database,https://minmod.isi.edu/users/s/umn,Ni-Co laterite deposits of the world,0.5,webpage:::https://mrdata.usgs.gov/laterite/show-laterite.php?rec_id={record_id}
+https://doi.org/10.1016/j.oregeorev.2016.08.010,mudd-jowitt-2017-zinc-lead,article,https://minmod.isi.edu/users/s/sand,Mudd & Jowitt Zinc Lead data,0.8,
+https://doi.org/10.5066/P9HTERGK,usgs-mrds-california,database,https://minmod.isi.edu/users/s/umn,USGS Mineral Resources Data System (MRDS) for the State of California,,
+https://www.idahogeology.org,idaho-geology-survey,database,https://minmod.isi.edu/users/s/umn,Idaho Geology Survey,,
+https://mrdata.usgs.gov/podchrome,mrdata-podchrome,database,https://minmod.isi.edu/users/s/umn,Podiform chromite deposits,0.5,webpage:::https://mrdata.usgs.gov/podchrome/show-podchrome.php?rec_id={record_id}
+https://www.gsa.state.al.us/gsa/geologic/nonfuelminerals/nfcritresource,geological-survey-of-alabama,database,https://minmod.isi.edu/users/s/umn,Geological Survey of Alabama,,
+https://mrdata.usgs.gov/sedcu,mrdata-sedcu,database,https://minmod.isi.edu/users/s/umn,Sediment-hosted copper deposits of the world,0.5,webpage:::https://mrdata.usgs.gov/sedcu/show-sedcu.php?rec_id={record_id}
+https://mrdata.usgs.gov/carbonatite,mrdata-carbonatite,database,https://minmod.isi.edu/users/s/umn,"Carbonatites of the world, explored deposits of Nb and REE",0.5,webpage:::https://mrdata.usgs.gov/carbonatite/show-carbonatite.php?rec_id={record_id}
+https://mrdata.usgs.gov/vms,mrdata-vms,database,https://minmod.isi.edu/users/s/umn,Volcanogenic massive sulfide deposits,0.5,webpage:::https://mrdata.usgs.gov/vms/show-vms.php?rec_id={record_id}
+http://www.oregongeology.org,oregon-department-geology-mineral-industries,database,https://minmod.isi.edu/users/s/umn,Oregon Department of Geology and Mineral Industries,,
+https://mrdata.usgs.gov/sedznpb,mrdata-sedznpb,database,https://minmod.isi.edu/users/s/umn,Sediment-hosted zinc-lead deposits of the world,0.5,webpage:::https://mrdata.usgs.gov/sedznpb/show-sedznpb.php?rec_id={record_id}
+https://doi.org/10.5066/P970GDD5,tri-national-cmmi,database,https://minmod.isi.edu/users/s/umn,"National-Scale Geophysical, Geologic, and Mineral Resource Data and Grids for the United States, Canada, and Australia",0.5,
+https://www.deq.nc.gov/about/divisions/energy-mineral-and-land-resources/nc-geological-survey,nc-geological-survey,database,https://minmod.isi.edu/users/s/umn,NC Geological Survey,,
+https://mrdata.usgs.gov/potash,mrdata-potash,database,https://minmod.isi.edu/users/s/umn,Evaporite-related potash resources worldwide,0.5,webpage:::https://mrdata.usgs.gov/potash/show-potash.php?rec_no={record_id}
+https://mrdata.usgs.gov/sir20105090z,mrdata-sir20105090z,database,https://minmod.isi.edu/users/s/umn,Global assessment of undiscovered copper resources,0.5,webpage:::https://mrdata.usgs.gov/sir20105090z/show-sir20105090z.php?id={record_id}
+https://mrdata.usgs.gov/nicrpge,mrdata-nicrpge,database,https://minmod.isi.edu/users/s/umn,PGE-Ni-Cr deposit and occurrence bibliographic database,0.5,webpage:::https://mrdata.usgs.gov/nicrpge/show-nicrpge.php?site_id={record_id}
+https://mrdata.usgs.gov/porcu,mrdata-porcu,database,https://minmod.isi.edu/users/s/umn,Porphyry copper deposits of the world,0.5,webpage:::https://mrdata.usgs.gov/porcu/show-porcu.php?rec_id={record_id}
+https://doi.org/10.5066/P9K1HBNT,earth-mri-usa,database,https://minmod.isi.edu/users/s/umn,Critical mineral deposits of the United States,0.5,
+https://mrdata.usgs.gov/asbestos,mrdata-asbestos,database,https://minmod.isi.edu/users/s/umn,"Asbestos mines, prospects, and occurrences in the US",0.5,webpage:::https://mrdata.usgs.gov/asbestos/show-asbestos.php?rec_id={record_id}
+https://doi.org/10.2113/econgeo.110.8.1925,jowitt-ree,article,https://minmod.isi.edu/users/s/sand,Jowitt REE data,0.8,
+https://www.energy.virginia.gov/geology/geologymineralresources.shtml,geology-and-mineral-resources,database,https://minmod.isi.edu/users/s/umn,Geology and Mineral Resources,,
+https://mrdata.usgs.gov/major-deposits,mrdata-major-deposits,database,https://minmod.isi.edu/users/s/umn,Major mineral deposits of the world,0.5,webpage:::https://mrdata.usgs.gov/major-deposits/show-ofr20051294.php?rec_id={record_id}
+https://mrdata.usgs.gov/ree,mrdata-ree,database,https://minmod.isi.edu/users/s/umn,"Rare earth element mines, deposits, and occurrences",0.5,webpage:::https://mrdata.usgs.gov/ree/show-ree.php?rec_id={record_id}
+https://mrdata.usgs.gov/mrds,mrdata-mrds,database,https://minmod.isi.edu/users/s/umn,Mineral Resources Data System (MRDS),0.1,webpage:::https://mrdata.usgs.gov/mrds/show-mrds.php?dep_id={record_id}
+https://api.cdr.land/v1/docs/documents,mining-report,mining-report,https://minmod.isi.edu/users/s/inferlink,Mining Report storing in CDR,0.8,pdf:::https://docs.polymer.rocks/cdr/d/{record_id}/{page_number=1}
+https://mrdata.usgs.gov/deposit,mrdata-deposit,database,https://minmod.isi.edu/users/s/umn,USMIN Mineral Deposit Database,0.7,
+https://mrdata.usgs.gov/sedau,mrdata-sedau,database,https://minmod.isi.edu/users/s/umn,Sediment-hosted gold deposits,0.5,webpage:::https://mrdata.usgs.gov/sedau/show-sedau.php?recno={record_id}
+https://doi.org/10.5382/econgeo.4950,mudd-jowitt-nickel,article,https://minmod.isi.edu/users/s/sand,Mudd & Jowitt Nickel Data,0.8,
+https://doi.org/10.34191/OFR-757,utah-mineral-occurrence-system,database,https://minmod.isi.edu/users/s/umn,"Utah Mineral Occurrence System (UMOS) Database, 2023 Update",,
+https://mrdata.usgs.gov/sedexmvt,mrdata-sedexmvt,database,https://minmod.isi.edu/users/s/umn,Mineral resource data for Mississippi Valley-Type and clastic-dominated sediment-hosted lead-zinc deposits,0.5,webpage:::https://mrdata.usgs.gov/sedexmvt/show-sedexmvt.php?rec_id={record_id}
+https://doi.org/10.5382/econgeo.2018.4590,mudd-jowitt-copper,article,https://minmod.isi.edu/users/s/sand,Mudd & Jowitt Copper Data,0.8,
+https://mrdata.usgs.gov/pp1802,mrdata-pp1802,database,https://minmod.isi.edu/users/s/umn,"Global distribution of selected mines, deposits, and districts of critical minerals",0.5,webpage:::https://mrdata.usgs.gov/pp1802/show-pp1802.php?rec_id={record_id}
+https://doi.org/10.5066/P96MMRFD,ardf,database,https://minmod.isi.edu/users/s/umn,Alaska Resource Data File,0.5,webpage:::https://mrdata.usgs.gov/ardf/show-ardf.php?ardf_num={record_id}
+https://doi.org/10.4095/295581,world-tin-tungsten-deposit,database,https://minmod.isi.edu/users/s/umn,World Tin Tungsten Deposit,0.8,
+http://minmod.isi.edu/unpublished/lithium-in-nevada-simon-jowitt-2024,jowitt-unpublished-lithium-data,article,https://minmod.isi.edu/users/s/sand,Jowitt's compiled Lithium data,0.8,

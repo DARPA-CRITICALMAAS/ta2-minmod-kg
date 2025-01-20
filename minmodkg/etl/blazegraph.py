@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 import httpx
-from minmodkg.misc.rdf_store.blazegraph import BlazeGraph
+from minmodkg.libraries.rdf.blazegraph import BlazeGraph
 from minmodkg.models.kg.base import MINMOD_NS
 from rdflib import Graph
 from tqdm import tqdm

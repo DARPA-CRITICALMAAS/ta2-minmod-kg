@@ -7,27 +7,32 @@ from typing import Literal, Optional, Sequence
 from uuid import uuid4
 
 import httpx
+from minmodkg.libraries.rdf.namespace import Namespace
+from minmodkg.libraries.rdf.triple_store import TripleStore
 from minmodkg.misc.exceptions import DBError, TransactionError
-from minmodkg.misc.rdf_store.namespace import Namespace
-from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, SPARQLMainQuery, Triples
 from rdflib import Graph, URIRef
 
 
-class FusekiDB(TripleStore):
+class BlazeGraph(TripleStore):
     def __init__(self, namespace: Namespace, query_endpoint: str, update_endpoint: str):
         super().__init__(namespace)
         self.query_endpoint = query_endpoint
         self.update_endpoint = update_endpoint
 
     def _sparql_query(self, query: SPARQLMainQuery):
+        if query.lower().lstrip().startswith("construct"):
+            format = "text/turtle"
+        else:
+            format = "application/sparql-results+json"
+
         response = httpx.post(
             url=self.query_endpoint,
             data={"query": self.prefix_part + query},
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
-                "Accept": "application/sparql-results+json",  # Requesting JSON format
+                "Accept": format,
             },
             timeout=None,
         )

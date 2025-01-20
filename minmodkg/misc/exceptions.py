@@ -18,3 +18,7 @@ class DBError(Exception):
     def __init__(self, message: str, resp: Response):
         self.message = message
         self.resp = resp
+
+
+class UnreachableError(Exception):
+    pass

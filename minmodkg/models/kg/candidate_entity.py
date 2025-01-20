@@ -3,23 +3,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Annotated, Optional
 
-from minmodkg.misc.rdf_store.rdf_model import Property, RDFModel, Subject
+from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import makedict
-from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.base import NS_MO, NS_MR
 
 
 @dataclass
 class CandidateEntity(RDFModel):
-    __subj__ = Subject(cls_ns=NS_MO, name="CandidateEntity")
+    __subj__ = Subject(type=NS_MO.term("CandidateEntity"), key_ns=NS_MR)
 
-    source: Annotated[str, Property(ns=NS_MO, name="source")]
-    confidence: Annotated[float, Property(ns=NS_MO, name="confidence")]
-    observed_name: Annotated[
-        Optional[str], Property(ns=NS_MO, name="observed_name")
-    ] = None
-    normalized_uri: Annotated[
-        Optional[str], Property(ns=NS_MO, name="normalized_uri")
-    ] = None
+    source: Annotated[str, P()]
+    confidence: Annotated[float, P()]
+    observed_name: Annotated[Optional[str], P()] = None
+    normalized_uri: Annotated[Optional[str], P()] = None
 
     def to_dict(self):
         return makedict.without_none(

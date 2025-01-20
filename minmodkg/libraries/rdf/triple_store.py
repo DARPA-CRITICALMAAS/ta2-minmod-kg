@@ -9,8 +9,8 @@ from typing import Literal, Optional, Sequence
 from uuid import uuid4
 
 import httpx
+from minmodkg.libraries.rdf.namespace import Namespace
 from minmodkg.misc.exceptions import DBError, TransactionError
-from minmodkg.misc.rdf_store.namespace import Namespace
 from minmodkg.misc.utils import group_by_key
 from minmodkg.typing import IRI, SPARQLMainQuery, Triples
 from rdflib import Graph, URIRef

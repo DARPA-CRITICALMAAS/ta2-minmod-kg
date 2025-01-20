@@ -1,5 +1,5 @@
 triplestore:
-  classpath: minmodkg.misc.rdf_store.fuseki.FusekiDB
+  classpath: minmodkg.libraries.rdf.fuseki.FusekiDB
   args:
     query_endpoint: http://kg:3030/minmod/sparql
     update_endpoint: http://kg:3030/minmod/update

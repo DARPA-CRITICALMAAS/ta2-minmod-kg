@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
-from fastapi import APIRouter, Body, HTTPException, Query, Response, status
+from fastapi import HTTPException, status
 from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
 from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.models.kg.candidate_entity import CandidateEntity
@@ -13,9 +13,9 @@ from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.mineral_site import MineralSite as InputMineralSite
 from minmodkg.models.kg.reference import Reference
-from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models.kgrel.user import User
+from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.typing import IRI, InternalID
 from pydantic import BaseModel, Field
 
@@ -175,15 +175,13 @@ class InputPublicMineralSite(InputMineralSite):
     def to_kgrel(
         self,
         user: User,
-        material_form: dict[str, float],
-        crs_names: dict[str, str],
-        source_score: dict[str, float],
     ) -> MineralSiteAndInventory:
+        entser = EntityService.get_instance()
         site = MineralSiteAndInventory.from_raw_site(
             self,
-            material_form=material_form,
-            crs_names=crs_names,
-            source_score=source_score,
+            material_form=entser.get_commodity_form_conversion(),
+            crs_names=entser.get_crs_name(),
+            source_score=entser.get_source_score(),
         )
         site.ms.dedup_site_id = self.dedup_site_id
         site.ms.modified_at = time.time_ns()

@@ -33,3 +33,8 @@ class Listener:
 
     def handle_same_as_update(self, groups: list[list[InternalID]]):
         raise NotImplementedError()
+
+    @staticmethod
+    def process(events: Sequence[EventLog], listeners: Sequence[Listener]):
+        for listener in listeners:
+            listener.handle(events)

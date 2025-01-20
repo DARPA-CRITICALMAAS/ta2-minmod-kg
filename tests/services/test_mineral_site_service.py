@@ -4,26 +4,19 @@ import time
 from pathlib import Path
 
 import pytest
-import serde.json
 from minmodkg.api.models.public_mineral_site import (
     Coordinates,
     GradeTonnage,
     InputPublicMineralSite,
     OutputPublicMineralSite,
 )
-from minmodkg.api.routers.mineral_site import (
-    crs_uri_to_name,
-    material_form_uri_to_conversion,
-    source_uri_to_score,
-)
-from minmodkg.misc.rdf_store import TripleStore
+from minmodkg.libraries.rdf import TripleStore
 from minmodkg.misc.utils import assert_not_none
 from minmodkg.models.kg.base import NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Document, Reference
-from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import Engine
@@ -121,14 +114,6 @@ class TestMSData:
     #     )
     #     del self.site2_dump["modified_at"]
 
-    def to_kgrel(self, user: User, site: InputPublicMineralSite):
-        return site.to_kgrel(
-            user,
-            material_form_uri_to_conversion(None),
-            crs_uri_to_name(None),
-            source_uri_to_score(None),
-        )
-
 
 class TestCreateMineralSite(TestMSData):
 
@@ -136,7 +121,7 @@ class TestCreateMineralSite(TestMSData):
         self, user1: User, kg: TripleStore, kgrel: Engine
     ):
         service = MineralSiteService(kgrel)
-        service.create(self.to_kgrel(user1, self.site1))
+        service.create(self.site1.to_kgrel(user1))
 
         out_ms = OutputPublicMineralSite.from_kgrel(
             assert_not_none(service.find_by_id(self.site1.id))

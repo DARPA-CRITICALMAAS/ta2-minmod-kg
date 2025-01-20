@@ -1,0 +1,23 @@
+minmod_id,unit name,unit aliases
+Q200,tonnes,t
+Q201,percent,% | wt-pct
+Q202,million tonnes,Mt
+Q203,gram per tonne,g/t
+Q204,copper equivalence percent,cu eq %
+Q205,lead equivalence percent,pb eq %
+Q206,dollar per tonne,US$/t
+Q207,zinc equivalence percent,zn eq %
+Q208,gold equivalence gram per tonne,au eq g/t
+Q209,silver equivalence gram per tonne,ag eq g/t
+Q210,nickel equivalence percent,ni eq %
+Q211,NSR US dollar per tonne,NSR US$/t
+Q212,platinum equivalence gram per tonne,pt eq g/t
+Q213,million short tons,million tons
+Q214,short tons,tons
+Q215,million pounds (avdp),
+Q216,cubic metres,
+Q217,kilogram per tonne,kg/t
+Q218,gram per cubic metre,
+Q219,kilogram per cubic metre,
+Q220,parts per million,ppm | g/mt
+Q221,NSR canadian dollar per tonne,NSR C$/t

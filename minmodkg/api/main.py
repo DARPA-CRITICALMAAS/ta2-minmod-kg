@@ -7,10 +7,10 @@ from fastapi import FastAPI
 from minmodkg.api.internal import admin
 from minmodkg.api.routers import (
     dedup_mineral_site,
+    entities,
     lod,
     login,
     mineral_site,
-    predefined_entities,
     stats,
 )
 from minmodkg.config import API_PREFIX, LOD_PREFIX
@@ -29,7 +29,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(predefined_entities.router, prefix=API_PREFIX)
+app.include_router(entities.router, prefix=API_PREFIX)
 app.include_router(stats.router, prefix=API_PREFIX)
 app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)
 app.include_router(dedup_mineral_site.router, prefix=API_PREFIX)

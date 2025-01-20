@@ -18,7 +18,6 @@ from joblib import Parallel, delayed
 from loguru import logger
 from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
 from minmodkg.misc.deserializer import get_dataclass_deserializer
-from minmodkg.models.kg.mineral_site import MineralSiteValidator
 from rdflib import RDF, SH, Graph
 from tqdm.auto import tqdm
 

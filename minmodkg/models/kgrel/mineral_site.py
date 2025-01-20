@@ -11,13 +11,14 @@ from minmodkg.models.kg.base import NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
-from minmodkg.models.kg.mineral_site import MineralSite as InMineralSite
+from minmodkg.models.kg.mineral_site import MineralSite as KGMineralSite
 from minmodkg.models.kg.reference import Reference
 from minmodkg.models.kgrel.base import Base
 from minmodkg.models.kgrel.custom_types import Location, LocationView
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.transformations import get_source_uri
 from minmodkg.typing import IRI, URN, InternalID
+from rdflib import URIRef
 from sqlalchemy import JSON, BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
@@ -50,7 +51,7 @@ class MineralSiteAndInventory:
 
     @staticmethod
     def from_raw_site(
-        raw_site: dict | InMineralSite,
+        raw_site: dict | KGMineralSite,
         material_form: dict[str, float],
         crs_names: dict[str, str],
         source_score: dict[IRI, float],
@@ -181,14 +182,18 @@ class MineralSite(MappedAsDataclass, Base):
         self.id = id
         return self
 
+    @property
+    def site_uri(self) -> URIRef:
+        return URIRef(KGMineralSite.__subj__.key_ns.uri(self.site_id))
+
     @staticmethod
     def from_raw_site(
-        raw_site: dict | InMineralSite,
+        raw_site: dict | KGMineralSite,
         crs_names: dict[str, str],
         source_score: dict[IRI, float],
     ) -> MineralSite:
         site = (
-            InMineralSite.from_dict(raw_site)
+            KGMineralSite.from_dict(raw_site)
             if isinstance(raw_site, dict)
             else raw_site
         )
@@ -258,6 +263,10 @@ class MineralSite(MappedAsDataclass, Base):
                     "deposit_type_candidates",
                     [x.to_dict() for x in self.deposit_type_candidates],
                 ),
+                (
+                    "inventories",
+                    [x.to_dict() for x in self.inventories],
+                ),
                 ("reference", [x.to_dict() for x in self.reference]),
                 (
                     "geology_info",
@@ -314,8 +323,8 @@ class MineralSite(MappedAsDataclass, Base):
     def get_dedup_id(site_ids: Iterable[InternalID]):
         return "dedup_" + min(site_ids)
 
-    def to_kg(self) -> InMineralSite:
-        return InMineralSite(
+    def to_kg(self) -> KGMineralSite:
+        return KGMineralSite(
             source_id=self.source_id,
             record_id=self.record_id,
             name=self.name,

@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Annotated, Optional
 
-from minmodkg.misc.rdf_store.rdf_model import Property, RDFModel, Subject
+from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import makedict
-from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.base import NS_MO, NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.measure import Measure
 from minmodkg.models.kg.reference import Reference
@@ -13,35 +13,18 @@ from minmodkg.models.kg.reference import Reference
 
 @dataclass
 class MineralInventory(RDFModel):
-    __subj__ = Subject(cls_ns=NS_MO, name="MineralInventory")
+    __subj__ = Subject(type=NS_MO.term("MineralInventory"), key_ns=NS_MR)
 
-    commodity: Annotated[
-        CandidateEntity, Property(ns=NS_MO, name="commodity", is_object_property=True)
-    ]
-    reference: Annotated[
-        Reference, Property(ns=NS_MO, name="reference", is_object_property=True)
-    ]
-    date: Annotated[Optional[str], Property(ns=NS_MO, name="date")] = None
+    commodity: Annotated[CandidateEntity, P()]
+    reference: Annotated[Reference, P()]
+    date: Annotated[Optional[str], P()] = None
 
-    category: Annotated[
-        list[CandidateEntity],
-        Property(ns=NS_MO, name="category", is_list=True, is_object_property=True),
-    ] = field(default_factory=list)
-    grade: Annotated[
-        Optional[Measure], Property(ns=NS_MO, name="grade", is_object_property=True)
-    ] = None
-    cutoff_grade: Annotated[
-        Optional[Measure],
-        Property(ns=NS_MO, name="cutoff_grade", is_object_property=True),
-    ] = None
-    material_form: Annotated[
-        Optional[CandidateEntity],
-        Property(ns=NS_MO, name="material_form", is_object_property=True),
-    ] = None
-    ore: Annotated[
-        Optional[Measure], Property(ns=NS_MO, name="ore", is_object_property=True)
-    ] = None
-    zone: Annotated[Optional[str], Property(ns=NS_MO, name="zone")] = None
+    category: Annotated[list[CandidateEntity], P()] = field(default_factory=list)
+    grade: Annotated[Optional[Measure], P()] = None
+    cutoff_grade: Annotated[Optional[Measure], P()] = None
+    material_form: Annotated[Optional[CandidateEntity], P()] = None
+    ore: Annotated[Optional[Measure], P()] = None
+    zone: Annotated[Optional[str], P()] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

@@ -1,13 +1,13 @@
 triplestore:
-  classpath: minmodkg.misc.rdf_store.fuseki.FusekiDB
+  classpath: minmodkg.libraries.rdf.fuseki.FusekiDB
   args:
     query_endpoint: http://localhost:13030/minmod/sparql
     update_endpoint: http://localhost:13030/minmod/update
-  # classpath: minmodkg.misc.rdf_store.virtuoso.VirtuosoDB
+  # classpath: minmodkg.libraries.rdf.virtuoso.VirtuosoDB
   # args:
   #   query_endpoint: http://localhost:13030/sparql
   #   update_endpoint: http://localhost:13030/sparql
-  # classpath: minmodkg.misc.rdf_store.blazegraph.BlazeGraph
+  # classpath: minmodkg.libraries.rdf.blazegraph.BlazeGraph
   # args:
   #   query_endpoint: http://localhost:13030/blazegraph/sparql
   #   update_endpoint: http://localhost:13030/blazegraph/sparql

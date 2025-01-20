@@ -1,0 +1,190 @@
+minmod_id,deposit_type,deposit_environment,deposit_group
+Q301,Residual placer tin,Erosional,Placer
+Q302,Residual placer lead,Erosional,Placer
+Q303,Fluvial placer gold,Erosional,Placer
+Q304,Fluvial placer PGE,Erosional,Placer
+Q305,Fluvial placer tin,Erosional,Placer
+Q306,Fluvial placer niobium-tantalum,Erosional,Placer
+Q307,Fluvial placer tungsten,Erosional,Placer
+Q308,Fluvial placer REE,Erosional,Placer
+Q309,Fluvial placer diamond,Erosional,Placer
+Q310,Fluvial placer gemstones,Erosional,Placer
+Q311,Fluvial placer garnet,Erosional,Placer
+Q312,Heavy mineral sands,Erosional,Placer
+Q313,Shoreline placer gold,Erosional,Placer
+Q314,Paleoplacer heavy mineral sands,Erosional,Placer
+Q315,Paleoplacer tin,Erosional,Placer
+Q316,Paleoplacer gold ± uranium,Erosional,Placer
+Q317,Bauxite,Supergene,Laterite
+Q318,Karst bauxite,Supergene,Laterite
+Q319,Laterite nickel,Supergene,Laterite
+Q320,Carbonatite laterite REE,Supergene,Laterite
+Q321,Laterite magnesite,Supergene,Laterite
+Q322,Residual clay,Supergene,Clay
+Q323,Underclay overclay,Supergene,Clay
+Q324,Ion adsorption REE,Supergene,Clay
+Q325,Supergene silver,Supergene,Supergene
+Q326,Supergene lead,Supergene,Supergene
+Q327,Supergene uranium,Supergene,Supergene
+Q328,Supergene vanadium,Supergene,Supergene
+Q329,Supergene gold,Supergene,Supergene
+Q330,Supergene zinc,Supergene,Supergene
+Q331,Supergene copper,Supergene,Supergene
+Q332,Supergene manganese,Supergene,Supergene
+Q333,Supergene iron,Supergene,Supergene
+Q334,Exotic copper,Infiltrational,Exotic
+Q335,Paleochannel iron,Infiltrational,Paleochannel
+Q336,Sandstone uranium,Infiltrational,Uranium
+Q337,Carbonate uranium,Infiltrational,Uranium
+Q338,Coal/peat/bog uranium,Infiltrational,Uranium
+Q339,Calcrete uranium,Infiltrational,Uranium
+Q340,Nodular magnesite,Infiltrational,Magnesite
+Q341,Marine evaporite gypsum,Basin evaporative,Evaporite
+Q342,Marine evaporite salt,Basin evaporative,Evaporite
+Q343,Marine evaporite potash,Basin evaporative,Evaporite
+Q344,Marine evaporite magnesite,Basin evaporative,Evaporite
+Q345,Lacustrine evaporite trona,Basin evaporative,Evaporite
+Q346,Lacustrine evaporite salt,Basin evaporative,Evaporite
+Q347,Lacustrine evaporite potash,Basin evaporative,Evaporite
+Q348,Lacustrine evaporite carnallite-bischofite,Basin evaporative,Evaporite
+Q349,Lacustrine evaporite borate,Basin evaporative,Evaporite
+Q350,Lacustrine evaporite magnesite,Basin evaporative,Evaporite
+Q351,Lacustrine evaporite nitrate,Basin evaporative,Evaporite
+Q352,"Marine brine potash (±Mg, Li, and so on)",Basin evaporative,Brine
+Q353,Lacustrine brine potash,Basin evaporative,Brine
+Q354,Lacustrine brine lithium,Basin evaporative,Brine
+Q355,"Lacustrine zeolite (± Li, B)",Basin evaporative,Zeolite
+Q356,Lacustrine clay lithium,Basin evaporative,Clay
+Q357,Black shale vanadium ± Mo ± Ni,Basin chemical,Black shale
+Q358,Black shale nickel ± Mo-PGE,Basin chemical,Black shale
+Q359,Black shale gold,Basin chemical,Black shale
+Q360,Black shale uranium,Basin chemical,Black shale
+Q361,Phosphorite,Basin chemical,Phosphorite
+Q362,Superior-type banded iron formation,Basin chemical,Iron formation
+Q363,Oolitic iron formation,Basin chemical,Iron formation
+Q364,Lacustrine iron formation,Basin chemical,Iron formation
+Q365,Superior-type banded manganese,Basin chemical,Manganese
+Q366,Sedimentary manganese,Basin chemical,Manganese
+Q367,Crust manganese,Basin chemical,Manganese
+Q368,Nodule manganese,Basin chemical,Manganese
+Q369,Lacustrine manganese,Basin chemical,Manganese
+Q370,Unconformity-related uranium,Basin hydrothermal,Unconformity-related
+Q371,Unconformity-related REE,Basin hydrothermal,Unconformity-related
+Q372,Collapse breccia pipe uranium,Basin hydrothermal,Collapse breccia pipe
+Q373,Volcanic-hosted copper,Basin hydrothermal,Volcanic-hosted
+Q374,Sediment-hosted copper ± Co,Basin hydrothermal,Sediment-hosted
+Q375,Siliciclastic-mafic zinc-lead,Basin hydrothermal,Sediment-hosted
+Q376,Siliciclastic-mafic barite,Basin hydrothermal,Sediment-hosted
+Q377,Siliciclastic-carbonate zinc-lead,Basin hydrothermal,Sediment-hosted
+Q378,Irish-type sediment-hosted zinc-lead,Basin hydrothermal,Sediment-hosted
+Q379,Kipushi-type sediment-hosted copper-zinc-lead,Basin hydrothermal,Sediment-hosted
+Q380,MVT zinc-lead,Basin hydrothermal,Mississippi Valley-type (MVT)
+Q381,MVT barite,Basin hydrothermal,Mississippi Valley-type (MVT)
+Q382,MVT fluorspar,Basin hydrothermal,Mississippi Valley-type (MVT)
+Q383,MVT strontium,Basin hydrothermal,Mississippi Valley-type (MVT)
+Q384,Sandstone-hosted zinc-lead,Basin hydrothermal,Mississippi Valley-type (MVT)
+Q385,Non-sulfide zinc-lead ± Mn,Basin hydrothermal,Non-sulfide
+Q386,Vein five-element,Basin hydrothermal,Five-element
+Q387,Hypozonal orogenic gold,Metamorphic hydrothermal,Orogenic
+Q388,Mesozonal orogenic gold,Metamorphic hydrothermal,Orogenic
+Q389,Epizonal orogenic gold,Metamorphic hydrothermal,Orogenic
+Q390,Epizonal orogenic antimony ± gold,Metamorphic hydrothermal,Orogenic
+Q391,Epizonal orogenic mercury,Metamorphic hydrothermal,Orogenic
+Q392,Orogenic silver-lead-zinc-copper-antimony,Metamorphic hydrothermal,Orogenic
+Q393,Orogenic copper ± gold,Metamorphic hydrothermal,Orogenic
+Q394,Orogenic graphite,Metamorphic hydrothermal,Orogenic
+Q395,Metamorphic graphite,Metamorphic,Metamorphic
+Q396,Metamorphic kyanite,Metamorphic,Metamorphic
+Q397,Low Iron alkali-calcic,Regional metasomatic,Alkali-calcic
+Q398,Albitite-hosted uranium,Regional metasomatic,Alkali-calcic
+Q399,Ferroan carbonate polymetallic,Regional metasomatic,Metasomatic iron
+Q400,Iron sulfide polymetallic,Regional metasomatic,Metasomatic iron
+Q401,Iron silicate polymetallic,Regional metasomatic,Metasomatic iron
+Q402,Iron oxide polymetallic,Regional metasomatic,Metasomatic iron
+Q403,Iron oxide uranium,Regional metasomatic,Metasomatic iron
+Q404,Iron oxide gold,Regional metasomatic,Metasomatic iron
+Q405,Hematite-dominant IOCG,Regional metasomatic,IOCG
+Q406,Magnetite-dominant IOCG,Regional metasomatic,IOCG
+Q407,Hematite-dominant IOA,Regional metasomatic,IOA
+Q408,Magnetite-dominant IOA,Regional metasomatic,IOA
+Q409,Mafic-ultramafic VMS,Volcanic basin hydrothermal,Volcanogenic massive sulfide (VMS)
+Q410,Mafic-siliciclastic VMS,Volcanic basin hydrothermal,Volcanogenic massive sulfide (VMS)
+Q411,Bimodal-mafic VMS,Volcanic basin hydrothermal,Volcanogenic massive sulfide (VMS)
+Q412,Bimodal felsic VMS,Volcanic basin hydrothermal,Volcanogenic massive sulfide (VMS)
+Q413,Felsic-siliciclastic VMS,Volcanic basin hydrothermal,Volcanogenic massive sulfide (VMS)
+Q414,Algoma-type banded iron formation,Volcanic basin hydrothermal,Volcanogenic
+Q415,Volcanogenic manganese,Volcanic basin hydrothermal,Volcanogenic
+Q416,Low-sulfidation (LS) epithermal gold-silver,Magmatic hydrothermal,Epithermal
+Q417,"Intermediate-sulfidation (IS) epithermal silver-gold ± Zn, Pb, Cu, Sn, Mn",Magmatic hydrothermal,Epithermal
+Q418,High-sulfidation (HS) epithermal silver-gold ± Cu,Magmatic hydrothermal,Epithermal
+Q419,Alkalic epithermal gold ± Ag,Magmatic hydrothermal,Epithermal
+Q420,Epithermal mercury,Magmatic hydrothermal,Epithermal
+Q421,Epithermal beryllium,Magmatic hydrothermal,Epithermal
+Q422,Epithermal uranium,Magmatic hydrothermal,Epithermal
+Q423,Vein ± replacement nickel,Magmatic hydrothermal,Vein
+Q424,Vein cobalt ± Ni,Magmatic hydrothermal,Vein
+Q425,Vein copper,Magmatic hydrothermal,Vein
+Q426,Vein tin,Magmatic hydrothermal,Vein
+Q427,Vein tungsten,Magmatic hydrothermal,Vein
+Q428,Vein tin polymetallic,Magmatic hydrothermal,Vein
+Q429,Vein fluorite,Magmatic hydrothermal,Vein
+Q430,Vein polymetallic,Magmatic hydrothermal,Vein
+Q431,Breccia pipe copper,Magmatic hydrothermal,Breccia pipe
+Q432,Breccia pipe gold,Magmatic hydrothermal,Breccia pipe
+Q433,Breccia pipe molybdenum,Magmatic hydrothermal,Breccia pipe
+Q434,Breccia pipe REE,Magmatic hydrothermal,Breccia pipe
+Q435,Carlin-type gold,Magmatic hydrothermal,Carlin-type
+Q436,Distal-disseminated silver-gold,Magmatic hydrothermal,Distal-disseminated
+Q437,Replacement polymetallic,Magmatic hydrothermal,Replacement
+Q438,Replacement gold-silver,Magmatic hydrothermal,Replacement
+Q439,Replacement tin,Magmatic hydrothermal,Replacement
+Q440,Replacement copper,Magmatic hydrothermal,Replacement
+Q441,Replacement zinc-lead,Magmatic hydrothermal,Replacement
+Q442,Replacement manganese,Magmatic hydrothermal,Replacement
+Q443,Replacement magnesium,Magmatic hydrothermal,Replacement
+Q444,Replacement fluorite,Magmatic hydrothermal,Replacement
+Q445,Skarn iron,Magmatic hydrothermal,Skarn
+Q446,Skarn copper,Magmatic hydrothermal,Skarn
+Q447,Skarn tungsten ± Mo,Magmatic hydrothermal,Skarn
+Q448,Skarn tin ± copper ± Mo,Magmatic hydrothermal,Skarn
+Q449,Skarn gold ± copper ± tungsten,Magmatic hydrothermal,Skarn
+Q450,Skarn zinc-lead-silver,Magmatic hydrothermal,Skarn
+Q451,Skarn molybdenum,Magmatic hydrothermal,Skarn
+Q452,Skarn beryllium-fluorite,Magmatic hydrothermal,Skarn
+Q453,Skarn uranium-REE,Magmatic hydrothermal,Skarn
+Q454,Porphyry copper ± gold,Magmatic hydrothermal,Porphyry
+Q455,Porphyry copper-molybdenum,Magmatic hydrothermal,Porphyry
+Q456,Porphyry gold ± copper,Magmatic hydrothermal,Porphyry
+Q457,Climax-type porphyry molybdenum,Magmatic hydrothermal,Porphyry
+Q458,Low-fluorine porphyry molybdenum,Magmatic hydrothermal,Porphyry
+Q459,Porphyry tungsten,Magmatic hydrothermal,Porphyry
+Q460,Porphyry tin,Magmatic hydrothermal,Porphyry
+Q461,Greisen tin ±W-Mo,Magmatic hydrothermal,Greisen
+Q462,Greisen tungsten-molybdenum±Bi,Magmatic hydrothermal,Greisen
+Q463,Greisen beryllium±Li,Magmatic hydrothermal,Greisen
+Q464,Reduced intrusion-related gold,Magmatic hydrothermal,Intrusion-related
+Q465,Oxidized intrusion-related gold,Magmatic hydrothermal,Intrusion-related
+Q466,Simple pegmatite,Magmatic,Pegmatite
+Q467,LCT pegmatite,Magmatic,Pegmatite
+Q468,NYF pegmatite,Magmatic,Pegmatite
+Q469,Abyssal pegmatite REE,Magmatic,Pegmatite
+Q470,Carbonatite REE,Magmatic,Carbonatite
+Q471,Carbonatite niobium,Magmatic,Carbonatite
+Q472,Peralkaline igneous HFSE-REE,Magmatic,Peralkaline igneous
+Q473,Apatite-nepheline-titanite intrusion,Magmatic,Apatite-nepheline-titanite intrusion
+Q474,Apatite intrusion REE,Magmatic,Apatite intrusion
+Q475,Kimberlite diamond,Magmatic,Kimberlite
+Q476,Komatiite nickel-copper-PGE,Magmatic,Komatiite
+Q477,U-M layered intrusion chromium,Magmatic,Ultramafic and (or) mafic-layered intrusion
+Q478,U-M layered intrusion nickel-copper-PGE,Magmatic,Ultramafic and (or) mafic-layered intrusion
+Q479,U-M layered intrusion PGE,Magmatic,Ultramafic and (or) mafic-layered intrusion
+Q480,U-M layered intrusion iron-titanium-vanadium,Magmatic,Ultramafic and (or) mafic-layered intrusion
+Q481,U-M intrusion nickel-copper-PGE,Magmatic,Ultramafic and (or) mafic intrusion
+Q482,U-M conduit nickel-copper-PGE,Magmatic,Ultramafic and (or) mafic conduit
+Q483,Ophiolite chromium,Magmatic,Ophiolite
+Q484,Ophiolite nickel-copper-PGE,Magmatic,Ophiolite
+Q485,Arc U-M intrusion titanium-vanadium,Magmatic,Ultramafic and (or) mafic intrusion
+Q486,Arc U-M intrusion nickel-copper-PGE,Magmatic,Ultramafic and (or) mafic intrusion
+Q487,Anorthosite massif titanium,Magmatic,Anorthosite massif
+Q488,Anorthosite conduit nickel-copper-PGE,Magmatic,Anorthosite conduit
+Q489,Impact U-M intrusion nickel-copper-PGE,Magmatic,Ultramafic and (or) mafic intrusion

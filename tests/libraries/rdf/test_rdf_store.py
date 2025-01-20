@@ -3,8 +3,8 @@ from __future__ import annotations
 from time import sleep
 
 import pytest
-from minmodkg.misc.rdf_store import TripleStore
-from minmodkg.misc.rdf_store.virtuoso import VirtuosoDB
+from minmodkg.libraries.rdf.triple_store import TripleStore
+from minmodkg.libraries.rdf.virtuoso import VirtuosoDB
 from rdflib import RDF, Literal, URIRef
 
 

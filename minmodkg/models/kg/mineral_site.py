@@ -5,15 +5,15 @@ from datetime import datetime, timezone
 from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Any, Optional
 
+from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.deserializer import get_dataclass_deserializer
-from minmodkg.misc.rdf_store.rdf_model import P, Property, RDFModel, Subject
 from minmodkg.misc.utils import (
     extend_unique,
     format_datetime,
     format_nanoseconds,
     makedict,
 )
-from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.base import NS_MO, NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kg.location_info import LocationInfo
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class MineralSite(RDFModel):
-    __subj__ = Subject(cls_ns=NS_MO, name="MineralSite", key="uri")
+    __subj__ = Subject(type=NS_MO.term("MineralSite"), key_ns=NS_MR, key="uri")
 
     source_id: Annotated[NotEmptyStr, P()]
     record_id: Annotated[NotEmptyStr, P()]
@@ -40,22 +40,18 @@ class MineralSite(RDFModel):
     mineral_form: Annotated[list[NotEmptyStr], P(is_list=True)] = field(
         default_factory=list
     )
-    geology_info: Annotated[Optional[GeologyInfo], P(is_object_property=True)] = None
-    location_info: Annotated[Optional[LocationInfo], P(is_object_property=True)] = None
-    deposit_type_candidate: Annotated[
-        list[CandidateEntity], P(is_object_property=True, is_list=True)
-    ] = field(default_factory=list)
-    mineral_inventory: Annotated[
-        list[MineralInventory], P(is_object_property=True, is_list=True)
-    ] = field(default_factory=list)
-    reference: Annotated[list[Reference], P(is_object_property=True, is_list=True)] = (
-        field(default_factory=list)
-    )
-    discovered_year: Annotated[Optional[int], P()] = None
-
-    created_by: Annotated[list[NotEmptyStr], P(is_list=True)] = field(
+    geology_info: Annotated[Optional[GeologyInfo], P()] = None
+    location_info: Annotated[Optional[LocationInfo], P()] = None
+    deposit_type_candidate: Annotated[list[CandidateEntity], P()] = field(
         default_factory=list
     )
+    mineral_inventory: Annotated[list[MineralInventory], P()] = field(
+        default_factory=list
+    )
+    reference: Annotated[list[Reference], P()] = field(default_factory=list)
+    discovered_year: Annotated[Optional[int], P()] = None
+
+    created_by: Annotated[list[NotEmptyStr], P()] = field(default_factory=list)
     modified_at: Annotated[
         Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"], P()
     ] = field(default_factory=lambda: format_datetime(datetime.now(timezone.utc)))

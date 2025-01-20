@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated, Literal, Mapping, Optional, Sequence
+from typing import Annotated, Literal, Optional
 from urllib.parse import urlparse, urlunparse
 
 import htbuilder as H

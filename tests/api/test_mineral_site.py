@@ -5,23 +5,16 @@ from pathlib import Path
 from time import sleep
 
 import pytest
-import serde.json
 from fastapi.testclient import TestClient
 from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
-from minmodkg.api.routers.mineral_site import (
-    crs_uri_to_name,
-    material_form_uri_to_conversion,
-    source_uri_to_score,
-)
-from minmodkg.misc.rdf_store import TripleStore
+from minmodkg.libraries.rdf.triple_store import TripleStore
 from minmodkg.models.kg.base import MINMOD_KG
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Document, Reference
-from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
+from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.models.kgrel.user import User
-from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.transformations import make_site_uri
 from shapely import Point
 from shapely.wkt import loads
@@ -291,25 +284,10 @@ class TestMineralSite(TestMineralSiteData):
 
 
 class TestMineralSiteLinking:
-    def test_update_same_as(self, resource_dir: Path, user1, auth_client, kg, kgrel):
+    def test_update_same_as(
+        self, resource_dir: Path, user1, auth_client, kg, kgrel_with_data
+    ):
         time.sleep(1.0)  # to ensure the modified_at is different
-        crss = crs_uri_to_name(None)
-        material_form = material_form_uri_to_conversion(None)
-        source_score = source_uri_to_score(None)
-
-        mineral_site_service = MineralSiteService(kgrel)
-        id2site = {}
-        for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
-            for raw_site in serde.json.deser(file):
-                msi = MineralSiteAndInventory.from_raw_site(
-                    raw_site,
-                    material_form=material_form,
-                    crs_names=crss,
-                    source_score=source_score,
-                )
-                id2site[msi.ms.site_id] = msi.ms
-                mineral_site_service.create(user1, msi)
-
         resp = check_req(
             lambda: auth_client.post(
                 "/api/v1/same-as",

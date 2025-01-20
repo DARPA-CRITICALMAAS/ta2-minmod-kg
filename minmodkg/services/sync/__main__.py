@@ -9,6 +9,8 @@ from minmodkg.models.kg.base import MINMOD_KG
 from minmodkg.models.kgrel.base import get_rel_session
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.services.sync.kgsync_listener import KGSyncListener
+from minmodkg.services.sync.sync import process_pending_events
 from minmodkg.typing import InternalID
 from sqlalchemy import select
 
@@ -21,20 +23,7 @@ def main(batch_size: int = 500):
     listeners = [KGSyncListener()]
     while True:
         # Fetch the latest event logs
-        with get_rel_session() as session:
-            events = (
-                session.execute(
-                    select(EventLog).order_by(EventLog.id).limit(batch_size)
-                )
-                .scalars()
-                .all()
-            )
-
-            for listener in listeners:
-                listener.handle(events)
-
-            session.commit()
-
+        process_pending_events(listeners, batch_size)
         time.sleep(1)
 
 

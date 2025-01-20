@@ -5,9 +5,9 @@ from typing import Optional
 
 import httpx
 import jaydebeapi
+from minmodkg.libraries.rdf.namespace import Namespace
+from minmodkg.libraries.rdf.triple_store import TripleStore
 from minmodkg.misc.exceptions import DBError
-from minmodkg.misc.rdf_store.namespace import Namespace
-from minmodkg.misc.rdf_store.triple_store import TripleStore
 from minmodkg.typing import SPARQLMainQuery, Triples
 from rdflib import Graph
 

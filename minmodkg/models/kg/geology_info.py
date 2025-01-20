@@ -3,16 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Annotated, Optional
 
-from minmodkg.misc.rdf_store.rdf_model import Property, RDFModel
+from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import makedict
-from minmodkg.models.kg.base import NS_MO
+from minmodkg.models.kg.base import NS_MO, NS_MR
 from minmodkg.typing import NotEmptyStr
 
 
 @dataclass
 class RockType(RDFModel):
-    unit: Annotated[Optional[NotEmptyStr], Property(ns=NS_MO, name="unit")] = None
-    type: Annotated[Optional[NotEmptyStr], Property(ns=NS_MO, name="type")] = None
+    __subj__ = Subject(type=NS_MO.term("RockType"), key_ns=NS_MR)
+    unit: Annotated[Optional[NotEmptyStr], P()] = None
+    type: Annotated[Optional[NotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none(
@@ -32,29 +33,15 @@ class RockType(RDFModel):
 
 @dataclass
 class GeologyInfo(RDFModel):
-    alternation: Annotated[
-        Optional[NotEmptyStr], Property(ns=NS_MO, name="alternation")
-    ] = None
-    concentration_process: Annotated[
-        Optional[NotEmptyStr], Property(ns=NS_MO, name="concentration_process")
-    ] = None
-    ore_control: Annotated[
-        Optional[NotEmptyStr], Property(ns=NS_MO, name="ore_control")
-    ] = None
-    host_rock: Annotated[
-        Optional[RockType],
-        Property(ns=NS_MO, name="host_rock", is_object_property=True),
-    ] = None
-    associated_rock: Annotated[
-        Optional[RockType],
-        Property(ns=NS_MO, name="associated_rock", is_object_property=True),
-    ] = None
-    structure: Annotated[
-        Optional[NotEmptyStr], Property(ns=NS_MO, name="structure")
-    ] = None
-    tectonic: Annotated[Optional[NotEmptyStr], Property(ns=NS_MO, name="tectonic")] = (
-        None
-    )
+    __subj__ = Subject(type=NS_MO.term("GeologyInfo"), key_ns=NS_MR)
+
+    alternation: Annotated[Optional[NotEmptyStr], P()] = None
+    concentration_process: Annotated[Optional[NotEmptyStr], P()] = None
+    ore_control: Annotated[Optional[NotEmptyStr], P()] = None
+    host_rock: Annotated[Optional[RockType], P()] = None
+    associated_rock: Annotated[Optional[RockType], P()] = None
+    structure: Annotated[Optional[NotEmptyStr], P()] = None
+    tectonic: Annotated[Optional[NotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none(

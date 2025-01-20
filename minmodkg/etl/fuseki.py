@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 import httpx
-from minmodkg.misc.rdf_store.fuseki import FusekiDB
+from minmodkg.libraries.rdf.fuseki import FusekiDB
 from minmodkg.models.kg.base import MINMOD_NS
 from rdflib import Graph
 from tqdm import tqdm

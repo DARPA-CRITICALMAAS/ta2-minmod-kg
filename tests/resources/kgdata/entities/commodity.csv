@@ -1,0 +1,199 @@
+minmod_id,name,parent,aliases,geokb_name,geokb_id,is_critical_commodity,mrds_code
+Q501,Abrasive,,,abrasive,Q407,0,ABR
+Q502,Abrasive > Corundum,Q501,,corundum abrasive,Q408,0,ABR_C
+Q503,Abrasive > Emery,Q501,,emery abrasive,Q409,0,ABR_E
+Q504,Abrasive > Garnet,Q501,,garnet abrasive,Q410,1,ABR_G
+Q505,Aggregate > Light Weight,,,light weight aggregate,Q472,0,LWA
+Q506,Aluminum,,Al,aluminum,Q293,1,AL
+Q507,Aluminum > Contained Or Metal,Q506,,contained or metal aluminum,Q412,0,AL_C
+Q508,Aluminum > High Alumina Clay,Q506,,high alumina clay aluminum,Q413,0,AL_CLY
+Q509,Andalusite,,,andalusite,Q162208,0,AND
+Q510,Antimony,,Sb,antimony,Q295,1,SB
+Q511,Arsenic,,As,arsenic,Q297,1,AS
+Q512,Asbestos,,,Asbestos,Q162232,0,ASB
+Q513,Barium-Barite,,,barium-barite,Q419,1,BA
+Q514,Bismuth,,Bi,bismuth,Q302,1,BI
+Q515,Boron-Borates,,,boron-borates,Q418,1,B
+Q516,Cadmium,,Cd,cadmium,Q306,1,CD
+Q517,Carbon Dioxide,,,carbon dioxide,Q434,0,CO2
+Q518,Cement Rock,,,cement rock,Q420,0,CEM
+Q519,Chromium,,Cr,chromium,Q313,1,CR
+Q520,Chromium > Ferrochrome,Q519,,ferrochrome chromium,Q440,0,CR_F
+Q521,Clay,,,clay,Q421,1,CLY
+Q522,Clay > Ball Clay,Q521,,ball clay,Q422,0,CLY_BC
+Q523,Clay > Bloating Material,Q521,,bloating material clay,Q424,0,CLY_BM
+Q524,Clay > Brick,Q521,,brick clay,Q423,0,CLY_BK
+Q525,Clay > Chlorite,Q521,,chlorite clay,Q426,0,CLY_C
+Q526,Clay > Fire (Refractory),Q521,,fire (refractory) clay,Q428,0,CLY_FR
+Q527,Clay > Fullers Earth,Q521,,fullers earth clay,Q427,0,CLY_FE
+Q528,Clay > General,Q521,,general clay,Q430,0,CLY_GN
+Q529,Clay > Glauconite,Q521,,glauconite clay,Q429,0,CLY_GL
+Q530,Clay > Hectorite,Q521,,hectorite clay,Q431,0,CLY_H
+Q531,Clay > Kaolin,Q521,,kaolin clay,Q432,0,CLY_K
+Q532,Clay > Montmorillonite,Q521,,montmorillonite clay,Q433,0,CLY_M
+Q533,Coal > Anthracite,Q521,,anthracite,Q41375,0,COA_A
+Q534,Coal > Bituminous,Q521,,bituminous coal,Q437,0,COA_B
+Q535,Coal > Lignite,Q521,,lignite coal,Q438,0,COA_L
+Q536,Coal > Subbituminous,Q521,,subbituminous coal,Q439,0,COA_S
+Q537,Cobalt,,Co,cobalt,Q314,1,CO
+Q538,Copper,,Cu,copper,Q315,1,CU
+Q539,Copper > Oxide,Q538,,oxide copper,Q441,0,CU_O
+Q540,Copper > Sulfide,Q538,,sulfide copper,Q442,0,CU_S
+Q541,Dolomite,,,dolomite,Q162362,0,DOL
+Q542,Feldspar,,,feldspar,Q162399,0,FLD
+Q543,Fluorine-Fluorite,,,fluorine-fluorite,Q446,1,F
+Q544,Gemstone,,,gemstone,Q452,0,GEM
+Q545,Gemstone > Diamond,Q544,,Diamond,Q453,1,GEM_D
+Q546,Gemstone > Emerald,Q544,,emerald,Q454,0,GEM_E
+Q547,Gemstone > Ruby,Q544,,Ruby,Q456,0,GEM_R
+Q548,Gemstone > Sapphire,Q544,,Sapphire,Q457,0,GEM_SA
+Q549,Gemstone > Semiprecious,Q544,,semiprecious gemstone,Q458,0,GEM_SP
+Q550,Geothermal,,,geothermal,Q459,0,GEO
+Q551,Gold,,Au,gold,Q329,1,AU
+Q552,Gold > Refinery,Q551,,refinery gold,Q417,0,AU_R
+Q553,Graphite,,,Graphite,Q162418,1,GRF
+Q554,Graphite > Carbon,Q553,,carbon graphite,Q461,0,GRF_C
+Q555,Gypsum-Anhydrite,,,gypsum-anhydrite,Q463,0,GYP
+Q556,Gypsum-Anhydrite > Alabaster,Q555,,alabaster gypsum-anhydrite,Q464,0,GYP_A
+Q557,Hafnium,,Hf,hafnium,Q330,1,HF
+Q558,Helium,,He,helium,Q332,1,HE
+Q559,Indium,,In,indium,Q335,1,IN
+Q560,Iodine,,I,iodine,Q336,1,I
+Q561,Iron,,Fe,iron,Q337,1,FE
+Q562,Iron > Pig Iron,Q561,,pig iron,Q447,0,FE_P
+Q563,Iron > Pyrite,Q561,,pyrite iron,Q448,0,FE_PYR
+Q564,Kyanite,,,kyanite,Q162486,1,KYN
+Q565,Lead,,Pb,lead,Q342,1,PB
+Q566,Limestone > Dimension,Q597,,dimension limestone,Q470,0,LST_D
+Q567,Limestone > High Calcium,Q597,,high calcium limestone,Q469,0,LST_C
+Q568,Limestone > Ultra Pure,Q597,,ultra pure limestone,Q471,0,LST_P
+Q569,Lithium,,Li,lithium,Q343,1,LI
+Q570,Magnesite,Q10001,,magnesite,Q162507,1,MG
+Q571,Manganese,,Mn,manganese,Q346,1,MN
+Q572,Manganese > Ferromanganese,Q571,,ferromanganese manganese,Q477,0,MN_F
+Q573,Mercury,,Hg,mercury,Q349,1,HG
+Q574,Mica,,,Mica,Q162782,1,MIC
+Q575,Mineral Pigments,,,mineral pigments,Q478,0,MPG
+Q576,Molybdenum,,Mo,molybdenum,Q350,1,MO
+Q577,Natural Gas,,,Natural gas,Q451,0,GAS
+Q578,Nickel,,Ni,nickel,Q354,1,NI
+Q579,Niobium,,Nb,niobium,Q355,1,NB
+Q580,Nitrogen-Nitrates,,,nitrogen-nitrates,Q479,0,N
+Q581,Nonmetal,,,nonmetal,Q480,0,_N
+Q582,Platinum-Group Elements,,,platinum-group elements,Q291,1,PGE
+Q583,Potassium,,K,potassium,Q365,1,K
+Q584,Potassium > Alum,Q583,,alum potassium,Q466,0,K_A
+Q585,Silver,,Ag,silver,Q381,1,AG
+Q586,Silver > Refinery,Q585,,refinery silver,Q411,0,AG_R
+Q587,Tin,,Sn,tin,Q392,1,SN
+Q588,Uranium,,U,uranium,Q398,1,U
+Q589,Zinc,,Zn,zinc,Q403,1,ZN
+Q590,Beryllium,,Be,beryllium,Q301,1,BE
+Q591,Cesium,,Cs,cesium,Q311,1,CS
+Q592,Clay > Bentonite,Q521,,bentonite clay,Q425,0,CLY_BN
+Q593,Diatomite,,,diatomite,Q443,0,DIT
+Q594,Gallium,,Ga,gallium,Q327,1,GA
+Q595,Germanium,,Ge,germanium,Q328,1,GE
+Q596,Iridium,Q582,Ir,iridium,Q338,1,PGE_IR
+Q597,Limestone,,,limestone,Q468,0,LST
+Q598,Marble,,,marble,Q474,0,MBL
+Q599,Osmium,Q582,Os,osmium,Q358,1,PGE_OS
+Q600,Palladium,Q582,Pd,palladium,Q360,1,PGE_PD
+Q601,Platinum,Q582,Pt,platinum,Q362,1,PGE_PT
+Q602,Pumice,,,pumice,Q41360,0,PUM
+Q603,Rhenium,,Re,rhenium,Q371,1,RE
+Q604,Rhodium,Q582,Rh,rhodium,Q372,1,PGE_RH
+Q605,Rubidium,,Rb,rubidium,Q373,1,RB
+Q606,Ruthenium,Q582,Ru,ruthenium,Q374,1,PGE_RU
+Q607,Scandium,,Sc,scandium,Q377,1,SC
+Q608,Selenium,,Se,selenium,Q379,1,SE
+Q609,Strontium,,Sr,strontium,Q383,1,SR
+Q610,Tantalum,,Ta,tantalum,Q385,1,TA
+Q611,Tellurium,,Te,tellurium,Q387,1,TE
+Q612,Thallium,,Tl,thallium,Q389,1,TL
+Q613,Thorium,,Th,thorium,Q390,1,TH
+Q614,Titanium,,Ti,titanium,Q393,1,TI
+Q615,Tungsten,,W,tungsten,Q394,1,W
+Q616,Vanadium,,V,vanadium,Q399,1,V
+Q617,Zirconium,,Zr,zirconium,Q404,1,ZR
+Q618,Rare Earth Elements,,,rare earth elements,Q290,1,REE
+Q619,Ash,,,ash,Q41910,0,ASH
+Q620,Bromine,,Br,bromine,Q305,1,BR
+Q621,Calcium,,Ca,calcium,Q307,0,CA
+Q622,Chlorine,,Cl,chlorine,Q312,0,CL
+Q623,Flint,,,flint,Q450,0,FLN
+Q624,Granite,,,granite,Q462,0,GRT
+Q625,Hydrogen,,H,hydrogen,Q334,1,H
+Q626,Gemstone > Jade,Q544,,jade,Q455,0,GEM_J
+Q629,Pyrophyllite,Q574,,pyrophyllite,Q162625,0,PPY
+Q630,Quartz,,,quartz,Q162627,1,QTZ
+Q631,Radium,,Ra,radium,Q369,0,RA
+Q632,Staurolite,,,staurolite,Q162679,0,STA
+Q633,Sulfur,,S,sulfur,Q384,1,S
+Q634,Travertine,,,travertine,Q41438,0,TRA
+Q635,Vermiculite,,,vermiculite,Q162738,1,VRM
+Q636,Wollastonite,,,wollastonite,Q162757,1,WOL
+Q637,Coal,,,,,0,COA
+Q639,Flagstone,,,,,0,STN_F
+Q640,Lead > Refiner,,,,,0,PB_R
+Q641,Lead > Smelter,,,,,0,PB_S
+Q642,Nickel > Laterite,,,,,0,NI_L
+Q643,Nickel > Refiner,,,,,0,NI_R
+Q644,Nickel > Smelter,,,,,0,NI_S
+Q645,Olivine,,,,,1,OLV
+Q646,Peat,,,,,0,PEA
+Q647,Perlite,,,,,0,PER
+Q648,Petroleum (Oil),,,,,1,OIL
+Q649,Petroleum (Oil) > Gilsonite,Q648,,,,0,OIL_G
+Q650,Petroleum (Oil) > Oil Sands,Q648,,,,0,OIL_SA
+Q651,Petroleum (Oil) > Oil Shale,Q648,,,,0,OIL_SH
+Q652,Petroleum (Oil) > Rock Asphalt,Q648,,,,0,OIL_R
+Q653,Phosphorus-Phosphates,,,,,1,P
+Q654,Pyrite,,,,,0,PYR
+Q655,Sand,,,,,0,SD
+Q656,Sand and Gravel,Q655,,,,0,SDG
+Q657,Silica,Q630,,,,0,SIL
+Q658,Silica > Ferrosilicon,Q630,,,,0,SIL_F
+Q659,Slate,,,,,0,SLA
+Q660,Sodium,,,,,0,NA
+Q661,Sodium > Halite,Q660,,,,1,NA_H
+Q662,Sodium > Salt,Q660,,,,1,NA_S
+Q663,Stone,,,,,0,STN
+Q664,Stone > Crushed/Broken,Q663,,,,0,STN_C
+Q665,Stone > Dimension,Q663,,,,0,STN_D
+Q666,Sulfides,,,,,0,SUL
+Q667,Sulfur > Iron Pyrite,,,,,0,S_P
+Q668,Sulfur > Sulfuric Acid,,,,,0,S_A
+Q669,Talc-Soapstone,,,,,0,TLC
+Q670,Tantalum > Tin Slag,,,,,0,TA_S
+Q671,Tin > Tailings,,,,,0,SN_T
+Q672,Titanium > Heavy Minerals,Q614,,,,1,TI_HM
+Q673,Titanium > Ilmenite,Q614,,,,1,TI_I
+Q676,Titanium > Rutile,Q614,,,,1,TI_R
+Q677,Tungsten > Mill Concentrate,Q615,,,,0,W_C
+Q678,Tungsten > Refinery,Q615,,,,0,W_R
+Q681,Zeolites,,,,,1,ZEO
+Q682,Zinc > Refiner,Q589,,,,0,ZN_R
+Q683,Zinc > Smelter,Q589,,,,0,ZN_S
+Q684,Barium,,Ba,barium,Q299,1,
+Q685,Silicon,Q630,Si,silicon,Q380,0,
+Q686,Lanthanum,Q618,La,lanthanum,Q340,1,
+Q687,Cerium,Q618,Ce,cerium,Q310,1,
+Q688,Praseodymium,Q618,Pr,praseodymium,Q366,1,
+Q689,Yttrium,Q618,Y,yttrium,Q402,1,
+Q690,Neodymium,Q618,Nd,neodymium,Q351,1,
+Q691,Samarium,Q618,Sm,samarium,Q376,1,
+Q692,Europium,Q618,Eu,europium,Q322,1,
+Q693,Gadolinium,Q618,Gd,gadolinium,Q326,1,
+Q694,Terbium,Q618,Tb,terbium,Q388,1,
+Q695,Dysprosium,Q618,Dy,dysprosium,Q319,1,
+Q696,Holmium,Q618,Ho,holmium,Q333,1,
+Q697,Erbium,Q618,Er,erbium,Q321,1,
+Q698,Thulium,Q618,Tm,thulium,Q391,1,
+Q699,Ytterbium,Q618,Yb,ytterbium,Q401,1,
+Q700,Lutetium,Q618,Lu,lutetium,Q344,1,
+Q10000,Promethium,Q618,Pm,promethium,Q367,1,
+Q10001,Magnesium,,Mg,magnesium,Q345,1,
+Q10002,Potash,,,,,1,
+Q10003,Bauxite,Q506,,,,1,
+Q10004,Alunite,Q506,,,,1,

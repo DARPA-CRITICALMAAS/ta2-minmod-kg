@@ -9,7 +9,7 @@ from fastapi.security import APIKeyCookie
 from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.kgrel.base import get_rel_session
-from minmodkg.models.kgrel.commodity import Commodity
+from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID

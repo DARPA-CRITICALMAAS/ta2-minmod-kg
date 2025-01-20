@@ -8,7 +8,7 @@ from typing import Literal
 import serde.json
 from minmodkg.config import MINMOD_KGREL_DB
 from minmodkg.models.kgrel.base import Base
-from minmodkg.models.kgrel.commodity import Commodity
+from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView

@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.api.dependencies import (
     CurrentUserDep,
     MineralSiteServiceDep,
-    get_snapshot_id,
 )
 from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     OutputPublicMineralSite,
-)
-from minmodkg.api.routers.predefined_entities import (
-    get_crs,
-    get_material_forms,
-    get_sources,
 )
 from minmodkg.services.mineral_site import (
     ExpiredSnapshotIdError,
@@ -109,13 +102,7 @@ def create_site(
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
 ):
-    snapshot_id = get_snapshot_id()
-    new_msi = create_site.to_kgrel(
-        user,
-        material_form_uri_to_conversion(snapshot_id),
-        crs_uri_to_name(snapshot_id),
-        source_uri_to_score(snapshot_id),
-    )
+    new_msi = create_site.to_kgrel(user)
 
     site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
     if site_db_id is not None:
@@ -136,13 +123,7 @@ def update_site(
     user: CurrentUserDep,
     snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
-    kg_snapshot_id = get_snapshot_id()
-    upd_msi = update_site.to_kgrel(
-        user,
-        material_form_uri_to_conversion(kg_snapshot_id),
-        crs_uri_to_name(kg_snapshot_id),
-        source_uri_to_score(kg_snapshot_id),
-    )
+    upd_msi = update_site.to_kgrel(user)
 
     if site_id != upd_msi.ms.site_id:
         raise HTTPException(
@@ -173,18 +154,3 @@ def update_site(
         )
 
     return OutputPublicMineralSite.from_kgrel(upd_msi).to_dict()
-
-
-@lru_cache(maxsize=1)
-def crs_uri_to_name(snapshot_id: str):
-    return {crs.uri: crs.name for crs in get_crs(snapshot_id)}
-
-
-@lru_cache(maxsize=1)
-def material_form_uri_to_conversion(snapshot_id: str):
-    return {mf.uri: mf.conversion for mf in get_material_forms(snapshot_id)}
-
-
-@lru_cache(maxsize=1)
-def source_uri_to_score(snapshot_id: str):
-    return {source.uri: source.score for source in get_sources(snapshot_id)}
