@@ -1,50 +1,24 @@
 version: 1
 
 services:
-  - name: kg.data.entities
-    classpath: statickg.services.drepr.DReprService
-    args:
-      path:
-        - ::CFG_DIR::extractors/category.yml
-        - ::CFG_DIR::extractors/commodity.yml
-        - ::CFG_DIR::extractors/deposit_type.yml
-        - ::CFG_DIR::extractors/unit.yml
-        - ::CFG_DIR::extractors/country.yml
-        - ::CFG_DIR::extractors/state_or_province.yml
-        - ::CFG_DIR::extractors/source.yml
-        - ::CFG_DIR::extractors/epsg.yml
-        - ::CFG_DIR::extractors/material_form.yml
-      format: turtle
-  - name: kg.data.same_as
-    classpath: minmodkg.etl.same_as.SameAsService
-  - name: kg.data.mineral_site
-    classpath: statickg.services.drepr.DReprService
-    args:
-      path: ::CFG_DIR::extractors/mineral_site.yml
-      format: turtle
-      parallel: true
-  # - name: kg.data.source_mineral_site
-  #   classpath: minmodkg.etl.source.SourceService
-  #   args:
-  #     parallel: true
-  - name: copy
-    classpath: statickg.services.copy.CopyService
-  - name: version
-    classpath: statickg.services.version.VersionService
-  - name: concat
-    classpath: statickg.services.concat.ConcatTTLService
-  - name: validate filename
+  - name: validators.filename
     classpath: minmodkg.validators.FilenameValidatorService
     args:
       pattern: ^[a-zA-Z0-9_\-,.]+$
-  - name: kgrel.data.mineral_site
-    classpath: minmodkg.etl.mineral_site.MineralSiteETLService
-    args:
-      parallel: true
   - name: kgrel.data.entities
     classpath: minmodkg.etl.kgrel_entity.KGRelEntityETLService
     args:
       parallel: true
+  - name: kgrel.data.mineral_site
+    classpath: minmodkg.etl.mineral_site.MineralSiteETLService
+    args:
+      parallel: true
+  - name: kg.data.same_as
+    classpath: minmodkg.etl.same_as.SameAsService
+  - name: copy
+    classpath: statickg.services.copy.CopyService
+  - name: version
+    classpath: statickg.services.version.VersionService
   - name: kg.loader.fuseki
     classpath: minmodkg.etl.fuseki.FusekiLoaderService
     args:
@@ -119,50 +93,31 @@ services:
       stop_service: docker stop {ID} && docker rm {ID}
       load_cmd: "" # postgres does not need to load data
 pipeline:
-  # - service: validate filename
-  #   args:
-  #     input:
-  #       - ::REPO::data/entities/*.csv
-  #       - ::REPO::data/mineral-sites/*/*/*.json
-  #       - ::REPO::data/same-as/umn/*.csv
-  #       - ::REPO::data/mappable-criteria/sri/*.json
-  #       - ::REPO::data/curated-mineral-sites/*/*/*.json
-  # - service: kg.data.entities
-  #   args:
-  #     input: ::REPO::data/entities/*.csv
-  #     output: ::DATA_DIR::predefined-entities/
+  - service: validators.filename
+    args:
+      input:
+        - ::REPO::data/entities/*.csv
+        - ::REPO::data/mineral-sites/*/*/*.json
+        - ::REPO::data/same-as/umn/*.csv
+        - ::REPO::data/mappable-criteria/sri/*.json
+        - ::REPO::data/curated-mineral-sites/*/*/*.json
   - service: kgrel.data.entities
     args:
       input: ::REPO::data/entities
       output: ::DATA_DIR::entities
-  # - service: kg.data.mineral_site
-  #   args:
-  #     - input: ::REPO::data/mineral-sites/*/*/*.json
-  #       output:
-  #         base: ::DATA_DIR::mineral-sites
-  #         format: "{filegrandparent}/{fileparent}_{filestem}.{fileext}"
-  # - service: kg.data.same_as
-  #   args:
-  #     input: ::REPO::data/same-as/umn/*.csv
-  #     curated_input: ::REPO::data/curated-same-as/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::same-as/
-  #       format: "{fileparent}_{filestem}.json"
-  # - service: kg.data.source_mineral_site
-  #   args:
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output:
-  #       base: ::DATA_DIR::mineral-site-sources
-  #       format: "{filegrandparent}/{fileparent}_{filestem}.json"
-  #     predefined_entities: ::DATA_DIR::predefined-entities/
-  # - service: kgrel.data.mineral_site
-  #   args:
-  #     input: ::REPO::data/mineral-sites/*/*/*.json
-  #     output: ::DATA_DIR::relation-mineral-sites
-  #     source_file: ::DATA_DIR::mineral-site-sources/final/sources.json
-  #     material_form_file: ::DATA_DIR::predefined-entities/material_form.ttl
-  #     epsg_file: ::DATA_DIR::predefined-entities/epsg.ttl
-  #     same_as_group: ::DATA_DIR::same-as/final/groups.json
+  - service: kg.data.same_as
+    args:
+      input: ::REPO::data/same-as/umn/*.csv
+      curated_input: ::REPO::data/curated-same-as/*/*.json
+      output:
+        base: ::DATA_DIR::same-as/
+        format: "{fileparent}_{filestem}.json"
+  - service: kgrel.data.mineral_site
+    args:
+      input: ::REPO::data/mineral-sites/*/*/*.json
+      output: ::DATA_DIR::relation-mineral-sites
+      entity_dir: ::DATA_DIR::entities
+      same_as_group: ::DATA_DIR::same-as/final/groups.json
   # - service: copy
   #   args:
   #     input: ::CFG_DIR::schema/ontology.ttl
@@ -172,6 +127,12 @@ pipeline:
   #     entity: https://minmod.isi.edu/resource/kg
   #     entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
   #     output: ::DATA_DIR::version.ttl
+  # - service: kg.loader.postgres
+  #   args:
+  #     input:
+  #       - ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
+  #       - ::DATA_DIR::relation-predefined-entities/*.json*
+  #     deploy: { port: 5432 }
   # - service: kg.loader.fuseki
   #   # service: kg.loader.blazegraph
   #   # - service: kg.loader.virtuoso
@@ -185,9 +146,3 @@ pipeline:
   #       - ::DATA_DIR::mineral-site-sources/final/*.ttl
   #     replaceable_input: ::DATA_DIR::version.ttl
   #     deploy: { port: 3030 }
-  # - service: kg.loader.postgres
-  #   args:
-  #     input:
-  #       - ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
-  #       - ::DATA_DIR::relation-predefined-entities/*.json*
-  #     deploy: { port: 5432 }

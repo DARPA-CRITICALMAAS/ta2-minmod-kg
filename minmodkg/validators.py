@@ -151,7 +151,7 @@ class ContentValidator:
                 "unit",
                 "country",
                 "state_or_province",
-                "epsg",
+                "crs",
                 "material_form",
                 "source",
             ]

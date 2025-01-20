@@ -76,7 +76,7 @@ class EntityLinking(IEntityLinking):
             mno = "https://minmod.isi.edu/ontology/"
             mnr = "https://minmod.isi.edu/resource/"
             if name == "crs":
-                linker = EntityLinking(entity_dir / "epsg.ttl", "turtle")
+                linker = EntityLinking(entity_dir / "crs.ttl", "turtle")
             elif name == "state_or_province":
                 linker = EntityLinking(entity_dir / "state_or_province.ttl", "turtle")
                 country_linker = EntityLinking.get_instance(entity_dir, "country")

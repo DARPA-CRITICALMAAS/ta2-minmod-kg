@@ -52,9 +52,9 @@ class MineralSiteAndInventory:
     @staticmethod
     def from_raw_site(
         raw_site: dict | KGMineralSite,
-        material_form: dict[str, float],
+        commodity_form_conversion: dict[str, float],
         crs_names: dict[str, str],
-        source_score: dict[IRI, float],
+        source_score: dict[IRI, float | None],
     ) -> MineralSiteAndInventory:
         ms = MineralSite.from_raw_site(raw_site, crs_names, source_score)
 
@@ -89,7 +89,9 @@ class MineralSiteAndInventory:
                 inv.material_form is not None
                 and inv.material_form.normalized_uri is not None
             ):
-                mi_form_conversion = material_form[inv.material_form.normalized_uri]
+                mi_form_conversion = commodity_form_conversion[
+                    inv.material_form.normalized_uri
+                ]
 
             invs[commodity].append(
                 GradeTonnageModel.MineralInventory(
@@ -190,7 +192,7 @@ class MineralSite(MappedAsDataclass, Base):
     def from_raw_site(
         raw_site: dict | KGMineralSite,
         crs_names: dict[str, str],
-        source_score: dict[IRI, float],
+        source_score: dict[IRI, float | None],
     ) -> MineralSite:
         site = (
             KGMineralSite.from_dict(raw_site)

@@ -62,7 +62,7 @@ class KGRelEntityETLService(BaseFileService[KGRelEntityETLServiceConstructArgs])
             "unit.csv",
             "category.csv",
             "commodity_form.csv",
-            "epsg.csv",
+            "crs.csv",
         ]:
             outfiles.update(
                 EntityDeserFn.exec(
@@ -77,6 +77,8 @@ class KGRelEntityETLService(BaseFileService[KGRelEntityETLServiceConstructArgs])
 
 class EntityDeserFn:
     """Deserialize Entity Data to RDF and Relational data"""
+
+    VERSION = "v107"
 
     instances = {}
 
@@ -95,7 +97,7 @@ class EntityDeserFn:
 
     @cache(
         backend=FileSqliteBackend.factory(
-            filename="transform-v106.sqlite", multi_files=True
+            filename=f"transform-{VERSION}.sqlite", multi_files=True
         ),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
@@ -130,8 +132,8 @@ class EntityDeserFn:
             return EntityDeserFn.read_commodity(infile)
         elif infile.name == "commodity_form.csv":
             return EntityDeserFn.read_commodity_form(infile)
-        elif infile.name == "epsg.csv":
-            return EntityDeserFn.read_epsg(infile)
+        elif infile.name == "crs.csv":
+            return EntityDeserFn.read_crs(infile)
         elif infile.name == "country.csv":
             return EntityDeserFn.read_country(infile)
         elif infile.name == "deposit_type.csv":
@@ -181,13 +183,13 @@ class EntityDeserFn:
                 name=raw_record["name"],
                 formula=raw_record["formula"],
                 commodity=raw_record["commodity_id"],
-                conversion=raw_record["conversion"],
+                conversion=float(raw_record["conversion"]),
             )
             records.append(r)
         return records
 
     @staticmethod
-    def read_epsg(infile: Path) -> list[CRS]:
+    def read_crs(infile: Path) -> list[CRS]:
         raw_records = serde.csv.deser(infile, deser_as_record=True)
         records = []
         for raw_record in raw_records:

@@ -17,6 +17,7 @@ from minmodkg.models.kg.source import Source
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.services.kgrel_entity import FileEntityService
 from minmodkg.transformations import make_site_uri
 from minmodkg.typing import InternalID
 from rdflib import RDFS, Graph
@@ -40,11 +41,11 @@ class MineralSiteETLServiceConstructArgs(TypedDict):
 
 
 class MineralSiteETLServiceInvokeArgs(TypedDict):
-    source_file: RelPath
-    material_form_file: RelPath
-    epsg_file: RelPath
     input: RelPath | list[RelPath]
     output: RelPath
+
+    entity_dir: RelPath
+
     same_as_group: RelPath
     optional: NotRequired[bool]
     compute_missing_file_key: NotRequired[bool]
@@ -237,16 +238,12 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         merged_outdir = outdir / "merged"
         merged_outdir.mkdir(parents=True, exist_ok=True)
 
-        material_form_file = args["material_form_file"].get_path()
-        epsg_file = args["epsg_file"].get_path()
-        source_file = args["source_file"].get_path()
+        entity_dir = args["entity_dir"].get_path()
 
         it: Iterable = get_parallel_executor(self.parallel)(
             delayed(MergeFn.exec)(
                 self.workdir,
-                material_form_file=material_form_file,
-                epsg_file=epsg_file,
-                source_file=source_file,
+                entity_dir=entity_dir,
                 infiles=infiles,
                 sameas_file=same_as_files[out_relpath],
                 outdir=merged_outdir / out_relpath,
@@ -405,53 +402,28 @@ class MergeFn:
     def __init__(
         self,
         workdir: Path,
-        material_form_file: Path,
-        epsg_file: Path,
-        source_file: Path,
+        entity_dir: Path,
     ):
         self.workdir = workdir
-
-        g = Graph()
-        g.parse(material_form_file, format="ttl")
-        self.material_form_conversion = {
-            str(subj): float(obj.value)  # type: ignore
-            for subj, obj in g.subject_objects(MINMOD_NS.mo.uri("conversion"))
-        }
-
-        g = Graph()
-        g.parse(epsg_file, format="ttl")
-        self.epsg_name = {
-            str(subj): str(obj.value)  # type: ignore
-            for subj, obj in g.subject_objects(RDFS.label)
-        }
-
-        self.source_score = {
-            (s := Source.from_dict(d)).uri: s.score
-            for d in serde.json.deser(source_file)
-        }
+        self.entity_service = FileEntityService(entity_dir)
 
     @staticmethod
     def get_instance(
-        workdir: Path, material_form_file: Path, epsg_file: Path, source_file: Path
+        workdir: Path,
+        entity_dir: Path,
     ) -> MergeFn:
         if workdir not in MergeFn.instances:
-            MergeFn.instances[workdir] = MergeFn(
-                workdir, material_form_file, epsg_file, source_file
-            )
+            MergeFn.instances[workdir] = MergeFn(workdir, entity_dir)
         return MergeFn.instances[workdir]
 
     @classmethod
     def exec(
         cls,
         workdir: Path,
-        material_form_file: Path,
-        epsg_file: Path,
-        source_file: Path,
+        entity_dir: Path,
         **kwargs,
     ) -> Path:
-        return cls.get_instance(
-            workdir, material_form_file, epsg_file, source_file
-        ).invoke(**kwargs)
+        return cls.get_instance(workdir, entity_dir).invoke(**kwargs)
 
     @cache(
         backend=FileSqliteBackend.factory(filename="merge-v104.sqlite"),
@@ -486,9 +458,9 @@ class MergeFn:
 
             norm_site = MineralSiteAndInventory.from_raw_site(
                 site.to_dict(),
-                self.material_form_conversion,
-                self.epsg_name,
-                self.source_score,
+                commodity_form_conversion=self.entity_service.get_commodity_form_conversion(),
+                crs_names=self.entity_service.get_crs_name(),
+                source_score=self.entity_service.get_source_score(),
             )
             norm_site.ms.dedup_site_id = dedup_map[norm_site.ms.site_id]
             output.append(norm_site.to_dict())

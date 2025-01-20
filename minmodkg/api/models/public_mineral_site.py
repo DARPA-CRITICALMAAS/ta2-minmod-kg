@@ -179,7 +179,7 @@ class InputPublicMineralSite(InputMineralSite):
         entser = EntityService.get_instance()
         site = MineralSiteAndInventory.from_raw_site(
             self,
-            material_form=entser.get_commodity_form_conversion(),
+            commodity_form_conversion=entser.get_commodity_form_conversion(),
             crs_names=entser.get_crs_name(),
             source_score=entser.get_source_score(),
         )

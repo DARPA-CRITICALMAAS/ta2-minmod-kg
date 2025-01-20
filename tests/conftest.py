@@ -180,7 +180,7 @@ def kgrel_with_data(
         for raw_site in serde.json.deser(file):
             msi = MineralSiteAndInventory.from_raw_site(
                 raw_site,
-                material_form=entity_service.get_commodity_form_conversion(),
+                commodity_form_conversion=entity_service.get_commodity_form_conversion(),
                 crs_names=entity_service.get_crs_name(),
                 source_score=entity_service.get_source_score(),
             )
