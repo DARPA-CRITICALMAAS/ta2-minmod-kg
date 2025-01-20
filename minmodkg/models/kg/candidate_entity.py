@@ -6,6 +6,7 @@ from typing import Annotated, Optional
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import makedict
 from minmodkg.models.kg.base import NS_MO, NS_MR
+from minmodkg.typing import IRI
 
 
 @dataclass
@@ -15,7 +16,7 @@ class CandidateEntity(RDFModel):
     source: Annotated[str, P()]
     confidence: Annotated[float, P()]
     observed_name: Annotated[Optional[str], P()] = None
-    normalized_uri: Annotated[Optional[str], P()] = None
+    normalized_uri: Annotated[Optional[IRI], P(is_ref_object=True)] = None
 
     def to_dict(self):
         return makedict.without_none(

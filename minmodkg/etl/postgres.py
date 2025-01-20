@@ -8,9 +8,16 @@ from typing import Literal
 import serde.json
 from minmodkg.config import MINMOD_KGREL_DB
 from minmodkg.models.kgrel.base import Base
-from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models.kgrel.entities.commodity import Commodity
+from minmodkg.models.kgrel.entities.commodity_form import CommodityForm
+from minmodkg.models.kgrel.entities.country import Country
+from minmodkg.models.kgrel.entities.crs import CRS
+from minmodkg.models.kgrel.entities.deposit_type import DepositType
+from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
+from minmodkg.models.kgrel.entities.unit import Unit
 from minmodkg.models.kgrel.mineral_site import MineralSite
+from minmodkg.models.kgrel.source import Source
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import Engine, create_engine, insert
@@ -91,15 +98,25 @@ class PostgresLoaderService(DataLoaderService):
 
     def restore(self, engine: Engine, tables: dict[str, list], batch_size: int = 1024):
         with Session(engine) as session:
-            table = "Commodity"
-            if table in tables:
-                records = tables[table]
-                for i in tqdm(
-                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
-                ):
-                    batch1 = records[i : i + batch_size]
-                    batch1 = [Commodity.from_dict(r) for r in batch1]
-                    session.bulk_save_objects(batch1)
+            for cls in [
+                Unit,
+                Commodity,
+                DepositType,
+                Country,
+                StateOrProvince,
+                CommodityForm,
+                Source,
+                CRS,
+            ]:
+                table = cls.__name__
+                if table in tables:
+                    records = tables[table]
+                    for i in tqdm(
+                        list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                    ):
+                        batch0 = records[i : i + batch_size]
+                        batch0 = [cls.from_dict(r) for r in batch0]
+                        session.bulk_save_objects(batch0)
 
             table = "DedupMineralSite"
             if table in tables:

@@ -43,6 +43,14 @@ class ObjProp:
 
 
 @dataclass
+class RefObjProp:
+    """Object Property that should not be expanded and its value is a reference to another object"""
+
+    pred: Term
+    is_list: bool
+
+
+@dataclass
 class DataProp:
     """Data Property"""
 
@@ -58,6 +66,7 @@ class P:
     pred: Optional[Term] = None
     datatype: Optional[URIRef] = None
     is_list: Optional[bool] = None
+    is_ref_object: Optional[bool] = None
 
 
 @dataclass
@@ -65,6 +74,7 @@ class ResourceSchema:
     subj: Subject
     dataprops: dict[str, DataProp] = field(init=False, default_factory=dict)
     objectprops: dict[str, ObjProp] = field(init=False, default_factory=dict)
+    ref_objectprops: dict[str, RefObjProp] = field(init=False, default_factory=dict)
 
     def get_uri(self, resource: Any) -> str:
         if self.subj.key is not None:
@@ -109,13 +119,15 @@ class ResourceSchema:
             )
         return self.subj.key_ns.abs2rel(getattr(resource, "__uri__"))
 
-    def add_property(self, attrname: str, prop: DataProp | ObjProp):
+    def add_property(self, attrname: str, prop: DataProp | ObjProp | RefObjProp):
         """
         Args:
             attrname: name of the property in the Python class.
         """
         if isinstance(prop, ObjProp):
             self.objectprops[attrname] = prop
+        elif isinstance(prop, RefObjProp):
+            self.ref_objectprops[attrname] = prop
         else:
             self.dataprops[attrname] = prop
 
@@ -155,7 +167,9 @@ class RDFModel:
                 if isinstance(arg, P):
                     cfg = RDFModel._parse_type_hint(field_type)
                     pred = arg.pred or Term(schema.subj.type.ns, field_name)
-                    if cfg["is_object"]:
+                    if arg.is_ref_object is True:
+                        prop = RefObjProp(pred=pred, is_list=cfg["is_list"])
+                    elif cfg["is_object"]:
                         prop = ObjProp(
                             pred=pred, is_list=cfg["is_list"], target=cfg["target"]
                         )
@@ -221,6 +235,15 @@ class RDFModel:
                         ),
                     )
                 )
+        for name, prop in schema.ref_objectprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    triples.append((subj, prop.pred.reluri, f"<{x}>"))
+            else:
+                triples.append((subj, prop.pred.reluri, f"<{value}>"))
         for name, prop in schema.objectprops.items():
             value = getattr(self, name)
             if value is None:
@@ -265,7 +288,15 @@ class RDFModel:
                         RDFLiteral(value, datatype=prop.datatype),
                     )
                 )
-
+        for name, prop in schema.ref_objectprops.items():
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if prop.is_list:
+                for x in value:
+                    g.add((subj, prop.pred.uri, URIRef(x)))
+            else:
+                g.add((subj, prop.pred.uri, URIRef(value)))
         for name, prop in schema.objectprops.items():
             value = getattr(self, name)
             if value is None:

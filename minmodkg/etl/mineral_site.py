@@ -11,7 +11,7 @@ import xxhash
 from joblib import delayed
 from libactor.cache import cache
 from minmodkg.misc.utils import group_by
-from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.kg.mineral_site import MineralSite
 from minmodkg.models.kg.source import Source
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
@@ -84,6 +84,8 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             dedup_output = self.dedup(args, partition_output)
         with timer.watch_and_report("Merging the data"):
             merge_output = self.merge(args, partition_output, dedup_output)
+        with timer.watch_and_report("Preparing KG input"):
+            self.prep_kg_input(args, merge_output)
         with timer.watch_and_report("Preparing KGRel input"):
             self.prep_kgrel_input(args, merge_output)
 
@@ -232,7 +234,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         args: MineralSiteETLServiceInvokeArgs,
         partition_files: dict[Path, list[InputFile]],
         same_as_files: dict[Path, InputFile],
-    ):
+    ) -> dict[Path, InputFile]:
         outdir = args["output"].get_path()
 
         merged_outdir = outdir / "merged"
@@ -246,11 +248,13 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 entity_dir=entity_dir,
                 infiles=infiles,
                 sameas_file=same_as_files[out_relpath],
-                outdir=merged_outdir / out_relpath,
+                outfile=merged_outdir
+                / out_relpath.parent
+                / f"{out_relpath.name}.json{COMPRESSION}",
             )
             for out_relpath, infiles in partition_files.items()
         )
-        merged_outfiles = set()
+        merged_outfiles: set[Path] = set()
         for file in tqdm(
             it,
             total=len(partition_files),
@@ -260,21 +264,47 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             merged_outfiles.add(file)
         self.remove_unknown_files(merged_outfiles, merged_outdir)
 
-        output: list[InputFile] = []
+        output: dict[Path, InputFile] = {}
         for outfile in merged_outfiles:
-            output.append(
-                InputFile.from_relpath(
-                    RelPath(
-                        basetype=args["output"].basetype,
-                        basepath=args["output"].basepath,
-                        relpath=str(outfile.relative_to(args["output"].basepath)),
-                    )
+            output[
+                outfile.relative_to(merged_outdir).parent / outfile.name.split(".")[0]
+            ] = InputFile.from_relpath(
+                RelPath(
+                    basetype=args["output"].basetype,
+                    basepath=args["output"].basepath,
+                    relpath=str(outfile.relative_to(args["output"].basepath)),
                 )
             )
         return output
 
+    def prep_kg_input(
+        self,
+        args: MineralSiteETLServiceInvokeArgs,
+        merge_files: dict[Path, InputFile],
+    ):
+        kg_outdir = args["output"].get_path() / "kg"
+        kg_outdir.mkdir(parents=True, exist_ok=True)
+        it: Iterable = get_parallel_executor(self.parallel)(
+            delayed(ExportTTLFn.exec)(
+                self.workdir,
+                infile=infile,
+                outfile=kg_outdir / out_relpath.parent / f"{out_relpath.name}.ttl",
+            )
+            for out_relpath, infile in merge_files.items()
+        )
+
+        kg_outfiles = set()
+        for file in tqdm(
+            it,
+            total=len(merge_files),
+            desc="Exporting TTL",
+            disable=self.verbose < 1,
+        ):
+            kg_outfiles.add(file)
+        self.remove_unknown_files(kg_outfiles, kg_outdir)
+
     def prep_kgrel_input(
-        self, args: MineralSiteETLServiceInvokeArgs, infiles: list[InputFile]
+        self, args: MineralSiteETLServiceInvokeArgs, merge_files: dict[Path, InputFile]
     ):
         kgrel_outdir = args["output"].get_path() / "kgrel"
         kgrel_outdir.mkdir(parents=True, exist_ok=True)
@@ -301,14 +331,17 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             return {"DedupMineralSite": dedup_sites, "MineralSiteAndInventory": sites}
 
         it: Iterable[MapDedupSiteResult] = get_parallel_executor(self.parallel)(
-            delayed(map_dedup_site)(infile.path) for infile in infiles
+            delayed(map_dedup_site)(infile.path) for infile in merge_files.values()
         )  # type: ignore
 
         # merge all the results
         dedup_sites: dict[InternalID, list[DedupMineralSite]] = defaultdict(list)
         sites: list[MineralSiteAndInventory] = []
         for d in tqdm(
-            it, total=len(infiles), desc="Reading KGRel input", disable=self.verbose < 1
+            it,
+            total=len(merge_files),
+            desc="Reading KGRel input",
+            disable=self.verbose < 1,
         ):
             for dms in d["DedupMineralSite"]:
                 dedup_sites[dms.id].append(dms)
@@ -339,7 +372,7 @@ class PartitionFn:
     """Partition the mineral sites from a single file into <source_id>/<bucket>/<file_name>.json"""
 
     instances = {}
-    num_buckets = 256
+    num_buckets = 64
 
     def __init__(self, workdir: Path):
         self.workdir = workdir
@@ -435,7 +468,7 @@ class MergeFn:
         },
     )
     def invoke(
-        self, infiles: list[InputFile], sameas_file: InputFile, outdir: Path
+        self, infiles: list[InputFile], sameas_file: InputFile, outfile: Path
     ) -> Path:
         rid2sites = defaultdict(list)
         for infile in sorted(infiles, key=lambda x: x.path):
@@ -446,9 +479,7 @@ class MergeFn:
             r["site_id"]: r["dedup_id"] for r in serde.json.deser(sameas_file.path)
         }
 
-        outdir.mkdir(parents=True, exist_ok=True)
-        outfile = outdir / ("merged.json" + COMPRESSION)
-
+        outfile.parent.mkdir(parents=True, exist_ok=True)
         # merge the data
         output = []
         for raw_sites in rid2sites.values():
@@ -466,4 +497,42 @@ class MergeFn:
             output.append(norm_site.to_dict())
 
         serde.json.ser(output, outfile)
+        return outfile
+
+
+class ExportTTLFn:
+    instances = {}
+
+    def __init__(self, workdir: Path):
+        self.workdir = workdir
+
+    @staticmethod
+    def get_instance(workdir: Path) -> PartitionFn:
+        if workdir not in ExportTTLFn.instances:
+            ExportTTLFn.instances[workdir] = ExportTTLFn(workdir)
+        return ExportTTLFn.instances[workdir]
+
+    @classmethod
+    def exec(cls, workdir: Path, **kwargs) -> list[Path]:
+        return cls.get_instance(workdir).invoke(**kwargs)
+
+    @cache(
+        backend=FileSqliteBackend.factory(filename="export-v100.sqlite"),
+        cache_ser_args={
+            "infile": lambda x: x.get_ident(),
+        },
+    )
+    def invoke(self, infile: InputFile, outfile: Path) -> Path:
+        output = []
+        for d in serde.json.deser(infile.path):
+            msi = MineralSiteAndInventory.from_dict(d)
+            output.extend(msi.ms.to_kg().to_triples())
+
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        with open(outfile, "w") as f:
+            f.write(MINMOD_KG.prefix_part)
+            f.write("\n")
+            for triple in output:
+                f.write(f" ".join(triple))
+                f.write(". \n")
         return outfile

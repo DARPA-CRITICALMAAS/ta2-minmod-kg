@@ -115,34 +115,32 @@ pipeline:
   - service: kgrel.data.mineral_site
     args:
       input: ::REPO::data/mineral-sites/*/*/*.json
-      output: ::DATA_DIR::relation-mineral-sites
+      output: ::DATA_DIR::mineral-sites
       entity_dir: ::DATA_DIR::entities
       same_as_group: ::DATA_DIR::same-as/final/groups.json
-  # - service: copy
-  #   args:
-  #     input: ::CFG_DIR::schema/ontology.ttl
-  #     output: "::DATA_DIR::"
-  # - service: version
-  #   args:
-  #     entity: https://minmod.isi.edu/resource/kg
-  #     entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
-  #     output: ::DATA_DIR::version.ttl
-  # - service: kg.loader.postgres
-  #   args:
-  #     input:
-  #       - ::DATA_DIR::relation-mineral-sites/kgrel/*.json*
-  #       - ::DATA_DIR::relation-predefined-entities/*.json*
-  #     deploy: { port: 5432 }
-  # - service: kg.loader.fuseki
-  #   # service: kg.loader.blazegraph
-  #   # - service: kg.loader.virtuoso
-  #   args:
-  #     input:
-  #       - ::DATA_DIR::ontology.ttl
-  #       - ::DATA_DIR::predefined-entities/*.ttl
-  #       - ::DATA_DIR::mineral-sites/*/*.ttl
-  #       - ::DATA_DIR::same-as/final/*.ttl
-  #       - ::DATA_DIR::dedup-mineral-sites/final/*.ttl
-  #       - ::DATA_DIR::mineral-site-sources/final/*.ttl
-  #     replaceable_input: ::DATA_DIR::version.ttl
-  #     deploy: { port: 3030 }
+  - service: copy
+    args:
+      input: ::CFG_DIR::schema/ontology.ttl
+      output: "::DATA_DIR::"
+  - service: version
+    args:
+      entity: https://minmod.isi.edu/resource/kg
+      entity_type: https://minmod.isi.edu/ontology/KnowledgeGraph
+      output: ::DATA_DIR::version.ttl
+  - service: kg.loader.postgres
+    args:
+      input:
+        - ::DATA_DIR::mineral-sites/kgrel/*.json*
+        - ::DATA_DIR::entities/*.json*
+      deploy: { port: 5432 }
+  - service: kg.loader.fuseki
+    # service: kg.loader.blazegraph
+    # - service: kg.loader.virtuoso
+    args:
+      input:
+        - ::DATA_DIR::ontology.ttl
+        - ::DATA_DIR::entities/*.ttl
+        - ::DATA_DIR::mineral-sites/kg/*/*.ttl
+        - ::DATA_DIR::same-as/final/*.ttl
+      replaceable_input: ::DATA_DIR::version.ttl
+      deploy: { port: 3030 }

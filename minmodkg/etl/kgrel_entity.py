@@ -102,7 +102,6 @@ class EntityDeserFn:
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
-        disable=True,
     )
     def invoke(self, infile: InputFile, outdir: Path) -> list[Path]:
         records = self.read_file(infile.path)
