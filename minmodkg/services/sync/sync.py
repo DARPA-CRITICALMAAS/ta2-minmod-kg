@@ -13,6 +13,7 @@ from sqlalchemy import delete, select, update
 def process_pending_events(
     listener: Listener,
     max_no_events: int = 500,
+    verbose: bool = False,
 ):
     if isinstance(listener, KGSyncListener):
         listener_field = "kg_synced"
@@ -53,6 +54,9 @@ def process_pending_events(
                 EventLog.backup_synced == True,
             )
         )
+
+        if verbose and len(events) > 0:
+            print(f"[{listener.__class__.__name__}] processed events: {len(events)}")
 
         # commit the transaction
         session.commit()

@@ -108,7 +108,7 @@ class BackupListener(Listener):
         if len(events) > 0:
             # after updating the files, we need to commit the changes to the git repo
             GitRepository(self.data_repo_dir).commit_all(
-                f"Backup data at {format_nanoseconds(events[-1].timestamp)}"
+                f"Backup data as of {format_nanoseconds(events[-1].timestamp)}"
             ).push()
 
     def _upsert_site(
@@ -116,13 +116,18 @@ class BackupListener(Listener):
     ):
         username = get_username(site.ms.created_by[0])
 
+        source_id = site.ms.source_id
+        lst = source_id.split("::")
+        if len(lst) > 1:
+            source_id = lst[1]
+
         data_sources = EntityService.get_instance().get_data_sources()
-        if site.ms.source_id not in data_sources:
+        if source_id not in data_sources:
             data_sources = EntityService.get_instance().get_data_sources(refresh=True)
 
         # determine the bucket that we are going to write the data to.
         # (username, data source, bucket number)
         bucket_no = PartitionFn.get_bucket_no(site.ms.record_id)
-        key = (username, data_sources[site.ms.source_id].slug_name, bucket_no)
+        key = (username, data_sources[source_id].slug_name, bucket_no)
 
         self.site_journal[key].append((action, site.ms.to_kg().to_dict()))

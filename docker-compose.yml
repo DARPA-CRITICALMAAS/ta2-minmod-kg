@@ -64,6 +64,9 @@ services:
         source: ${CFG_FILE}
         target: /home/criticalmaas/config/config.yml
     command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
+  api_sync:
+    image: minmod-backend
+    command: python -m minmodkg.services.sync /home/criticalmaas/ta2-minmod-data --backup-interval 3600
   dashboard:
     image: toan2/minmod-dashboard
     ports:

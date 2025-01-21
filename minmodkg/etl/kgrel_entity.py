@@ -57,7 +57,7 @@ class KGRelEntityETLService(BaseFileService[KGRelEntityETLServiceConstructArgs])
             "commodity.csv",
             "country.csv",
             "deposit_type.csv",
-            "source.csv",
+            "data_source.csv",
             "state_or_province.csv",
             "unit.csv",
             "category.csv",
