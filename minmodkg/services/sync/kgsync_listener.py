@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-import time
-from typing import Iterable, Sequence
+from typing import Iterable
 
-import typer
 from minmodkg.misc.utils import norm_literal
-from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.kg.mineral_site import MineralSite
-from minmodkg.models.kgrel.base import get_rel_session
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import IRI, InternalID
-from rdflib import OWL, Graph, URIRef
-from sqlalchemy import select
+from rdflib import Graph, URIRef
 
 
 class KGSyncListener(Listener):
+    owl_same_as = MINMOD_NS.owl.sameAs
+    rdf_type = MINMOD_NS.rdf.type
+    mo_normalized_uri = MINMOD_NS.mo.normalized_uri
+
     def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
         MINMOD_KG.insert(site.ms.to_kg().to_triples())
 
@@ -58,13 +58,13 @@ class KGSyncListener(Listener):
             s = key_ns[site]
             for diff_site in diff_sites:
                 o = key_ns[diff_site]
-                delete_links.append((s, "owl:sameAs", o))
-                delete_links.append((o, "owl:sameAs", s))
+                delete_links.append((s, self.owl_same_as, o))
+                delete_links.append((o, self.owl_same_as, s))
 
         MINMOD_KG.delete_insert(
             delete_links,
             [
-                (key_ns[group[0]], "owl:sameAs", key_ns[target])
+                (key_ns[group[0]], self.owl_same_as, key_ns[target])
                 for group in groups
                 for target in group[1:]
             ],
@@ -80,11 +80,11 @@ class KGSyncListener(Listener):
             """
 SELECT ?s ?o
 WHERE {
-    ?s (owl:sameAs|^owl:sameAs) ?o .
+    ?s (%s|^%s) ?o .
     VALUES ?s { %s }
 }
 """
-            % (" ".join(key_ns[id] for id in ids)),
+            % (self.owl_same_as, self.owl_same_as, " ".join(key_ns[id] for id in ids)),
             keys=["s", "o"],
         )
         return [(key_ns.abs2rel(so["s"]), key_ns.abs2rel(so["o"])) for so in lst]
@@ -92,17 +92,16 @@ WHERE {
     def _get_mineral_site_graph_by_uri(self, uri: IRI | URIRef) -> Graph:
         # Fuseki can optimize this case, but I don't know why sometimes it cannot
         return MINMOD_KG.construct(
-            """
-CONSTRUCT {
+            f"""
+CONSTRUCT {{
     ?s ?p ?o
-}
-WHERE {
-    <%s> (!(owl:sameAs|rdf:type|mo:normalized_uri))* ?s .
+}}
+WHERE {{
+    <{uri}> (!({self.owl_same_as}|{self.rdf_type}|{self.mo_normalized_uri}))* ?s .
     ?s ?p ?o .
 
     # Exclude owl:sameAs because it's not part of the model
-    FILTER (?p != owl:sameAs)
-}
+    FILTER (?p != {self.owl_same_as})
+}}
 """
-            % (uri,)
         )
