@@ -11,8 +11,8 @@ SourceType = Literal["database", "article", "mining-report", "unpublished"]
 
 
 @dataclass
-class Source(RDFModel):
-    __subj__ = Subject(type=NS_MO.term("Source"), key_ns=NS_MR_NO_REL, key="uri")
+class DataSource(RDFModel):
+    __subj__ = Subject(type=NS_MO.term("DataSource"), key_ns=NS_MR_NO_REL, key="uri")
 
     uri: IRI
     name: Annotated[NotEmptyStr, P()]

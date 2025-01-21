@@ -69,7 +69,7 @@ def group_by_attr(output: list[V], attr: str) -> dict[str, list[V]]:
     return groups
 
 
-def group_by(output: list[V], key_fn: Callable[[V], str]) -> dict[str, list[V]]:
+def group_by(output: Sequence[V], key_fn: Callable[[V], str]) -> dict[str, list[V]]:
     groups = {}
     for row in output:
         val = key_fn(row)

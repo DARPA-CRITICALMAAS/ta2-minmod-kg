@@ -3,10 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
-from minmodkg.api.dependencies import (
-    CurrentUserDep,
-    MineralSiteServiceDep,
-)
+from minmodkg.api.dependencies import CurrentUserDep, MineralSiteServiceDep
 from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     OutputPublicMineralSite,
@@ -92,7 +89,9 @@ def update_same_as(
     mineral_site_service: MineralSiteServiceDep,
     current_user: CurrentUserDep,
 ):
-    dedup_ids = mineral_site_service.update_same_as([g.sites for g in same_site_groups])
+    dedup_ids = mineral_site_service.update_same_as(
+        current_user.get_uri(), [g.sites for g in same_site_groups]
+    )
     return [{"id": dedup_id} for dedup_id in dedup_ids]
 
 
@@ -102,7 +101,7 @@ def create_site(
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
 ):
-    new_msi = create_site.to_kgrel(user)
+    new_msi = create_site.to_kgrel(user.get_uri())
 
     site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
     if site_db_id is not None:
@@ -123,7 +122,7 @@ def update_site(
     user: CurrentUserDep,
     snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
-    upd_msi = update_site.to_kgrel(user)
+    upd_msi = update_site.to_kgrel(user.get_uri())
 
     if site_id != upd_msi.ms.site_id:
         raise HTTPException(

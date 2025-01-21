@@ -197,6 +197,12 @@ class RDFModel:
                 attrs[name] = [norm_literal(x) for x in lst]
             else:
                 attrs[name] = norm_literal(next(lst, None))
+        for name, prop in schema.ref_objectprops.items():
+            lst = g.objects(uid, prop.pred.uri)
+            if prop.is_list:
+                attrs[name] = [norm_uriref(x) for x in lst]
+            else:
+                attrs[name] = norm_uriref(next(lst, None))
         for name, prop in schema.objectprops.items():
             lst = g.objects(uid, prop.pred.uri)
             if prop.is_list:
@@ -372,8 +378,8 @@ def norm_literal(value: Annotated[Any, Literal]) -> Any:
     )
 
 
-def norm_uriref(value: Annotated[Any, URIRef]) -> Optional[URIRef]:
-    return None if value is None else value
+def norm_uriref(value: Annotated[Any, URIRef]) -> Optional[IRI]:
+    return None if value is None else str(value)
 
 
 M = TypeVar("M", bound=RDFModel)

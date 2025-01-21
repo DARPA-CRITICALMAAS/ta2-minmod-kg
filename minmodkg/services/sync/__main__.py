@@ -1,31 +1,44 @@
 from __future__ import annotations
 
 import time
-from typing import Sequence
+from pathlib import Path
+from typing import Optional
 
 import typer
-from minmodkg.misc.utils import norm_literal
-from minmodkg.models.kg.base import MINMOD_KG
-from minmodkg.models.kgrel.base import get_rel_session
-from minmodkg.models.kgrel.event import EventLog
-from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.services.sync.backup_listener import BackupListener
 from minmodkg.services.sync.kgsync_listener import KGSyncListener
 from minmodkg.services.sync.sync import process_pending_events
-from minmodkg.typing import InternalID
-from sqlalchemy import select
 
 app = typer.Typer(pretty_exceptions_short=True, pretty_exceptions_enable=False)
 
 
 @app.command()
-def main(batch_size: int = 500):
+def main(repo_dir: Path, batch_size: int = 500):
     """Synchronize data from the KGRel to KG and CDR."""
-    listeners = [KGSyncListener()]
+    kgsync_listener = KGSyncListener()
+    backup_listener = BackupListener(repo_dir)
+
+    last_backup_synced: Optional[int] = None
+    backup_synced_interval = 60 * 60  # every hour
+
     while True:
-        # Fetch the latest event logs
-        process_pending_events(listeners, batch_size)
+        # we want kg sync to be near real-time
+        process_pending_events(kgsync_listener, batch_size)
+
+        if last_backup_synced is None:
+            # record the current hour
+            last_backup_synced = int(time.time() / backup_synced_interval)
+            # then process all events
+            process_pending_events(backup_listener, batch_size)
+        else:
+            current_hour = int(time.time() / backup_synced_interval)
+            if current_hour > last_backup_synced:
+                last_backup_synced = current_hour
+                process_pending_events(backup_listener, batch_size)
+
+        # wait for a second before checking again
         time.sleep(1)
 
 
 if __name__ == "__main__":
-    main()
+    app()

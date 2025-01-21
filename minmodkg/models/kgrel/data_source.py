@@ -3,15 +3,16 @@ from __future__ import annotations
 from typing import Optional
 
 from minmodkg.misc.utils import makedict
-from minmodkg.models.kg.source import Source as KGSource
-from minmodkg.models.kg.source import SourceType
+from minmodkg.models.kg.data_source import DataSource as KGDataSource
+from minmodkg.models.kg.data_source import SourceType
 from minmodkg.models.kgrel.base import Base
 from minmodkg.typing import IRI
+from slugify import slugify
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
-class Source(MappedAsDataclass, Base):
-    __tablename__ = "source"
+class DataSource(MappedAsDataclass, Base):
+    __tablename__ = "data_source"
 
     id: Mapped[IRI] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column()
@@ -20,6 +21,13 @@ class Source(MappedAsDataclass, Base):
     description: Mapped[str] = mapped_column()
     score: Mapped[Optional[float]] = mapped_column()
     connection: Mapped[Optional[str]] = mapped_column()
+    slug_name: Mapped[str] = mapped_column(
+        unique=True,
+        init=False,
+        default=lambda ctx: slugify(ctx.get_current_parameters()["name"]).replace(
+            "-", "_"
+        ),
+    )
 
     def to_dict(self) -> dict:
         return makedict.without_none(
@@ -35,7 +43,7 @@ class Source(MappedAsDataclass, Base):
         )
 
     @classmethod
-    def from_dict(cls, d: dict) -> Source:
+    def from_dict(cls, d: dict) -> DataSource:
         return cls(
             id=d["id"],
             name=d["name"],
@@ -46,8 +54,8 @@ class Source(MappedAsDataclass, Base):
             connection=d.get("connection"),
         )
 
-    def to_kg(self) -> KGSource:
-        return KGSource(
+    def to_kg(self) -> KGDataSource:
+        return KGDataSource(
             uri=self.id,
             name=self.name,
             type=self.type,

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import time
+from collections import defaultdict
 from typing import Optional, Sequence, Tuple, TypedDict
 
+from minmodkg.misc.utils import group_by
 from minmodkg.models.kgrel.base import engine
 from minmodkg.models.kgrel.dedup_mineral_site import (
     DedupMineralSite,
@@ -200,7 +203,9 @@ class MineralSiteService:
             # step 3: commit data
             session.commit()
 
-    def update_same_as(self, groups: list[list[InternalID]]) -> list[InternalID]:
+    def update_same_as(
+        self, user_uri: str, groups: list[list[InternalID]]
+    ) -> list[InternalID]:
         output = []
         with Session(self.engine) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
@@ -214,8 +219,33 @@ class MineralSiteService:
                 ).scalars()
             )
 
+            diff_groups = defaultdict(list)
+
             for group in groups:
+                group_set = set(group)
                 dedup_site_id = min(group)
+                # retrieve the diff group
+                subquery = (
+                    select(MineralSite.site_id, MineralSite.dedup_site_id)
+                    .where(MineralSite.site_id.in_(group))
+                    .subquery()
+                )
+
+                site_id_and_dedup_id = session.execute(
+                    select(MineralSite.site_id, MineralSite.dedup_site_id).join(
+                        subquery, MineralSite.dedup_site_id == subquery.c.dedup_site_id
+                    )
+                ).all()
+                sid2dedupid = {row[0]: row[1] for row in site_id_and_dedup_id}
+                dedup2siteid = group_by(site_id_and_dedup_id, lambda row: row[1])
+                for site_id in group:
+                    diff_groups[site_id] = [
+                        row[0]
+                        for row in dedup2siteid[sid2dedupid[site_id]]
+                        if row[0] not in group_set
+                    ]
+
+                # update the dedup site
                 all_sites = self._read_mineral_sites(
                     session,
                     self._select_mineral_site().where(MineralSite.site_id.in_(group)),
@@ -252,7 +282,7 @@ class MineralSiteService:
                     DedupMineralSite.id.in_(set(affected_dedup_ids).difference(output))
                 )
             )
-            session.add(EventLog.from_same_as_update(groups))
+            session.add(EventLog.from_same_as_update(user_uri, groups, diff_groups))
             session.commit()
         return output
 

@@ -7,6 +7,7 @@ import serde.csv
 import serde.json
 from libactor.cache import cache
 from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kgrel.data_source import DataSource
 from minmodkg.models.kgrel.entities.category import Category
 from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.entities.commodity_form import CommodityForm
@@ -15,7 +16,6 @@ from minmodkg.models.kgrel.entities.crs import CRS
 from minmodkg.models.kgrel.entities.deposit_type import DepositType
 from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
 from minmodkg.models.kgrel.entities.unit import Unit
-from minmodkg.models.kgrel.source import Source
 
 from statickg.helper import FileSqliteBackend
 from statickg.models.etl import ETLOutput
@@ -137,7 +137,7 @@ class EntityDeserFn:
             return EntityDeserFn.read_country(infile)
         elif infile.name == "deposit_type.csv":
             return EntityDeserFn.read_deposit_type(infile)
-        elif infile.name == "source.csv":
+        elif infile.name == "data_source.csv":
             return EntityDeserFn.read_source(infile)
         elif infile.name == "state_or_province.csv":
             return EntityDeserFn.read_state_or_province(infile)
@@ -227,7 +227,7 @@ class EntityDeserFn:
         return records
 
     @staticmethod
-    def read_source(infile: Path) -> list[Source]:
+    def read_source(infile: Path) -> list[DataSource]:
         raw_records = serde.csv.deser(infile, deser_as_record=True)
         records = []
         for raw_record in raw_records:
@@ -235,7 +235,7 @@ class EntityDeserFn:
             if raw_record["score"].strip() != "":
                 score = float(raw_record["score"])
             records.append(
-                Source(
+                DataSource(
                     id=raw_record["uri"],
                     name=raw_record["name"],
                     type=raw_record["type"],

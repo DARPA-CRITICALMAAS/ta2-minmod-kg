@@ -174,18 +174,18 @@ class InputPublicMineralSite(InputMineralSite):
 
     def to_kgrel(
         self,
-        user: User,
+        user_uri: str,
     ) -> MineralSiteAndInventory:
         entser = EntityService.get_instance()
         site = MineralSiteAndInventory.from_raw_site(
             self,
             commodity_form_conversion=entser.get_commodity_form_conversion(),
             crs_names=entser.get_crs_name(),
-            source_score=entser.get_source_score(),
+            source_score=entser.get_data_source_score(),
         )
         site.ms.dedup_site_id = self.dedup_site_id
         site.ms.modified_at = time.time_ns()
-        site.ms.created_by = [user.get_uri()]
+        site.ms.created_by = [user_uri]
         return site
 
     def to_dict(self):

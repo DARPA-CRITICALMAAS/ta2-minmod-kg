@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 import time
 from datetime import datetime, timedelta, timezone
@@ -154,6 +155,13 @@ def kgrel(
     with Session(kgrel_singleton, expire_on_commit=False) as session:
         for tbl in reversed(minmodkg.models.kgrel.base.Base.metadata.sorted_tables):
             session.execute(tbl.delete())
+
+        for file in ["commodity", "commodity_form", "crs", "data_source"]:
+            session.bulk_save_objects(
+                EntityDeserFn.read_file(
+                    resource_dir / "kgdata/entities" / f"{file}.csv"
+                )
+            )
         session.add_all(users)
         session.commit()
 
@@ -167,22 +175,13 @@ def kgrel_with_data(
     mineral_site_service = MineralSiteService(kgrel)
     entity_service = EntityService(kgrel)
 
-    for file in ["commodity", "commodity_form", "epsg"]:
-        with Session(kgrel) as session:
-            session.add_all(
-                EntityDeserFn.read_file(
-                    resource_dir / "kgdata/entities" / f"{file}.csv"
-                )
-            )
-            session.commit()
-
     for file in (resource_dir / "kgdata/mineral-sites/json").iterdir():
         for raw_site in serde.json.deser(file):
             msi = MineralSiteAndInventory.from_raw_site(
                 raw_site,
                 commodity_form_conversion=entity_service.get_commodity_form_conversion(),
                 crs_names=entity_service.get_crs_name(),
-                source_score=entity_service.get_source_score(),
+                source_score=entity_service.get_data_source_score(),
             )
             mineral_site_service.create(msi)
 
@@ -227,3 +226,14 @@ def auth_client_2(kgrel, user2):
     )
     with TestClient(app, cookies={"session": access_token}) as client:
         yield client
+
+
+@pytest.fixture(scope="class")
+def tmp_dir():
+    """Initialize an empty directory."""
+    tmpdir = Path("/tmp/test_minmodkg")
+    if tmpdir.exists():
+        shutil.rmtree(tmpdir)
+    tmpdir.mkdir(exist_ok=True)
+
+    yield tmpdir

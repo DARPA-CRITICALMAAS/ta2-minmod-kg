@@ -11,30 +11,46 @@ from minmodkg.typing import InternalID
 class Listener:
 
     def handle(self, events: Sequence[EventLog]):
+        self.handle_begin(events)
+
         for event in events:
             if event.type == "site:add":
                 self.handle_site_add(
-                    MineralSiteAndInventory.from_dict(event.data["site"])
+                    event, MineralSiteAndInventory.from_dict(event.data["site"])
                 )
             elif event.type == "site:update":
                 self.handle_site_update(
-                    MineralSiteAndInventory.from_dict(event.data["site"])
+                    event, MineralSiteAndInventory.from_dict(event.data["site"])
                 )
             elif event.type == "same-as:update":
-                self.handle_same_as_update(event.data["groups"])
+                self.handle_same_as_update(
+                    event,
+                    event.data["user_uri"],
+                    event.data["groups"],
+                    event.data["diff_groups"],
+                )
             else:
                 raise ValueError(f"Unknown event type: {event.type}")
 
-    def handle_site_add(self, site: MineralSiteAndInventory):
+        self.handle_end(events)
+
+    def handle_begin(self, events: Sequence[EventLog]):
+        pass
+
+    def handle_end(self, events: Sequence[EventLog]):
+        pass
+
+    def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
         raise NotImplementedError()
 
-    def handle_site_update(self, site: MineralSiteAndInventory):
+    def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
         raise NotImplementedError()
 
-    def handle_same_as_update(self, groups: list[list[InternalID]]):
+    def handle_same_as_update(
+        self,
+        event: EventLog,
+        user_uri: str,
+        groups: list[list[InternalID]],
+        diff_groups: dict[InternalID, list[InternalID]],
+    ):
         raise NotImplementedError()
-
-    @staticmethod
-    def process(events: Sequence[EventLog], listeners: Sequence[Listener]):
-        for listener in listeners:
-            listener.handle(events)

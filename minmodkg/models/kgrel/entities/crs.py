@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional
 
 from minmodkg.misc.utils import makedict
+from minmodkg.models.kg.data_source import SourceType
 from minmodkg.models.kg.entities.crs import CRS as KGCRS
-from minmodkg.models.kg.source import SourceType
 from minmodkg.models.kgrel.base import Base
 from minmodkg.typing import IRI, InternalID, NotEmptyStr
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column

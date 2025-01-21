@@ -66,9 +66,9 @@ def state_or_provinces():
     ]
 
 
-@router.get("/sources")
-def sources():
+@router.get("/data-sources")
+def data_sources():
     return [
         {"uri": r.id, "name": r.name, "score": r.score, "connection": r.connection}
-        for r in EntityService.get_instance().get_sources()
+        for r in EntityService.get_instance().get_data_sources().values()
     ]

@@ -17,10 +17,10 @@ from sqlalchemy import select
 
 
 class KGSyncListener(Listener):
-    def handle_site_add(self, site: MineralSiteAndInventory):
+    def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
         MINMOD_KG.insert(site.ms.to_kg().to_triples())
 
-    def handle_site_update(self, site: MineralSiteAndInventory):
+    def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
         kgms = site.ms.to_kg()
         ng = kgms.to_graph()
         og = self._get_mineral_site_graph_by_uri(kgms.uri)
@@ -41,30 +41,28 @@ class KGSyncListener(Listener):
 
         MINMOD_KG.delete_insert(del_triples, add_triples)
 
-    def handle_same_as_update(self, groups: list[list[InternalID]]):
+    def handle_same_as_update(
+        self,
+        event: EventLog,
+        user_uri: str,
+        groups: list[list[InternalID]],
+        diff_groups: dict[InternalID, list[InternalID]],
+    ):
         key_ns = MineralSite.__subj__.key_ns
-        potential_existing_links = self._get_all_same_as_links(
-            {id for group in groups for id in group}
-        )
+        # potential_existing_links = self._get_all_same_as_links(
+        #     {id for group in groups for id in group}
+        # )
         # delete same as link to/from other sites, and then insert the new same as links
-        print(
-            [
-                (s, "owl:sameAs", o)
-                for so in potential_existing_links
-                for s, o in [so, (so[1], so[0])]
-            ],
-            [
-                (key_ns[group[0]], "owl:sameAs", key_ns[target])
-                for group in groups
-                for target in group[1:]
-            ],
-        )
+        delete_links = []
+        for site, diff_sites in diff_groups.items():
+            s = key_ns[site]
+            for diff_site in diff_sites:
+                o = key_ns[diff_site]
+                delete_links.append((s, "owl:sameAs", o))
+                delete_links.append((o, "owl:sameAs", s))
+
         MINMOD_KG.delete_insert(
-            [
-                (s, "owl:sameAs", o)
-                for so in potential_existing_links
-                for s, o in [so, (so[1], so[0])]
-            ],
+            delete_links,
             [
                 (key_ns[group[0]], "owl:sameAs", key_ns[target])
                 for group in groups

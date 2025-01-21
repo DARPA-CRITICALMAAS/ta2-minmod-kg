@@ -164,6 +164,7 @@ cython_debug/
 
 data*
 !data*.py
+!data_source.csv
 .env
 .myenv
 env

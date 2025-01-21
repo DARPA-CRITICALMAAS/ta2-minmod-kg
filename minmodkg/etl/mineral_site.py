@@ -12,8 +12,8 @@ from joblib import delayed
 from libactor.cache import cache
 from minmodkg.misc.utils import group_by
 from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
+from minmodkg.models.kg.data_source import DataSource
 from minmodkg.models.kg.mineral_site import MineralSite
-from minmodkg.models.kg.source import Source
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
@@ -411,8 +411,7 @@ class PartitionFn:
         for r in lst:
             # skip a record is fine
             r["record_id"] = str(r["record_id"]).strip()
-            record_id = slugify(str(r["record_id"])).encode()
-            bucketno = xxhash.xxh64(record_id).intdigest() % self.num_buckets
+            bucketno = PartitionFn.get_bucket_no(r["record_id"])
             source2records[r["source_id"]][bucketno].append(r)
 
         for source_id, source_id_name in zip(source_ids, source_id_names):
@@ -425,6 +424,16 @@ class PartitionFn:
                 outfiles.append(outfile)
 
         return outfiles
+
+    @staticmethod
+    def get_bucket_no(record_id: str) -> int:
+        enc_record_id = slugify(str(record_id).strip()).encode()
+        bucketno = xxhash.xxh64(enc_record_id).intdigest() % PartitionFn.num_buckets
+        return bucketno
+
+    @staticmethod
+    def get_filename(username: str, source_name: str, bucket_no: int) -> Path:
+        return Path(f"{username}/{source_name}/b{bucket_no:03d}.json{COMPRESSION}")
 
 
 class MergeFn:
@@ -491,7 +500,7 @@ class MergeFn:
                 site.to_dict(),
                 commodity_form_conversion=self.entity_service.get_commodity_form_conversion(),
                 crs_names=self.entity_service.get_crs_name(),
-                source_score=self.entity_service.get_source_score(),
+                source_score=self.entity_service.get_data_source_score(),
             )
             norm_site.ms.dedup_site_id = dedup_map[norm_site.ms.site_id]
             output.append(norm_site.to_dict())

@@ -16,6 +16,8 @@ class EventLog(MappedAsDataclass, Base):
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     type: Mapped[Literal["site:add", "site:update", "same-as:update"]] = mapped_column()
     data: Mapped[dict] = mapped_column(JSON)
+    kg_synced: Mapped[bool] = mapped_column(default=False, index=True)
+    backup_synced: Mapped[bool] = mapped_column(default=False, index=True)
     timestamp: Mapped[int] = mapped_column(BigInteger, default_factory=time.time_ns)
 
     @classmethod
@@ -37,10 +39,23 @@ class EventLog(MappedAsDataclass, Base):
         )
 
     @classmethod
-    def from_same_as_update(cls, groups: list[list[InternalID]]) -> EventLog:
+    def from_same_as_update(
+        cls,
+        user_uri: str,
+        groups: list[list[InternalID]],
+        diff_groups: dict[InternalID, list[InternalID]],
+    ) -> EventLog:
+        """Update the same-as links.
+
+        Args:
+            groups: each item in the list is a group of internal IDs that are the same.
+            diff_groups: a mapping from internal ID to a list of internal IDs that are previously marked as the same but now are different.
+        """
         return EventLog(
             type="same-as:update",
             data={
+                "user_uri": user_uri,
                 "groups": groups,
+                "diff_groups": diff_groups,
             },
         )

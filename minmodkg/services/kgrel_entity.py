@@ -7,6 +7,7 @@ import serde.json
 from minmodkg.models.kg.entities.commodity_form import CommodityForm as KGCommodityForm
 from minmodkg.models.kg.entities.crs import CRS as KGCRS
 from minmodkg.models.kgrel.base import Base, engine
+from minmodkg.models.kgrel.data_source import DataSource
 from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.entities.commodity_form import CommodityForm
 from minmodkg.models.kgrel.entities.country import Country
@@ -14,7 +15,6 @@ from minmodkg.models.kgrel.entities.crs import CRS
 from minmodkg.models.kgrel.entities.deposit_type import DepositType
 from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
 from minmodkg.models.kgrel.entities.unit import Unit
-from minmodkg.models.kgrel.source import Source
 from minmodkg.typing import IRI, InternalID
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
@@ -34,11 +34,11 @@ class EntityService:
         self.countries: Optional[list[Country]] = None
         self.state_or_provinces: Optional[list[StateOrProvince]] = None
         self.commodity_forms: Optional[list[CommodityForm]] = None
-        self.sources: Optional[list[Source]] = None
+        self.data_sources: Optional[dict[IRI, DataSource]] = None
         self.crs: Optional[list[CRS]] = None
 
         self.commodity_form_conversion: Optional[dict[IRI, float]] = None
-        self.source_score: Optional[dict[IRI, float | None]] = None
+        self.data_source_score: Optional[dict[IRI, float | None]] = None
         self.crs_name: Optional[dict[IRI, str]] = None
 
     @staticmethod
@@ -55,12 +55,12 @@ class EntityService:
             }
         return self.commodity_form_conversion
 
-    def get_source_score(self) -> dict[IRI, float | None]:
-        if self.source_score is None:
-            self.source_score = {
-                source.id: source.score for source in self.get_sources()
+    def get_data_source_score(self) -> dict[IRI, float | None]:
+        if self.data_source_score is None:
+            self.data_source_score = {
+                sid: source.score for sid, source in self.get_data_sources().items()
             }
-        return self.source_score
+        return self.data_source_score
 
     def get_crs_name(self) -> dict[IRI, str]:
         if self.crs_name is None:
@@ -97,10 +97,10 @@ class EntityService:
             self.commodity_forms = self._select_all(CommodityForm)
         return self.commodity_forms
 
-    def get_sources(self) -> list[Source]:
-        if self.sources is None:
-            self.sources = self._select_all(Source)
-        return self.sources
+    def get_data_sources(self, refresh: bool = False) -> dict[IRI, DataSource]:
+        if self.data_sources is None or refresh:
+            self.data_sources = {s.id: s for s in self._select_all(DataSource)}
+        return self.data_sources
 
     def get_crs(self) -> list[CRS]:
         if self.crs is None:

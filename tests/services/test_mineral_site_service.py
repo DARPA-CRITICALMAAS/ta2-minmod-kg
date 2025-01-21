@@ -121,7 +121,7 @@ class TestCreateMineralSite(TestMSData):
         self, user1: User, kg: TripleStore, kgrel: Engine
     ):
         service = MineralSiteService(kgrel)
-        service.create(self.site1.to_kgrel(user1))
+        service.create(self.site1.to_kgrel(user1.get_uri()))
 
         out_ms = OutputPublicMineralSite.from_kgrel(
             assert_not_none(service.find_by_id(self.site1.id))
@@ -134,14 +134,15 @@ class TestCreateMineralSite(TestMSData):
 
 
 class TestLinkMineralSite(TestMSData):
-    def test_update_same_as(self, resource_dir: Path, kgrel_with_data):
+    def test_update_same_as(self, resource_dir: Path, user1: User, kgrel_with_data):
         time.sleep(1.0)  # to ensure the modified_at is different
         mineral_site_service = MineralSiteService(kgrel_with_data)
         mineral_site_service.update_same_as(
+            user1.get_uri(),
             [
                 [
                     "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
                     "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
                 ]
-            ]
+            ],
         )
