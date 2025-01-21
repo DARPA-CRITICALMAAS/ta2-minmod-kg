@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minmodkg"
-version = "1.5.7"
+version = "1.6.0"
 description = "code repository for TA2 Knowledge Graph (MinMod) construction & deployment"
 authors = ["Binh Vu <bvu687@gmail.com>"]
 license = "MIT"
@@ -22,7 +22,7 @@ sqlmodel = "^0.0.22"
 sqlalchemy = "^2.0.36"
 psycopg = { extras = ["binary"], version = "^3.2.3" }
 drepr-v2 = "^1.6.0"
-serde2 = { version = "^1.8.3", extras = ["all"] }
+serde2 = { version = "^1.8.6", extras = ["all"] }
 timer4 = "^1.1.0"
 bcrypt = "^4.2.0"
 jaydebeapi = "^1.2.3"
