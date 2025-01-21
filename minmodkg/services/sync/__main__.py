@@ -31,18 +31,22 @@ def main(
             # we want kg sync to be near real-time
             process_pending_events(kgsync_listener, batch_size, verbose=verbose)
 
-            if last_backup_synced is None:
-                # record the current hour
-                last_backup_synced = int(time.time() / backup_interval)
-                # then process all events
-                process_pending_events(backup_listener, batch_size, verbose=verbose)
-            else:
-                current_hour = int(time.time() / backup_interval)
-                if current_hour > last_backup_synced:
-                    last_backup_synced = current_hour
+            if backup_interval > 0:
+                # only run the backup sync if the interval is greater than 0
+                if last_backup_synced is None:
+                    # record the current hour
+                    last_backup_synced = int(time.time() / backup_interval)
+                    # then process all events
                     process_pending_events(backup_listener, batch_size, verbose=verbose)
+                else:
+                    current_hour = int(time.time() / backup_interval)
+                    if current_hour > last_backup_synced:
+                        last_backup_synced = current_hour
+                        process_pending_events(
+                            backup_listener, batch_size, verbose=verbose
+                        )
         except Exception as e:
-            # exception occurred, we will wait for a second before trying again
+            # exception occurred, we will wait for X second before trying again
             logger.exception(e)
             logger.info("Wait for 10 seconds before trying again")
             time.sleep(10)

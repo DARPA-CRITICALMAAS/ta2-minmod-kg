@@ -66,6 +66,10 @@ services:
     command: fastapi run /home/criticalmaas/kg/minmodkg/api/main.py
   api_sync:
     image: minmod-backend
+    volumes:
+      - type: bind
+        source: ../ta2-minmod-data
+        target: /home/criticalmaas/ta2-minmod-data
     command: python -m minmodkg.services.sync /home/criticalmaas/ta2-minmod-data --backup-interval 3600
   dashboard:
     image: toan2/minmod-dashboard
