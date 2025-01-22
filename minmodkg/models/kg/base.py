@@ -10,7 +10,8 @@ from statickg.helper import import_attr
 
 NS_MR = SingleNS("mr", MINMOD_NS_CFG["mr"])
 NS_MO = SingleNS("mo", MINMOD_NS_CFG["mo"])
-NS_RDF = SingleNS("rdf", str(RDF))
+NS_RDF = Namespace.rdf
+NS_RDFS = Namespace.rdfs
 
 NS_MR_NO_REL = NoRelSingleNS("mr", MINMOD_NS_CFG["mr"])
 MINMOD_NS = Namespace(MINMOD_NS_CFG)

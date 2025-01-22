@@ -13,7 +13,7 @@ from minmodkg.misc.utils import (
     format_nanoseconds,
     makedict,
 )
-from minmodkg.models.kg.base import NS_MO, NS_MR
+from minmodkg.models.kg.base import NS_MO, NS_MR, NS_RDFS
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kg.location_info import LocationInfo
@@ -33,7 +33,7 @@ class MineralSite(RDFModel):
 
     source_id: Annotated[NotEmptyStr, P()]
     record_id: Annotated[NotEmptyStr, P()]
-    name: Annotated[Optional[NotEmptyStr], P()] = None
+    name: Annotated[Optional[NotEmptyStr], P(pred=NS_RDFS.term("label"))] = None
     aliases: Annotated[list[NotEmptyStr], P(is_list=True)] = field(default_factory=list)
     site_rank: Annotated[Optional[NotEmptyStr], P()] = None
     site_type: Annotated[Optional[NotEmptyStr], P()] = None

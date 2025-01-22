@@ -29,6 +29,9 @@ class DataSource(MappedAsDataclass, Base):
         ),
     )
 
+    def __post_init__(self):
+        self.slug_name = slugify(self.name).replace("-", "_")
+
     def to_dict(self) -> dict:
         return makedict.without_none(
             (

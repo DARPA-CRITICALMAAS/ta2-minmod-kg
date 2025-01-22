@@ -5,7 +5,7 @@ from functools import cached_property
 from typing import Annotated
 
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
-from minmodkg.models.kg.base import NS_MO, NS_MR
+from minmodkg.models.kg.base import NS_MO, NS_MR, NS_RDFS
 from minmodkg.typing import IRI, InternalID
 
 
@@ -14,7 +14,7 @@ class DepositType(RDFModel):
     __subj__ = Subject(type=NS_MO.term("DepositType"), key_ns=NS_MR, key="uri")
 
     id: Annotated[InternalID, P()]
-    name: Annotated[str, P()]
+    name: Annotated[str, P(pred=NS_RDFS.term("label"))]
     environment: Annotated[str, P()]
     group: Annotated[str, P()]
 

@@ -75,13 +75,13 @@ class Term:
 
 class Namespace:
     rdf = SingleNS("rdf", str(RDF))
+    rdfs = SingleNS("rdfs", str(RDFS))
 
     def __init__(self, ns_cfg: dict):
         self.mr = SingleNS("mr", ns_cfg["mr"])
         self.mo = SingleNS("mo", ns_cfg["mo"])
         self.md = SingleNS("md", ns_cfg["mo-derived"])
         self.dcterms = SingleNS("dcterms", "http://purl.org/dc/terms/")
-        self.rdfs = SingleNS("rdfs", str(RDFS))
         self.xsd = SingleNS("xsd", str(XSD))
         self.owl = SingleNS("owl", str(OWL))
         self.gkbi = SingleNS("gkbi", "https://geokb.wikibase.cloud/entity/")
@@ -93,6 +93,7 @@ class Namespace:
             x.alias: x for x in self.__dict__.values() if isinstance(x, SingleNS)
         }
         self.namespaces[self.rdf.alias] = self.rdf
+        self.namespaces[self.rdfs.alias] = self.rdfs
 
     def iter(self) -> Iterable[SingleNS]:
         return self.namespaces.values()

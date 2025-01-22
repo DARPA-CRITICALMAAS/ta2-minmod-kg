@@ -114,7 +114,7 @@ pipeline:
         format: "{fileparent}_{filestem}.json"
   - service: kgrel.data.mineral_site
     args:
-      input: ::REPO::data/mineral-sites/*/*/*.json
+      input: ::REPO::data/mineral-sites/*/*/*.json*
       output: ::DATA_DIR::mineral-sites
       entity_dir: ::DATA_DIR::entities
       same_as_group: ::DATA_DIR::same-as/final/groups.json

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Annotated
 
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
-from minmodkg.models.kg.base import NS_MO, NS_MR
+from minmodkg.models.kg.base import NS_MO, NS_MR, NS_RDFS
 from minmodkg.typing import IRI
 
 
@@ -15,4 +15,4 @@ class CRS(RDFModel):
     )
 
     uri: Annotated[IRI, P()]
-    name: Annotated[str, P()]
+    name: Annotated[str, P(pred=NS_RDFS.term("label"))]

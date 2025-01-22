@@ -25,6 +25,9 @@ class Commodity(MappedAsDataclass, Base):
         default=lambda ctx: ctx.get_current_parameters()["name"].lower(),
     )
 
+    def __post_init__(self):
+        self.lower_name = self.name.lower()
+
     @property
     def uri(self) -> str:
         return KGCommodity.__subj__.key_ns.uristr(self.id)
