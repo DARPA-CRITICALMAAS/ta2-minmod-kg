@@ -9,13 +9,13 @@ import orjson
 import serde.json
 import timer
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
-from minmodkg.integrations.cdr_helper import (
+from minmodkg.integrations.cdr.cdr_helper import (
     MINMOD_API,
     MINMOD_SYSTEM,
     CDRHelper,
     MinmodHelper,
 )
-from minmodkg.integrations.cdr_schemas import (
+from minmodkg.integrations.cdr.cdr_schemas import (
     DedupSite,
     DedupSiteRecord,
     DepositType,
@@ -49,10 +49,6 @@ def sync_deposit_types():
 
     CDRHelper.truncate(CDRHelper.DepositType)
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
-
-
-def sync_commodities():
-    pass
 
 
 def format_dedup_site(
