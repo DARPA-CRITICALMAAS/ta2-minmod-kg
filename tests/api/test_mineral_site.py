@@ -15,7 +15,6 @@ from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Document, Reference
 from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.models.kgrel.user import User
-from minmodkg.transformations import make_site_uri
 from shapely import Point
 from shapely.wkt import loads
 from tests.utils import check_req
@@ -47,10 +46,8 @@ class TestMineralSiteData:
                 )
             ],
         )
-        self.site1_id = make_site_uri(
-            self.site1.source_id, self.site1.record_id, namespace=""
-        )
-        self.site1_uri = make_site_uri(self.site1.source_id, self.site1.record_id)
+        self.site1_id = self.site1.id
+        self.site1_uri = self.site1.uri
         self.site1_dedup_uri = MINMOD_KG.ns.md.uristr(
             MineralSite.get_dedup_id([self.site1_id])
         )
@@ -101,10 +98,8 @@ class TestMineralSiteData:
             ],
             dedup_site_uri=self.site1_dedup_uri,
         )
-        self.site2_id = make_site_uri(
-            self.site2.source_id, self.site2.record_id, namespace=""
-        )
-        self.site2_uri = make_site_uri(self.site2.source_id, self.site2.record_id)
+        self.site2_id = self.site2.id
+        self.site2_uri = self.site2.uri
         self.site2_dump = self.site2.to_dict()
         self.site2_dump.update(
             {

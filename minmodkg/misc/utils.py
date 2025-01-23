@@ -9,6 +9,7 @@ from drepr.writers.turtle_writer import MyLiteral
 from rdflib import XSD, Graph, Literal
 from rdflib.term import Node
 
+K = TypeVar("K")
 V = TypeVar("V")
 
 
@@ -186,6 +187,11 @@ class NotEmptyStr(Deserializer):
         return isinstance(s, str) and len(s.strip()) > 0
 
 
+class CleanedNotEmptyStr(Deserializer):
+    def __call__(self, s: Any) -> bool:
+        return isinstance(s, str) and len(s) > 0 and s.strip() == s
+
+
 class makedict:
     @staticmethod
     def without_none(seq: Sequence[tuple[str, Any]]) -> dict[str, Any]:
@@ -198,3 +204,12 @@ class makedict:
             for k, v in seq
             if v is not None and (not isinstance(v, Sequence) or len(v) > 0)
         }
+
+    @staticmethod
+    def group_keys(iter: Iterable[tuple[K, V]]) -> dict[K, list[V]]:
+        d = {}
+        for k, v in iter:
+            if k not in d:
+                d[k] = []
+            d[k].append(v)
+        return d

@@ -9,15 +9,17 @@ import networkx as nx
 import orjson
 import serde.csv
 import serde.json
-from joblib import Parallel, delayed
 from libactor.cache import cache
+from minmodkg.etl.mineral_site import MineralSiteFileInfo
 from minmodkg.models.kg.base import MINMOD_KG
+from minmodkg.models.kg.mineral_site import MineralSiteIdent
+from minmodkg.typing import InternalID
 from rdflib import OWL
 from slugify import slugify
 from timer import Timer
 from tqdm import tqdm
 
-from statickg.helper import FileSqliteBackend, Fn
+from statickg.helper import FileSqliteBackend, Fn, get_parallel_executor, typed_delayed
 from statickg.models.etl import ETLOutput
 from statickg.models.file_and_path import (
     FormatOutputPath,
@@ -46,6 +48,8 @@ class SameAsServiceConstructArgs(TypedDict):
 
 
 class SameAsServiceInvokeArgs(TypedDict):
+    mineral_site_dir: RelPath
+    same_as_dir: RelPath
     input: RelPath | list[RelPath]
     curated_input: RelPath | list[RelPath]
     output: RelPath | FormatOutputPath
@@ -64,15 +68,17 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
         super().__init__(name, workdir, args, services)
         self.verbose = args.get("verbose", 1)
         self.parallel = args.get("parallel", True)
-        self.parallel_executor = Parallel(n_jobs=-1, return_as="generator_unordered")
 
     def forward(
         self, repo: Repository, args: SameAsServiceInvokeArgs, tracker: ETLOutput
     ):
         timer = Timer()
 
+        with timer.watch("[same-as] automatic linking"):
+            new_same_as_files = self.step0_auto_link(repo, args)
+
         with timer.watch("[same-as] resolve dedup group"):
-            subgroup_files = self.step1_compute_subgroup(repo, args)
+            subgroup_files = self.step1_compute_subgroup(repo, args, new_same_as_files)
             graphlink = self.step2_resolve_final_group(subgroup_files, args)
 
         with timer.watch("[same-as] update dedup group"):
@@ -84,10 +90,76 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
 
         timer.report(self.logger.info)
 
-    def step1_compute_subgroup(self, repo: Repository, args: SameAsServiceInvokeArgs):
+    def step0_auto_link(
+        self, repo: Repository, args: SameAsServiceInvokeArgs
+    ) -> list[InputFile]:
+        infiles = self.list_files(
+            repo,
+            args["mineral_site_dir"] / "*/*/*.json*",
+            unique_filepath=True,
+            optional=args.get("optional", False),
+            compute_missing_file_key=args.get("compute_missing_file_key", True),
+        )
+
+        # we are going partition the data into (source_dir, bucket_dir) => file
+        partition = defaultdict(list)
+        for infile in infiles:
+            sourcename = infile.path.parent.name
+            bucketno = infile.path.name.split(".")[0]
+            partition[(sourcename, bucketno)].append(infile)
+
+        output_fmter = FormatOutputPathModel.init(args["output"])
+        outdir = output_fmter.outdir / "step_0"
+
+        it: Iterable[Path] = get_parallel_executor(self.parallel)(
+            typed_delayed(Step0AutomaticDedupFn.exec)(
+                self.workdir,
+                infiles=lst,
+                outfile=outdir / f"{sourcename}_{bucketno}.csv",
+            )
+            for (sourcename, bucketno), lst in partition.items()
+            if len(lst) > 1
+        )
+        outfiles = set()
+        for outfile in tqdm(
+            it,
+            total=len(partition),
+            desc=f"Auto generating same-as based on source_id and record_id",
+            disable=self.verbose < 1,
+        ):
+            if outfile.exists():
+                outfiles.add(outfile)
+
+        self.remove_unknown_files(outfiles, outdir)
+
+        if isinstance(args["output"], RelPath):
+            basetype = args["output"].basetype
+            basepath = args["output"].basepath
+        else:
+            basetype = args["output"]["base"].basetype
+            basepath = args["output"]["base"].basepath
+
+        return [
+            InputFile.from_relpath(
+                RelPath(
+                    basetype,
+                    basepath,
+                    str(outfile.relative_to(basepath)),
+                )
+            )
+            for outfile in outfiles
+        ]
+
+    def step1_compute_subgroup(
+        self,
+        repo: Repository,
+        args: SameAsServiceInvokeArgs,
+        additional_files: list[InputFile],
+    ):
         """Compute subgroup for each same as file"""
         infiles = self.list_files(
             repo,
+            # args["same_as_dir"] / "*/*.csv*",
             args["input"],
             unique_filepath=True,
             optional=args.get("optional", False),
@@ -97,7 +169,7 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
         output_fmter.outdir = output_fmter.outdir / "step_1"
 
         jobs = []
-        for infile in infiles:
+        for infile in infiles + additional_files:
             outfile = output_fmter.get_outfile(infile.path)
             outfile.parent.mkdir(parents=True, exist_ok=True)
             group_prefix = outfile.parent / outfile.stem
@@ -111,20 +183,12 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
 
         readable_ptns = self.get_readable_patterns(args["input"])
 
-        if self.parallel:
-            it: Iterable = self.parallel_executor(
-                delayed(Step1ComputingSubGroupFn.exec)(
-                    self.workdir, prefix=group_prefix, infile=infile, outfile=outfile
-                )
-                for group_prefix, infile, outfile in jobs
+        it: Iterable[Path] = get_parallel_executor(self.parallel)(
+            typed_delayed(Step1ComputingSubGroupFn.exec)(
+                self.workdir, prefix=group_prefix, infile=infile, outfile=outfile
             )
-        else:
-            it: Iterable = (
-                Step1ComputingSubGroupFn.exec(
-                    self.workdir, prefix=group_prefix, infile=infile, outfile=outfile
-                )
-                for group_prefix, infile, outfile in jobs
-            )
+            for group_prefix, infile, outfile in jobs
+        )
 
         outfiles = set()
         for outfile in tqdm(
@@ -139,7 +203,9 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
         return [output_fmter.outdir / outfile for outfile in outfiles]
 
     def step2_resolve_final_group(
-        self, subgroup_files: list[Path], args: SameAsServiceInvokeArgs
+        self,
+        subgroup_files: list[Path],
+        args: SameAsServiceInvokeArgs,
     ):
         site2subgroups = defaultdict(list)
         id2subgroups = defaultdict(list)
@@ -259,7 +325,7 @@ class GraphLink:
         return "grp_" + min(nodes)
 
 
-class Step1ComputingSubGroupFn(Fn):
+class Step1ComputingSubGroupFn(Fn[Path]):
 
     @cache(
         backend=FileSqliteBackend.factory(filename="step_1_v105.sqlite"),
@@ -267,8 +333,7 @@ class Step1ComputingSubGroupFn(Fn):
             "infile": lambda x: x.get_ident(),
         },
     )
-    def invoke(self, prefix: str, infile: InputFile, outfile: Path):
-        mr = MINMOD_KG.ns.mr
+    def invoke(self, prefix: str, infile: InputFile, outfile: Path) -> Path:
         lst = serde.csv.deser(infile.path)
         it = iter(lst)
         next(it)
@@ -281,9 +346,61 @@ class Step1ComputingSubGroupFn(Fn):
         G = nx.from_edgelist(edges)
         groups = nx.connected_components(G)
 
-        mapping = {
+        mapping: dict[str, list[InternalID]] = {
             f"grp1__{prefix}__{gid}": list(group)
             for gid, group in enumerate(groups, start=1)
         }
         serde.json.ser(mapping, outfile)
+        return outfile
+
+
+class Step0AutomaticDedupFn(Fn):
+    """Automatically dedup the sites based on (source_id, record_id)"""
+
+    @cache(
+        backend=FileSqliteBackend.factory(filename="step_0_v100.sqlite"),
+        cache_ser_args={
+            "infiles": lambda lst: "--".join(sorted([x.get_ident() for x in lst])),
+        },
+    )
+    def invoke(self, infiles: list[InputFile], outfile: Path) -> Path:
+        # expect each input file is {username}/{source_id}/{bucketno}.json*
+        # check if this is the case.
+        info0 = MineralSiteFileInfo.from_file(infiles[0].path)
+
+        for infile in infiles[1:]:
+            info2 = MineralSiteFileInfo.from_file(infile.path)
+            assert info2.bucket_no == info0.bucket_no, (infile, info0)
+            assert info2.source_name == info0.source_name, (
+                infile,
+                info0,
+            )
+            # must have different username
+            assert info2.username != info0.username, (
+                infile,
+                info0,
+            )
+
+        source_id = None
+        sites: dict[str, list[MineralSiteIdent]] = defaultdict(list)
+        for infile in infiles:
+            lst = serde.json.deser(infile.path)
+
+            if source_id is None:
+                source_id = MineralSiteIdent.from_dict(lst[0]).source_id
+
+            for r in lst:
+                ident = MineralSiteIdent.from_dict(r)
+                assert ident.source_id == source_id
+                sites[ident.record_id].append(ident)
+
+        # now we have all the sites, we can dedup
+        output = [("ms_1", "ms_2")]
+        for record_id, group in sites.items():
+            for i in range(1, len(group)):
+                output.append((group[0].id, group[i].id))
+
+        if len(output) > 1:
+            outfile.parent.mkdir(parents=True, exist_ok=True)
+            serde.csv.ser(output, outfile)
         return outfile

@@ -8,11 +8,12 @@ from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     OutputPublicMineralSite,
 )
+from minmodkg.models.kg.base import NS_MR
 from minmodkg.services.mineral_site import (
     ExpiredSnapshotIdError,
     UnsupportOperationError,
 )
-from minmodkg.transformations import make_site_uri
+from minmodkg.transformations import make_site_id
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
 
@@ -26,11 +27,16 @@ class UpdateDedupLink(BaseModel):
 
 
 @router.get("/mineral-sites/make-id")
-def get_site_uri(source_id: str, record_id: str, return_uri: bool = False):
+def get_site_uri(
+    username: str, source_id: str, record_id: str, return_uri: bool = False
+):
     if return_uri:
-        return make_site_uri(source_id, record_id)
+        uri = NS_MR.uristr(make_site_id(username, source_id, record_id))
+    else:
+        uri = make_site_id(username, source_id, record_id)
     return Response(
-        make_site_uri(source_id, record_id, namespace=""), media_type="text/plain"
+        uri,
+        media_type="text/plain",
     )
 
 

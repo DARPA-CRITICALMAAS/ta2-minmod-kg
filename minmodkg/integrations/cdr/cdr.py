@@ -51,6 +51,10 @@ def sync_deposit_types():
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
 
 
+def sync_mineral_sites():
+    pass
+
+
 def format_dedup_site(
     dedup_site: DedupMineralSitePublic,
     commodity_id2name: dict[InternalID, str],
