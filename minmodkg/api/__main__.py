@@ -13,8 +13,8 @@ import typer
 from minmodkg.api.internal.admin import create_user_priv
 from minmodkg.api.models.public_user import PublicCreateUser
 from minmodkg.models.kgrel.base import create_db_and_tables, get_rel_session
-from minmodkg.models.kgrel.user import User
-from minmodkg.transformations import make_site_uri
+from minmodkg.models.kgrel.user import User, get_username
+from minmodkg.transformations import make_site_id
 from slugify import slugify
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert as upsert
@@ -195,7 +195,9 @@ def upload_mineral_sites(
             if resp.status_code != 200 and not site_exist:
                 raise Exception(f"Status code: {resp.status_code}. Reason: {resp.text}")
 
-            uri = make_site_uri(site["source_id"], site["record_id"], namespace=ns)
+            assert isinstance(site["create_by"], str)
+            username = get_username(site["created_by"])
+            uri = ns + make_site_id(username, site["source_id"], site["record_id"])
             f.write(uri + "\n")
 
 

@@ -19,8 +19,9 @@ from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Reference
-from minmodkg.transformations import make_site_uri
-from minmodkg.typing import IRI, InternalID, NotEmptyStr
+from minmodkg.models.kgrel.user import get_username
+from minmodkg.transformations import make_site_id
+from minmodkg.typing import IRI, CleanedNotEmptyStr, InternalID, NotEmptyStr
 from rdflib import URIRef
 
 if TYPE_CHECKING:
@@ -28,16 +29,49 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class MineralSite(RDFModel):
+class MineralSiteIdent(RDFModel):
     __subj__ = Subject(type=NS_MO.term("MineralSite"), key_ns=NS_MR, key="uri")
 
-    source_id: Annotated[NotEmptyStr, P()]
-    record_id: Annotated[NotEmptyStr, P()]
-    name: Annotated[Optional[NotEmptyStr], P(pred=NS_RDFS.term("label"))] = None
-    aliases: Annotated[list[NotEmptyStr], P(is_list=True)] = field(default_factory=list)
-    site_rank: Annotated[Optional[NotEmptyStr], P()] = None
-    site_type: Annotated[Optional[NotEmptyStr], P()] = None
-    mineral_form: Annotated[list[NotEmptyStr], P(is_list=True)] = field(
+    source_id: Annotated[CleanedNotEmptyStr, P()]
+    record_id: Annotated[CleanedNotEmptyStr, P()]
+    created_by: Annotated[list[CleanedNotEmptyStr], P()] = field(default_factory=list)
+
+    @cached_property
+    def uri(self) -> URIRef:
+        return NS_MR.uri(self.id)
+
+    @cached_property
+    def id(self) -> InternalID:
+        return make_site_id(
+            get_username(self.created_by[0]), self.source_id, self.record_id
+        )
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        return cls(
+            source_id=d["source_id"],
+            record_id=d["record_id"],
+            created_by=(
+                d["created_by"]
+                if isinstance(d["created_by"], list)
+                else [d["created_by"]]
+            ),
+        )
+
+
+@dataclass
+class MineralSite(MineralSiteIdent, RDFModel):
+    __subj__ = Subject(type=NS_MO.term("MineralSite"), key_ns=NS_MR, key="uri")
+
+    source_id: Annotated[CleanedNotEmptyStr, P()]
+    record_id: Annotated[CleanedNotEmptyStr, P()]
+    name: Annotated[Optional[CleanedNotEmptyStr], P(pred=NS_RDFS.term("label"))] = None
+    aliases: Annotated[list[CleanedNotEmptyStr], P(is_list=True)] = field(
+        default_factory=list
+    )
+    site_rank: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    site_type: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    mineral_form: Annotated[list[CleanedNotEmptyStr], P(is_list=True)] = field(
         default_factory=list
     )
     geology_info: Annotated[Optional[GeologyInfo], P()] = None
@@ -51,18 +85,9 @@ class MineralSite(RDFModel):
     reference: Annotated[list[Reference], P()] = field(default_factory=list)
     discovered_year: Annotated[Optional[int], P()] = None
 
-    created_by: Annotated[list[NotEmptyStr], P()] = field(default_factory=list)
     modified_at: Annotated[
         Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"], P()
     ] = field(default_factory=lambda: format_datetime(datetime.now(timezone.utc)))
-
-    @cached_property
-    def uri(self) -> URIRef:
-        return URIRef(make_site_uri(self.source_id, self.record_id))
-
-    @cached_property
-    def id(self) -> InternalID:
-        return make_site_uri(self.source_id, self.record_id, namespace="")
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

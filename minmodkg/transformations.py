@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from minmodkg.models.kg.base import MINMOD_KG
 from minmodkg.models.kg.reference import PageInfo
-from minmodkg.models.kgrel.user import is_valid_user_uri
+from minmodkg.models.kgrel.user import get_username, is_valid_user_uri
 from slugify import slugify
 
 MR_NS = MINMOD_KG.ns.mr.namespace
@@ -15,8 +15,10 @@ MO_NS = MINMOD_KG.ns.mo.namespace
 def make_site_ids(value: dict, namespace: str = MR_NS):
     """Make all ids for a mineral site"""
     assert is_valid_user_uri(value["created_by"])
-    username = value["created_by"].rsplit("/", 1)[1]
-    site_uri = make_site_uri(value["source_id"], value["record_id"], namespace)
+    username = get_username(value["created_by"])
+    site_uri = namespace + make_site_id(
+        username, value["source_id"], value["record_id"]
+    )
     site_id = site_uri[len(namespace) :] + "__user_" + slugify(username) + "__"
 
     # we create id for each reference as it is likely to be the same or re-ordered
@@ -97,7 +99,30 @@ def make_reference_ids(ref: dict, site_id: str, namespace: str = MR_NS):
         pageinfo["id"] = f"{ref['id']}__pageinfo__{i}"
 
 
-def make_site_uri(source_id: str, record_id: str | int, namespace: str = MR_NS) -> str:
+def make_site_id(username: str, source_id: str, record_id: str) -> str:
+    assert source_id.find("::") == -1, source_id
+    assert isinstance(record_id, str) and record_id == record_id.strip(), record_id
+
+    if source_id.startswith("http://"):
+        if source_id.startswith("http://"):
+            source_id = source_id[7:]
+            if source_id.endswith("/"):
+                source_id = source_id[:-1]
+    elif source_id.startswith("https://"):
+        source_id = source_id[8:]
+        if source_id.endswith("/"):
+            source_id = source_id[:-1]
+
+    source_id = slugify(source_id)
+    record_id = slugify(record_id)
+
+    path = shorten_id(f"{source_id}__{record_id}__{username}", 140)
+    return f"site__{path}"
+
+
+def make_site_uri_deprecated(
+    source_id: str, record_id: str | int, namespace: str = MR_NS
+) -> str:
     if source_id.find("::") != -1:
         # we need to remove the category from the source_id -- note that the new `source_id`
         # may contain other `::` at the end to add username, etc; and we want the username to be part of the site id
