@@ -205,7 +205,7 @@ class MinModAPI:
 
     @classmethod
     def resolve_endpoint(cls, endpoint: str) -> str:
-        resp = httpx.head(endpoint)
+        resp = httpx.head(endpoint, **cls.default_httpx_args())
         if resp.status_code == 302:
             endpoint = resp.headers["Location"]
             if endpoint.endswith("/"):
@@ -213,12 +213,16 @@ class MinModAPI:
         return endpoint
 
     def httpx_args(self, auth: bool = True) -> dict:
-        args: dict = {
-            "verify": False,
-        }
+        args: dict = self.default_httpx_args()
         if auth:
             args["cookies"] = {"session": self.auth_token}
         return args
+
+    @classmethod
+    def default_httpx_args(cls) -> dict:
+        return {
+            "verify": False,
+        }
 
 
 class ConflictError(Exception): ...
