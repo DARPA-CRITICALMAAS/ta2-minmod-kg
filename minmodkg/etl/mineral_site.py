@@ -130,6 +130,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             output = {}
             for r in lst:
                 site = MineralSiteIdent.from_dict(r)
+                assert site.id not in output, (site.record_id, infile)
                 output[site.id] = {
                     "site_id": site.id,
                     "source_id": site.source_id,
@@ -158,14 +159,14 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             for infile in lst
         )
         sites: dict[InternalID, dict] = {}
-        group2ids: dict[SourceInfo, list[InternalID]] = {}
+        group2ids: dict[SourceInfo, list[InternalID]] = defaultdict(list)
         for group, d in tqdm(it):
             n_sites = len(sites)
             sites.update(d)
             assert len(sites) == n_sites + len(
                 d
             ), f"Encounter duplicate site ids in {group}"
-            group2ids[group] = list(d.keys())
+            group2ids[group].extend(list(d.keys()))
 
         # read all the same as sites
         groups: list[list[InternalID]] = [
@@ -212,6 +213,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 ],
                 outfile,
             )
+
             output_files.add(outfile)
             output[group] = InputFile.from_relpath(
                 RelPath(
@@ -451,7 +453,6 @@ class MergeFn:
                 )
                 norm_site.ms.dedup_site_id = dedup_map[norm_site.ms.site_id]
                 output.append(norm_site.to_dict())
-
         serde.json.ser(output, outfile)
         return outfile
 

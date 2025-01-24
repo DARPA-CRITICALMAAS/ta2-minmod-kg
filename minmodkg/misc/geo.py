@@ -78,15 +78,19 @@ def reproject_wkt(wkt: str, from_crs: str, to_crs: str) -> str:
     return dumps(shapely.ops.transform(transformer.transform, loads(wkt)))
 
 
-def reproject_geometry(geometry, from_crs: str, to_crs: str):
-    assert from_crs.startswith("EPSG:"), from_crs
-    assert to_crs.startswith("EPSG:"), to_crs
+_transformation = {}
 
+
+def reproject_geometry(geometry, from_crs: str, to_crs: str):
+    global _transformation
     if from_crs == to_crs:
         return geometry
 
-    transformer = Transformer.from_crs(
-        int(from_crs[len("EPSG:") :]), int(to_crs[len("EPSG:") :])
-    )
+    if (from_crs, to_crs) not in _transformation:
+        assert from_crs.startswith("EPSG:"), from_crs
+        assert to_crs.startswith("EPSG:"), to_crs
+        _transformation[from_crs, to_crs] = Transformer.from_crs(
+            int(from_crs[len("EPSG:") :]), int(to_crs[len("EPSG:") :])
+        )
 
-    return shapely.ops.transform(transformer.transform, geometry)
+    return shapely.ops.transform(_transformation[from_crs, to_crs].transform, geometry)
