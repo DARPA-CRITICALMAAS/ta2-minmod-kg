@@ -1,6 +1,6 @@
 [
   {
-    "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+    "source_id": "https://api.cdr.land/v1/docs/documents",
     "record_id": "02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
     "name": "Shining Tree",
     "location_info": {

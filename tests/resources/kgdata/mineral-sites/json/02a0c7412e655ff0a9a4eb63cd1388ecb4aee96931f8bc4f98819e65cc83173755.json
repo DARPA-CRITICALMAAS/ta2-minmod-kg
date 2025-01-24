@@ -1,6 +1,6 @@
 [
   {
-    "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+    "source_id": "https://api.cdr.land/v1/docs/documents",
     "record_id": "02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
     "name": "Montviel Carbonatite",
     "location_info": {

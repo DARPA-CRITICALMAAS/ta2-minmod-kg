@@ -215,6 +215,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
             if self.rank is None or new_site_score > site_to_score[self.rank.refid]:
                 self.rank = RefValue(site.rank, site.site_id)
 
+        if site.deposit_type_candidates:
+            pass
+
         raise NotImplementedError()
 
     def update_inventories(

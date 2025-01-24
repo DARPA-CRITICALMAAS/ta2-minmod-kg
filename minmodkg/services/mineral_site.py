@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
-from typing import Optional, Sequence, Tuple, TypedDict
+from typing import NamedTuple, Optional, Sequence, Tuple, TypedDict
 
-from minmodkg.misc.utils import group_by
+from minmodkg.misc.utils import group_by, makedict
 from minmodkg.models.kgrel.base import engine
 from minmodkg.models.kgrel.dedup_mineral_site import (
     DedupMineralSite,
@@ -27,11 +27,23 @@ FindDedupMineralSiteResult = TypedDict(
 )
 
 
+class SiteSameAsInfo(NamedTuple):
+    id: int
+    site_id: str
+    source_id: str
+    record_id: str
+    dedup_site_id: str
+
+
 class ExpiredSnapshotIdError(Exception):
     pass
 
 
 class UnsupportOperationError(Exception):
+    pass
+
+
+class ArgumentError(Exception):
     pass
 
 
@@ -83,28 +95,111 @@ class MineralSiteService:
             }
 
     def create(self, site_and_inv: MineralSiteAndInventory):
-        """Create a mineral site"""
+        """Create a mineral site."""
         with Session(self.engine, expire_on_commit=False) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
 
-            # step 1: retrieve related information that can be used to construct a dedup site
-            query = self._select_mineral_site().where(
-                MineralSite.dedup_site_id == site_and_inv.ms.dedup_site_id
-            )
-            all_sites = self._read_mineral_sites(session, query)
-            all_sites.append(site_and_inv)
+            if not site_and_inv.ms.has_dedup_site():
+                # **ALGO**
+                # Handle Axiom 1: All sites that have the same source id and record id must be
+                # linked automatically
+                sites_auto_linked_via_source_and_records = self._read_mineral_sites(
+                    session,
+                    self._select_mineral_site().where(
+                        MineralSite.source_id == site_and_inv.ms.source_id,
+                        MineralSite.record_id == site_and_inv.ms.record_id,
+                    ),
+                )
+                # Note that they must belong to the same dedup site because the data in our
+                # relational database is consistent.
+                assert (
+                    len(sites_auto_linked_via_source_and_records) == 0
+                    or len(
+                        {
+                            r.ms.dedup_site_id
+                            for r in sites_auto_linked_via_source_and_records
+                        }
+                    )
+                    == 1
+                )
+
+                # **ALGO**
+                # mark that the new site is linked to the same dedup site
+                if len(sites_auto_linked_via_source_and_records) > 0:
+                    site_and_inv.ms.dedup_site_id = (
+                        sites_auto_linked_via_source_and_records[0].ms.dedup_site_id
+                    )
+                else:
+                    site_and_inv.ms.dedup_site_id = MineralSite.get_dedup_id(
+                        [site_and_inv.ms.site_id]
+                    )
+
+                existing_sites = sites_auto_linked_via_source_and_records
+            else:
+                # **ALGO**
+                # if the users provide the dedup site id, we need to link with all sites
+                # belong to this dedup site id.
+
+                # However: what if the dedup site id provided by the users is different from `sites_auto_linked_via_source_and_records`?
+                # this is rarely happen in practice, and if we merge them automatically, we may do it too fast and the users
+                # won't understand. Therefore, we should raise an error so they merge the dedup site first.
+                # Note: because of Axiom 1, we only need to fetch a single row.
+                single_sites_auto_linked_via_source_and_records = session.execute(
+                    select(MineralSite.site_id, MineralSite.dedup_site_id)
+                    .where(
+                        MineralSite.source_id == site_and_inv.ms.source_id,
+                        MineralSite.record_id == site_and_inv.ms.record_id,
+                    )
+                    .limit(1)
+                ).one_or_none()
+                if (
+                    single_sites_auto_linked_via_source_and_records is not None
+                    and site_and_inv.ms.dedup_site_id
+                    != single_sites_auto_linked_via_source_and_records[1]
+                ):
+                    raise ArgumentError(
+                        f"The new site are linked automatically with {single_sites_auto_linked_via_source_and_records[1]} via {single_sites_auto_linked_via_source_and_records[0]}. However, the dedup site id is different from the new site. Please merging the dedup site first."
+                    )
+
+                sites_with_same_dedup_id = self._read_mineral_sites(
+                    session,
+                    self._select_mineral_site().where(
+                        MineralSite.dedup_site_id == site_and_inv.ms.dedup_site_id
+                    ),
+                )
+                if len(sites_with_same_dedup_id) == 0:
+                    # the dedup site id is not found in the database, we should complain as they do something wrong.
+                    raise ArgumentError(
+                        f"The dedup site id {site_and_inv.ms.dedup_site_id} is not found in the database."
+                    )
+
+                existing_sites = sites_with_same_dedup_id
+
+            # **ALGO**
+            # update the dedup mineral site in the database -- we can do better by using update_site function
+            # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
             dedup_site = DedupMineralSite.from_sites(
-                all_sites, dedup_site_id=site_and_inv.ms.dedup_site_id
+                existing_sites + [site_and_inv],
+                dedup_site_id=site_and_inv.ms.dedup_site_id,
             )
 
-            # step 2: write data
-            if len(all_sites) == 1:
-                # only have a single mineral site
+            if len(existing_sites) == 0:
                 session.add(dedup_site)
+                session.flush()
             else:
                 session.execute(dedup_site.get_update_query())
+
+            # **ALGO**
+            # insert the new site and its inventories into the database
             session.add(site_and_inv.ms)
             session.flush()
+            session.refresh(site_and_inv.ms)
+            for inv in site_and_inv.invs:
+                inv.site_id = site_and_inv.ms.id
+            session.add_all(site_and_inv.invs)
+
+            # **ALGO**
+            # update the inventory for dedup site in the database
             session.execute(
                 update(MineralInventoryView),
                 [
@@ -112,14 +207,11 @@ class MineralSiteService:
                         "id": inv.id,
                         "dedup_site_id": inv.dedup_site_id,
                     }
-                    for ms in all_sites[:-1]
+                    for ms in existing_sites
                     for inv in ms.invs
                 ],
             )
-            session.refresh(site_and_inv.ms)
-            for inv in site_and_inv.invs:
-                inv.site_id = site_and_inv.ms.id
-            session.add_all(site_and_inv.invs)
+
             session.add(EventLog.from_site_add(site_and_inv))
 
             # step 3: commit data
@@ -210,7 +302,13 @@ class MineralSiteService:
         with Session(self.engine) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
 
+            # **ALGO**
+            # retrieve all dedup sites that are affected by this update
+            # because of AXIOM 1, sites that have the same source id and record id will belong to the same
+            # dedup sites, so we won't miss anything by querying by the dedup ids
             affected_site_ids = {msid for grp in groups for msid in grp}
+            assert len(affected_site_ids) == sum(len(grp) for grp in groups)
+
             affected_dedup_ids: set[InternalID] = set(
                 session.execute(
                     select(MineralSite.dedup_site_id)
@@ -219,45 +317,96 @@ class MineralSiteService:
                 ).scalars()
             )
 
-            diff_groups = defaultdict(list)
+            # **ALGO**
+            # retrieve all sites info that are affected by this update
+            affected_sites = self._read_mineral_sites(
+                session,
+                self._select_mineral_site().where(
+                    MineralSite.site_id.in_(affected_site_ids)
+                ),
+            )
+            id2msi = {msi.ms.site_id: msi for msi in affected_sites}
 
-            for group in groups:
-                group_set = set(group)
-                dedup_site_id = min(group)
-                # retrieve the diff group
-                subquery = (
-                    select(MineralSite.site_id, MineralSite.dedup_site_id)
-                    .where(MineralSite.site_id.in_(group))
-                    .subquery()
+            # **ALGO**
+            # we must ensure that the update is comply with AXIOM 1
+            site_id_to_group = {
+                msid: grp_idx for grp_idx, grp in enumerate(groups) for msid in grp
+            }
+            for lst_ms in makedict.group_keys(
+                ((_ms.ms.source_id, _ms.ms.record_id), _ms) for _ms in affected_sites
+            ).values():
+                grp_idx = site_id_to_group[lst_ms[0].ms.site_id]
+                for ms in lst_ms[1:]:
+                    if site_id_to_group[ms.ms.site_id] != grp_idx:
+                        raise ArgumentError(
+                            f"Site {ms.ms.site_id} is marked as different from {lst_ms[0].ms.site_id} but they should be the same."
+                        )
+
+            # **ALGO**
+            # we must ensure that the provided links are complete, no more missing links
+            db_affected_site_ids = {msi.ms.site_id for msi in affected_sites}
+            if affected_site_ids != db_affected_site_ids:
+                raise ArgumentError(
+                    f"Affected sites by this update are different from the list of provided sites: {db_affected_site_ids.symmetric_difference(affected_site_ids)}"
                 )
 
-                site_id_and_dedup_id = session.execute(
-                    select(MineralSite.site_id, MineralSite.dedup_site_id).join(
-                        subquery, MineralSite.dedup_site_id == subquery.c.dedup_site_id
-                    )
-                ).all()
-                sid2dedupid = {row[0]: row[1] for row in site_id_and_dedup_id}
-                dedup2siteid = group_by(site_id_and_dedup_id, lambda row: row[1])
-                for site_id in group:
-                    diff_groups[site_id] = [
-                        row[0]
-                        for row in dedup2siteid[sid2dedupid[site_id]]
-                        if row[0] not in group_set
+            # **ALGO**
+            # figure out what dedup site is used for each group
+            dedup_to_groupcount = defaultdict(int)
+            for msi in affected_sites:
+                if msi.ms.site_id in site_id_to_group:
+                    dedup_to_groupcount[
+                        msi.ms.dedup_site_id, site_id_to_group[msi.ms.site_id]
+                    ] += 1
+
+            # this tells us which dedup id to use for a group, if a group is not in this
+            # it means we need to create a new dedup site
+            group_to_dedup = {}
+            for dedup_id, grp_idx in sorted(
+                dedup_to_groupcount.items(), key=lambda x: x[1], reverse=True
+            ):
+                if grp_idx in group_to_dedup:
+                    continue
+                group_to_dedup[grp_idx] = dedup_id
+
+            # **ALGO**
+            # compute a mapping from internal ID to a list of internal IDs that are previously marked as the same but now are different.
+            # needed as this information is required by the event log
+            diff_groups: dict[InternalID, list[InternalID]] = defaultdict(list)
+            old_dedup_to_msis = makedict.group_keys(
+                (msi.ms.dedup_site_id, msi) for msi in affected_sites
+            )
+            for msis in old_dedup_to_msis.values():
+                for msi in msis:
+                    diff_groups[msi.ms.site_id] = [
+                        other_msi.ms.site_id
+                        for other_msi in msis
+                        if site_id_to_group[msi.ms.site_id]
+                        != site_id_to_group[other_msi.ms.site_id]
                     ]
 
-                # update the dedup site
-                all_sites = self._read_mineral_sites(
-                    session,
-                    self._select_mineral_site().where(MineralSite.site_id.in_(group)),
-                )
-                dedup_site = DedupMineralSite.from_sites(all_sites, dedup_site_id)
-                if dedup_site.id in affected_dedup_ids:
-                    # the site already exists
-                    session.execute(dedup_site.get_update_query())
+            # **ALGO**
+            # now perform the update on the groups
+            for grp_idx, group in enumerate(groups):
+                if grp_idx not in group_to_dedup:
+                    dedup_site_id = MineralSite.get_dedup_id(group)
                 else:
+                    dedup_site_id = group_to_dedup[grp_idx]
+
+                # **ALGO**
+                # update the dedup site
+                group_msi = [id2msi[site_id] for site_id in group]
+                dedup_site = DedupMineralSite.from_sites(
+                    group_msi, dedup_site_id=dedup_site_id
+                )
+                if grp_idx not in group_to_dedup:
                     session.add(dedup_site)
                     session.flush()
+                else:
+                    session.execute(dedup_site.get_update_query())
 
+                # **ALGO**
+                # update the mineral sites and their inventories
                 session.execute(
                     update(MineralSite)
                     .where(MineralSite.site_id.in_(group))
@@ -270,7 +419,7 @@ class MineralSiteService:
                             "id": inv.id,
                             "dedup_site_id": inv.dedup_site_id,
                         }
-                        for msi in all_sites
+                        for msi in group_msi
                         for inv in msi.invs
                     ],
                 )

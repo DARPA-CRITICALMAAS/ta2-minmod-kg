@@ -8,7 +8,7 @@ from minmodapi import MinModAPI, merge_deposit_type
 def test_add_mineral_site():
     api = MinModAPI("http://localhost:8000")
     site_data = {
-        "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+        "source_id": "https://api.cdr.land/v1/docs/documents",
         "record_id": "test:" + str(uuid4()),
         "name": "Vare\u0161 Polymetallic Project",
         "location_info": {
@@ -77,7 +77,7 @@ def test_update_mineral_site_deposit_type_first():
     api = MinModAPI("http://localhost:8000")
     # sri add deposit type first
     site_data_1 = {
-        "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+        "source_id": "https://api.cdr.land/v1/docs/documents",
         "record_id": "test:" + str(uuid4()),
         "mineral_inventory": [],
         "deposit_type_candidate": [
@@ -130,7 +130,7 @@ def test_update_mineral_site_deposit_type_first():
 
     # then inferlink add other information to the site
     site_data_2 = {
-        "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+        "source_id": "https://api.cdr.land/v1/docs/documents",
         "record_id": site_data_1["record_id"],
         "name": "Vare\u0161 Polymetallic Project",
         "location_info": {
@@ -237,7 +237,7 @@ def test_update_mineral_site_deposit_type_later():
     api = MinModAPI("http://localhost:8000")
     # inferlink add information to the site first
     site_data_1 = {
-        "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+        "source_id": "https://api.cdr.land/v1/docs/documents",
         "record_id": "test:" + str(uuid4()),
         "name": "Vare\u0161 Polymetallic Project",
         "location_info": {
@@ -339,7 +339,7 @@ def test_update_mineral_site_deposit_type_later():
 
     # sri add deposit type first
     site_data_3 = {
-        "source_id": "mining-report::https://api.cdr.land/v1/docs/documents",
+        "source_id": "https://api.cdr.land/v1/docs/documents",
         "record_id": site_data_1["record_id"],
         "mineral_inventory": [],
         "deposit_type_candidate": [

@@ -49,14 +49,18 @@ class MineralSiteAndInventory:
             invs=[MineralInventoryView.from_dict(inv) for inv in d.get("invs", [])],
         )
 
-    @staticmethod
+    @classmethod
     def from_raw_site(
+        cls,
         raw_site: dict | KGMineralSite,
         commodity_form_conversion: dict[str, float],
         crs_names: dict[str, str],
         source_score: dict[IRI, float | None],
+        dedup_site_id: Optional[str] = None,
     ) -> MineralSiteAndInventory:
         ms = MineralSite.from_raw_site(raw_site, crs_names, source_score)
+        if dedup_site_id is not None:
+            ms.dedup_site_id = dedup_site_id
 
         invs: dict[InternalID, list[GradeTonnageModel.MineralInventory]] = defaultdict(
             list
@@ -145,7 +149,7 @@ class MineralSiteAndInventory:
                     )
                 )
 
-        return MineralSiteAndInventory(ms, inv_views)
+        return cls(ms, inv_views)
 
 
 class MineralSite(MappedAsDataclass, Base):
@@ -158,9 +162,9 @@ class MineralSite(MappedAsDataclass, Base):
     ] = mapped_column(
         ForeignKey("dedup_mineral_site.id", ondelete="SET NULL"), index=True
     )
-    source_id: Mapped[URN] = mapped_column()
+    source_id: Mapped[URN] = mapped_column(index=True)
     source_score: Mapped[Optional[float]] = mapped_column()
-    record_id: Mapped[str] = mapped_column()
+    record_id: Mapped[str] = mapped_column(index=True)
     name: Mapped[str | None] = mapped_column()
     aliases: Mapped[list[str]] = mapped_column(JSON)
     rank: Mapped[str | None] = mapped_column()
@@ -188,6 +192,9 @@ class MineralSite(MappedAsDataclass, Base):
     def site_uri(self) -> URIRef:
         return URIRef(KGMineralSite.__subj__.key_ns.uri(self.site_id))
 
+    def has_dedup_site(self) -> bool:
+        return self.dedup_site_id != ""
+
     @staticmethod
     def from_raw_site(
         raw_site: dict | KGMineralSite,
@@ -213,7 +220,7 @@ class MineralSite(MappedAsDataclass, Base):
 
         out_site = MineralSite(
             site_id=site.id,
-            dedup_site_id=MineralSite.get_dedup_id((site.id,)),
+            dedup_site_id="",  # raw site doesn't have dedup site id
             source_id=site.source_id,
             source_score=source_score.get(get_source_uri(site.source_id)),
             record_id=str(site.record_id),
