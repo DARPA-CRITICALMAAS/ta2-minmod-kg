@@ -27,7 +27,7 @@ class TestMSData:
     def site1_(self, user1: User):
         self.site1_commodity = "Q578"
         self.site1 = InputPublicMineralSite(
-            source_id="database::https://mrdata.usgs.gov/mrds",
+            source_id="https://mrdata.usgs.gov/mrds",
             record_id="10014570",
             name="Eagle Mine",
             location_info=LocationInfo(
@@ -37,7 +37,7 @@ class TestMSData:
             mineral_inventory=[
                 MineralInventory(
                     commodity=CandidateEntity(
-                        source="database::https://mrdata.usgs.gov/mrds",
+                        source="https://mrdata.usgs.gov/mrds",
                         confidence=1.0,
                         observed_name="Nickel",
                         normalized_uri=NS_MR.uristr(self.site1_commodity),
@@ -73,7 +73,7 @@ class TestMSData:
     # def site2_(self, user2: User):
     #     self.site2_commodity = "Q569"
     #     self.site2 = InputPublicMineralSite(
-    #         source_id="database::https://mrdata.usgs.gov/mrds",
+    #         source_id="https://mrdata.usgs.gov/mrds",
     #         record_id="10109359",
     #         name="Beaver Mine",
     #         location_info=LocationInfo(
@@ -83,7 +83,7 @@ class TestMSData:
     #         mineral_inventory=[
     #             MineralInventory(
     #                 commodity=CandidateEntity(
-    #                     source="database::https://mrdata.usgs.gov/mrds",
+    #                     source="https://mrdata.usgs.gov/mrds",
     #                     confidence=1.0,
     #                     observed_name="Lithium",
     #                     normalized_uri=MINMOD_KG.ns.mr.uristr(self.site2_commodity),

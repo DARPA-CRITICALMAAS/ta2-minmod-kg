@@ -155,10 +155,6 @@ class InputPublicMineralSite(InputMineralSite):
     dedup_site_uri: Optional[IRI] = None
 
     def __post_init__(self):
-        if self.dedup_site_uri is None:
-            self.dedup_site_uri = MINMOD_NS.md.uristr(
-                MineralSite.get_dedup_id((self.id,))
-            )
         if isinstance(self.created_by, str):
             self.created_by = [self.created_by]
         if not isinstance(self.created_by, list):
@@ -166,11 +162,6 @@ class InputPublicMineralSite(InputMineralSite):
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="created_by must be a string or a list of strings.",
             )
-
-    @property
-    def dedup_site_id(self):
-        assert self.dedup_site_uri is not None
-        return MINMOD_NS.md.id(self.dedup_site_uri)
 
     def to_kgrel(
         self,
@@ -182,8 +173,12 @@ class InputPublicMineralSite(InputMineralSite):
             commodity_form_conversion=entser.get_commodity_form_conversion(),
             crs_names=entser.get_crs_name(),
             source_score=entser.get_data_source_score(),
+            dedup_site_id=(
+                MINMOD_NS.md.id(self.dedup_site_uri)
+                if self.dedup_site_uri is not None
+                else None
+            ),
         )
-        site.ms.dedup_site_id = self.dedup_site_id
         site.ms.modified_at = time.time_ns()
         site.ms.created_by = [user_uri]
         return site
