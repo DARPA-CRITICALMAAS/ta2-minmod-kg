@@ -8,15 +8,15 @@ services:
   - name: kgrel.data.entities
     classpath: minmodkg.etl.kgrel_entity.KGRelEntityETLService
     args:
-      parallel: false
+      parallel: true
   - name: kgrel.data.mineral_site
     classpath: minmodkg.etl.mineral_site.MineralSiteETLService
     args:
-      parallel: false
+      parallel: true
   - name: kg.data.same_as
     classpath: minmodkg.etl.same_as.SameAsService
     args:
-      parallel: false
+      parallel: true
   - name: copy
     classpath: statickg.services.copy.CopyService
   - name: version
