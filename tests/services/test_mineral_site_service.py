@@ -12,11 +12,12 @@ from minmodkg.api.models.public_mineral_site import (
 )
 from minmodkg.libraries.rdf import TripleStore
 from minmodkg.misc.utils import assert_not_none
-from minmodkg.models.kg.base import NS_MR
+from minmodkg.models.kg.base import MINMOD_NS, NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Document, Reference
+from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from sqlalchemy import Engine
@@ -52,7 +53,9 @@ class TestMSData:
             id=self.site1.id,
             source_id=self.site1.source_id,
             record_id=self.site1.record_id,
-            dedup_site_uri=self.site1.dedup_site_uri,
+            dedup_site_uri=MINMOD_NS.md.uristr(
+                MineralSite.get_dedup_id([self.site1.id])
+            ),
             name=self.site1.name,
             created_by=[user1.get_uri()],
             aliases=self.site1.aliases,
@@ -141,8 +144,8 @@ class TestLinkMineralSite(TestMSData):
             user1.get_uri(),
             [
                 [
-                    "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
-                    "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
+                    "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5__inferlink",
                 ]
             ],
         )
