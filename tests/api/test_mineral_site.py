@@ -289,8 +289,8 @@ class TestMineralSiteLinking:
                 json=[
                     {
                         "sites": [
-                            "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755",
-                            "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5",
+                            "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755__inferlink",
+                            "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5__inferlink",
                         ]
                     }
                 ],

@@ -232,10 +232,14 @@ class MineralSiteService:
                     MineralSite.id == site_and_inv.ms.id
                 )
             ).one()
-            if prev_dms_id != site_and_inv.ms.dedup_site_id:
+            if (
+                site_and_inv.ms.has_dedup_site()
+                and prev_dms_id != site_and_inv.ms.dedup_site_id
+            ):
                 raise UnsupportOperationError(
-                    "This service does not support updating dedup site id, use `update_same_as` instead."
+                    f"This service does not support updating dedup site id (`{prev_dms_id}` vs `{site_and_inv.ms.dedup_site_id}`), use `update_same_as` instead."
                 )
+            site_and_inv.ms.dedup_site_id = prev_dms_id
             if site_snapshot_id is not None and prev_snapshot_id != site_snapshot_id:
                 raise ExpiredSnapshotIdError(
                     f"The new snapshot of the site is {prev_snapshot_id}"
@@ -352,18 +356,18 @@ class MineralSiteService:
 
             # **ALGO**
             # figure out what dedup site is used for each group
-            dedup_to_groupcount = defaultdict(int)
+            dedup_group_count = defaultdict(int)
             for msi in affected_sites:
                 if msi.ms.site_id in site_id_to_group:
-                    dedup_to_groupcount[
+                    dedup_group_count[
                         msi.ms.dedup_site_id, site_id_to_group[msi.ms.site_id]
                     ] += 1
 
             # this tells us which dedup id to use for a group, if a group is not in this
             # it means we need to create a new dedup site
             group_to_dedup = {}
-            for dedup_id, grp_idx in sorted(
-                dedup_to_groupcount.items(), key=lambda x: x[1], reverse=True
+            for (dedup_id, grp_idx), count in sorted(
+                dedup_group_count.items(), key=lambda x: x[1], reverse=True
             ):
                 if grp_idx in group_to_dedup:
                     continue
@@ -390,6 +394,7 @@ class MineralSiteService:
             for grp_idx, group in enumerate(groups):
                 if grp_idx not in group_to_dedup:
                     dedup_site_id = MineralSite.get_dedup_id(group)
+                    assert dedup_site_id not in affected_dedup_ids
                 else:
                     dedup_site_id = group_to_dedup[grp_idx]
 
@@ -400,6 +405,7 @@ class MineralSiteService:
                     group_msi, dedup_site_id=dedup_site_id
                 )
                 if grp_idx not in group_to_dedup:
+                    print(grp_idx, dedup_site_id)
                     session.add(dedup_site)
                     session.flush()
                 else:
