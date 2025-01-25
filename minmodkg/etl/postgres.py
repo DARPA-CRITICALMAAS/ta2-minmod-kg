@@ -155,7 +155,7 @@ class PostgresLoaderService(DataLoaderService):
                         for inv in r["invs"]:
                             inv["site_id"] = sid
                             batch3.append(inv)
-
-                    session.execute(insert(MineralInventoryView), batch3)
+                    if len(batch3) > 0:
+                        session.execute(insert(MineralInventoryView), batch3)
 
             session.commit()

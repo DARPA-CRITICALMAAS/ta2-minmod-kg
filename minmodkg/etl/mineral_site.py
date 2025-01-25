@@ -349,13 +349,20 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         output_dedup_sites = []
         output_sites = []
         output_inventories = []
-        for lst in dedup_sites.values():
+        for lst in tqdm(
+            dedup_sites.values(),
+            total=len(dedup_sites),
+            desc="Creating Dedup Mineral Site",
+            disable=self.verbose < 1,
+        ):
             dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
             output_dedup_sites.append(dedup_site.to_dict())
 
-        for msi in sites:
+        for msi in tqdm(sites, desc="Creating Mineral Site", disable=self.verbose < 1):
             output_sites.append(msi.ms.to_dict())
-            output_inventories.append({"invs": msi.invs, "site": msi.ms.site_id})
+            output_inventories.append(
+                {"invs": [inv.to_dict() for inv in msi.invs], "site": msi.ms.site_id}
+            )
 
         serde.json.ser(
             {
