@@ -114,7 +114,7 @@ class BackupListener(Listener):
     def _upsert_site(
         self, action: Literal["add", "update"], site: MineralSiteAndInventory
     ):
-        username = get_username(site.ms.created_by[0])
+        username = get_username(site.ms.created_by)
 
         source_id = site.ms.source_id
         lst = source_id.split("::")

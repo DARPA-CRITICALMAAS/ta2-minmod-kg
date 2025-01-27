@@ -23,7 +23,7 @@ def sync_site1(user1: User) -> InputPublicMineralSite:
         location_info=LocationInfo(
             location="POINT(-87.099998474121 46.900001525879)",
         ),
-        created_by=[user1.get_uri()],
+        created_by=user1.get_uri(),
         mineral_inventory=[
             MineralInventory(
                 commodity=CandidateEntity(
@@ -70,7 +70,7 @@ def sync_site2(user2: User) -> InputPublicMineralSite:
         location_info=LocationInfo(
             location="POINT(-118.7805 44.71207)",
         ),
-        created_by=[user2.get_uri()],
+        created_by=user2.get_uri(),
         mineral_inventory=[
             MineralInventory(
                 commodity=CandidateEntity(

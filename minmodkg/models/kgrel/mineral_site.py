@@ -180,7 +180,7 @@ class MineralSite(MappedAsDataclass, Base):
     geology_info: Mapped[Optional[GeologyInfo]] = mapped_column()
     discovered_year: Mapped[int | None] = mapped_column()
 
-    created_by: Mapped[list[IRI]] = mapped_column(JSON)
+    created_by: Mapped[IRI] = mapped_column()
     # timestamp in nano seconds
     modified_at: Mapped[int] = mapped_column(BigInteger)
 

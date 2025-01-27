@@ -31,7 +31,7 @@ class TestMineralSiteData:
             location_info=LocationInfo(
                 location="POINT(-87.099998474121 46.900001525879)",
             ),
-            created_by=[user1.get_uri()],
+            created_by=user1.get_uri(),
             mineral_inventory=[
                 MineralInventory(
                     commodity=CandidateEntity(
@@ -68,7 +68,7 @@ class TestMineralSiteData:
                 "lon": -87.099998474121,
             },
             "dedup_site_uri": self.site1_dedup_uri,
-            "created_by": [user1.get_uri()],
+            "created_by": user1.get_uri(),
             "grade_tonnage": [{"commodity": self.site1_commodity}],
         }
 
@@ -82,7 +82,7 @@ class TestMineralSiteData:
             location_info=LocationInfo(
                 location="POINT(-118.7805 44.71207)",
             ),
-            created_by=[user2.get_uri()],
+            created_by=user2.get_uri(),
             mineral_inventory=[
                 MineralInventory(
                     commodity=CandidateEntity(
@@ -108,7 +108,7 @@ class TestMineralSiteData:
                     "lon": -118.7805,
                 },
                 "dedup_site_uri": self.site2.dedup_site_uri,
-                "created_by": [user2.get_uri()],
+                "created_by": user2.get_uri(),
                 "id": self.site2_id,
                 "grade_tonnage": [{"commodity": self.site2_commodity}],
             }

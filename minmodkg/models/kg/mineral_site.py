@@ -34,7 +34,7 @@ class MineralSiteIdent(RDFModel):
 
     source_id: Annotated[CleanedNotEmptyStr, P()]
     record_id: Annotated[CleanedNotEmptyStr, P()]
-    created_by: Annotated[list[CleanedNotEmptyStr], P()] = field(default_factory=list)
+    created_by: Annotated[CleanedNotEmptyStr, P()]
 
     @cached_property
     def uri(self) -> URIRef:
@@ -43,7 +43,7 @@ class MineralSiteIdent(RDFModel):
     @cached_property
     def id(self) -> InternalID:
         return make_site_id(
-            get_username(self.created_by[0]), self.source_id, self.record_id
+            get_username(self.created_by), self.source_id, self.record_id
         )
 
     @classmethod
@@ -51,11 +51,7 @@ class MineralSiteIdent(RDFModel):
         return cls(
             source_id=d["source_id"],
             record_id=d["record_id"],
-            created_by=(
-                d["created_by"]
-                if isinstance(d["created_by"], list)
-                else [d["created_by"]]
-            ),
+            created_by=d["created_by"],
         )
 
 
@@ -156,11 +152,7 @@ class MineralSite(MineralSiteIdent, RDFModel):
             ],
             reference=[Reference.from_dict(x) for x in d.get("reference", [])],
             discovered_year=d.get("discovered_year"),
-            created_by=(
-                d["created_by"]
-                if isinstance(d["created_by"], list)
-                else [d["created_by"]]
-            ),
+            created_by=d["created_by"],
             modified_at=d["modified_at"],
         )
 
@@ -188,8 +180,7 @@ class MineralSite(MineralSiteIdent, RDFModel):
 
         self.mineral_inventory.extend(other.mineral_inventory)
         self.reference = Reference.dedup(self.reference + other.reference)
-
-        self.created_by = extend_unique(self.created_by, other.created_by)
+        assert self.created_by == other.created_by
         self.modified_at = max(self.modified_at, other.modified_at)
 
     @classmethod

@@ -58,7 +58,7 @@ class TestBackupListener:
         backup_listener = BackupListener(tmp_dir)
 
         # create a new mineral site
-        rel_site1 = sync_site1.to_kgrel(sync_site1.created_by[0])
+        rel_site1 = sync_site1.to_kgrel(sync_site1.created_by)
         service.create(rel_site1)
 
         # the tmp dir should be empty
@@ -89,7 +89,7 @@ class TestBackupListener:
 
         # this is continue from the previous test -- update existing mineral site
         rel_site1 = sync_site1_update_name_and_inventory.to_kgrel(
-            sync_site1_update_name_and_inventory.created_by[0]
+            sync_site1_update_name_and_inventory.created_by
         )
         rel_site1.set_id(
             assert_not_none(
@@ -129,10 +129,10 @@ class TestBackupListener:
         backup_listener = BackupListener(tmp_dir)
 
         # first, make sure that we have two mineral sites in the database
-        service.create(sync_site2.to_kgrel(sync_site2.created_by[0]))
+        service.create(sync_site2.to_kgrel(sync_site2.created_by))
 
         service.update_same_as(
-            sync_site2.created_by[0],
+            sync_site2.created_by,
             [[sync_site1_update_name_and_inventory.id, sync_site2.id]],
         )
 

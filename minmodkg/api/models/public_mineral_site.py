@@ -40,7 +40,7 @@ class OutputPublicMineralSite(BaseModel):
     record_id: Union[str, int]
     dedup_site_uri: Optional[IRI]
     name: Optional[str]
-    created_by: list[IRI]
+    created_by: IRI
     aliases: list[str]
     site_rank: Optional[str] = None
     site_type: Optional[str] = None
@@ -164,17 +164,7 @@ class OutputPublicMineralSite(BaseModel):
 
 @dataclass
 class InputPublicMineralSite(InputMineralSite):
-    created_by: Union[str, list[str]] = field(default_factory=list)
     dedup_site_uri: Optional[IRI] = None
-
-    def __post_init__(self):
-        if isinstance(self.created_by, str):
-            self.created_by = [self.created_by]
-        if not isinstance(self.created_by, list):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="created_by must be a string or a list of strings.",
-            )
 
     def to_kgrel(
         self,
@@ -193,7 +183,7 @@ class InputPublicMineralSite(InputMineralSite):
             ),
         )
         site.ms.modified_at = time.time_ns()
-        site.ms.created_by = [user_uri]
+        site.ms.created_by = user_uri
         return site
 
     def to_dict(self):

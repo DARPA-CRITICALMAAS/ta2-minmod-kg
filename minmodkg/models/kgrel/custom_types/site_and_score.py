@@ -35,7 +35,7 @@ class SiteScore:
         if score is None or score < 0:
             score = DEFAULT_SOURCE_SCORE
         assert 0 <= score <= 1.0
-        if any(not is_system_user(x) for x in site.created_by):
+        if not is_system_user(site.created_by):
             # expert get the highest priority
             return SiteScore(1.0, site.modified_at)
         return SiteScore(min(score, 0.99), site.modified_at)

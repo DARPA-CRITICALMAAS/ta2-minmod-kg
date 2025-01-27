@@ -351,7 +351,7 @@ def test_update_mineral_site_deposit_type_later():
             }
         ],
         "modified_at": "2025-01-06T17:22:53.006220Z",
-        "created_by": ["https://minmod.isi.edu/users/s/sri"],
+        "created_by": "https://minmod.isi.edu/users/s/sri",
         "reference": [
             {
                 "document": {

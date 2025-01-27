@@ -34,7 +34,7 @@ class TestMSData:
             location_info=LocationInfo(
                 location="POINT(-87.099998474121 46.900001525879)",
             ),
-            created_by=[user1.get_uri()],
+            created_by=user1.get_uri(),
             mineral_inventory=[
                 MineralInventory(
                     commodity=CandidateEntity(
@@ -57,7 +57,7 @@ class TestMSData:
                 MineralSite.get_dedup_id([self.site1.id])
             ),
             name=self.site1.name,
-            created_by=[user1.get_uri()],
+            created_by=user1.get_uri(),
             aliases=self.site1.aliases,
             site_rank=self.site1.site_rank,
             site_type=self.site1.site_type,
