@@ -66,7 +66,7 @@ def has_site(
 def get_site(
     site_id: InternalID,
     mineral_site_service: MineralSiteServiceDep,
-    format: Literal["json", "ttl"] = "json",
+    format: Literal["json"] = "json",
 ):
     mineral_site = mineral_site_service.find_by_id(site_id)
     if mineral_site is None:
@@ -76,12 +76,6 @@ def get_site(
         )
     if format == "json":
         return OutputPublicMineralSite.from_kgrel(mineral_site).to_dict()
-    elif format == "ttl":
-        raise NotImplementedError()
-        return Response(
-            content=(g_site + g_derived_site).serialize(format="ttl"),
-            media_type="text/turtle",
-        )
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

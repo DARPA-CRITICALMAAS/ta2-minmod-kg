@@ -98,6 +98,15 @@ class MineralSite(MineralSiteIdent, RDFModel):
                 ("aliases", self.aliases),
                 ("site_rank", self.site_rank),
                 ("site_type", self.site_type),
+                ("mineral_form", self.mineral_form),
+                (
+                    "geology_info",
+                    (
+                        self.geology_info.to_dict()
+                        if self.geology_info is not None
+                        else None
+                    ),
+                ),
                 (
                     "location_info",
                     (
@@ -112,6 +121,7 @@ class MineralSite(MineralSiteIdent, RDFModel):
                 ),
                 ("mineral_inventory", [x.to_dict() for x in self.mineral_inventory]),
                 ("reference", [x.to_dict() for x in self.reference]),
+                ("discovered_year", self.discovered_year),
                 ("created_by", self.created_by),
                 ("modified_at", self.modified_at),
             )
@@ -126,6 +136,12 @@ class MineralSite(MineralSiteIdent, RDFModel):
             aliases=d.get("aliases", []),
             site_rank=d.get("site_rank"),
             site_type=d.get("site_type"),
+            mineral_form=d.get("mineral_form", []),
+            geology_info=(
+                GeologyInfo.from_dict(d["geology_info"])
+                if d.get("geology_info")
+                else None
+            ),
             location_info=(
                 LocationInfo.from_dict(d["location_info"])
                 if d.get("location_info")
@@ -139,6 +155,7 @@ class MineralSite(MineralSiteIdent, RDFModel):
                 MineralInventory.from_dict(x) for x in d.get("mineral_inventory", [])
             ],
             reference=[Reference.from_dict(x) for x in d.get("reference", [])],
+            discovered_year=d.get("discovered_year"),
             created_by=(
                 d["created_by"]
                 if isinstance(d["created_by"], list)

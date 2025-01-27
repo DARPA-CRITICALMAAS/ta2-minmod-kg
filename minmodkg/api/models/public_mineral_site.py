@@ -9,6 +9,7 @@ from fastapi import HTTPException, status
 from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
 from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.mineral_site import MineralSite as InputMineralSite
@@ -45,7 +46,10 @@ class OutputPublicMineralSite(BaseModel):
     site_type: Optional[str] = None
     location_info: Optional[LocationInfo] = None
     deposit_type_candidate: list[CandidateEntity] = Field(default_factory=list)
+    mineral_form: list[str] = Field(default_factory=list)
+    geology_info: Optional[GeologyInfo] = None
     mineral_inventory: list[MineralInventory] = Field(default_factory=list)
+    discovered_year: Optional[int] = None
     reference: list[Reference] = Field(default_factory=list)
     modified_at: str = Field(
         default_factory=lambda: format_datetime(datetime.now(timezone.utc))
@@ -79,7 +83,10 @@ class OutputPublicMineralSite(BaseModel):
                 else None
             ),
             deposit_type_candidate=ms.deposit_type_candidates,
+            geology_info=ms.geology_info,
+            mineral_form=ms.mineral_form,
             mineral_inventory=ms.inventories,
+            discovered_year=ms.discovered_year,
             reference=ms.reference,
             modified_at=format_nanoseconds(ms.modified_at),
             coordinates=(
@@ -130,7 +137,13 @@ class OutputPublicMineralSite(BaseModel):
                     "deposit_type_candidate",
                     [c.to_dict() for c in self.deposit_type_candidate],
                 ),
+                ("mineral_form", self.mineral_form),
+                (
+                    "geology_info",
+                    self.geology_info.to_dict() if self.geology_info else None,
+                ),
                 ("mineral_inventory", [v.to_dict() for v in self.mineral_inventory]),
+                ("discovered_year", self.discovered_year),
                 ("reference", [r.to_dict() for r in self.reference]),
                 ("modified_at", self.modified_at),
                 (
