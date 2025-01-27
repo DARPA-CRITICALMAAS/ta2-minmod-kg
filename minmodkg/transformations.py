@@ -116,7 +116,7 @@ def make_site_id(username: str, source_id: str, record_id: str) -> str:
     source_id = slugify(source_id)
     record_id = slugify(record_id)
 
-    path = shorten_id(f"{source_id}__{record_id}__{username}", 140)
+    path = shorten_id(f"{source_id}__{record_id}", 120) + f"__{username}"
     return f"site__{path}"
 
 
