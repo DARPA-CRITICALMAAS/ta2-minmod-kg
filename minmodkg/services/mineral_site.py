@@ -366,12 +366,14 @@ class MineralSiteService:
             # this tells us which dedup id to use for a group, if a group is not in this
             # it means we need to create a new dedup site
             group_to_dedup = {}
+            used_dedup_ids = set()
             for (dedup_id, grp_idx), count in sorted(
                 dedup_group_count.items(), key=lambda x: x[1], reverse=True
             ):
-                if grp_idx in group_to_dedup:
+                if grp_idx in group_to_dedup or dedup_id in used_dedup_ids:
                     continue
                 group_to_dedup[grp_idx] = dedup_id
+                used_dedup_ids.add(dedup_id)
 
             # **ALGO**
             # compute a mapping from internal ID to a list of internal IDs that are previously marked as the same but now are different.
@@ -389,6 +391,7 @@ class MineralSiteService:
                         != site_id_to_group[other_msi.ms.site_id]
                     ]
 
+            print(">>>", group_to_dedup)
             # **ALGO**
             # now perform the update on the groups
             for grp_idx, group in enumerate(groups):
@@ -404,12 +407,15 @@ class MineralSiteService:
                 dedup_site = DedupMineralSite.from_sites(
                     group_msi, dedup_site_id=dedup_site_id
                 )
+                print(">>>", grp_idx, grp_idx in group_to_dedup, dedup_site_id)
                 if grp_idx not in group_to_dedup:
                     print(grp_idx, dedup_site_id)
                     session.add(dedup_site)
                     session.flush()
                 else:
                     session.execute(dedup_site.get_update_query())
+
+                print("@@@", dedup_site)
 
                 # **ALGO**
                 # update the mineral sites and their inventories

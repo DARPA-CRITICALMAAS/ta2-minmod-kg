@@ -156,7 +156,17 @@ def kgrel(
         for tbl in reversed(minmodkg.models.kgrel.base.Base.metadata.sorted_tables):
             session.execute(tbl.delete())
 
-        for file in ["commodity", "commodity_form", "crs", "data_source"]:
+        for file in [
+            "commodity",
+            "commodity_form",
+            "crs",
+            "data_source",
+            "unit",
+            "category",
+            "deposit_type",
+            "country",
+            "state_or_province",
+        ]:
             session.bulk_save_objects(
                 EntityDeserFn.read_file(
                     resource_dir / "kgdata/entities" / f"{file}.csv"
