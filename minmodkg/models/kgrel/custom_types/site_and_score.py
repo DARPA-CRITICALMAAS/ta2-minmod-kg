@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections import namedtuple
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
 from minmodkg.config import DEFAULT_SOURCE_SCORE
 from minmodkg.models.kgrel.user_extra import is_system_user
@@ -11,23 +12,35 @@ if TYPE_CHECKING:
     from minmodkg.models.kgrel.mineral_site import MineralSite
 
 
+class ExpertCmpKey(NamedTuple):
+    is_expert: Literal[True]
+    timestamp: int  # in nanoseconds
+
+
+class SystemCmpKey(NamedTuple):
+    is_expert: Literal[False]
+    source_id: str
+    record_id: str
+    timestamp: int  # in nanoseconds
+
+
 @dataclass(order=True)
 class SiteScore:
     score: float
-    timestamp: int  # timestamp in nanoseconds
+    suborder: ExpertCmpKey | SystemCmpKey
 
     def to_dict(self):
         return {
             "score": self.score,
-            "timestamp": self.timestamp,
+            "suborder": tuple(self.suborder),
         }
 
     @classmethod
     def from_dict(cls, d):
-        return cls(score=d["score"], timestamp=d["timestamp"])
+        return cls(score=d["score"], suborder=d["suborder"])
 
     def is_from_user(self):
-        return self.score == 1.0
+        return self.suborder.is_expert
 
     @classmethod
     def get_score(cls, site: MineralSite):
@@ -37,8 +50,11 @@ class SiteScore:
         assert 0 <= score <= 1.0
         if not is_system_user(site.created_by):
             # expert get the highest priority
-            return SiteScore(1.0, site.modified_at)
-        return SiteScore(min(score, 0.99), site.modified_at)
+            return SiteScore(1.0, ExpertCmpKey(True, site.modified_at))
+        return SiteScore(
+            min(score, 0.99),
+            SystemCmpKey(False, site.source_id, site.record_id, site.modified_at),
+        )
 
 
 @dataclass

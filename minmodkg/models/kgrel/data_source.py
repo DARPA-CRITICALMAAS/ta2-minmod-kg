@@ -24,9 +24,6 @@ class DataSource(MappedAsDataclass, Base):
     slug_name: Mapped[str] = mapped_column(
         unique=True,
         init=False,
-        default=lambda ctx: slugify(ctx.get_current_parameters()["name"]).replace(
-            "-", "_"
-        ),
     )
 
     def __post_init__(self):

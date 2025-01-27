@@ -22,7 +22,6 @@ class Commodity(MappedAsDataclass, Base):
     lower_name: Mapped[str] = mapped_column(
         unique=True,
         init=False,
-        default=lambda ctx: ctx.get_current_parameters()["name"].lower(),
     )
 
     def __post_init__(self):
