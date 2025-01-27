@@ -307,44 +307,25 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         kgrel_outdir = args["output"].get_path() / "kgrel"
         kgrel_outdir.mkdir(parents=True, exist_ok=True)
 
-        MapDedupSiteResult = TypedDict(
-            "MapDedupSiteResult",
-            {
-                "DedupMineralSite": list[DedupMineralSite],
-                "MineralSiteAndInventory": list[MineralSiteAndInventory],
-            },
-        )
-
-        def map_dedup_site(file: Path) -> MapDedupSiteResult:
-            sites = [
-                MineralSiteAndInventory.from_dict(d) for d in serde.json.deser(file)
-            ]
-            dedup_sites = [
-                DedupMineralSite.from_sites(sites)
-                for dedup_id, sites in group_by(
-                    sites, lambda site: site.ms.dedup_site_id
-                ).items()
-            ]
-
-            return {"DedupMineralSite": dedup_sites, "MineralSiteAndInventory": sites}
-
-        it: Iterable[MapDedupSiteResult] = get_parallel_executor(self.parallel)(
-            typed_delayed(map_dedup_site)(infile.path)
-            for infile in merge_files.values()
-        )
-
-        # merge all the results
+        # read the merged files
         dedup_sites: dict[InternalID, list[DedupMineralSite]] = defaultdict(list)
         sites: list[MineralSiteAndInventory] = []
-        for d in tqdm(
-            it,
+        for infile in tqdm(
+            merge_files.values(),
             total=len(merge_files),
             desc="Reading KGRel input",
             disable=self.verbose < 1,
         ):
-            for dms in d["DedupMineralSite"]:
+            d = serde.json.deser(infile.path)
+            for x in d["DedupMineralSite"]:
+                dms = DedupMineralSite.from_dict(x)
                 dedup_sites[dms.id].append(dms)
-            sites.extend(d["MineralSiteAndInventory"])
+            sites.extend(
+                (
+                    MineralSiteAndInventory.from_dict(x)
+                    for x in d["MineralSiteAndInventory"]
+                )
+            )
 
         output_dedup_sites = []
         output_sites = []
@@ -427,7 +408,7 @@ class MergeFn:
         return group, cls.get_instance(workdir, entity_dir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="merge-v104.sqlite"),
+        backend=FileSqliteBackend.factory(filename="merge-v106.sqlite"),
         cache_ser_args={
             "infiles": lambda lst: orjson.dumps(
                 sorted(x.get_ident() for x in lst)
@@ -449,7 +430,7 @@ class MergeFn:
 
         outfile.parent.mkdir(parents=True, exist_ok=True)
         # merge the data
-        output = []
+        lst_msi: list[MineralSiteAndInventory] = []
         for infile in sorted(infiles, key=lambda x: x.path):
             for raw_site in serde.json.deser(infile.path):
                 norm_site = MineralSiteAndInventory.from_raw_site(
@@ -459,8 +440,21 @@ class MergeFn:
                     source_score=self.entity_service.get_data_source_score(),
                 )
                 norm_site.ms.dedup_site_id = dedup_map[norm_site.ms.site_id]
-                output.append(norm_site.to_dict())
-        serde.json.ser(output, outfile)
+                lst_msi.append(norm_site)
+
+        lst_dms = [
+            DedupMineralSite.from_sites(sites)
+            for dedup_id, sites in group_by(
+                lst_msi, lambda site: site.ms.dedup_site_id
+            ).items()
+        ]
+        serde.json.ser(
+            {
+                "MineralSiteAndInventory": [msi.to_dict() for msi in lst_msi],
+                "DedupMineralSite": [dms.to_dict() for dms in lst_dms],
+            },
+            outfile,
+        )
         return outfile
 
 
@@ -481,14 +475,14 @@ class ExportTTLFn:
         return cls.get_instance(workdir).invoke(**kwargs)
 
     @cache(
-        backend=FileSqliteBackend.factory(filename="export-v100.sqlite"),
+        backend=FileSqliteBackend.factory(filename="export-v101.sqlite"),
         cache_ser_args={
             "infile": lambda x: x.get_ident(),
         },
     )
     def invoke(self, infile: InputFile, outfile: Path) -> Path:
         output = []
-        for d in serde.json.deser(infile.path):
+        for d in serde.json.deser(infile.path)["MineralSiteAndInventory"]:
             msi = MineralSiteAndInventory.from_dict(d)
             output.extend(msi.ms.to_kg().to_triples())
 

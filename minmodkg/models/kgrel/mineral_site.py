@@ -222,7 +222,7 @@ class MineralSite(MappedAsDataclass, Base):
             site_id=site.id,
             dedup_site_id="",  # raw site doesn't have dedup site id
             source_id=site.source_id,
-            source_score=source_score.get(get_source_uri(site.source_id)),
+            source_score=source_score.get(site.source_id),
             record_id=str(site.record_id),
             name=site.name,
             aliases=site.aliases,
