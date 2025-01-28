@@ -51,6 +51,15 @@ class MinModAPI:
             return cfg["token"]
         raise ValueError("Auth token is missing. Please login.")
 
+    @property
+    def username(self):
+        if self.cfg_file.exists():
+            cfg = json.loads(self.cfg_file.read_bytes())
+            if "username" in cfg:
+                # backward compatible with previous cfg file
+                return cfg["username"]
+        raise ValueError("Username is missing. Please login.")
+
     def upsert_mineral_site(
         self,
         site: dict,
@@ -175,6 +184,7 @@ class MinModAPI:
         resp = httpx.get(
             f"{self.endpoint}/api/v1/mineral-sites/make-id",
             params={
+                "username": self.username,
                 "source_id": source_id,
                 "record_id": record_id,
                 "return_uri": False,
@@ -192,7 +202,9 @@ class MinModAPI:
         )
         resp.raise_for_status()
         self.cfg_file.parent.mkdir(parents=True, exist_ok=True)
-        self.cfg_file.write_text(json.dumps({"token": resp.cookies["session"]}))
+        self.cfg_file.write_text(
+            json.dumps({"token": resp.cookies["session"], "username": username})
+        )
 
     def whoami(self):
         resp = httpx.get(
