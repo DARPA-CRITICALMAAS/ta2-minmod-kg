@@ -1,4 +1,4 @@
-﻿minmod_id,id,name,country_id,country_code,country_name,state_code,type,latitude,longitude
+minmod_id,id,name,country_id,country_code,country_name,state_code,type,latitude,longitude
 Q2001,3901,Badakhshan,1,AF,Afghanistan,BDS,,36.7347725,70.8119953
 Q2002,3871,Badghis,1,AF,Afghanistan,BDG,,35.1671339,63.7695384
 Q2003,3875,Baghlan,1,AF,Afghanistan,BGL,,36.1789026,68.7453064

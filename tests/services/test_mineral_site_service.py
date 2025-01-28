@@ -19,8 +19,10 @@ from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Document, Reference
 from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.models.kgrel.user import User
-from minmodkg.services.mineral_site import MineralSiteService
+from minmodkg.services.kgrel_entity import EntityService
+from minmodkg.services.mineral_site import ArgumentError, MineralSiteService
 from sqlalchemy import Engine
+from tests.utils import load_mineral_sites
 
 
 class TestMSData:
@@ -137,15 +139,201 @@ class TestCreateMineralSite(TestMSData):
 
 
 class TestLinkMineralSite(TestMSData):
-    def test_update_same_as(self, resource_dir: Path, user1: User, kgrel_with_data):
+    def test_update_same_as(self, resource_dir: Path, user1: User, kgrel: Engine):
         time.sleep(1.0)  # to ensure the modified_at is different
-        mineral_site_service = MineralSiteService(kgrel_with_data)
-        mineral_site_service.update_same_as(
+
+        load_mineral_sites(
+            kgrel,
+            user1,
+            [
+                resource_dir
+                / "kgdata/mineral-sites/json/Forrestania_Nickel_Project.json"
+            ],
+        )
+
+        ms_service = MineralSiteService(kgrel)
+
+        # from sqlalchemy import select
+        # from sqlalchemy.orm import Session
+        # from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+        # from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
+        # with Session(kgrel) as session:
+        #     dedup_sites = session.execute(select(DedupMineralSite)).scalars().all()
+        #     print([dms.id for dms in dedup_sites])
+        #     print(session.execute(select(MineralInventoryView).where(MineralInventoryView.dedup_site_id == dedup_sites[0].id)).scalars().all())
+
+        # verify that the dedup site is correct
+        dedup_res = ms_service.find_dedup_mineral_sites(
+            commodity="Q578", return_count=True
+        )
+        assert dedup_res["total"] == 1 and len(dedup_res["items"]) == 1
+        assert [
+            (ss.site_id, ss.score.score)
+            for ss in list(dedup_res["items"].values())[0].dms.ranked_sites
+        ] == [
+            (
+                "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__sri",
+                0.8,
+            ),
+            ("site__mrdata-usgs-gov-mrds__10280772__umn", 0.1),
+            ("site__mrdata-usgs-gov-mrds__10280772__sri", 0.1),
+        ]
+
+        # cannot split sites that belong to the same record of a data source
+        with pytest.raises(ArgumentError):
+            ms_service.update_same_as(
+                user1.get_uri(),
+                [
+                    [
+                        "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
+                    ],
+                    [
+                        "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__inferlink",
+                        "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__sri",
+                        "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__inferlink",
+                        "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__sri",
+                        "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__inferlink",
+                        "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__sri",
+                        "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__inferlink",
+                        "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__sri",
+                        "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
+                        "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__sri",
+                        "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__sri",
+                        "site__mrdata-usgs-gov-mrds__10280772__umn",
+                        "site__mrdata-usgs-gov-mrds__10280772__sri",
+                    ],
+                ],
+            )
+
+        new_dedup_ids = ms_service.update_same_as(
             user1.get_uri(),
             [
                 [
-                    "site__api-cdr-land-v1-docs-documents__02a0c7412e655ff0a9a4eb63cd1388ecb4aee96931f8bc4f98819e65cc83173755__inferlink",
-                    "site__api-cdr-land-v1-docs-documents__02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5__inferlink",
-                ]
+                    "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__sri",
+                ],
+                [
+                    "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__sri",
+                    "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__sri",
+                    "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__sri",
+                    "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__sri",
+                    "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
+                    "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__sri",
+                    "site__mrdata-usgs-gov-mrds__10280772__umn",
+                    "site__mrdata-usgs-gov-mrds__10280772__sri",
+                ],
             ],
         )
+
+        assert new_dedup_ids == [
+            "dedup_site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
+            "dedup_site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
+        ]
+
+        dedup_res = ms_service.find_dedup_mineral_sites(
+            commodity="Q578", return_count=True
+        )
+        assert dedup_res["total"] == 2 and len(dedup_res["items"]) == 2
+        dmsi1, dmsi2 = list(dedup_res["items"].values())
+        assert [(ss.site_id, ss.score.score) for ss in dmsi1.dms.ranked_sites] == [
+            (
+                "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__sri",
+                0.8,
+            ),
+        ]
+        assert [(ss.site_id, ss.score.score) for ss in dmsi2.dms.ranked_sites] == [
+            (
+                "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__029ae7b78f5f44212f0088966cf17f38531c93dbb8b43ed8989f4975eaffc8c1d7__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02965ca0428670b436cb460c27c19c41e53fe0d354e5eba41157a2f6c2e6cb91a0__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__021924522fa0068d40d1d20c24d7a0c667709640802db026aa30eb94608fca28cf__sri",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
+                0.8,
+            ),
+            (
+                "site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__sri",
+                0.8,
+            ),
+            ("site__mrdata-usgs-gov-mrds__10280772__umn", 0.1),
+            ("site__mrdata-usgs-gov-mrds__10280772__sri", 0.1),
+        ]
