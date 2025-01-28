@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
+from functools import cmp_to_key
 from typing import NamedTuple, Optional, Sequence, Tuple, TypedDict
 
 from minmodkg.misc.utils import group_by, makedict
@@ -355,27 +356,6 @@ class MineralSiteService:
                 )
 
             # **ALGO**
-            # figure out what dedup site is used for each group
-            dedup_group_count = defaultdict(int)
-            for msi in affected_sites:
-                if msi.ms.site_id in site_id_to_group:
-                    dedup_group_count[
-                        msi.ms.dedup_site_id, site_id_to_group[msi.ms.site_id]
-                    ] += 1
-
-            # this tells us which dedup id to use for a group, if a group is not in this
-            # it means we need to create a new dedup site
-            group_to_dedup = {}
-            used_dedup_ids = set()
-            for (dedup_id, grp_idx), count in sorted(
-                dedup_group_count.items(), key=lambda x: x[1], reverse=True
-            ):
-                if grp_idx in group_to_dedup or dedup_id in used_dedup_ids:
-                    continue
-                group_to_dedup[grp_idx] = dedup_id
-                used_dedup_ids.add(dedup_id)
-
-            # **ALGO**
             # compute a mapping from internal ID to a list of internal IDs that are previously marked as the same but now are different.
             # needed as this information is required by the event log
             diff_groups: dict[InternalID, list[InternalID]] = defaultdict(list)
@@ -391,15 +371,13 @@ class MineralSiteService:
                         != site_id_to_group[other_msi.ms.site_id]
                     ]
 
-            print(">>>", group_to_dedup)
             # **ALGO**
             # now perform the update on the groups
             for grp_idx, group in enumerate(groups):
-                if grp_idx not in group_to_dedup:
-                    dedup_site_id = MineralSite.get_dedup_id(group)
-                    assert dedup_site_id not in affected_dedup_ids
-                else:
-                    dedup_site_id = group_to_dedup[grp_idx]
+                # **ALGO**
+                # recalculate the dedup site id, while this may not be optimal, it ensures that when we restore from
+                # the backup, the dedup site id is always the same
+                dedup_site_id = MineralSite.get_dedup_id(group)
 
                 # **ALGO**
                 # update the dedup site
@@ -407,15 +385,11 @@ class MineralSiteService:
                 dedup_site = DedupMineralSite.from_sites(
                     group_msi, dedup_site_id=dedup_site_id
                 )
-                print(">>>", grp_idx, grp_idx in group_to_dedup, dedup_site_id)
-                if grp_idx not in group_to_dedup:
-                    print(grp_idx, dedup_site_id)
+                if dedup_site_id not in affected_dedup_ids:
                     session.add(dedup_site)
                     session.flush()
                 else:
                     session.execute(dedup_site.get_update_query())
-
-                print("@@@", dedup_site)
 
                 # **ALGO**
                 # update the mineral sites and their inventories

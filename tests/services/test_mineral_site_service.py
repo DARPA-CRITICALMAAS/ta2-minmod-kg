@@ -275,7 +275,7 @@ class TestLinkMineralSite(TestMSData):
 
         assert new_dedup_ids == [
             "dedup_site__api-cdr-land-v1-docs-documents__02021070bee9adf63d0d61ff45e07de2c2c128272c6209e1fa4ad6849c68505ed1__inferlink",
-            "dedup_site__api-cdr-land-v1-docs-documents__028df78e01cc5ee3b5982ac3063c7872ef73abae26c04db2df8f2ff1ccd58d7f88__inferlink",
+            "dedup_site__api-cdr-land-v1-docs-documents__02026fd483f35adec27e48d1011a68135f93ab7d2b10d2d9507cb1412a5211275c__inferlink",
         ]
 
         dedup_res = ms_service.find_dedup_mineral_sites(
