@@ -136,14 +136,14 @@ pipeline:
         - ::DATA_DIR::mineral-sites/kgrel/*.json*
         - ::DATA_DIR::entities/*.json*
       deploy: { port: 5432 }
-  # - service: kg.loader.fuseki
-  #   # service: kg.loader.blazegraph
-  #   # - service: kg.loader.virtuoso
-  #   args:
-  #     input:
-  #       - ::DATA_DIR::ontology.ttl
-  #       - ::DATA_DIR::entities/*.ttl
-  #       - ::DATA_DIR::mineral-sites/kg/*/*.ttl
-  #       - ::DATA_DIR::same-as/final/*.ttl
-  #     replaceable_input: ::DATA_DIR::version.ttl
-  #     deploy: { port: 3030 }
+  - service: kg.loader.fuseki
+    # service: kg.loader.blazegraph
+    # - service: kg.loader.virtuoso
+    args:
+      input:
+        - ::DATA_DIR::ontology.ttl
+        - ::DATA_DIR::entities/*.ttl
+        - ::DATA_DIR::mineral-sites/kg/*/*.ttl
+        - ::DATA_DIR::same-as/final/*.ttl
+      replaceable_input: ::DATA_DIR::version.ttl
+      deploy: { port: 3030 }
