@@ -429,6 +429,8 @@ class MineralSiteService:
         self,
         *,
         commodity: Optional[InternalID],
+        country: Optional[InternalID] = None,
+        state_or_province: Optional[InternalID] = None,
         dedup_site_ids: Optional[Sequence[InternalID]] = None,
         limit: int = 0,
         offset: int = 0,
@@ -461,6 +463,20 @@ class MineralSiteService:
                     MineralInventoryView.dedup_site_id == DedupMineralSite.id,
                     isouter=True,
                 ).where(MineralInventoryView.commodity == commodity)
+
+        if country is not None:
+            # TODO: this a temporary solution to retrieve the inner element of the composite property
+            # it seems that the good way is to redefine the Comparator
+            query = query.where(
+                DedupMineralSite.country._comparable_elements[0].any(country)
+            )
+
+        if state_or_province is not None:
+            query = query.where(
+                DedupMineralSite.state_or_province._comparable_elements[0].any(
+                    state_or_province
+                )
+            )
 
         if dedup_site_ids is not None:
             query = query.where(DedupMineralSite.id.in_(dedup_site_ids))

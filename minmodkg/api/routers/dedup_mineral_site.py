@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query
-from minmodkg.api.dependencies import norm_commodity
+from fastapi import APIRouter, Body, HTTPException, Query, status
+from minmodkg.api.dependencies import is_minmod_id, norm_commodity
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
@@ -14,19 +14,34 @@ router = APIRouter(tags=["mineral_sites"])
 @router.get("/dedup-mineral-sites")
 def dedup_mineral_sites_v2(
     commodity: Optional[str] = None,
+    country: Optional[str] = None,
+    state_or_province: Optional[str] = None,
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
     return_count: Annotated[bool, Query()] = False,
 ):
-    if commodity is None:
-        res = MineralSiteService().find_dedup_mineral_sites(
-            commodity=commodity, limit=limit, offset=offset, return_count=return_count
-        )
-    else:
+    if commodity is not None:
         commodity = norm_commodity(commodity)
-        res = MineralSiteService().find_dedup_mineral_sites(
-            commodity=commodity, limit=limit, offset=offset, return_count=return_count
-        )
+    if country is not None:
+        if not is_minmod_id(country):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Expect country to be a Q node, but get: {country}",
+            )
+    if state_or_province is not None:
+        if not is_minmod_id(state_or_province):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Expect state_or_province to be a Q node, but get: {state_or_province}",
+            )
+    res = MineralSiteService().find_dedup_mineral_sites(
+        commodity=commodity,
+        country=country,
+        state_or_province=state_or_province,
+        limit=limit,
+        offset=offset,
+        return_count=return_count,
+    )
 
     items = [
         DedupMineralSitePublic.from_kgrel(dmsi, commodity).to_dict()
