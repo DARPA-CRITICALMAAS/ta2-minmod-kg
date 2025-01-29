@@ -3,12 +3,17 @@ from __future__ import annotations
 from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
-from minmodkg.api.dependencies import CurrentUserDep, MineralSiteServiceDep
+from minmodkg.api.dependencies import (
+    CurrentUserDep,
+    MineralSiteServiceDep,
+    RelSessionDep,
+)
 from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     OutputPublicMineralSite,
 )
 from minmodkg.models.kg.base import NS_MR
+from minmodkg.models.kgrel.mineral_site import MineralSite
 from minmodkg.services.mineral_site import (
     ExpiredSnapshotIdError,
     UnsupportOperationError,
@@ -16,6 +21,7 @@ from minmodkg.services.mineral_site import (
 from minmodkg.transformations import make_site_id
 from minmodkg.typing import InternalID
 from pydantic import BaseModel
+from sqlalchemy import select
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -81,10 +87,6 @@ def get_site(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid format.",
         )
-
-
-# @router.get("/mineral-sites/{data_source_name}")
-# def get_sites():
 
 
 @router.post("/same-as")
