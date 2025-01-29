@@ -19,8 +19,9 @@ from minmodkg.models.kgrel.custom_types import (
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import BigInteger
-from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
+from sqlalchemy import VARCHAR, BigInteger, String
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import Mapped, MappedAsDataclass, composite, mapped_column
 
 
 @dataclass
@@ -33,19 +34,44 @@ class DedupMineralSite(MappedAsDataclass, Base):
     __tablename__ = "dedup_mineral_site"
 
     id: Mapped[InternalID] = mapped_column(primary_key=True)
-    name: Mapped[Optional[RefValue[str]]] = mapped_column()
-    type: Mapped[Optional[RefValue[str]]] = mapped_column()
-    rank: Mapped[Optional[RefValue[str]]] = mapped_column()
+    name: Mapped[Optional[RefValue[str]]] = composite(
+        RefValue.as_composite,
+        mapped_column("name_val", String, nullable=True),
+        mapped_column("name_refid", String, nullable=True),
+    )
+    type: Mapped[Optional[RefValue[str]]] = composite(
+        RefValue.as_composite,
+        mapped_column("type_val", String, nullable=True),
+        mapped_column("type_refid", String, nullable=True),
+    )
+    rank: Mapped[Optional[RefValue[str]]] = composite(
+        RefValue.as_composite,
+        mapped_column("rank_val", String, nullable=True),
+        mapped_column("rank_refid", String, nullable=True),
+    )
+
+    # for searching only
+    top1_deposit_type: Mapped[Optional[InternalID]] = mapped_column(index=True)
     ranked_deposit_types: Mapped[list[DedupMineralSiteDepositType]] = mapped_column()
 
     coordinates: Mapped[Optional[RefGeoCoordinate]] = mapped_column()
-    country: Mapped[RefListID] = mapped_column()
-    state_or_province: Mapped[RefListID] = mapped_column()
+    country: Mapped[RefListID] = composite(
+        mapped_column("country_val", ARRAY(VARCHAR(7)), index=True),
+        mapped_column(
+            "country_refid",
+            String,
+        ),
+    )
+    state_or_province: Mapped[RefListID] = composite(
+        mapped_column("state_or_province_val", ARRAY(VARCHAR(7)), index=True),
+        mapped_column(
+            "state_or_province_refid",
+            String,
+        ),
+    )
 
     ranked_sites: Mapped[list[SiteAndScore]] = mapped_column()
-
     modified_at: Mapped[int] = mapped_column(BigInteger)
-    is_deleted: Mapped[bool] = mapped_column(default=False)
 
     @staticmethod
     def from_dedup_sites(
@@ -75,6 +101,14 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ):
                     _tmp_deposit_types[dt.id] = dt
 
+        ranked_deposit_types = sorted(
+            _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
+        )[:5]
+        if len(ranked_deposit_types) > 0:
+            top1_deposit_type = ranked_deposit_types[0].id
+        else:
+            top1_deposit_type = None
+
         merged_dedup_site = DedupMineralSite(
             id=dedup_sites[0].id,
             name=next(
@@ -89,9 +123,8 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 (site.type for site, _ in rank_dedup_sites if site.type is not None),
                 None,
             ),
-            ranked_deposit_types=sorted(
-                _tmp_deposit_types.values(), key=lambda x: x.confidence, reverse=True
-            )[:5],
+            ranked_deposit_types=ranked_deposit_types,
+            top1_deposit_type=top1_deposit_type,
             coordinates=next(
                 (
                     site.coordinates
@@ -121,7 +154,6 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 key=lambda x: x.score,
                 reverse=True,
             ),
-            is_deleted=False,
             modified_at=max(dedup_site.modified_at for dedup_site in dedup_sites),
         )
         return merged_dedup_site
@@ -180,6 +212,11 @@ class DedupMineralSite(MappedAsDataclass, Base):
             RefListID([], rank_sites[0].site_id),
         )
 
+        ranked_deposit_types = top_5_deposit_types(rank_sites)
+        if len(ranked_deposit_types) > 0:
+            top1_deposit_type = ranked_deposit_types[0].id
+        else:
+            top1_deposit_type = None
         dedup_site = DedupMineralSite(
             id=(
                 dedup_site_id
@@ -189,12 +226,12 @@ class DedupMineralSite(MappedAsDataclass, Base):
             name=RefValue.from_sites(rank_sites, lambda site: site.name),
             type=RefValue.from_sites(rank_sites, lambda site: site.type),
             rank=RefValue.from_sites(rank_sites, lambda site: site.rank),
-            ranked_deposit_types=top_5_deposit_types(rank_sites),
+            top1_deposit_type=top1_deposit_type,
+            ranked_deposit_types=ranked_deposit_types,
             coordinates=coordinates,
             country=country,
             state_or_province=state_or_province,
             ranked_sites=rank_site_scores,
-            is_deleted=False,
             modified_at=max(msi.ms.modified_at for msi in sites),
         )
         dedup_site.update_inventories({msi.ms.site_id: msi.invs for msi in sites})
@@ -310,22 +347,28 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ("country", self.country.to_dict()),
                 ("state_or_province", self.state_or_province.to_dict()),
                 ("ranked_sites", [site.to_dict() for site in self.ranked_sites]),
-                ("is_deleted", self.is_deleted),
                 ("modified_at", self.modified_at),
             )
         )
 
     @classmethod
     def from_dict(cls, d):
+        ranked_deposit_types = [
+            DedupMineralSiteDepositType.from_dict(dt)
+            for dt in d.get("deposit_types", [])
+        ]
+        if len(ranked_deposit_types) > 0:
+            top1_deposit_type = ranked_deposit_types[0].id
+        else:
+            top1_deposit_type = None
+
         dedup_site = DedupMineralSite(
             id=d["id"],
             name=RefValue.from_dict(d["name"]) if d.get("name") is not None else None,
             type=RefValue.from_dict(d["type"]) if d.get("type") is not None else None,
             rank=RefValue.from_dict(d["rank"]) if d.get("rank") is not None else None,
-            ranked_deposit_types=[
-                DedupMineralSiteDepositType.from_dict(dt)
-                for dt in d.get("deposit_types", [])
-            ],
+            top1_deposit_type=top1_deposit_type,
+            ranked_deposit_types=ranked_deposit_types,
             coordinates=(
                 RefGeoCoordinate.from_dict(d["coordinates"])
                 if d.get("coordinates") is not None
@@ -336,7 +379,6 @@ class DedupMineralSite(MappedAsDataclass, Base):
             ranked_sites=[
                 SiteAndScore.from_dict(site) for site in d.get("ranked_sites", [])
             ],
-            is_deleted=d["is_deleted"],
             modified_at=d["modified_at"],
         )
         return dedup_site
