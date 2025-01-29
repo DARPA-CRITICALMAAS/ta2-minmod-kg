@@ -17,8 +17,19 @@ class KGSyncListener(Listener):
     rdf_type = MINMOD_NS.rdf.type
     mo_normalized_uri = MINMOD_NS.mo.normalized_uri
 
-    def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
-        MINMOD_KG.insert(site.ms.to_kg().to_triples())
+    def handle_site_add(
+        self,
+        event: EventLog,
+        site: MineralSiteAndInventory,
+        same_site_ids: list[InternalID],
+    ):
+        key_ns = MineralSite.__subj__.key_ns
+        triples = site.ms.to_kg().to_triples()
+        for same_site_id in same_site_ids:
+            triples.append(
+                (key_ns[site.ms.site_id], self.owl_same_as, key_ns[same_site_id])
+            )
+        MINMOD_KG.insert(triples)
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
         kgms = site.ms.to_kg()

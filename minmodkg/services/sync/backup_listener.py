@@ -32,8 +32,19 @@ class BackupListener(Listener):
             str, list[tuple[InternalID, InternalID, int, int]]
         ] = defaultdict(list)
 
-    def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
+    def handle_site_add(
+        self,
+        event: EventLog,
+        site: MineralSiteAndInventory,
+        same_site_ids: list[InternalID],
+    ):
         self._upsert_site("add", site)
+        self._update_same_as(
+            site.ms.created_by,
+            [[site.ms.record_id] + same_site_ids],
+            {},
+            site.ms.modified_at,
+        )
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
         self._upsert_site("update", site)
@@ -47,15 +58,7 @@ class BackupListener(Listener):
     ):
         # write the same as links to the journal
         # there will be a single same-as file for all users
-        username = get_username(user_uri)
-        records = []
-        for group in groups:
-            for target in group[1:]:
-                records.append((group[0], target, event.timestamp, 1))
-        for site_id, diff_sites in diff_groups.items():
-            for diff_site in diff_sites:
-                records.append((site_id, diff_site, event.timestamp, 0))
-        self.same_as_journal[username].extend(records)
+        self._update_same_as(user_uri, groups, diff_groups, event.timestamp)
 
     def handle_end(self, events: Sequence[EventLog]):
         for (username, source_name, bucket_no), actions in self.site_journal.items():
@@ -131,3 +134,20 @@ class BackupListener(Listener):
         key = (username, data_sources[source_id].slug_name, bucket_no)
 
         self.site_journal[key].append((action, site.ms.to_kg().to_dict()))
+
+    def _update_same_as(
+        self,
+        user_uri: str,
+        groups: list[list[InternalID]],
+        diff_groups: dict[InternalID, list[InternalID]],
+        timestamp: int,
+    ):
+        username = get_username(user_uri)
+        records = []
+        for group in groups:
+            for target in group[1:]:
+                records.append((group[0], target, timestamp, 1))
+        for site_id, diff_sites in diff_groups.items():
+            for diff_site in diff_sites:
+                records.append((site_id, diff_site, timestamp, 0))
+        self.same_as_journal[username].extend(records)

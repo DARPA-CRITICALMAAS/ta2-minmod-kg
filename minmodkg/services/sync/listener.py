@@ -16,7 +16,9 @@ class Listener:
         for event in events:
             if event.type == "site:add":
                 self.handle_site_add(
-                    event, MineralSiteAndInventory.from_dict(event.data["site"])
+                    event,
+                    MineralSiteAndInventory.from_dict(event.data["site"]),
+                    event.data["same_site_ids"],
                 )
             elif event.type == "site:update":
                 self.handle_site_update(
@@ -40,7 +42,12 @@ class Listener:
     def handle_end(self, events: Sequence[EventLog]):
         pass
 
-    def handle_site_add(self, event: EventLog, site: MineralSiteAndInventory):
+    def handle_site_add(
+        self,
+        event: EventLog,
+        site: MineralSiteAndInventory,
+        same_site_ids: list[InternalID],
+    ):
         raise NotImplementedError()
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):

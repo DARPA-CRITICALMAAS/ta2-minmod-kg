@@ -21,11 +21,14 @@ class EventLog(MappedAsDataclass, Base):
     timestamp: Mapped[int] = mapped_column(BigInteger, default_factory=time.time_ns)
 
     @classmethod
-    def from_site_add(cls, site: MineralSiteAndInventory) -> EventLog:
+    def from_site_add(
+        cls, site: MineralSiteAndInventory, same_site_ids: list[InternalID]
+    ) -> EventLog:
         return EventLog(
             type="site:add",
             data={
                 "site": site.to_dict(),
+                "same_site_ids": same_site_ids,
             },
         )
 

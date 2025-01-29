@@ -213,7 +213,11 @@ class MineralSiteService:
                 ],
             )
 
-            session.add(EventLog.from_site_add(site_and_inv))
+            session.add(
+                EventLog.from_site_add(
+                    site_and_inv, [ms.ms.site_id for ms in existing_sites]
+                )
+            )
 
             # step 3: commit data
             session.commit()
