@@ -134,6 +134,7 @@ class CDRHelper:
         count="dedup-site/stats/count",
     )
     DepositType = Endpoint(item="deposit-type", collection="deposit-types")
+    MineralSite = Endpoint(item="site", collection="sites")
 
     N_PARALLEL_JOBS = 16
 

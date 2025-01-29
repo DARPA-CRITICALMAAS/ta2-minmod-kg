@@ -83,6 +83,10 @@ def get_site(
         )
 
 
+# @router.get("/mineral-sites/{data_source_name}")
+# def get_sites():
+
+
 @router.post("/same-as")
 def update_same_as(
     same_site_groups: list[UpdateDedupLink],
