@@ -20,8 +20,14 @@ from minmodkg.integrations.cdr.cdr_schemas import (
     DedupSiteRecord,
     DepositType,
     DepositTypeCandidate,
+    DocumentReference,
 )
+from minmodkg.integrations.cdr.cdr_schemas import (
+    MineralInventory as CDRMineralInventory,
+)
+from minmodkg.integrations.cdr.cdr_schemas import MineralSite
 from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.typing import InternalID
 from tqdm import tqdm
 
@@ -52,7 +58,50 @@ def sync_deposit_types():
 
 
 def sync_mineral_sites():
-    pass
+    commodity_uri2name = MinmodHelper.get_commodity_uri2name()
+
+    ms_resp = httpx.get(
+        f"{MINMOD_API}/cdr/mining-report", verify=False, timeout=None
+    ).raise_for_status()
+
+    mineral_sites = []
+    for ms in ms_resp.json():
+        invs = []
+        for mi in ms["inventories"]:
+            inv = MineralInventory.from_dict(mi)
+            if inv.commodity.normalized_uri not in commodity_uri2name:
+                continue
+            if len(inv.reference.page_info) == 0:
+                continue
+
+            invs.append(
+                CDRMineralInventory(
+                    commodity=commodity_uri2name[inv.commodity.normalized_uri],
+                    documents=[
+                        DocumentReference(
+                            cdr_id=ms["record_id"],
+                            page=page.page,
+                        )
+                        for page in inv.reference.page_info
+                    ],
+                )
+            )
+
+        mineral_sites.append(
+            MineralSite(
+                id=ms["site_id"],
+                source_id=ms["source_id"],
+                record_id=ms["record_id"],
+                name=ms["name"] or "",
+                mineral_inventory=invs,
+                validated=False,
+                system=MINMOD_SYSTEM,
+                system_version="2.0.0a",
+            ).model_dump()
+        )
+
+    CDRHelper.truncate(CDRHelper.MineralSite)
+    CDRHelper.upload_collection(CDRHelper.MineralSite, mineral_sites)
 
 
 def format_dedup_site(
@@ -184,5 +233,6 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
 
 
 if __name__ == "__main__":
+    sync_mineral_sites()
     # sync_deposit_types()
-    sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")
+    # sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")

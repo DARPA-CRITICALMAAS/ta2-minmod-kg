@@ -21,7 +21,7 @@ else:
 
 MINMOD_API = os.environ.get("MINMOD_API", "https://minmod.isi.edu/api/v1")
 MINMOD_SYSTEM = os.environ.get("MINMOD_SYSTEM", "minmod")
-CDR_API = "https://api.cdr.land/v1"
+CDR_API = os.environ.get("CDR_API", "https://api.cdr.land/v1")
 
 cdr_headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
 
@@ -54,7 +54,7 @@ class MinmodHelper:
 
     @lru_cache(maxsize=1)
     @staticmethod
-    def get_commodity_id2name():
+    def get_commodity_uri2name():
         r = httpx.get(
             f"{MINMOD_API}/commodities",
             verify=False,
@@ -62,13 +62,21 @@ class MinmodHelper:
         )
         r.raise_for_status()
 
-        id2name = {}
+        uri2name = {}
         for record in r.json():
-            id = MINMOD_NS.mr.id(record["uri"])
+            uri = record["uri"]
             name = record["name"]
-            assert id not in id2name, (id, id2name)
-            id2name[id] = name
-        return id2name
+            assert uri not in uri2name, (uri, uri2name)
+            uri2name[uri] = name
+        return uri2name
+
+    @lru_cache(maxsize=1)
+    @staticmethod
+    def get_commodity_id2name():
+        return {
+            MINMOD_NS.mr.id(uri): name
+            for uri, name in MinmodHelper.get_commodity_uri2name().items()
+        }
 
     @lru_cache(maxsize=1)
     @staticmethod
@@ -134,6 +142,7 @@ class CDRHelper:
         count="dedup-site/stats/count",
     )
     DepositType = Endpoint(item="deposit-type", collection="deposit-types")
+    MineralSite = Endpoint(item="site", collection="sites")
 
     N_PARALLEL_JOBS = 16
 
@@ -224,7 +233,9 @@ class CDRHelper:
             headers=cdr_headers,
             timeout=None,
         )
-        r.raise_for_status()
+        if r.status_code != 200:
+            raise Exception("Fail to create item", r.text)
+        return None
 
 
 @lru_cache(maxsize=2)
