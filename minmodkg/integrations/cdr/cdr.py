@@ -233,6 +233,7 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
 
 
 if __name__ == "__main__":
+    CDRHelper.truncate(CDRHelper.MineralSite)
     sync_mineral_sites()
     # sync_deposit_types()
     # sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")

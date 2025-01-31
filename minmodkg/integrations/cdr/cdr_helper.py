@@ -142,7 +142,7 @@ class CDRHelper:
         count="dedup-site/stats/count",
     )
     DepositType = Endpoint(item="deposit-type", collection="deposit-types")
-    MineralSite = Endpoint(item="site", collection="sites")
+    MineralSite = Endpoint(item="site", collection="sites", count="sites/count")
 
     N_PARALLEL_JOBS = 16
 
@@ -182,21 +182,39 @@ class CDRHelper:
                 )
                 assert r.status_code == 204 or r.status_code == 404, r.text
             else:
-                r = httpx.get(
-                    f"{CDR_API}/minerals/{endpoint.collection}",
-                    headers=cdr_headers,
-                    timeout=None,
+                assert endpoint.count is not None, endpoint
+                n_records = int(
+                    httpx.get(
+                        f"{CDR_API}/minerals/{endpoint.count}",
+                        headers=cdr_headers,
+                        timeout=None,
+                    )
+                    .raise_for_status()
+                    .text
                 )
-                r.raise_for_status()
-                records = r.json()
-                it = get_parallel(
+
+                parallel = get_parallel(
                     n_jobs=CDRHelper.N_PARALLEL_JOBS, return_as="generator_unordered"
-                )(
-                    delayed(CDRHelper.delete_by_id)(endpoint, item["id"])
-                    for item in records
                 )
-                for _ in tqdm(it, total=len(records), desc="deleting records"):
-                    pass
+                batch_size = 5000
+
+                with tqdm(total=n_records, desc="deleting records") as pbar:
+                    for i in range(0, n_records, batch_size):
+                        r = httpx.get(
+                            f"{CDR_API}/minerals/{endpoint.collection}",
+                            params={"limit": batch_size},
+                            headers=cdr_headers,
+                            timeout=None,
+                        )
+                        r.raise_for_status()
+                        records = r.json()
+
+                        it = parallel(
+                            delayed(CDRHelper.delete_by_id)(endpoint, item["id"])
+                            for item in records
+                        )
+                        for _ in it:
+                            pbar.update(1)
 
             # double check the results
             if endpoint.count is None:
