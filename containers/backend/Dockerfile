@@ -12,7 +12,9 @@ RUN apt update && apt install -y ca-certificates curl git git-lfs lz4 && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 
 
-RUN git config --global --add safe.directory "*"
+RUN git config --global --add safe.directory "*" && \
+    git config --global user.email "minmod@isi.edu" && \
+    git config --global user.name "MinMod"
 
 ARG UID=1000
 ARG GID=1000
