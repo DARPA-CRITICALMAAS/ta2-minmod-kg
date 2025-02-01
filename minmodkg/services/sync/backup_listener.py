@@ -87,7 +87,7 @@ class BackupListener(Listener):
                     sites[id2index[site["record_id"]]] = site
 
             outfile.parent.mkdir(parents=True, exist_ok=True)
-            serde.json.ser(sites, outfile)
+            serde.json.ser(sites, outfile, indent=2)
 
         for username, same_as_links in self.same_as_journal.items():
             outfile = self.data_repo_dir / f"data/same-as/{username}/same_as.csv"
