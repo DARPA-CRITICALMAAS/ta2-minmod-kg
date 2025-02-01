@@ -70,7 +70,10 @@ services:
       - type: bind
         source: ../ta2-minmod-data
         target: /home/criticalmaas/ta2-minmod-data
-    command: python -m minmodkg.services.sync /home/criticalmaas/ta2-minmod-data --backup-interval 3600
+    command: python -m minmodkg.services.sync /home/criticalmaas/ta2-minmod-data --backup-interval 3600 --verbose true
+  api_cdr_sync:
+    image: minmod-backend
+    command: python -m minmodkg.integrations.cdr --verbose true
   dashboard:
     image: toan2/minmod-dashboard
     ports:
