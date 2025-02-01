@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 from loguru import logger
@@ -18,7 +18,7 @@ def main(
     repo_dir: Path,
     backup_interval: int = 3600,
     batch_size: int = 500,
-    verbose: bool = False,
+    verbose: Annotated[bool, typer.Option("--verbose")] = False,
 ):
     """Synchronize data from the KGRel to KG and CDR."""
     kgsync_listener = KGSyncListener()

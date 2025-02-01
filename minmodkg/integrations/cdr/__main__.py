@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 from loguru import logger
@@ -19,7 +19,7 @@ def sync_cdr():
 def main(
     interval: int = 86400,
     run_on_start: bool = False,
-    verbose: bool = False,
+    verbose: Annotated[bool, typer.Option("--verbose")] = False,
 ):
     """Synchronize data to CDR."""
     assert interval > 60, "Interval must be greater than 1 minute"
