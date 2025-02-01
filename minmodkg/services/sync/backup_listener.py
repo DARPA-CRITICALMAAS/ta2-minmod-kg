@@ -6,7 +6,7 @@ from typing import Literal, Sequence
 
 import serde.csv
 import serde.json
-from minmodkg.etl.mineral_site import COMPRESSION, PartitionFn
+import xxhash
 from minmodkg.misc.utils import format_nanoseconds
 from minmodkg.models.kgrel.data_source import DataSource
 from minmodkg.models.kgrel.event import EventLog
@@ -14,7 +14,8 @@ from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.user import get_username
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.sync.listener import Listener
-from minmodkg.typing import IRI, InternalID
+from minmodkg.typing import InternalID
+from slugify import slugify
 
 from statickg.models.repository import GitRepository
 
@@ -89,9 +90,7 @@ class BackupListener(Listener):
             serde.json.ser(sites, outfile)
 
         for username, same_as_links in self.same_as_journal.items():
-            outfile = (
-                self.data_repo_dir / f"data/same-as/{username}/same_as.csv{COMPRESSION}"
-            )
+            outfile = self.data_repo_dir / f"data/same-as/{username}/same_as.csv"
             if outfile.exists():
                 records = serde.csv.deser(outfile)
                 key2idx = {(r[0], r[1]): i for i, r in enumerate(records)}
@@ -156,3 +155,23 @@ class BackupListener(Listener):
             for diff_site in diff_sites:
                 records.append((site_id, diff_site, timestamp, 0))
         self.same_as_journal[username].extend(records)
+
+
+class PartitionFn:
+    """Partition the mineral sites from a single file into <source_id>/<bucket>/<file_name>.json.
+
+    With the restructured Github, this function is no longer needed and is deprecated.
+    """
+
+    instances = {}
+    num_buckets = 64
+
+    @staticmethod
+    def get_bucket_no(record_id: str) -> int:
+        enc_record_id = slugify(str(record_id).strip()).encode()
+        bucketno = xxhash.xxh64(enc_record_id).intdigest() % PartitionFn.num_buckets
+        return bucketno
+
+    @staticmethod
+    def get_filename(username: str, source_name: str, bucket_no: int) -> Path:
+        return Path(f"{username}/{source_name}/b{bucket_no:03d}.json")

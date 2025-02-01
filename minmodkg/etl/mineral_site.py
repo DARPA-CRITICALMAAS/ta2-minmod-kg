@@ -355,26 +355,6 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
         )
 
 
-class PartitionFn:
-    """Partition the mineral sites from a single file into <source_id>/<bucket>/<file_name>.json.
-
-    With the restructured Github, this function is no longer needed and is deprecated.
-    """
-
-    instances = {}
-    num_buckets = 64
-
-    @staticmethod
-    def get_bucket_no(record_id: str) -> int:
-        enc_record_id = slugify(str(record_id).strip()).encode()
-        bucketno = xxhash.xxh64(enc_record_id).intdigest() % PartitionFn.num_buckets
-        return bucketno
-
-    @staticmethod
-    def get_filename(username: str, source_name: str, bucket_no: int) -> Path:
-        return Path(f"{username}/{source_name}/b{bucket_no:03d}.json{COMPRESSION}")
-
-
 class MergeFn:
     """Merge multiple files of the same source into a single file"""
 
