@@ -110,7 +110,8 @@ class BackupListener(Listener):
             output = [["ms_1", "ms_2", "time_ns", "is_same"]]
             output.extend((r for i, r in enumerate(records) if i not in delete_indices))
             outfile.parent.mkdir(parents=True, exist_ok=True)
-            serde.csv.ser(output, outfile)
+            if len(output) > 1:
+                serde.csv.ser(output, outfile)
 
         if len(events) > 0:
             # after updating the files, we need to commit the changes to the git repo
