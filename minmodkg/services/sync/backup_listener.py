@@ -74,9 +74,13 @@ class BackupListener(Listener):
                 id2index = {}
 
             for action, site in actions:
-                if action == "add":
-                    sites.append(site)
+                if site["record_id"] not in id2index:
                     id2index[site["record_id"]] = len(sites) - 1
+                    sites.append(site)
+
+                if action == "add":
+                    # do nothing
+                    pass
                 else:
                     assert action == "update"
                     sites[id2index[site["record_id"]]] = site
