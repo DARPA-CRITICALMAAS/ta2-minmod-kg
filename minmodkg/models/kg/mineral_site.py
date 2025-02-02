@@ -59,8 +59,6 @@ class MineralSiteIdent(RDFModel):
 class MineralSite(MineralSiteIdent, RDFModel):
     __subj__ = Subject(type=NS_MO.term("MineralSite"), key_ns=NS_MR, key="uri")
 
-    source_id: Annotated[CleanedNotEmptyStr, P()]
-    record_id: Annotated[CleanedNotEmptyStr, P()]
     name: Annotated[Optional[CleanedNotEmptyStr], P(pred=NS_RDFS.term("label"))] = None
     aliases: Annotated[list[CleanedNotEmptyStr], P(is_list=True)] = field(
         default_factory=list
