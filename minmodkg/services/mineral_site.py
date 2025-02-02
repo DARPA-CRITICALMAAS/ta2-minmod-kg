@@ -429,6 +429,7 @@ class MineralSiteService:
         self,
         *,
         commodity: Optional[InternalID],
+        deposit_type: Optional[InternalID] = None,
         country: Optional[InternalID] = None,
         state_or_province: Optional[InternalID] = None,
         dedup_site_ids: Optional[Sequence[InternalID]] = None,
@@ -463,6 +464,9 @@ class MineralSiteService:
                     MineralInventoryView.dedup_site_id == DedupMineralSite.id,
                     isouter=True,
                 ).where(MineralInventoryView.commodity == commodity)
+
+        if deposit_type is not None:
+            query = query.where(DedupMineralSite.top1_deposit_type == deposit_type)
 
         if country is not None:
             # TODO: this a temporary solution to retrieve the inner element of the composite property

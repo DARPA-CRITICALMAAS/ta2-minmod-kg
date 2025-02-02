@@ -14,14 +14,21 @@ router = APIRouter(tags=["mineral_sites"])
 @router.get("/dedup-mineral-sites")
 def dedup_mineral_sites_v2(
     commodity: Optional[str] = None,
-    country: Optional[str] = None,
-    state_or_province: Optional[str] = None,
+    deposit_type: Optional[InternalID] = None,
+    country: Optional[InternalID] = None,
+    state_or_province: Optional[InternalID] = None,
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
     return_count: Annotated[bool, Query()] = False,
 ):
     if commodity is not None:
         commodity = norm_commodity(commodity)
+    if deposit_type is not None:
+        if not is_minmod_id(deposit_type):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Expect deposit_type to be a Q node, but get: {deposit_type}",
+            )
     if country is not None:
         if not is_minmod_id(country):
             raise HTTPException(
@@ -36,6 +43,7 @@ def dedup_mineral_sites_v2(
             )
     res = MineralSiteService().find_dedup_mineral_sites(
         commodity=commodity,
+        deposit_type=deposit_type,
         country=country,
         state_or_province=state_or_province,
         limit=limit,
