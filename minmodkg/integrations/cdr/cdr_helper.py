@@ -264,7 +264,7 @@ class CDRHelper:
             headers=cdr_headers,
             timeout=None,
         )
-        if r.status_code != 200:
+        if r.status_code != 200 and r.status_code != 201:
             raise Exception("Fail to create item", r.text)
         return None
 

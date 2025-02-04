@@ -153,19 +153,25 @@ class EntityDeserFn:
         raw_records = serde.csv.deser(infile, deser_as_record=True)
         records: list[Commodity] = []
         for raw_record in raw_records:
-            r = Commodity(
-                id=raw_record["minmod_id"],
-                name=raw_record["name"],
-                aliases=(
-                    [s.strip() for s in raw_record["aliases"].split("|")]
-                    if raw_record["aliases"].strip() != ""
-                    else []
-                ),
-                parent=(
-                    raw_record["parent"] if raw_record["parent"].strip() != "" else None
-                ),
-                is_critical=bool(int(raw_record["is_critical_commodity"])),
-            )
+            try:
+                r = Commodity(
+                    id=raw_record["minmod_id"],
+                    name=raw_record["name"],
+                    aliases=(
+                        [s.strip() for s in raw_record["aliases"].split("|")]
+                        if raw_record["aliases"].strip() != ""
+                        else []
+                    ),
+                    parent=(
+                        raw_record["parent"]
+                        if raw_record["parent"].strip() != ""
+                        else None
+                    ),
+                    is_critical=bool(int(raw_record["is_critical_commodity"])),
+                )
+            except Exception:
+                print("Error while processing", raw_record)
+                raise
             records.append(r)
 
         # insert parentless records first
