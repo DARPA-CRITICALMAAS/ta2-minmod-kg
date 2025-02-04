@@ -309,7 +309,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
 
         # read the merged files
         dedup_sites: dict[InternalID, list[DedupMineralSite]] = defaultdict(list)
-        sites: list[MineralSiteAndInventory] = []
+        id2site: dict[InternalID, MineralSiteAndInventory] = {}
         for infile in tqdm(
             merge_files.values(),
             total=len(merge_files),
@@ -320,12 +320,10 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             for x in d["DedupMineralSite"]:
                 dms = DedupMineralSite.from_dict(x)
                 dedup_sites[dms.id].append(dms)
-            sites.extend(
-                (
-                    MineralSiteAndInventory.from_dict(x)
-                    for x in d["MineralSiteAndInventory"]
-                )
-            )
+            for x in d["MineralSiteAndInventory"]:
+                msi = MineralSiteAndInventory.from_dict(x)
+                assert msi.ms.site_id not in id2site
+                id2site[msi.ms.site_id] = msi
 
         output_dedup_sites = []
         output_sites = []
@@ -336,10 +334,19 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
             desc="Creating Dedup Mineral Site",
             disable=self.verbose < 1,
         ):
-            dedup_site = DedupMineralSite.from_dedup_sites(lst, is_site_ranked=True)
+            dedup_site = DedupMineralSite.from_dedup_sites(
+                lst,
+                [id2site[rms.site_id] for dms in lst for rms in dms.ranked_sites],
+                is_site_ranked=True,
+            )
             output_dedup_sites.append(dedup_site.to_dict())
 
-        for msi in tqdm(sites, desc="Creating Mineral Site", disable=self.verbose < 1):
+        for msi in tqdm(
+            id2site.values(),
+            total=len(id2site),
+            desc="Creating Mineral Site",
+            disable=self.verbose < 1,
+        ):
             output_sites.append(msi.ms.to_dict())
             output_inventories.append(
                 {"invs": [inv.to_dict() for inv in msi.invs], "site": msi.ms.site_id}

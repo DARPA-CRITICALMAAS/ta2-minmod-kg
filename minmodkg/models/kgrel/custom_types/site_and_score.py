@@ -37,7 +37,11 @@ class SiteScore:
 
     @classmethod
     def from_dict(cls, d):
-        return cls(score=d["score"], suborder=d["suborder"])
+        if d["suborder"][0]:
+            suborder = ExpertCmpKey(*d["suborder"])
+        else:
+            suborder = SystemCmpKey(*d["suborder"])
+        return cls(score=d["score"], suborder=suborder)
 
     def is_from_user(self):
         return self.suborder.is_expert

@@ -76,6 +76,7 @@ class DedupMineralSite(MappedAsDataclass, Base):
     @staticmethod
     def from_dedup_sites(
         dedup_sites: list[DedupMineralSite],
+        sites: Sequence[MineralSiteAndInventory],
         *,
         is_site_ranked: bool,
     ) -> DedupMineralSite:
@@ -155,6 +156,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 reverse=True,
             ),
             modified_at=max(dedup_site.modified_at for dedup_site in dedup_sites),
+        )
+        merged_dedup_site.update_inventories(
+            {msi.ms.site_id: msi.invs for msi in sites}
         )
         return merged_dedup_site
 
