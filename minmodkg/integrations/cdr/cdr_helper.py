@@ -182,16 +182,29 @@ class CDRHelper:
                 )
                 assert r.status_code == 204 or r.status_code == 404, r.text
             else:
-                assert endpoint.count is not None, endpoint
-                n_records = int(
-                    httpx.get(
-                        f"{CDR_API}/minerals/{endpoint.count}",
-                        headers=cdr_headers,
-                        timeout=None,
+                if endpoint.count is None:
+                    # the deposit type does not have count endpoint
+                    assert endpoint.item == "deposit-type"
+                    n_records = len(
+                        httpx.get(
+                            f"{CDR_API}/minerals/{endpoint.collection}",
+                            headers=cdr_headers,
+                            timeout=None,
+                        )
+                        .raise_for_status()
+                        .json()
                     )
-                    .raise_for_status()
-                    .text
-                )
+                else:
+                    assert endpoint.count is not None, endpoint
+                    n_records = int(
+                        httpx.get(
+                            f"{CDR_API}/minerals/{endpoint.count}",
+                            headers=cdr_headers,
+                            timeout=None,
+                        )
+                        .raise_for_status()
+                        .text
+                    )
 
                 parallel = get_parallel(
                     n_jobs=CDRHelper.N_PARALLEL_JOBS, return_as="generator_unordered"
