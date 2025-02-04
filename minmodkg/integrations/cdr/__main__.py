@@ -34,8 +34,8 @@ def main(
             # record the current hour
             current_run = int(time.time() / interval)
             if last_run is None or current_run > last_run:
-                last_run = current_run
                 sync_cdr()
+                last_run = current_run
         except Exception as e:
             # exception occurred, we will wait for X second before trying again
             logger.exception(e)
