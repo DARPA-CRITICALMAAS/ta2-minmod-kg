@@ -18,7 +18,7 @@ def sync_cdr():
 @app.command()
 def main(
     interval: int = 86400,
-    run_on_start: bool = False,
+    run_on_start: Annotated[bool, typer.Option("--run-on-start")] = False,
     verbose: Annotated[bool, typer.Option("--verbose")] = False,
 ):
     """Synchronize data to CDR."""

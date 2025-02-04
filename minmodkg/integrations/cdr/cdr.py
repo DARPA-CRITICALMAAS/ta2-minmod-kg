@@ -34,7 +34,7 @@ from tqdm import tqdm
 
 def sync_deposit_types():
     deposit_type_resp = httpx.get(
-        f"{MINMOD_API}/deposit_types",
+        f"{MINMOD_API}/deposit-types",
         verify=False,
         timeout=None,
     )
