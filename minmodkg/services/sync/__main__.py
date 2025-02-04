@@ -33,18 +33,11 @@ def main(
 
             if backup_interval > 0:
                 # only run the backup sync if the interval is greater than 0
-                if last_backup_synced is None:
-                    # record the current hour
-                    last_backup_synced = int(time.time() / backup_interval)
-                    # then process all events
+                # record the current hour
+                current_hour = int(time.time() / backup_interval)
+                if last_backup_synced is None or current_hour > last_backup_synced:
                     process_pending_events(backup_listener, batch_size, verbose=verbose)
-                else:
-                    current_hour = int(time.time() / backup_interval)
-                    if current_hour > last_backup_synced:
-                        last_backup_synced = current_hour
-                        process_pending_events(
-                            backup_listener, batch_size, verbose=verbose
-                        )
+                    last_backup_synced = current_hour
         except Exception as e:
             # exception occurred, we will wait for X second before trying again
             logger.exception(e)
