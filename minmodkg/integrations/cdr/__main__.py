@@ -31,14 +31,11 @@ def main(
 
     while True:
         try:
-            if last_run is None:
-                # record the current hour
-                last_run = int(time.time() / interval)
-            else:
-                current_run = int(time.time() / interval)
-                if current_run > last_run:
-                    last_run = current_run
-                    sync_cdr()
+            # record the current hour
+            current_run = int(time.time() / interval)
+            if last_run is None or current_run > last_run:
+                last_run = current_run
+                sync_cdr()
         except Exception as e:
             # exception occurred, we will wait for X second before trying again
             logger.exception(e)
