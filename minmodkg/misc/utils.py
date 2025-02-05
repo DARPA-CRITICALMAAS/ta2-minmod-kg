@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import time
 from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
 
 from drepr.writers.turtle_writer import MyLiteral
+from fastapi import Response
 from rdflib import XSD, Graph, Literal
 from rdflib.term import Node
 
@@ -213,3 +215,23 @@ class makedict:
                 d[k] = []
             d[k].append(v)
         return d
+
+
+class CacheResponse:
+    def __init__(self):
+        self.key2value: dict[str, tuple[float, Any]] = {}
+
+    def __call__(
+        self,
+        key: str,
+        expired: int,
+        response: Response,
+        compute_response: Callable[[], V],
+    ) -> V:
+        now = time.time()
+        if key not in self.key2value or self.key2value[key][0] < expired:
+            self.key2value[key] = (now + expired, compute_response())
+        response.headers["Cache-Control"] = (
+            f"max-age={int(self.key2value[key][0] - now)}"
+        )
+        return self.key2value[key][1]

@@ -1,46 +1,74 @@
 from __future__ import annotations
 
-from functools import lru_cache
-
-from fastapi import APIRouter
-from minmodkg.api.dependencies import get_snapshot_id
+from fastapi import APIRouter, Response
+from minmodkg.misc.utils import CacheResponse
 from minmodkg.models.kg.base import MINMOD_KG
 
 router = APIRouter(tags=["statistics"])
+cache_response = CacheResponse()
 
 
 @router.get("/documents/count")
-def document_count():
-    return get_document_count(get_snapshot_id())
+def document_count(response: Response):
+    return cache_response(
+        key="document_count",
+        expired=60 * 60,
+        response=response,
+        compute_response=get_document_count,
+    )
 
 
 @router.get("/mineral-inventories/count")
-def inventory_count():
-    return get_inventory_count(get_snapshot_id())
+def inventory_count(response: Response):
+    return cache_response(
+        key="inventory_count",
+        expired=3 * 60 * 60,
+        response=response,
+        compute_response=get_inventory_count,
+    )
 
 
 @router.get("/mineral-sites/count")
-def mineralsites_count():
-    return get_mineralsites_count(get_snapshot_id())
+def mineralsites_count(response: Response):
+    return cache_response(
+        key="mineralsites_count",
+        expired=60 * 60,
+        response=response,
+        compute_response=get_mineralsites_count,
+    )
 
 
 @router.get("/mineral-inventories/count-by-commodity")
-def inventory_by_commodity():
-    return get_inventory_by_commodity(get_snapshot_id())
+def inventory_by_commodity(response: Response):
+    return cache_response(
+        key="inventory_by_commodity",
+        expired=3 * 60 * 60,
+        response=response,
+        compute_response=get_inventory_by_commodity,
+    )
 
 
 @router.get("/mineral-sites/count-by-commodity")
-def mineralsites_by_commodity():
-    return get_mineralsites_by_commodity(get_snapshot_id())
+def mineralsites_by_commodity(response: Response):
+    return cache_response(
+        key="mineralsites_by_commodity",
+        expired=3 * 60 * 60,
+        response=response,
+        compute_response=get_mineralsites_by_commodity,
+    )
 
 
 @router.get("/documents/count-by-commodity")
-def documents_by_commodity():
-    return get_documents_by_commodity(get_snapshot_id())
+def documents_by_commodity(response: Response):
+    return cache_response(
+        key="documents_by_commodity",
+        expired=3 * 60 * 60,
+        response=response,
+        compute_response=get_documents_by_commodity,
+    )
 
 
-@lru_cache(maxsize=1)
-def get_document_count(snapshot_id: str):
+def get_document_count():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT (COUNT(?doc) AS ?total)
@@ -52,8 +80,7 @@ def get_document_count(snapshot_id: str):
     return qres[0]
 
 
-@lru_cache(maxsize=1)
-def get_inventory_count(snapshot_id: str):
+def get_inventory_count():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT (COUNT(?mi) AS ?total)
@@ -65,8 +92,7 @@ def get_inventory_count(snapshot_id: str):
     return qres[0]
 
 
-@lru_cache(maxsize=1)
-def get_mineralsites_count(snapshot_id: str):
+def get_mineralsites_count():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
        SELECT (COUNT(?ms) AS ?total)
@@ -78,8 +104,7 @@ def get_mineralsites_count(snapshot_id: str):
     return qres[0]
 
 
-@lru_cache(maxsize=1)
-def get_inventory_by_commodity(snapshot_id: str):
+def get_inventory_by_commodity():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT  ?commodity_uri ?commodity_label ?total
@@ -99,8 +124,7 @@ def get_inventory_by_commodity(snapshot_id: str):
     return qres
 
 
-@lru_cache(maxsize=1)
-def get_mineralsites_by_commodity(snapshot_id: str):
+def get_mineralsites_by_commodity():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
         SELECT  ?commodity_uri ?commodity_label ?total
@@ -122,8 +146,7 @@ def get_mineralsites_by_commodity(snapshot_id: str):
     return qres
 
 
-@lru_cache(maxsize=1)
-def get_documents_by_commodity(snapshot_id: str):
+def get_documents_by_commodity():
     assert MINMOD_KG.ns.mo.alias == "mo"
     query = """
 
