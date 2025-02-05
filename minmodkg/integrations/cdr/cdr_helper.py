@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import httpx
 import timer
@@ -158,7 +158,7 @@ class CDRHelper:
                     headers=cdr_headers,
                     timeout=None,
                 )
-                if r.status_code != 200:
+                if r.status_code != 200 and r.status_code != 201:
                     print(r.text)
                 r.raise_for_status()
             else:
@@ -254,7 +254,7 @@ class CDRHelper:
             headers=cdr_headers,
             timeout=None,
         )
-        assert r.status_code == 404 or r.status_code == 204, r.text
+        assert r.status_code == 404 or r.status_code == 204, (r.status_code, r.text)
 
     @staticmethod
     def create(endpoint: Endpoint, item: dict):
@@ -267,6 +267,17 @@ class CDRHelper:
         if r.status_code != 200 and r.status_code != 201:
             raise Exception("Fail to create item", r.text)
         return None
+
+    def retry_request(
+        self, req: Callable[[], httpx.Response], retry: int = 3
+    ) -> httpx.Response:
+        for i in range(retry):
+            try:
+                return req()
+            except Exception:
+                print("Retry...")
+                raise
+        raise Exception("Failed to make request")
 
 
 @lru_cache(maxsize=2)

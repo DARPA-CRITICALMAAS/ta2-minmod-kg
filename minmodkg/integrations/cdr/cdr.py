@@ -109,7 +109,7 @@ def format_dedup_site(
     commodity_id2name: dict[InternalID, str],
     country_id2name: dict[InternalID, str],
     province_id2name: dict[InternalID, str],
-):
+) -> list[DedupSite]:
     output = []
 
     base = DedupSite(
@@ -226,6 +226,12 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
                 orjson.loads(fmt_dedup_site.model_dump_json(exclude_none=True))
             )
 
+    id2site = {}
+    for dms in inputs:
+        if dms["id"] in id2site:
+            raise ValueError(f"Duplicate site ID: {dms['id']}")
+        id2site[dms["id"]] = dms
+
     CDRHelper.truncate(CDRHelper.DedupSites)
     batch_size = 5000
     for i in tqdm(list(range(0, len(inputs), batch_size)), "Uploading dedup sites"):
@@ -233,7 +239,7 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
 
 
 if __name__ == "__main__":
-    CDRHelper.truncate(CDRHelper.MineralSite)
-    sync_mineral_sites()
+    # CDRHelper.truncate(CDRHelper.MineralSite)
+    # sync_mineral_sites()
     # sync_deposit_types()
-    # sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")
+    sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")
