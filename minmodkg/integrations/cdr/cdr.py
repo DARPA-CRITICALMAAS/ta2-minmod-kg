@@ -205,7 +205,7 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
         cache_dir = Path(cache_dir)
         cache_dedup_site_file = cache_dir / "dedup_sites.json"
 
-        rerun_fetch_dedup_sites = cache_dedup_site_file.exists()
+        rerun_fetch_dedup_sites = not cache_dedup_site_file.exists()
         uploaded_mineral_sites = {
             msid
             for infile in cache_dir.glob("uploaded_sites_b*.json")
