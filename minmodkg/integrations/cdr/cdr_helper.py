@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -174,38 +175,17 @@ class CDRHelper:
             "Truncating endpoint " + endpoint.collection
         ):
             if endpoint.bulk_upload is not None:
-                r = httpx.delete(
-                    f"{CDR_API}/minerals/{endpoint.bulk_delete}",
-                    params={"system": MINMOD_SYSTEM},
-                    headers=cdr_headers,
-                    timeout=None,
+                r = retry_request(
+                    lambda: httpx.delete(
+                        f"{CDR_API}/minerals/{endpoint.bulk_delete}",
+                        params={"system": MINMOD_SYSTEM},
+                        headers=cdr_headers,
+                        timeout=None,
+                    ),
+                    okay_status_code=(204, 404),
                 )
-                assert r.status_code == 204 or r.status_code == 404, r.text
             else:
-                if endpoint.count is None:
-                    # the deposit type does not have count endpoint
-                    assert endpoint.item == "deposit-type"
-                    n_records = len(
-                        httpx.get(
-                            f"{CDR_API}/minerals/{endpoint.collection}",
-                            headers=cdr_headers,
-                            timeout=None,
-                        )
-                        .raise_for_status()
-                        .json()
-                    )
-                else:
-                    assert endpoint.count is not None, endpoint
-                    n_records = int(
-                        httpx.get(
-                            f"{CDR_API}/minerals/{endpoint.count}",
-                            headers=cdr_headers,
-                            timeout=None,
-                        )
-                        .raise_for_status()
-                        .text
-                    )
-
+                n_records = CDRHelper.count(endpoint)
                 parallel = get_parallel(
                     n_jobs=CDRHelper.N_PARALLEL_JOBS, return_as="generator_unordered"
                 )
@@ -213,15 +193,7 @@ class CDRHelper:
 
                 with tqdm(total=n_records, desc="deleting records") as pbar:
                     for i in range(0, n_records, batch_size):
-                        r = httpx.get(
-                            f"{CDR_API}/minerals/{endpoint.collection}",
-                            params={"limit": batch_size},
-                            headers=cdr_headers,
-                            timeout=None,
-                        )
-                        r.raise_for_status()
-                        records = r.json()
-
+                        records = CDRHelper.fetch(endpoint, limit=batch_size)
                         it = parallel(
                             delayed(CDRHelper.delete_by_id)(endpoint, item["id"])
                             for item in records
@@ -230,54 +202,82 @@ class CDRHelper:
                             pbar.update(1)
 
             # double check the results
-            if endpoint.count is None:
-                r = httpx.get(
+            assert CDRHelper.count(endpoint) == 0
+
+    @staticmethod
+    def fetch(endpoint: Endpoint, limit: int = -1) -> list:
+        r = retry_request(
+            lambda: httpx.get(
+                f"{CDR_API}/minerals/{endpoint.collection}",
+                params={"limit": limit},
+                headers=cdr_headers,
+                timeout=None,
+            )
+        )
+        return r.json()
+
+    @staticmethod
+    def count(endpoint: Endpoint):
+        if endpoint.count is None:
+            # the deposit type does not have count endpoint
+            assert endpoint.item == "deposit-type"
+            r = retry_request(
+                lambda: httpx.get(
                     f"{CDR_API}/minerals/{endpoint.collection}",
                     headers=cdr_headers,
                     timeout=None,
                 )
-                r.raise_for_status()
-                assert len(r.json()) == 0
-            else:
-                r = httpx.get(
+            )
+            return len(r.json())
+        else:
+            r = retry_request(
+                lambda: httpx.get(
                     f"{CDR_API}/minerals/{endpoint.count}",
                     headers=cdr_headers,
                     timeout=None,
                 )
-                r.raise_for_status()
-                assert int(r.text.strip()) == 0
+            )
+            return int(r.text.strip())
 
     @staticmethod
     def delete_by_id(endpoint: Endpoint, id: str):
-        r = httpx.delete(
-            f"{CDR_API}/minerals/{endpoint.item}/{id}",
-            headers=cdr_headers,
-            timeout=None,
+        retry_request(
+            lambda: httpx.delete(
+                f"{CDR_API}/minerals/{endpoint.item}/{id}",
+                headers=cdr_headers,
+                timeout=None,
+            ),
+            okay_status_code=(204, 404),
         )
-        assert r.status_code == 404 or r.status_code == 204, (r.status_code, r.text)
 
     @staticmethod
     def create(endpoint: Endpoint, item: dict):
-        r = httpx.post(
-            f"{CDR_API}/minerals/{endpoint.item}",
-            json=item,
-            headers=cdr_headers,
-            timeout=None,
+        retry_request(
+            lambda: httpx.post(
+                f"{CDR_API}/minerals/{endpoint.item}",
+                json=item,
+                headers=cdr_headers,
+                timeout=None,
+            ),
+            msg="Fail to create item",
         )
-        if r.status_code != 200 and r.status_code != 201:
-            raise Exception("Fail to create item", r.text)
-        return None
 
-    def retry_request(
-        self, req: Callable[[], httpx.Response], retry: int = 3
-    ) -> httpx.Response:
-        for i in range(retry):
-            try:
-                return req()
-            except Exception:
-                print("Retry...")
-                raise
-        raise Exception("Failed to make request")
+
+def retry_request(
+    req: Callable[[], httpx.Response],
+    *,
+    okay_status_code: tuple[int, ...] = (200, 201),
+    msg: str = "Failed to make request",
+    interval: float = 1,  # wait for 1 second before retry
+    retry: int = 5,
+) -> httpx.Response:
+    for i in range(retry):
+        r = req()
+        if r.status_code in okay_status_code:
+            return r
+        print(f"F({r.status_code}).", end="", flush=True)
+        time.sleep(interval)
+    raise Exception(msg + f" {r.status_code} {r.text}")
 
 
 @lru_cache(maxsize=2)

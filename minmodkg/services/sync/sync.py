@@ -60,3 +60,5 @@ def process_pending_events(
 
         # commit the transaction
         session.commit()
+
+        return len(events)

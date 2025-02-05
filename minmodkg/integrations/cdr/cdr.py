@@ -14,6 +14,7 @@ from minmodkg.integrations.cdr.cdr_helper import (
     MINMOD_SYSTEM,
     CDRHelper,
     MinmodHelper,
+    retry_request,
 )
 from minmodkg.integrations.cdr.cdr_schemas import (
     DedupSite,
@@ -33,25 +34,35 @@ from tqdm import tqdm
 
 
 def sync_deposit_types():
-    deposit_type_resp = httpx.get(
-        f"{MINMOD_API}/deposit-types",
-        verify=False,
-        timeout=None,
+    deposit_type_resp = retry_request(
+        lambda: httpx.get(
+            f"{MINMOD_API}/deposit-types",
+            verify=False,
+            timeout=None,
+        )
     )
-    deposit_type_resp.raise_for_status()
 
     deposit_types = []
     for record in deposit_type_resp.json():
         deposit_types.append(
-            orjson.loads(
-                DepositType(
-                    id=MINMOD_NS.mr.id(record["uri"]),
-                    name=record["name"],
-                    group=record["group"],
-                    environment=record["environment"],
-                ).model_dump_json(exclude_none=True)
-            )
+            DepositType(
+                id=MINMOD_NS.mr.id(record["uri"]),
+                name=record["name"],
+                group=record["group"],
+                environment=record["environment"],
+            ).model_dump(exclude_none=True)
         )
+
+    # fetch deposit types from CDR and check if they are the same first
+    exist_dpts = {
+        (r["id"], r["name"], r["group"], r["environment"])
+        for r in CDRHelper.fetch(CDRHelper.DepositType)
+    }
+    if exist_dpts == {
+        (r["id"], r["name"], r["group"], r["environment"]) for r in deposit_types
+    }:
+        print("Deposit types are the same, skipping update")
+        return
 
     CDRHelper.truncate(CDRHelper.DepositType)
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
@@ -187,33 +198,36 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
     country_id2name = MinmodHelper.get_country_id2name()
     province_id2name = MinmodHelper.get_province_id2name()
 
-    dedup_sites = None
-    if cache_dir is None:
-        rerun = True
-        outfile = None
-    else:
-        outfile = Path(cache_dir) / "data.json"
-        outfile.parent.mkdir(parents=True, exist_ok=True)
-        if outfile.exists():
-            dedup_sites = serde.json.deser(outfile)
-            rerun = False
-        else:
-            rerun = True
+    rerun_fetch_dedup_sites = True
+    uploaded_mineral_sites = set()
 
-    if rerun:
+    if cache_dir is not None:
+        cache_dir = Path(cache_dir)
+        cache_dedup_site_file = cache_dir / "dedup_sites.json"
+
+        rerun_fetch_dedup_sites = cache_dedup_site_file.exists()
+        uploaded_mineral_sites = {
+            msid
+            for infile in cache_dir.glob("uploaded_sites_b*.json")
+            for msid in serde.json.deser(infile)
+        }
+
+    if rerun_fetch_dedup_sites:
         with timer.Timer().watch_and_report("Fetching dedup mineral sites"):
-            resp = httpx.get(
-                f"{MINMOD_API}/dedup-mineral-sites",
-                params={},
-                verify=False,
-                timeout=None,
+            resp = retry_request(
+                lambda: httpx.get(
+                    f"{MINMOD_API}/dedup-mineral-sites",
+                    params={},
+                    verify=False,
+                    timeout=None,
+                )
             )
-            resp.raise_for_status()
-        dedup_sites = resp.json()
-        if outfile is not None:
-            serde.json.ser(dedup_sites, outfile)
+            dedup_sites = resp.json()
+            if cache_dir is not None:
+                serde.json.ser(dedup_sites, cache_dedup_site_file)
+    else:
+        dedup_sites = serde.json.deser(cache_dedup_site_file)
 
-    assert dedup_sites is not None
     inputs = []
     for dedup_site in dedup_sites:
         for fmt_dedup_site in format_dedup_site(
@@ -232,14 +246,25 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
             raise ValueError(f"Duplicate site ID: {dms['id']}")
         id2site[dms["id"]] = dms
 
-    CDRHelper.truncate(CDRHelper.DedupSites)
+    if len(uploaded_mineral_sites) == 0:
+        # first time uploading -- truncate the collection
+        CDRHelper.truncate(CDRHelper.DedupSites)
+
+    # filter out sites that have already been uploaded
+    inputs = [dms for dms in inputs if dms["id"] not in uploaded_mineral_sites]
+
     batch_size = 5000
     for i in tqdm(list(range(0, len(inputs), batch_size)), "Uploading dedup sites"):
         CDRHelper.upload_collection(CDRHelper.DedupSites, inputs[i : i + batch_size])
+        if cache_dir is not None:
+            serde.json.ser(
+                [dms["id"] for dms in inputs[i : i + batch_size]],
+                cache_dir / f"uploaded_sites_b{i:03d}.json",
+            )
 
 
 if __name__ == "__main__":
-    # CDRHelper.truncate(CDRHelper.MineralSite)
-    # sync_mineral_sites()
+    CDRHelper.truncate(CDRHelper.MineralSite)
+    sync_mineral_sites()
     # sync_deposit_types()
-    sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")
+    # sync_dedup_mineral_sites(f"data/ta2-output/{datetime.now().strftime('%Y-%m-%d')}")
