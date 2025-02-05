@@ -432,6 +432,7 @@ class MineralSiteService:
         deposit_type: Optional[InternalID] = None,
         country: Optional[InternalID] = None,
         state_or_province: Optional[InternalID] = None,
+        has_grade_tonnage: Optional[bool] = None,
         dedup_site_ids: Optional[Sequence[InternalID]] = None,
         limit: int = 0,
         offset: int = 0,
@@ -481,6 +482,12 @@ class MineralSiteService:
                     state_or_province
                 )
             )
+
+        if has_grade_tonnage is not None:
+            if has_grade_tonnage:
+                query = query.where(MineralInventoryView.contained_metal.isnot(None))
+            else:
+                query = query.where(MineralInventoryView.contained_metal.is_(None))
 
         if dedup_site_ids is not None:
             query = query.where(DedupMineralSite.id.in_(dedup_site_ids))
