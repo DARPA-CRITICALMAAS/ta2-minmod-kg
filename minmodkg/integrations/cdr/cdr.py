@@ -8,6 +8,7 @@ import httpx
 import orjson
 import serde.json
 import timer
+from loguru import logger
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.integrations.cdr.cdr_helper import (
     MINMOD_API,
@@ -61,11 +62,12 @@ def sync_deposit_types():
     if exist_dpts == {
         (r["id"], r["name"], r["group"], r["environment"]) for r in deposit_types
     }:
-        print("Deposit types are the same, skipping update")
+        logger.info("Deposit types are the same, skipping update")
         return
 
     CDRHelper.truncate(CDRHelper.DepositType)
     CDRHelper.upload_collection(CDRHelper.DepositType, deposit_types)
+    logger.info("Deposit types updated!")
 
 
 def sync_mineral_sites():
@@ -176,6 +178,11 @@ def format_dedup_site(
                 [province_id2name[id] for id in dedup_site.location.state_or_province]
             )
 
+    # commodity must be unique to each record to ensure unique id
+    assert len({gt.commodity for gt in dedup_site.grade_tonnage}) == len(
+        dedup_site.grade_tonnage
+    ), dedup_site.id
+
     for gt in dedup_site.grade_tonnage:
         r = base.model_copy()
         r.id = f"{dedup_site.id}?commodity={gt.commodity}"
@@ -193,10 +200,31 @@ def format_dedup_site(
     return output
 
 
-def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
+def format_dedup_sites(
+    dedup_sites: list[dict],
+):
     commodity_id2name = MinmodHelper.get_commodity_id2name()
     country_id2name = MinmodHelper.get_country_id2name()
     province_id2name = MinmodHelper.get_province_id2name()
+
+    output = []
+    for dedup_site in dedup_sites:
+        for fmt_dedup_site in format_dedup_site(
+            DedupMineralSitePublic.from_dict(dedup_site),
+            commodity_id2name,
+            country_id2name,
+            province_id2name,
+        ):
+            output.append(
+                orjson.loads(fmt_dedup_site.model_dump_json(exclude_none=True))
+            )
+    return output
+
+
+def sync_dedup_mineral_sites(
+    cache_dir: Optional[Union[str, Path]] = None,
+    prev_cache_dir: Optional[Union[str, Path]] = None,
+):
 
     rerun_fetch_dedup_sites = True
     uploaded_mineral_sites = set()
@@ -213,7 +241,9 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
         }
 
     if rerun_fetch_dedup_sites:
-        with timer.Timer().watch_and_report("Fetching dedup mineral sites"):
+        with timer.Timer().watch_and_report(
+            "Fetching dedup mineral sites", print_fn=logger.info
+        ):
             resp = retry_request(
                 lambda: httpx.get(
                     f"{MINMOD_API}/dedup-mineral-sites",
@@ -223,44 +253,97 @@ def sync_dedup_mineral_sites(cache_dir: Optional[Union[str, Path]] = None):
                 )
             )
             dedup_sites = resp.json()
+
+            # check duplicated site ids
+            id2site = {}
+            for dms in dedup_sites:
+                if dms["id"] in id2site:
+                    raise ValueError(f"Duplicate site ID: {dms['id']}")
+                id2site[dms["id"]] = dms
+
+            # store the results
             if cache_dir is not None:
                 serde.json.ser(dedup_sites, cache_dedup_site_file)
     else:
         dedup_sites = serde.json.deser(cache_dedup_site_file)
 
-    inputs = []
-    for dedup_site in dedup_sites:
-        for fmt_dedup_site in format_dedup_site(
-            DedupMineralSitePublic.from_dict(dedup_site),
-            commodity_id2name,
-            country_id2name,
-            province_id2name,
+    with timer.Timer().watch_and_report(
+        "Format dedup mineral sites", print_fn=logger.info
+    ):
+        cdr_dedup_sites = format_dedup_sites(dedup_sites)
+    reset_cdr = True
+
+    if prev_cache_dir is not None and (Path(prev_cache_dir) / "_SUCCESS").exists():
+        # we can compare the previous sync and only upload the difference
+        # if this exceed a threshold, we should just start from scratch
+        with timer.Timer().watch_and_report(
+            "Load previous CDR dedup mineral sites", print_fn=logger.info
         ):
-            inputs.append(
-                orjson.loads(fmt_dedup_site.model_dump_json(exclude_none=True))
+            prev_dedup_sites = serde.json.deser(
+                Path(prev_cache_dir) / "dedup_sites.json"
             )
+            prev_cdr_dedup_sites = format_dedup_sites(prev_dedup_sites)
 
-    id2site = {}
-    for dms in inputs:
-        if dms["id"] in id2site:
-            raise ValueError(f"Duplicate site ID: {dms['id']}")
-        id2site[dms["id"]] = dms
+        with timer.Timer().watch_and_report(
+            "Compute differences compared to the previous run", print_fn=logger.info
+        ):
+            # find the difference between cdr_dedup_sites and prev_cdr_dedup_sites
+            id2prev = {dms["id"]: dms for dms in prev_cdr_dedup_sites}
+            replace_dedup_sites = []
+            add_dedup_sites = []
 
+            for dms in cdr_dedup_sites:
+                if dms["id"] in id2prev:
+                    if dms["data_snapshot_date"] != id2prev[dms["id"]][
+                        "data_snapshot_date"
+                    ] or {ms["id"] for ms in dms["sites"]} != {
+                        ms["id"] for ms in id2prev[dms["id"]]["sites"]
+                    }:
+                        replace_dedup_sites.append(dms)
+                else:
+                    add_dedup_sites.append(dms)
+
+        # more than 10K sites to replace or add, we should start from scratch
+        reset_cdr = (len(replace_dedup_sites) + len(add_dedup_sites)) > 10000
+        if not reset_cdr:
+            logger.info("Performing incremental update")
+            # we can just replace the dedup sites
+            CDRHelper.delete_collection(CDRHelper.DedupSites, replace_dedup_sites)
+            CDRHelper.upload_collection(
+                CDRHelper.DedupSites, replace_dedup_sites + add_dedup_sites
+            )
+            if cache_dir is not None:
+                (cache_dir / "_SUCCESS").touch()
+            logger.info("Sync dedup mineral sites done!")
+            return
+
+    logger.info("Performing full replacement")
+    # we have to start from scratch
     if len(uploaded_mineral_sites) == 0:
         # first time uploading -- truncate the collection
         CDRHelper.truncate(CDRHelper.DedupSites)
 
-    # filter out sites that have already been uploaded
-    inputs = [dms for dms in inputs if dms["id"] not in uploaded_mineral_sites]
+    # filter out sites that have already been uploaded -- this only happens when there is an error from CDR.
+    cdr_dedup_sites = [
+        dms for dms in cdr_dedup_sites if dms["id"] not in uploaded_mineral_sites
+    ]
 
     batch_size = 5000
-    for i in tqdm(list(range(0, len(inputs), batch_size)), "Uploading dedup sites"):
-        CDRHelper.upload_collection(CDRHelper.DedupSites, inputs[i : i + batch_size])
+    for i in tqdm(
+        list(range(0, len(cdr_dedup_sites), batch_size)), "Uploading dedup sites"
+    ):
+        CDRHelper.upload_collection(
+            CDRHelper.DedupSites, cdr_dedup_sites[i : i + batch_size]
+        )
         if cache_dir is not None:
             serde.json.ser(
-                [dms["id"] for dms in inputs[i : i + batch_size]],
+                [dms["id"] for dms in cdr_dedup_sites[i : i + batch_size]],
                 cache_dir / f"uploaded_sites_b{i:03d}.json",
             )
+
+    if cache_dir is not None:
+        (cache_dir / "_SUCCESS").touch()
+    logger.info("Sync dedup mineral sites done!")
 
 
 if __name__ == "__main__":

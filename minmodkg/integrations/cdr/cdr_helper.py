@@ -10,6 +10,7 @@ from typing import Callable, Optional
 import httpx
 import timer
 from joblib import Parallel, delayed
+from loguru import logger
 from minmodkg.models.kg.base import MINMOD_NS
 from tqdm import tqdm
 
@@ -150,18 +151,18 @@ class CDRHelper:
     @staticmethod
     def upload_collection(endpoint: Endpoint, collection: list[dict]):
         with timer.Timer().watch_and_report(
-            "Upload the whole collection to endpoint " + endpoint.collection
+            f"Upload {len(collection)} records to endpoint {endpoint.collection}",
+            print_fn=logger.info,
         ):
             if endpoint.bulk_upload is not None:
-                r = httpx.post(
-                    f"{CDR_API}/minerals/{endpoint.bulk_upload}",
-                    json=collection,
-                    headers=cdr_headers,
-                    timeout=None,
+                retry_request(
+                    lambda: httpx.post(
+                        f"{CDR_API}/minerals/{endpoint.bulk_upload}",
+                        json=collection,
+                        headers=cdr_headers,
+                        timeout=None,
+                    )
                 )
-                if r.status_code != 200 and r.status_code != 201:
-                    print(r.text)
-                r.raise_for_status()
             else:
                 it = get_parallel(
                     n_jobs=CDRHelper.N_PARALLEL_JOBS, return_as="generator_unordered"
@@ -170,9 +171,25 @@ class CDRHelper:
                     pass
 
     @staticmethod
+    def delete_collection(endpoint: Endpoint, collection: list[dict]):
+        with timer.Timer().watch_and_report(
+            f"Delete {len(collection)} records in endpoint {endpoint.collection}",
+            print_fn=logger.info,
+        ):
+            it = get_parallel(
+                n_jobs=CDRHelper.N_PARALLEL_JOBS, return_as="generator_unordered"
+            )(
+                delayed(CDRHelper.delete_by_id)(endpoint, item["id"])
+                for item in collection
+            )
+            for _ in tqdm(it, total=len(collection), desc="delete records"):
+                pass
+
+    @staticmethod
     def truncate(endpoint: Endpoint):
         with timer.Timer().watch_and_report(
-            "Truncating endpoint " + endpoint.collection
+            f"Truncating endpoint {endpoint.collection}",
+            print_fn=logger.info,
         ):
             if endpoint.bulk_upload is not None:
                 r = retry_request(
