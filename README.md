@@ -88,6 +88,14 @@ poetry install --only main
 cd ..
 ```
 
+### Setup Users
+
+You can create a user using the command: `python -m minmodkg.api user -u <username> -n <name> -e <email>` (the password will be prompted).
+
+Additionally, we have an option to load users from a file (.JSON) using the following command: `python -m minmodkg.api load-user <filepath>`. To add a user to a file, run `python -m minmodkg.api add-user <filepath> -u <username> -n <name> -e <email>`. To add multiple users from a CSV file, run `python -m minmodkg.api batch-add-user <filepath> <csvfile>`.
+
+These commands need to be run on a machine that can have access to the database. If you deployed the database inside Docker, you can run the command inside the Docker container with `docker exec -it <container_name> python -m minmodkg.api ...`.
+
 ## Usage
 
 <div align="center">
