@@ -67,7 +67,7 @@ class EntityLinking(IEntityLinking):
             "state_or_province",
             "commodity",
             "unit",
-            "material_form",
+            "commodity_form",
             "category",
         ],
     ) -> EntityLinking:
@@ -84,7 +84,7 @@ class EntityLinking(IEntityLinking):
                     doc.props[f"{mno}country"] = mnr + doc.props[f"{mno}country"]
                     assert doc.props[f"{mno}country"] in country_linker.id2doc
 
-            elif name in ["commodity", "unit", "country", "material_form", "category"]:
+            elif name in ["commodity", "unit", "country", "commodity_form", "category"]:
                 linker = EntityLinking(entity_dir / f"{name}.ttl", "turtle")
             else:
                 raise ValueError(f"Unknown entity type: {name}")

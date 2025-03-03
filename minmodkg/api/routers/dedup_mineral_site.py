@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from functools import lru_cache
 from sys import maxsize
 from typing import Annotated, Literal, Optional
@@ -8,6 +9,7 @@ import orjson
 import serde.csv
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from htbuilder import H
+from slugify import slugify
 
 from minmodkg.api.dependencies import is_minmod_id, norm_commodity
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
@@ -90,7 +92,13 @@ def dedup_mineral_sites_v2(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported format: {format}",
         )
-    return Response(content=format_csv(items, commodity), media_type="text/csv")
+    return Response(
+        content=format_csv(items, commodity),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename={slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r"%Y%m%d")}.csv"
+        },
+    )
 
 
 @router.post("/dedup-mineral-sites/find_by_ids")
