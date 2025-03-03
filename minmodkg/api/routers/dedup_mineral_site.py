@@ -96,7 +96,7 @@ def dedup_mineral_sites_v2(
         content=format_csv(items, commodity),
         media_type="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename={slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r"%Y%m%d")}.csv"
+            "Content-Disposition": f"attachment; filename={slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r'%Y%m%d')}.csv"
         },
     )
 
