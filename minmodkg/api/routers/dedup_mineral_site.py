@@ -1,10 +1,18 @@
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from functools import lru_cache
+from sys import maxsize
+from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query, status
+import orjson
+import serde.csv
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
+from htbuilder import H
+
 from minmodkg.api.dependencies import is_minmod_id, norm_commodity
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
+from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
 
@@ -21,6 +29,7 @@ def dedup_mineral_sites_v2(
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
     return_count: Annotated[bool, Query()] = False,
+    format: Annotated[Literal["json", "csv"], Query()] = "json",
 ):
     if commodity is not None:
         commodity = norm_commodity(commodity)
@@ -53,16 +62,35 @@ def dedup_mineral_sites_v2(
         return_count=return_count,
     )
 
+    if format == "json":
+        items = [
+            DedupMineralSitePublic.from_kgrel(dmsi, commodity).to_dict()
+            for dmsi in res["items"].values()
+        ]
+
+        if return_count:
+            return {
+                "items": items,
+                "total": res["total"],
+            }
+        return items
+
+    if commodity is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="commodity is currently needed for csv format",
+        )
+
     items = [
-        DedupMineralSitePublic.from_kgrel(dmsi, commodity).to_dict()
+        DedupMineralSitePublic.from_kgrel(dmsi, commodity)
         for dmsi in res["items"].values()
     ]
-    if return_count:
-        return {
-            "items": items,
-            "total": res["total"],
-        }
-    return items
+    if format != "csv":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported format: {format}",
+        )
+    return Response(content=format_csv(items, commodity), media_type="text/csv")
 
 
 @router.post("/dedup-mineral-sites/find_by_ids")
@@ -97,3 +125,154 @@ def api_get_dedup_mineral_site(
     if len(output) == 0:
         raise HTTPException(status_code=404, detail=f"{dedup_site_id} not found")
     return output[dedup_site_id].to_dict()
+
+
+def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> str:
+    country_map = get_country_map()
+    state_or_province_map = get_state_or_province_map()
+    deposit_type_map = get_deposit_type_map()
+
+    header = [
+        "URI",
+        "Name",
+        "Type",
+        "Rank",
+        "Country",
+        "State or Province",
+        "Latitude",
+        "Longitude",
+        "Deposit Type Environment",
+        "Deposit Type Group",
+        "Deposit Type Name",
+        "Deposit Type Confidence",
+        "Tonnage (Mt)",
+        "Grade (%)",
+        "Updated at",
+    ]
+    name2idx = {n: i for i, n in enumerate(header)}
+    rows = [header]
+
+    for dms in lst_dms:
+        row = [""] * len(header)
+        row[name2idx["URI"]] = dms.uri
+        row[name2idx["Name"]] = dms.name
+        row[name2idx["Type"]] = dms.type
+        row[name2idx["Rank"]] = dms.rank
+        if dms.location is not None:
+            row[name2idx["Country"]] = ", ".join(
+                (country_map[id] for id in dms.location.country)
+            )
+            row[name2idx["State or Province"]] = ", ".join(
+                (state_or_province_map[id] for id in dms.location.state_or_province)
+            )
+
+            if dms.location.lat is not None:
+                row[name2idx["Latitude"]] = str(dms.location.lat)
+            if dms.location.lon is not None:
+                row[name2idx["Longitude"]] = str(dms.location.lon)
+
+        if len(dms.deposit_types) > 0:
+            dpt = deposit_type_map[dms.deposit_types[0].id]
+            row[name2idx["Deposit Type Environment"]] = dpt.environment
+            row[name2idx["Deposit Type Group"]] = dpt.group
+            row[name2idx["Deposit Type Name"]] = dpt.name
+            row[name2idx["Deposit Type Confidence"]] = str(
+                dms.deposit_types[0].confidence
+            )
+
+        for gt in dms.grade_tonnage:
+            if gt.commodity == commodity:
+                row[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
+                row[name2idx["Grade (%)"]] = str(gt.total_grade)
+                break
+
+        row[name2idx["Updated at"]] = dms.modified_at
+        rows.append(row)
+    out = serde.csv.StringIO()
+    serde.csv.ser(rows, out)
+    return out.getvalue()
+
+
+# def format_cdr(items: list[DedupMineralSitePublic], commodity: InternalID) -> str:
+#     header = [
+#         "id",
+#         "record_ids",
+#         "mineral_site_ids",
+#         "names",
+#         "type",
+#         "rank",
+#         "country",
+#         "province",
+#         "crs",
+#         "centroid_epsg_4326",
+#         "wkt",
+#         "commodity",
+#         "contained_metal",
+#         "contained_metal_unit",
+#         "tonnage",
+#         "tonnage_unit",
+#         "grade",
+#         "grade_unit",
+#         "top1_deposit_type",
+#         "top1_deposit_group",
+#         "top1_deposit_environment",
+#         "top1_deposit_classification_confidence",
+#         "top1_deposit_classification_source",
+#     ]
+#     rows = [header]
+#     rows = []
+
+#     country_map = get_country_map()
+
+#     for item in items:
+#         sites = orjson.dumps([site.id for site in item.sites]).decode()
+#         country = ""
+#         if item.location is not None:
+#             if len(item.location.country) == 1:
+#                 country = country_map[item.location.country[0]]
+#             else:
+#                 country = orjson.dumps(
+#                     [country_map[x] for x in item.location.country]
+#                 ).decode()
+#         if item.location is not None:
+#             pass
+
+#         row = {
+#             "id": str(item.uri),
+#             "record_ids": sites,
+#             "mineral_site_ids": sites,
+#             "names": item.name,
+#             "type": item.type,
+#             "rank": item.rank,
+#             # "country": item.location.country ,
+#         }
+
+#         rows.append(row)
+
+#     out = serde.csv.StringIO()
+#     serde.csv.ser(rows, out)
+#     return out.getvalue()
+
+
+@lru_cache(maxsize=None)
+def get_country_map():
+    lst = EntityService.get_instance().get_countries()
+    return {record.id: record.name for record in lst}
+
+
+@lru_cache(maxsize=None)
+def get_state_or_province_map():
+    lst = EntityService.get_instance().get_state_or_provinces()
+    return {record.id: record.name for record in lst}
+
+
+@lru_cache(maxsize=None)
+def get_commodity_map():
+    lst = EntityService.get_instance().get_commodities()
+    return {record.id: record.name for record in lst}
+
+
+@lru_cache(maxsize=None)
+def get_deposit_type_map():
+    lst = EntityService.get_instance().get_deposit_types()
+    return {record.id: record for record in lst}

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Optional
 
 from minmodkg.misc.utils import format_nanoseconds, makedict
+from minmodkg.models.kg.base import NS_MD
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSiteAndInventory
 from minmodkg.typing import InternalID
 
@@ -115,6 +117,10 @@ class DedupMineralSitePublic:
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: list[GradeTonnage]
     modified_at: str
+
+    @cached_property
+    def uri(self):
+        return NS_MD.uri(self.id)
 
     @staticmethod
     def from_kgrel(dmsi: DedupMineralSiteAndInventory, commodity: Optional[InternalID]):

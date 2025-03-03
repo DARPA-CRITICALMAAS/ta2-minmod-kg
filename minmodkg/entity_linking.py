@@ -80,11 +80,10 @@ class EntityLinking(IEntityLinking):
             elif name == "state_or_province":
                 linker = EntityLinking(entity_dir / "state_or_province.ttl", "turtle")
                 country_linker = EntityLinking.get_instance(entity_dir, "country")
-                name2country = {doc.labels[0]: doc for doc in country_linker.docs}
                 for doc in linker.docs:
-                    doc.props[f"{mno}country"] = name2country[
-                        doc.props[f"{mno}country"]
-                    ].id
+                    doc.props[f"{mno}country"] = mnr + doc.props[f"{mno}country"]
+                    assert doc.props[f"{mno}country"] in country_linker.id2doc
+
             elif name in ["commodity", "unit", "country", "material_form", "category"]:
                 linker = EntityLinking(entity_dir / f"{name}.ttl", "turtle")
             else:
