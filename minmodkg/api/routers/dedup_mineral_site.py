@@ -147,6 +147,7 @@ def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> 
         "Deposit Type Confidence",
         "Tonnage (Mt)",
         "Grade (%)",
+        "Inventory Date",
         "Updated at",
     ]
     name2idx = {n: i for i, n in enumerate(header)}
@@ -182,8 +183,12 @@ def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> 
 
         for gt in dms.grade_tonnage:
             if gt.commodity == commodity:
-                row[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
-                row[name2idx["Grade (%)"]] = str(gt.total_grade)
+                if gt.total_tonnage is not None:
+                    row[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
+                if gt.total_grade is not None:
+                    row[name2idx["Grade (%)"]] = str(gt.total_grade)
+                if gt.date is not None:
+                    row[name2idx["Inventory Date"]] = gt.date
                 break
 
         row[name2idx["Updated at"]] = dms.modified_at
