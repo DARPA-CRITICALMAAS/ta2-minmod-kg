@@ -10,10 +10,13 @@ from minmodkg.config import JWT_ALGORITHM, SECRET_KEY
 from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
 from minmodkg.models.kgrel.base import get_rel_session
 from minmodkg.models.kgrel.entities.commodity import Commodity
+from minmodkg.models.kgrel.entities.country import Country
+from minmodkg.models.kgrel.entities.deposit_type import DepositType
+from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
 from minmodkg.models.kgrel.user import User
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 # for login/security
@@ -78,6 +81,59 @@ def norm_commodity(commodity: str) -> InternalID:
     return norm_commodity
 
 
+def norm_country(country: str) -> InternalID:
+    if country.startswith("http"):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Expect country to be either just an id (QXXX) or name. Get `{country}` instead",
+        )
+    if not is_minmod_id(country):
+        norm_country = get_country_by_name(country)
+        if norm_country is None:
+            raise HTTPException(
+                status_code=404, detail=f"country `{country}` not found"
+            )
+    else:
+        norm_country = country
+    return norm_country
+
+
+def norm_state_or_province(state_or_province: str) -> InternalID:
+    if state_or_province.startswith("http"):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Expect state_or_province to be either just an id (QXXX) or name. Get `{state_or_province}` instead",
+        )
+    if not is_minmod_id(state_or_province):
+        norm_state_or_province = get_state_or_province_by_name(state_or_province)
+        if norm_state_or_province is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"state_or_province `{state_or_province}` not found",
+            )
+    else:
+        norm_state_or_province = state_or_province
+    return norm_state_or_province
+
+
+def norm_deposit_type(deposit_type: str) -> InternalID:
+    if deposit_type.startswith("http"):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Expect deposit_type to be either just an id (QXXX) or name. Get `{deposit_type}` instead",
+        )
+    if not is_minmod_id(deposit_type):
+        norm_deposit_type = get_deposit_type_by_name(deposit_type)
+        if norm_deposit_type is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"deposit_type `{deposit_type}` not found",
+            )
+    else:
+        norm_deposit_type = deposit_type
+    return norm_deposit_type
+
+
 def is_minmod_id(text: str) -> bool:
     return text.startswith("Q") and text[1:].isdigit()
 
@@ -90,3 +146,35 @@ def get_commodity_by_name(
             select(Commodity.id).where(Commodity.lower_name == name.lower())
         )
         return commodity_id
+
+
+def get_country_by_name(
+    name: str,
+) -> Optional[InternalID]:
+    with get_rel_session() as session:
+        country_id = session.scalar(
+            select(Country.id).where(func.lower(Country.name) == name.lower())
+        )
+        return country_id
+
+
+def get_state_or_province_by_name(
+    name: str,
+) -> Optional[InternalID]:
+    with get_rel_session() as session:
+        state_or_province_id = session.scalar(
+            select(StateOrProvince.id).where(
+                func.lower(StateOrProvince.name) == name.lower()
+            )
+        )
+        return state_or_province_id
+
+
+def get_deposit_type_by_name(
+    name: str,
+) -> Optional[InternalID]:
+    with get_rel_session() as session:
+        deposit_type_id = session.scalar(
+            select(DepositType.id).where(func.lower(DepositType.name) == name.lower())
+        )
+        return deposit_type_id

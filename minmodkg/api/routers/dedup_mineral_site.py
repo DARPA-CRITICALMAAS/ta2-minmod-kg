@@ -9,7 +9,13 @@ import orjson
 import serde.csv
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from htbuilder import H
-from minmodkg.api.dependencies import is_minmod_id, norm_commodity
+from minmodkg.api.dependencies import (
+    is_minmod_id,
+    norm_commodity,
+    norm_country,
+    norm_deposit_type,
+    norm_state_or_province,
+)
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.services.kgrel_entity import EntityService
@@ -35,23 +41,12 @@ def dedup_mineral_sites_v2(
     if commodity is not None:
         commodity = norm_commodity(commodity)
     if deposit_type is not None:
-        if not is_minmod_id(deposit_type):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Expect deposit_type to be a Q node, but get: {deposit_type}",
-            )
+        deposit_type = norm_deposit_type(deposit_type)
     if country is not None:
-        if not is_minmod_id(country):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Expect country to be a Q node, but get: {country}",
-            )
+        country = norm_country(country)
     if state_or_province is not None:
-        if not is_minmod_id(state_or_province):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Expect state_or_province to be a Q node, but get: {state_or_province}",
-            )
+        state_or_province = norm_state_or_province(state_or_province)
+
     res = MineralSiteService().find_dedup_mineral_sites(
         commodity=commodity,
         deposit_type=deposit_type,
