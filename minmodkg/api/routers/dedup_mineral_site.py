@@ -155,9 +155,6 @@ def format_csv(
         "Deposit Type Group",
         "Deposit Type Name",
         "Deposit Type Confidence",
-        "Tonnage (Mt)",
-        "Grade (%)",
-        "Inventory Date",
     ]
 
     commodity_header = {}
@@ -211,7 +208,7 @@ def format_csv(
             if gt.total_tonnage is not None:
                 row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_tonnage)
             if gt.total_grade is not None:
-                row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_grade)
+                row[name2idx[commodity_header[gt.commodity][1]]] = str(gt.total_grade)
             if commodity is not None and gt.date is not None:
                 row[name2idx["Inventory Date"]] = gt.date
 
