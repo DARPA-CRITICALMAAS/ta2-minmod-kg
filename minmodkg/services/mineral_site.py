@@ -468,6 +468,10 @@ class MineralSiteService:
 
         if deposit_type is not None:
             query = query.where(DedupMineralSite.top1_deposit_type == deposit_type)
+            if count_query is not None:
+                count_query = count_query.where(
+                    DedupMineralSite.top1_deposit_type == deposit_type
+                )
 
         if country is not None:
             # TODO: this a temporary solution to retrieve the inner element of the composite property
@@ -475,6 +479,10 @@ class MineralSiteService:
             query = query.where(
                 DedupMineralSite.country._comparable_elements[0].any(country)
             )
+            if count_query is not None:
+                count_query = count_query.where(
+                    DedupMineralSite.country._comparable_elements[0].any(country)
+                )
 
         if state_or_province is not None:
             query = query.where(
@@ -482,12 +490,26 @@ class MineralSiteService:
                     state_or_province
                 )
             )
+            if count_query is not None:
+                count_query = count_query.where(
+                    DedupMineralSite.state_or_province._comparable_elements[0].any(
+                        state_or_province
+                    )
+                )
 
         if has_grade_tonnage is not None:
             if has_grade_tonnage:
                 query = query.where(MineralInventoryView.contained_metal.isnot(None))
+                if count_query is not None:
+                    count_query = count_query.where(
+                        MineralInventoryView.contained_metal.isnot(None)
+                    )
             else:
                 query = query.where(MineralInventoryView.contained_metal.is_(None))
+                if count_query is not None:
+                    count_query = count_query.where(
+                        MineralInventoryView.contained_metal.is_(None)
+                    )
 
         if dedup_site_ids is not None:
             query = query.where(DedupMineralSite.id.in_(dedup_site_ids))

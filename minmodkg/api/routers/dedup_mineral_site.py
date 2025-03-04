@@ -177,7 +177,7 @@ def format_csv(
             ]
         selected_commodities = set(all_commodities)
         for commodity in all_commodities:
-            comm_name = commodity_map[commodity]
+            comm_name = commodity_map[commodity].name
             header.append(f"{comm_name} Reported")
             header.append(f"{comm_name} Tonnage (Mt)")
             header.append(f"{comm_name} Grade (%)")
