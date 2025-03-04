@@ -156,7 +156,7 @@ def format_csv(
         "Deposit Type Confidence",
         "Commodity",
     ]
-    if commodity is not None:
+    if commodity is None:
         header.append("Is Critical Commodity")
     header.extend(
         [
