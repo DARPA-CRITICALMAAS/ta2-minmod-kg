@@ -41,4 +41,4 @@ ADD --chown=criticalmaas:criticalmaas minmodkg /home/criticalmaas/kg/minmodkg
 ADD --chown=criticalmaas:criticalmaas extractors /home/criticalmaas/kg/extractors
 ADD --chown=criticalmaas:criticalmaas schema /home/criticalmaas/kg/schema
 
-RUN cd /home/criticalmaas/kg && pip install .
+RUN cd /home/criticalmaas/kg && pip install --no-deps .

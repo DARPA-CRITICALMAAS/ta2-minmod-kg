@@ -228,8 +228,13 @@ def format_csv(
                 if gt.date is not None:
                     row[name2idx["Inventory Date"]] = gt.date
             else:
-                assert commodity_header[gt.commodity][2].endswith("Reported")
                 row[name2idx[commodity_header[gt.commodity][2]]] = "1"
+                print(
+                    gt.commodity,
+                    commodity_header[gt.commodity],
+                    name2idx[commodity_header[gt.commodity][2]],
+                    row[name2idx[commodity_header[gt.commodity][2]]],
+                )
 
         row[name2idx["Updated at"]] = dms.modified_at
         if has_commodity:
