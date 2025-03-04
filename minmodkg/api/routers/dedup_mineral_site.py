@@ -205,7 +205,7 @@ def format_csv(
             newrow = row.copy()
             comm = commodity_map[gt.commodity]
             newrow[name2idx["Commodity"]] = comm.name
-            if commodity is not None:
+            if commodity is None:
                 newrow[name2idx["Is Critical Commodity"]] = str(int(comm.is_critical))
             if gt.total_tonnage is not None:
                 newrow[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
