@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from functools import lru_cache
+from os import name
 from sys import maxsize
 from typing import Annotated, Literal, Optional
 
@@ -38,7 +39,6 @@ def dedup_mineral_sites_v2(
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
     return_count: Annotated[bool, Query()] = False,
-    only_critical_commodity: Annotated[bool, Query()] = True,
     format: Annotated[Literal["json", "csv"], Query()] = "json",
 ):
     if commodity is not None:
@@ -90,9 +90,7 @@ def dedup_mineral_sites_v2(
         filename = f"all_{datetime.now().strftime(r'%Y%m%d')}.csv"
 
     return Response(
-        content=format_csv(
-            items, commodity, only_critical_commodity=only_critical_commodity
-        ),
+        content=format_csv(items, commodity),
         media_type="text/csv",
         headers={
             "Content-Disposition": f"attachment; filename={filename}",
@@ -137,7 +135,6 @@ def api_get_dedup_mineral_site(
 def format_csv(
     lst_dms: list[DedupMineralSitePublic],
     commodity: Optional[InternalID],
-    only_critical_commodity: bool,
 ) -> str:
     commodity_map = get_commodity_map()
     country_map = get_country_map()
@@ -157,33 +154,18 @@ def format_csv(
         "Deposit Type Group",
         "Deposit Type Name",
         "Deposit Type Confidence",
+        "Commodity",
     ]
-
-    commodity_header = {}
     if commodity is not None:
-        header.append("Tonnage (Mt)")
-        header.append("Grade (%)")
-        header.append("Inventory Date")
-        commodity_header[commodity] = (header[-3], header[-2], header[-1])
-        selected_commodities = {commodity}
-    else:
-        all_commodities = sorted(
-            {gt.commodity for dms in lst_dms for gt in dms.grade_tonnage}
-        )
-        if only_critical_commodity:
-            all_commodities = [
-                comm_id
-                for comm_id in all_commodities
-                if commodity_map[comm_id].is_critical
-            ]
-        selected_commodities = set(all_commodities)
-        for comm_id in all_commodities:
-            comm_name = commodity_map[comm_id].name
-            header.append(f"{comm_name} Reported")
-            header.append(f"{comm_name} Tonnage (Mt)")
-            header.append(f"{comm_name} Grade (%)")
-            commodity_header[comm_id] = (header[-2], header[-1], header[-3])
-    header.append("Updated at")
+        header.append("Is Critical Commodity")
+    header.extend(
+        [
+            "Tonnage (Mt)",
+            "Grade (%)",
+            "Inventory Date",
+            "Updated at",
+        ]
+    )
 
     name2idx = {n: i for i, n in enumerate(header)}
     rows = [header]
@@ -216,24 +198,22 @@ def format_csv(
                 dms.deposit_types[0].confidence
             )
 
+        row[name2idx["Updated at"]] = dms.modified_at
+
         has_commodity = False
         for gt in dms.grade_tonnage:
-            if gt.commodity not in selected_commodities:
-                continue
-            has_commodity = True
-            if gt.total_tonnage is not None:
-                row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_tonnage)
-            if gt.total_grade is not None:
-                row[name2idx[commodity_header[gt.commodity][1]]] = str(gt.total_grade)
+            newrow = row.copy()
+            comm = commodity_map[gt.commodity]
+            newrow[name2idx["Commodity"]] = comm.name
             if commodity is not None:
-                if gt.date is not None:
-                    row[name2idx["Inventory Date"]] = gt.date
-            else:
-                row[name2idx[commodity_header[gt.commodity][2]]] = "1"
-
-        row[name2idx["Updated at"]] = dms.modified_at
-        if has_commodity:
-            rows.append(row)
+                newrow[name2idx["Is Critical Commodity"]] = str(int(comm.is_critical))
+            if gt.total_tonnage is not None:
+                newrow[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
+            if gt.total_grade is not None:
+                newrow[name2idx["Grade (%)"]] = str(gt.total_grade)
+            if gt.date is not None:
+                newrow[name2idx["Inventory Date"]] = gt.date
+            rows.append(newrow)
     out = serde.csv.StringIO()
     serde.csv.ser(rows, out)
     return out.getvalue()
