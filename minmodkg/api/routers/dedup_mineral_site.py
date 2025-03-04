@@ -9,14 +9,13 @@ import orjson
 import serde.csv
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from htbuilder import H
-from slugify import slugify
-
 from minmodkg.api.dependencies import is_minmod_id, norm_commodity
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
+from slugify import slugify
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -77,12 +76,6 @@ def dedup_mineral_sites_v2(
             }
         return items
 
-    if commodity is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="commodity is currently needed for csv format",
-        )
-
     items = [
         DedupMineralSitePublic.from_kgrel(dmsi, commodity)
         for dmsi in res["items"].values()
@@ -92,11 +85,17 @@ def dedup_mineral_sites_v2(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported format: {format}",
         )
+
+    if commodity is not None:
+        filename = f"{slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r'%Y%m%d')}.csv"
+    else:
+        filename = f"all_{datetime.now().strftime(r'%Y%m%d')}.csv"
+
     return Response(
         content=format_csv(items, commodity),
         media_type="text/csv",
         headers={
-            "Content-Disposition": f"attachment; filename={slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r'%Y%m%d')}.csv"
+            "Content-Disposition": f"attachment; filename={filename}",
         },
     )
 
@@ -135,7 +134,10 @@ def api_get_dedup_mineral_site(
     return output[dedup_site_id].to_dict()
 
 
-def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> str:
+def format_csv(
+    lst_dms: list[DedupMineralSitePublic], commodity: Optional[InternalID]
+) -> str:
+    commodity_map = get_commodity_map()
     country_map = get_country_map()
     state_or_province_map = get_state_or_province_map()
     deposit_type_map = get_deposit_type_map()
@@ -156,8 +158,24 @@ def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> 
         "Tonnage (Mt)",
         "Grade (%)",
         "Inventory Date",
-        "Updated at",
     ]
+
+    commodity_header = {}
+    if commodity is not None:
+        header.append("Tonnage (Mt)")
+        header.append("Grade (%)")
+        header.append("Inventory Date")
+        commodity_header[commodity] = (header[-3], header[-2], header[-1])
+    else:
+        for commodity in sorted(
+            {gt.commodity for dms in lst_dms for gt in dms.grade_tonnage}
+        ):
+            comm_name = commodity_map[commodity]
+            header.append(f"{comm_name} Tonnage (Mt)")
+            header.append(f"{comm_name} Grade (%)")
+            commodity_header[commodity] = (header[-2], header[-1])
+    header.append("Updated at")
+
     name2idx = {n: i for i, n in enumerate(header)}
     rows = [header]
 
@@ -190,14 +208,12 @@ def format_csv(lst_dms: list[DedupMineralSitePublic], commodity: InternalID) -> 
             )
 
         for gt in dms.grade_tonnage:
-            if gt.commodity == commodity:
-                if gt.total_tonnage is not None:
-                    row[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
-                if gt.total_grade is not None:
-                    row[name2idx["Grade (%)"]] = str(gt.total_grade)
-                if gt.date is not None:
-                    row[name2idx["Inventory Date"]] = gt.date
-                break
+            if gt.total_tonnage is not None:
+                row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_tonnage)
+            if gt.total_grade is not None:
+                row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_grade)
+            if commodity is not None and gt.date is not None:
+                row[name2idx["Inventory Date"]] = gt.date
 
         row[name2idx["Updated at"]] = dms.modified_at
         rows.append(row)
