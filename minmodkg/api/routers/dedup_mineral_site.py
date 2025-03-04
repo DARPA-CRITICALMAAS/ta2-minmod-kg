@@ -172,17 +172,17 @@ def format_csv(
         )
         if only_critical_commodity:
             all_commodities = [
-                commodity
-                for commodity in all_commodities
-                if commodity_map[commodity].is_critical
+                comm_id
+                for comm_id in all_commodities
+                if commodity_map[comm_id].is_critical
             ]
         selected_commodities = set(all_commodities)
-        for commodity in all_commodities:
-            comm_name = commodity_map[commodity].name
+        for comm_id in all_commodities:
+            comm_name = commodity_map[comm_id].name
             header.append(f"{comm_name} Reported")
             header.append(f"{comm_name} Tonnage (Mt)")
             header.append(f"{comm_name} Grade (%)")
-            commodity_header[commodity] = (header[-2], header[-1], header[-3])
+            commodity_header[comm_id] = (header[-2], header[-1], header[-3])
     header.append("Updated at")
 
     name2idx = {n: i for i, n in enumerate(header)}
@@ -230,18 +230,6 @@ def format_csv(
                     row[name2idx["Inventory Date"]] = gt.date
             else:
                 row[name2idx[commodity_header[gt.commodity][2]]] = "1"
-                with open("/tmp/log.txt", "a") as f:
-                    f.write(
-                        json.dumps(
-                            (
-                                gt.commodity,
-                                commodity_header[gt.commodity],
-                                name2idx[commodity_header[gt.commodity][2]],
-                                row[name2idx[commodity_header[gt.commodity][2]]],
-                            )
-                        )
-                    )
-                    f.write("\n")
 
         row[name2idx["Updated at"]] = dms.modified_at
         if has_commodity:
