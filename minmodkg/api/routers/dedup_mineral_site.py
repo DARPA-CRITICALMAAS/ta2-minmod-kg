@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from functools import lru_cache
 from sys import maxsize
@@ -229,12 +230,18 @@ def format_csv(
                     row[name2idx["Inventory Date"]] = gt.date
             else:
                 row[name2idx[commodity_header[gt.commodity][2]]] = "1"
-                print(
-                    gt.commodity,
-                    commodity_header[gt.commodity],
-                    name2idx[commodity_header[gt.commodity][2]],
-                    row[name2idx[commodity_header[gt.commodity][2]]],
-                )
+                with open("/tmp/log.txt", "a") as f:
+                    f.write(
+                        json.dumps(
+                            (
+                                gt.commodity,
+                                commodity_header[gt.commodity],
+                                name2idx[commodity_header[gt.commodity][2]],
+                                row[name2idx[commodity_header[gt.commodity][2]]],
+                            )
+                        )
+                    )
+                    f.write("\n")
 
         row[name2idx["Updated at"]] = dms.modified_at
         if has_commodity:
