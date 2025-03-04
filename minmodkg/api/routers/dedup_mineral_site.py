@@ -18,6 +18,7 @@ from minmodkg.api.dependencies import (
 )
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.models.kg.base import MINMOD_NS
+from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import InternalID
@@ -36,6 +37,7 @@ def dedup_mineral_sites_v2(
     limit: Annotated[int, Query(ge=0)] = 0,
     offset: Annotated[int, Query(ge=0)] = 0,
     return_count: Annotated[bool, Query()] = False,
+    only_critical_commodity: Annotated[bool, Query()] = True,
     format: Annotated[Literal["json", "csv"], Query()] = "json",
 ):
     if commodity is not None:
@@ -82,12 +84,14 @@ def dedup_mineral_sites_v2(
         )
 
     if commodity is not None:
-        filename = f"{slugify(get_commodity_map()[commodity])}_{datetime.now().strftime(r'%Y%m%d')}.csv"
+        filename = f"{slugify(get_commodity_map()[commodity].name)}_{datetime.now().strftime(r'%Y%m%d')}.csv"
     else:
         filename = f"all_{datetime.now().strftime(r'%Y%m%d')}.csv"
 
     return Response(
-        content=format_csv(items, commodity),
+        content=format_csv(
+            items, commodity, only_critical_commodity=only_critical_commodity
+        ),
         media_type="text/csv",
         headers={
             "Content-Disposition": f"attachment; filename={filename}",
@@ -130,7 +134,9 @@ def api_get_dedup_mineral_site(
 
 
 def format_csv(
-    lst_dms: list[DedupMineralSitePublic], commodity: Optional[InternalID]
+    lst_dms: list[DedupMineralSitePublic],
+    commodity: Optional[InternalID],
+    only_critical_commodity: bool,
 ) -> str:
     commodity_map = get_commodity_map()
     country_map = get_country_map()
@@ -158,14 +164,24 @@ def format_csv(
         header.append("Grade (%)")
         header.append("Inventory Date")
         commodity_header[commodity] = (header[-3], header[-2], header[-1])
+        selected_commodities = {commodity}
     else:
-        for commodity in sorted(
+        all_commodities = sorted(
             {gt.commodity for dms in lst_dms for gt in dms.grade_tonnage}
-        ):
+        )
+        if only_critical_commodity:
+            all_commodities = [
+                commodity
+                for commodity in all_commodities
+                if commodity_map[commodity].is_critical
+            ]
+        selected_commodities = set(all_commodities)
+        for commodity in all_commodities:
             comm_name = commodity_map[commodity]
+            header.append(f"{comm_name} Reported")
             header.append(f"{comm_name} Tonnage (Mt)")
             header.append(f"{comm_name} Grade (%)")
-            commodity_header[commodity] = (header[-2], header[-1])
+            commodity_header[commodity] = (header[-2], header[-1], header[-3])
     header.append("Updated at")
 
     name2idx = {n: i for i, n in enumerate(header)}
@@ -199,16 +215,24 @@ def format_csv(
                 dms.deposit_types[0].confidence
             )
 
+        has_commodity = False
         for gt in dms.grade_tonnage:
+            if gt.commodity not in selected_commodities:
+                continue
+            has_commodity = True
             if gt.total_tonnage is not None:
                 row[name2idx[commodity_header[gt.commodity][0]]] = str(gt.total_tonnage)
             if gt.total_grade is not None:
                 row[name2idx[commodity_header[gt.commodity][1]]] = str(gt.total_grade)
-            if commodity is not None and gt.date is not None:
-                row[name2idx["Inventory Date"]] = gt.date
+            if commodity is not None:
+                if gt.date is not None:
+                    row[name2idx["Inventory Date"]] = gt.date
+            else:
+                row[name2idx[commodity_header[gt.commodity][2]]] = "1"
 
         row[name2idx["Updated at"]] = dms.modified_at
-        rows.append(row)
+        if has_commodity:
+            rows.append(row)
     out = serde.csv.StringIO()
     serde.csv.ser(rows, out)
     return out.getvalue()
@@ -289,8 +313,8 @@ def get_state_or_province_map():
 
 @lru_cache(maxsize=None)
 def get_commodity_map():
-    lst = EntityService.get_instance().get_commodities()
-    return {record.id: record.name for record in lst}
+    lst: list[Commodity] = EntityService.get_instance().get_commodities()
+    return {record.id: record for record in lst}
 
 
 @lru_cache(maxsize=None)
