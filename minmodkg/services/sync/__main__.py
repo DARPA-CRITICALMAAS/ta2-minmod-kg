@@ -30,7 +30,13 @@ def main(
         try:
             # we want kg sync to be near real-time
             process_pending_events(kgsync_listener, batch_size, verbose=verbose)
+        except Exception as e:
+            # exception occurred, we will wait for X second before trying again
+            logger.exception(e)
+            logger.info("Wait for 10 seconds before trying again")
+            time.sleep(10)
 
+        try:
             if backup_interval > 0:
                 # only run the backup sync if the interval is greater than 0
                 # record the current hour
