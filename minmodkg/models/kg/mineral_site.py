@@ -1,10 +1,10 @@
 from __future__ import annotations
-
+from fastapi import HTTPException, status
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Any, Optional
-
+from urllib.parse import urlparse
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (
@@ -26,7 +26,15 @@ from rdflib import URIRef
 
 if TYPE_CHECKING:
     from minmodkg.models.kgrel.mineral_site import MineralSite as RelMineralSite
-
+# functuion to validate URL
+def is_valid_url(url) -> bool:
+    if ' ' in url:
+        return False
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
 
 @dataclass
 class MineralSiteIdent(RDFModel):
@@ -45,7 +53,6 @@ class MineralSiteIdent(RDFModel):
         return make_site_id(
             get_username(self.created_by), self.source_id, self.record_id
         )
-
     @classmethod
     def from_dict(cls, d: dict):
         return cls(
@@ -82,6 +89,11 @@ class MineralSite(MineralSiteIdent, RDFModel):
     modified_at: Annotated[
         Annotated[str, "Datetime with %Y-%m-%dT%H:%M:%S.%fZ format"], P()
     ] = field(default_factory=lambda: format_datetime(datetime.now(timezone.utc)))
+
+    def __post_init__(self):
+        for ref in self.reference:
+            if(is_valid_url(ref.document.uri) == False):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid URL" )
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(
