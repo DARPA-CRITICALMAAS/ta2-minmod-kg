@@ -19,6 +19,17 @@ from minmodkg.models.kgrel.user import User
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.typing import IRI, InternalID
 from pydantic import BaseModel, Field
+from urllib.parse import urlparse
+
+
+def is_valid_url(url) -> bool:
+    if " " in url:
+        return False
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
 
 
 class GradeTonnage(BaseModel):
@@ -191,6 +202,13 @@ class InputPublicMineralSite(InputMineralSite):
         if self.dedup_site_uri is not None:
             d["dedup_site_uri"] = self.dedup_site_uri
         return d
+
+    def __post_init__(self):
+        for ref in self.reference:
+            if is_valid_url(ref.document.uri) == False:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid URL"
+                )
 
 
 class UpdateDedupLink(BaseModel):
