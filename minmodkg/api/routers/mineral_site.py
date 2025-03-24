@@ -1,5 +1,4 @@
 from __future__ import annotations
-from urllib.parse import urlparse
 from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
