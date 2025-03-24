@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Any, Optional
-
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (

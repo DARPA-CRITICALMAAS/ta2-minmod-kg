@@ -10,6 +10,7 @@ from drepr.writers.turtle_writer import MyLiteral
 from fastapi import Response
 from rdflib import XSD, Graph, Literal
 from rdflib.term import Node
+from urllib.parse import urlparse
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -235,3 +236,12 @@ class CacheResponse:
             f"max-age={int(self.key2value[key][0] - now)}"
         )
         return self.key2value[key][1]
+
+
+def is_valid_url(url: str) -> bool:
+    if " " in url:
+        return False
+    result = urlparse(url)
+    is_valid_scheme = len(result.scheme) > 0
+    is_valid_netloc = len(result.netloc) > 0
+    return is_valid_netloc and is_valid_scheme

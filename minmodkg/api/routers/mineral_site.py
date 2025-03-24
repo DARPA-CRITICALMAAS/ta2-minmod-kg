@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Query, Response, status
@@ -24,7 +23,6 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 router = APIRouter(tags=["mineral_sites"])
-
 
 class UpdateDedupLink(BaseModel):
     """A class represents the latest dedup links"""
@@ -108,7 +106,6 @@ def create_site(
     user: CurrentUserDep,
 ):
     new_msi = create_site.to_kgrel(user.get_uri())
-
     site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
     if site_db_id is not None:
         raise HTTPException(

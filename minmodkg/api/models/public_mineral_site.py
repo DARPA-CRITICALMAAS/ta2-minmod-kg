@@ -6,7 +6,12 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
 from fastapi import HTTPException, status
-from minmodkg.misc.utils import format_datetime, format_nanoseconds, makedict
+from minmodkg.misc.utils import (
+    format_datetime,
+    format_nanoseconds,
+    makedict,
+    is_valid_url,
+)
 from minmodkg.models.kg.base import MINMOD_NS
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import GeologyInfo
@@ -165,6 +170,13 @@ class OutputPublicMineralSite(BaseModel):
 @dataclass
 class InputPublicMineralSite(InputMineralSite):
     dedup_site_uri: Optional[IRI] = None
+
+    def __post_init__(self):
+        for ref in self.reference:
+            if not is_valid_url(ref.document.uri):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Document URL"
+                )
 
     def to_kgrel(
         self,
