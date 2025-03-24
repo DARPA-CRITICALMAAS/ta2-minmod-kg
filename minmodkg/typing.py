@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Annotated, Sequence, TypeVar
 
 from minmodkg.misc.utils import CleanedNotEmptyStr as CleanedNotEmptyStrDeser
+from minmodkg.misc.utils import NonNegMax1Float
 from minmodkg.misc.utils import NotEmptyStr as NotEmptyStrDeser
+from minmodkg.misc.utils import URLDeser
 
 T = TypeVar("T")
 V = TypeVar("V")
@@ -11,7 +13,8 @@ V = TypeVar("V")
 NamespaceAlias = Annotated[str, "A shorter name for the corresponding namespace"]
 NotEmptyStr = Annotated[str, NotEmptyStrDeser()]
 CleanedNotEmptyStr = Annotated[str, CleanedNotEmptyStrDeser()]
-IRI = Annotated[str, "Internationalized Resource Identifier"]
+Confidence = Annotated[float, NonNegMax1Float]
+IRI = Annotated[str, URLDeser, "Internationalized Resource Identifier"]
 URN = Annotated[str, "Uniform Resource Name"]
 RelIRI = Annotated[str, "Relative Internationalized Resource Identifier"]
 InternalID = Annotated[

@@ -5,12 +5,12 @@ from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Sequence, TypeVar
+from urllib.parse import urlparse
 
 from drepr.writers.turtle_writer import MyLiteral
 from fastapi import Response
 from rdflib import XSD, Graph, Literal
 from rdflib.term import Node
-from urllib.parse import urlparse
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -193,6 +193,16 @@ class NotEmptyStr(Deserializer):
 class CleanedNotEmptyStr(Deserializer):
     def __call__(self, s: Any) -> bool:
         return isinstance(s, str) and len(s) > 0 and s.strip() == s
+
+
+class URLDeser(Deserializer):
+    def __call__(self, s: Any) -> bool:
+        return isinstance(s, str) and is_valid_url(s)
+
+
+class NonNegMax1Float(Deserializer):
+    def __call__(self, s: Any) -> bool:
+        return isinstance(s, float) and 0.0 <= s <= 1.0
 
 
 class makedict:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Callable, Literal, Optional
 from urllib.parse import urlparse, urlunparse
 
 import htbuilder as H
@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from minmodkg.api.models.public_dedup_mineral_site import DedupMineralSitePublic
 from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS
+from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import MineralSiteService
 from minmodkg.typing import IRI
 from rdflib import OWL, RDF, RDFS, BNode, Graph
@@ -98,8 +99,71 @@ def get_derived(
         if format == "json":
             return dedup_site.to_dict()
         if format == "html":
+            derived_key_uri_fmt = {
+                "id": lambda id: (
+                    MINMOD_NS.md.uri(id),
+                    id,
+                ),
+                "sites.*.id": lambda id: (
+                    MINMOD_NS.mr.uri(id),
+                    id,
+                ),
+                "deposit_types.*.id": lambda id: (
+                    MINMOD_NS.mr.uri(id),
+                    (
+                        ent.name
+                        if (
+                            ent := EntityService.get_instance()
+                            .get_deposit_type_idmap()
+                            .get(id, None)
+                        )
+                        else f"{id} (unknown reference)"
+                    ),
+                ),
+                "grade_tonnage.*.commodity": lambda id: (
+                    MINMOD_NS.mr.uri(id),
+                    (
+                        ent.name
+                        if (
+                            ent := EntityService.get_instance()
+                            .get_commodity_idmap()
+                            .get(id, None)
+                        )
+                        else f"{id} (unknown reference)"
+                    ),
+                ),
+                "location.country.*": lambda id: (
+                    MINMOD_NS.mr.uri(id),
+                    (
+                        ent.name
+                        if (
+                            ent := EntityService.get_instance()
+                            .get_country_idmap()
+                            .get(id, None)
+                        )
+                        else f"{id} (unknown reference)"
+                    ),
+                ),
+                "location.state_or_province.*": lambda id: (
+                    MINMOD_NS.mr.uri(id),
+                    (
+                        ent.name
+                        if (
+                            ent := EntityService.get_instance()
+                            .get_state_or_province_idmap()
+                            .get(id, None)
+                        )
+                        else f"{id} (unknown reference)"
+                    ),
+                ),
+            }
+
             return render_dict_html(
-                dedup_site.name, MINMOD_NS.md.uri(resource_id), dedup_site.to_dict()
+                dedup_site.name,
+                MINMOD_NS.md.uri(resource_id),
+                dedup_site.to_dict(),
+                remove_hostname=get_hostname() if remove_hostname == "yes" else None,
+                key2uri=derived_key_uri_fmt,
             )
 
     uri = MINMOD_NS.md.uri(resource_id)
@@ -303,31 +367,44 @@ def render_entity_html(
 
 
 def render_dict_html(
-    obj_name: str, obj_uri: IRI, obj: dict, remove_hostname: Optional[str] = None
+    obj_name: str,
+    obj_uri: IRI,
+    obj: dict,
+    remove_hostname: Optional[str] = None,
+    key2uri: Optional[dict[str, Callable]] = None,
 ):
+    if key2uri is None:
+        key2uri = {}
+
     def get_href(subj: IRI):
         if remove_hostname is not None and subj.startswith(remove_hostname):
             return subj[len(remove_hostname) :] + "?remove_hostname=yes"
         return subj
 
-    def make_tree(d: dict | list | str | bool | int | float):
+    def make_tree(d: dict | list | str | bool | int | float, current_key: str):
         if not isinstance(d, (dict, list)):
-            return H.p(d)
+            if current_key in key2uri:
+                uri, label = key2uri[current_key](d)
+                return H.a(href=get_href(uri))(label)
+            else:
+                return H.p(d)
         if isinstance(d, list):
-            return H.table(_class="table")(*[H.tr(H.td(make_tree(x))) for x in d])
+            return H.table(_class="table")(
+                *[H.tr(H.td(make_tree(x, current_key + ".*"))) for x in d]
+            )
         children = []
         for k, v in d.items():
             children.append(
                 H.tr(
                     H.td(H.a()(k)),
-                    H.td(make_tree(v)),
+                    H.td(make_tree(v, current_key + "." + k)),
                 )
             )
         return H.table(_class="table")(*children)
 
     children = []
     for k, v in obj.items():
-        children.append((H.a()(k), make_tree(v)))
+        children.append((H.a()(k), make_tree(v, k)))
 
     tree = H.div(_class="container-fluid")(
         H.div(_class="row", style="margin-top: 20px; margin-bottom: 20px")(

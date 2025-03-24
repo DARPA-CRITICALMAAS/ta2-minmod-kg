@@ -6,14 +6,14 @@ from typing import Annotated, Optional
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import makedict
 from minmodkg.models.kg.base import NS_MO, NS_MR
-from minmodkg.typing import NotEmptyStr
+from minmodkg.typing import CleanedNotEmptyStr
 
 
 @dataclass
 class RockType(RDFModel):
     __subj__ = Subject(type=NS_MO.term("RockType"), key_ns=NS_MR)
-    unit: Annotated[Optional[NotEmptyStr], P()] = None
-    type: Annotated[Optional[NotEmptyStr], P()] = None
+    unit: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    type: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none(
@@ -35,13 +35,13 @@ class RockType(RDFModel):
 class GeologyInfo(RDFModel):
     __subj__ = Subject(type=NS_MO.term("GeologyInfo"), key_ns=NS_MR)
 
-    alternation: Annotated[Optional[NotEmptyStr], P()] = None
-    concentration_process: Annotated[Optional[NotEmptyStr], P()] = None
-    ore_control: Annotated[Optional[NotEmptyStr], P()] = None
+    alternation: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    concentration_process: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    ore_control: Annotated[Optional[CleanedNotEmptyStr], P()] = None
     host_rock: Annotated[Optional[RockType], P()] = None
     associated_rock: Annotated[Optional[RockType], P()] = None
-    structure: Annotated[Optional[NotEmptyStr], P()] = None
-    tectonic: Annotated[Optional[NotEmptyStr], P()] = None
+    structure: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    tectonic: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none(

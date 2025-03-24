@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
 from typing import TYPE_CHECKING, Annotated, Any, Optional
+
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (
@@ -19,7 +21,7 @@ from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.reference import Reference
 from minmodkg.models.kgrel.user import get_username
 from minmodkg.transformations import make_site_id
-from minmodkg.typing import IRI, CleanedNotEmptyStr, InternalID, NotEmptyStr
+from minmodkg.typing import IRI, CleanedNotEmptyStr, InternalID
 from rdflib import URIRef
 
 if TYPE_CHECKING:

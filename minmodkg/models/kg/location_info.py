@@ -7,6 +7,7 @@ from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.utils import extend_unique, makedict
 from minmodkg.models.kg.base import NS_MO, NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.typing import CleanedNotEmptyStr
 
 
 @dataclass
@@ -17,7 +18,7 @@ class LocationInfo(RDFModel):
         default_factory=list
     )
     crs: Annotated[Optional[CandidateEntity], P()] = None
-    location: Annotated[Optional[str], P()] = None
+    location: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

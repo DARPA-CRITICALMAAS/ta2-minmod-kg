@@ -9,22 +9,24 @@ from dataclasses import dataclass
 from functools import cached_property
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Callable, NotRequired, TypedDict
+from typing import Annotated, Callable, NotRequired, Optional, TypedDict
 
 import orjson
 import typer
 from drepr.main import convert
 from joblib import Parallel, delayed
 from loguru import logger
-from minmodkg.api.models.public_mineral_site import InputPublicMineralSite
+from minmodkg.api.models.public_mineral_site import IRI, InputPublicMineralSite
 from minmodkg.misc.deserializer import get_dataclass_deserializer
+from minmodkg.models.kg.candidate_entity import CandidateEntity
+from minmodkg.models.kg.geology_info import RockType
+from minmodkg.services.kgrel_entity import EntityService
 from rdflib import RDF, SH, Graph
-from tqdm.auto import tqdm
-
 from statickg.helper import CacheProcess, import_func
 from statickg.models.file_and_path import BaseType, RelPath
 from statickg.models.prelude import ETLOutput, RelPath, Repository
 from statickg.services.interface import BaseFileService
+from tqdm.auto import tqdm
 
 
 class FilenameValidatorServiceConstructArgs(TypedDict):
@@ -294,6 +296,92 @@ class ContentValidator:
                     raise Exception("SHACL validation failed")
 
         print("Check if the data is valid with SHACL (part 2)... Success!")
+
+
+def validate_mineral_site(
+    data: str | Path | list[dict] | list[InputPublicMineralSite],
+    ent_service: EntityService,
+):
+    if isinstance(data, (str, Path)):
+        sites = orjson.loads(Path(data).read_bytes())
+    else:
+        sites = data
+
+    if len(sites) == 0:
+        return
+
+    # validate data format
+    norm_sites: list[InputPublicMineralSite] = []
+    if isinstance(sites[0], dict):
+        for i, site in enumerate(sites):
+            try:
+                norm_sites.append(TempMineralSiteValidator(site))
+            except Exception as e:
+                raise ValueError(f"Invalid site data at record {i}") from e
+    else:
+        for i, site in enumerate(sites):
+            try:
+                assert isinstance(site, InputPublicMineralSite)
+            except Exception as e:
+                raise ValueError(f"Invalid site data at record {i}") from e
+            norm_sites.append(site)
+
+    countries = {ent.uri for ent in ent_service.get_countries()}
+    sops = {ent.uri for ent in ent_service.get_state_or_provinces()}
+    crss = {ent.uri for ent in ent_service.get_crs()}
+    deptypes = {ent.uri for ent in ent_service.get_deposit_types()}
+    commodities = {ent.uri for ent in ent_service.get_commodities()}
+    # cats = {ent.uri for ent in ent_service.get_categories()}
+
+    # validate data content
+    for i, site in enumerate(norm_sites):
+        if site.location_info is not None:
+            for country in site.location_info.country:
+                ValidatorHelper.optional_uri(
+                    country.normalized_uri, "location_info.country", countries
+                )
+            for state in site.location_info.state_or_province:
+                ValidatorHelper.optional_uri(
+                    state.normalized_uri, "location_info.state_or_province", sops
+                )
+            if site.location_info.crs is not None:
+                ValidatorHelper.optional_uri(
+                    site.location_info.crs.normalized_uri, "location_info.crs", crss
+                )
+        for dt in site.deposit_type_candidate:
+            ValidatorHelper.optional_uri(
+                dt.normalized_uri, "deposit_type_candidate", deptypes
+            )
+        for inv in site.mineral_inventory:
+            if inv.commodity is not None:
+                ValidatorHelper.optional_uri(
+                    inv.commodity.normalized_uri, "mineral_inventory.commodity"
+                )
+            # for unit in inv.unit:
+            #     ValidatorHelper.optional_uri(
+            #         unit.normalized_uri, "mineral_inventory.unit"
+            #     )
+
+
+class ValidatorHelper:
+    @staticmethod
+    def optional_uri(
+        s: Optional[IRI], prop: str, allow_uris: Optional[set[str]] = None
+    ):
+        if s is None:
+            return None
+
+        if not isinstance(s, str):
+            raise ValueError(f"{prop} must be a string, got {type(s).__name__}")
+
+        if s == "":
+            raise ValueError(f"{prop} cannot be empty")
+
+        # Check if URI is in the allowed set if provided
+        if allow_uris is not None and s not in allow_uris:
+            raise ValueError(f"{prop} has URI '{s}' which is not in the allowed set")
+
+        return s
 
 
 if __name__ == "__main__":

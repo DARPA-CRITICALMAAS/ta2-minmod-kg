@@ -9,15 +9,16 @@ from minmodkg.misc.utils import makedict
 from minmodkg.models.kg.base import NS_MO, NS_MR, NS_MR_NO_REL
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.measure import Measure
+from minmodkg.typing import IRI, CleanedNotEmptyStr
 
 
 @dataclass
 class Document(RDFModel):
     __subj__ = Subject(type=NS_MO.term("Document"), key_ns=NS_MR_NO_REL, key="uri")
 
-    doi: Annotated[Optional[str], P()] = None
-    uri: Annotated[Optional[str], P()] = None
-    title: Annotated[Optional[str], P()] = None
+    doi: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    uri: Annotated[Optional[IRI], P()] = None
+    title: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none(
@@ -180,8 +181,8 @@ class Reference(RDFModel):
 
     document: Annotated[Document, P()]
     page_info: Annotated[list[PageInfo], P()] = field(default_factory=list)
-    comment: Annotated[Optional[str], P()] = None
-    property: Annotated[Optional[str], P()] = None
+    comment: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    property: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(

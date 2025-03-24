@@ -40,6 +40,8 @@ class EntityService:
         self.commodity_form_conversion: Optional[dict[IRI, float]] = None
         self.data_source_score: Optional[dict[IRI, float | None]] = None
         self.crs_name: Optional[dict[IRI, str]] = None
+        self.deposit_type_idmap: Optional[dict[InternalID, DepositType]] = None
+        self.commodity_idmap: Optional[dict[InternalID, Commodity]] = None
 
     @staticmethod
     def get_instance():
@@ -67,6 +69,36 @@ class EntityService:
             self.crs_name = {crs.uri: crs.name for crs in self.get_crs()}
         return self.crs_name
 
+    def get_deposit_type_idmap(self) -> dict[InternalID, DepositType]:
+        if self.deposit_type_idmap is None:
+            self.deposit_type_idmap = {dt.id: dt for dt in self.get_deposit_types()}
+        return self.deposit_type_idmap
+
+    def get_commodity_idmap(self) -> dict[InternalID, Commodity]:
+        if self.commodity_idmap is None:
+            self.commodity_idmap = {
+                commodity.id: commodity for commodity in self.get_commodities()
+            }
+        return self.commodity_idmap
+
+    def get_country_idmap(self) -> dict[InternalID, Country]:
+        if not hasattr(self, "country_idmap") or self.country_idmap is None:
+            self.country_idmap = {
+                country.id: country for country in self.get_countries()
+            }
+        return self.country_idmap
+
+    def get_state_or_province_idmap(self) -> dict[InternalID, StateOrProvince]:
+        if (
+            not hasattr(self, "state_or_province_idmap")
+            or self.state_or_province_idmap is None
+        ):
+            self.state_or_province_idmap = {
+                state_or_province.id: state_or_province
+                for state_or_province in self.get_state_or_provinces()
+            }
+        return self.state_or_province_idmap
+
     def get_units(self) -> list[Unit]:
         if self.units is None:
             self.units = self._select_all(Unit)
@@ -81,6 +113,8 @@ class EntityService:
         if self.deposit_types is None:
             self.deposit_types = self._select_all(DepositType)
         return self.deposit_types
+
+    # def get_categories(self) -> list[Category]:
 
     def get_countries(self) -> list[Country]:
         if self.countries is None:

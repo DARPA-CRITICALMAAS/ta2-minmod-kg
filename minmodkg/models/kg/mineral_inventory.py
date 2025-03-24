@@ -9,6 +9,7 @@ from minmodkg.models.kg.base import NS_MO, NS_MR
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.measure import Measure
 from minmodkg.models.kg.reference import Reference
+from minmodkg.typing import CleanedNotEmptyStr
 
 
 @dataclass
@@ -17,14 +18,14 @@ class MineralInventory(RDFModel):
 
     commodity: Annotated[CandidateEntity, P()]
     reference: Annotated[Reference, P()]
-    date: Annotated[Optional[str], P()] = None
+    date: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     category: Annotated[list[CandidateEntity], P()] = field(default_factory=list)
     grade: Annotated[Optional[Measure], P()] = None
     cutoff_grade: Annotated[Optional[Measure], P()] = None
     material_form: Annotated[Optional[CandidateEntity], P()] = None
     ore: Annotated[Optional[Measure], P()] = None
-    zone: Annotated[Optional[str], P()] = None
+    zone: Annotated[Optional[CleanedNotEmptyStr], P()] = None
 
     def to_dict(self):
         return makedict.without_none_or_empty_list(
