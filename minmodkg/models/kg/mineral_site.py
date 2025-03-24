@@ -43,6 +43,7 @@ class MineralSiteIdent(RDFModel):
         return make_site_id(
             get_username(self.created_by), self.source_id, self.record_id
         )
+
     @classmethod
     def from_dict(cls, d: dict):
         return cls(
