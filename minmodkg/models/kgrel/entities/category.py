@@ -12,6 +12,10 @@ class Category(MappedAsDataclass, Base):
     id: Mapped[InternalID] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column()
 
+    @property
+    def uri(self) -> str:
+        return KGCategory.__subj__.key_ns.uristr(self.id)
+
     def to_dict(self) -> dict:
         return {
             "id": self.id,

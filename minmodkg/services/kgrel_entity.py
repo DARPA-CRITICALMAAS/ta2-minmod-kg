@@ -8,6 +8,7 @@ from minmodkg.models.kg.entities.commodity_form import CommodityForm as KGCommod
 from minmodkg.models.kg.entities.crs import CRS as KGCRS
 from minmodkg.models.kgrel.base import Base, engine
 from minmodkg.models.kgrel.data_source import DataSource
+from minmodkg.models.kgrel.entities.category import Category
 from minmodkg.models.kgrel.entities.commodity import Commodity
 from minmodkg.models.kgrel.entities.commodity_form import CommodityForm
 from minmodkg.models.kgrel.entities.country import Country
@@ -32,6 +33,7 @@ class EntityService:
         self.commodities: Optional[list[Commodity]] = None
         self.deposit_types: Optional[list[DepositType]] = None
         self.countries: Optional[list[Country]] = None
+        self.categories: Optional[list[Category]] = None
         self.state_or_provinces: Optional[list[StateOrProvince]] = None
         self.commodity_forms: Optional[list[CommodityForm]] = None
         self.data_sources: Optional[dict[IRI, DataSource]] = None
@@ -114,7 +116,10 @@ class EntityService:
             self.deposit_types = self._select_all(DepositType)
         return self.deposit_types
 
-    # def get_categories(self) -> list[Category]:
+    def get_categories(self) -> list[Category]:
+        if self.categories is None:
+            self.categories = self._select_all(Category)
+        return self.categories
 
     def get_countries(self) -> list[Country]:
         if self.countries is None:
@@ -156,3 +161,8 @@ class FileEntityService(EntityService):
             cls.__name__
         ]
         return [cls.from_dict(record) for record in records]
+
+
+# class RemoteEntityService(EntityService):
+#     def _select_all(self, cls: type[T]) -> list[T]:
+#         if isinstance(cls, )

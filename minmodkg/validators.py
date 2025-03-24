@@ -20,6 +20,7 @@ from minmodkg.api.models.public_mineral_site import IRI, InputPublicMineralSite
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import RockType
+from minmodkg.models.kg.measure import Measure
 from minmodkg.services.kgrel_entity import EntityService
 from rdflib import RDF, SH, Graph
 from statickg.helper import CacheProcess, import_func
@@ -301,6 +302,7 @@ class ContentValidator:
 def validate_mineral_site(
     data: str | Path | list[dict] | list[InputPublicMineralSite],
     ent_service: EntityService,
+    verbose: bool,
 ):
     if isinstance(data, (str, Path)):
         sites = orjson.loads(Path(data).read_bytes())
@@ -313,7 +315,12 @@ def validate_mineral_site(
     # validate data format
     norm_sites: list[InputPublicMineralSite] = []
     if isinstance(sites[0], dict):
-        for i, site in enumerate(sites):
+        for i, site in tqdm(
+            enumerate(sites),
+            total=len(sites),
+            desc="Validate data format",
+            disable=not verbose,
+        ):
             try:
                 norm_sites.append(TempMineralSiteValidator(site))
             except Exception as e:
@@ -331,10 +338,17 @@ def validate_mineral_site(
     crss = {ent.uri for ent in ent_service.get_crs()}
     deptypes = {ent.uri for ent in ent_service.get_deposit_types()}
     commodities = {ent.uri for ent in ent_service.get_commodities()}
-    # cats = {ent.uri for ent in ent_service.get_categories()}
+    commodity_forms = {ent.uri for ent in ent_service.get_commodity_forms()}
+    cats = {ent.uri for ent in ent_service.get_categories()}
+    units = {ent.uri for ent in ent_service.get_units()}
 
     # validate data content
-    for i, site in enumerate(norm_sites):
+    for i, site in tqdm(
+        enumerate(norm_sites),
+        total=len(norm_sites),
+        desc="Validate data content",
+        disable=not verbose,
+    ):
         if site.location_info is not None:
             for country in site.location_info.country:
                 ValidatorHelper.optional_uri(
@@ -355,12 +369,36 @@ def validate_mineral_site(
         for inv in site.mineral_inventory:
             if inv.commodity is not None:
                 ValidatorHelper.optional_uri(
-                    inv.commodity.normalized_uri, "mineral_inventory.commodity"
+                    inv.commodity.normalized_uri,
+                    "mineral_inventory.commodity",
+                    commodities,
                 )
-            # for unit in inv.unit:
-            #     ValidatorHelper.optional_uri(
-            #         unit.normalized_uri, "mineral_inventory.unit"
-            #     )
+            for cat in inv.category:
+                ValidatorHelper.optional_uri(
+                    cat.normalized_uri, "mineral_inventory.category", cats
+                )
+
+            ValidatorHelper.optional_measure(
+                inv.grade,
+                "mineral_inventory.grade",
+                allow_uris=units,
+            )
+            ValidatorHelper.optional_measure(
+                inv.cutoff_grade,
+                "mineral_inventory.cutoff_grade",
+                allow_uris=units,
+            )
+            ValidatorHelper.optional_measure(
+                inv.ore,
+                "mineral_inventory.ore",
+                allow_uris=units,
+            )
+            if inv.material_form is not None:
+                ValidatorHelper.optional_uri(
+                    inv.material_form.normalized_uri,
+                    "mineral_inventory.material_form",
+                    commodity_forms,
+                )
 
 
 class ValidatorHelper:
@@ -382,6 +420,30 @@ class ValidatorHelper:
             raise ValueError(f"{prop} has URI '{s}' which is not in the allowed set")
 
         return s
+
+    @staticmethod
+    def optional_measure(
+        m: Optional[Measure],
+        prop: str,
+        allow_uris: Optional[set[str]] = None,
+    ):
+        if m is None:
+            return None
+
+        if not isinstance(m, Measure):
+            raise ValueError(f"{prop} must be a Measure, got {type(m).__name__}")
+
+        if m.unit is not None:
+            ValidatorHelper.optional_uri(
+                m.unit.normalized_uri,
+                prop + ".unit",
+                allow_uris=allow_uris,
+            )
+        if m.value is not None and not isinstance(m.value, (int, float)):
+            raise ValueError(
+                f"{prop}.value must be a number, got {type(m.value).__name__}"
+            )
+        return m
 
 
 if __name__ == "__main__":
