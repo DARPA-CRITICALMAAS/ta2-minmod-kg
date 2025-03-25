@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Callable, NotRequired, Optional, TypedDict
+from typing import Annotated, Any, Callable, NotRequired, Optional, Sequence, TypedDict
 
 import orjson
 import typer
@@ -300,9 +300,9 @@ class ContentValidator:
 
 
 def validate_mineral_site(
-    data: str | Path | list[dict] | list[InputPublicMineralSite],
+    data: str | Path | Sequence[dict] | Sequence[InputPublicMineralSite],
     ent_service: EntityService,
-    verbose: bool,
+    verbose: bool = False,
 ):
     if isinstance(data, (str, Path)):
         sites = orjson.loads(Path(data).read_bytes())
@@ -333,14 +333,14 @@ def validate_mineral_site(
                 raise ValueError(f"Invalid site data at record {i}") from e
             norm_sites.append(site)
 
-    countries = {ent.uri for ent in ent_service.get_countries()}
-    sops = {ent.uri for ent in ent_service.get_state_or_provinces()}
-    crss = {ent.uri for ent in ent_service.get_crs()}
-    deptypes = {ent.uri for ent in ent_service.get_deposit_types()}
-    commodities = {ent.uri for ent in ent_service.get_commodities()}
-    commodity_forms = {ent.uri for ent in ent_service.get_commodity_forms()}
-    cats = {ent.uri for ent in ent_service.get_categories()}
-    units = {ent.uri for ent in ent_service.get_units()}
+    countries = ent_service.get_country_uris()
+    sops = ent_service.get_state_or_province_uris()
+    crss = ent_service.get_crs_name()
+    deptypes = ent_service.get_deposit_type_uris()
+    commodities = ent_service.get_commodity_uris()
+    commodity_forms = ent_service.get_commodity_form_uris()
+    cats = ent_service.get_category_uris()
+    units = ent_service.get_unit_uris()
 
     # validate data content
     for i, site in tqdm(
@@ -404,7 +404,9 @@ def validate_mineral_site(
 class ValidatorHelper:
     @staticmethod
     def optional_uri(
-        s: Optional[IRI], prop: str, allow_uris: Optional[set[str]] = None
+        s: Optional[IRI],
+        prop: str,
+        allow_uris: Optional[set[IRI] | dict[IRI, Any]] = None,
     ):
         if s is None:
             return None
@@ -425,7 +427,7 @@ class ValidatorHelper:
     def optional_measure(
         m: Optional[Measure],
         prop: str,
-        allow_uris: Optional[set[str]] = None,
+        allow_uris: Optional[set[IRI] | dict[IRI, Any]] = None,
     ):
         if m is None:
             return None

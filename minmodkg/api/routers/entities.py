@@ -53,7 +53,7 @@ def deposit_types():
 @router.get("/countries")
 def countries():
     return [
-        {"uri": r.uri, "name": r.name}
+        {"uri": r.uri, "name": r.name, "aliases": r.aliases}
         for r in EntityService.get_instance().get_countries()
     ]
 
@@ -69,6 +69,34 @@ def state_or_provinces():
 @router.get("/data-sources")
 def data_sources():
     return [
-        {"uri": r.id, "name": r.name, "score": r.score, "connection": r.connection}
+        {
+            "uri": r.id,
+            "name": r.name,
+            "score": r.score,
+            "type": r.type,
+            "connection": r.connection,
+        }
         for r in EntityService.get_instance().get_data_sources().values()
+    ]
+
+
+@router.get("/categories")
+def categories():
+    return [
+        {"id": cat.id, "name": cat.name}
+        for cat in EntityService.get_instance().get_categories()
+    ]
+
+
+@router.get("/commodity-forms")
+def commodity_forms():
+    return [
+        {
+            "id": form.id,
+            "name": form.name,
+            "formula": form.formula,
+            "conversion": form.conversion,
+            "commodity": form.commodity,
+        }
+        for form in EntityService.get_instance().get_commodity_forms()
     ]

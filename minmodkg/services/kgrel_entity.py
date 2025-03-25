@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, TypeVar
+from typing import Optional, Sequence, TypeVar
+from urllib.parse import urljoin
 
+import httpx
 import serde.json
+from minmodkg.models.kg.base import NS_MR
 from minmodkg.models.kg.entities.commodity_form import CommodityForm as KGCommodityForm
 from minmodkg.models.kg.entities.crs import CRS as KGCRS
 from minmodkg.models.kgrel.base import Base, engine
@@ -90,6 +93,11 @@ class EntityService:
             }
         return self.country_idmap
 
+    def get_country_uris(self) -> set[IRI]:
+        if not hasattr(self, "country_uris") or self.country_uris is None:
+            self.country_uris = {country.uri for country in self.get_countries()}
+        return self.country_uris
+
     def get_state_or_province_idmap(self) -> dict[InternalID, StateOrProvince]:
         if (
             not hasattr(self, "state_or_province_idmap")
@@ -100,6 +108,42 @@ class EntityService:
                 for state_or_province in self.get_state_or_provinces()
             }
         return self.state_or_province_idmap
+
+    def get_state_or_province_uris(self) -> set[IRI]:
+        if (
+            not hasattr(self, "state_or_province_uris")
+            or self.state_or_province_uris is None
+        ):
+            self.state_or_province_uris = {
+                state_or_province.uri
+                for state_or_province in self.get_state_or_provinces()
+            }
+        return self.state_or_province_uris
+
+    def get_deposit_type_uris(self) -> set[IRI]:
+        if not hasattr(self, "deposit_type_uris") or self.deposit_type_uris is None:
+            self.deposit_type_uris = {dt.uri for dt in self.get_deposit_types()}
+        return self.deposit_type_uris
+
+    def get_commodity_uris(self) -> set[IRI]:
+        if not hasattr(self, "commodity_uris") or self.commodity_uris is None:
+            self.commodity_uris = {c.uri for c in self.get_commodities()}
+        return self.commodity_uris
+
+    def get_commodity_form_uris(self) -> set[IRI]:
+        if not hasattr(self, "commodity_form_uris") or self.commodity_form_uris is None:
+            self.commodity_form_uris = {c.uri for c in self.get_commodity_forms()}
+        return self.commodity_form_uris
+
+    def get_category_uris(self) -> set[IRI]:
+        if not hasattr(self, "category_uris") or self.category_uris is None:
+            self.category_uris = {c.uri for c in self.get_categories()}
+        return self.category_uris
+
+    def get_unit_uris(self) -> set[IRI]:
+        if not hasattr(self, "unit_uris") or self.unit_uris is None:
+            self.unit_uris = {u.uri for u in self.get_units()}
+        return self.unit_uris
 
     def get_units(self) -> list[Unit]:
         if self.units is None:
@@ -163,6 +207,103 @@ class FileEntityService(EntityService):
         return [cls.from_dict(record) for record in records]
 
 
-# class RemoteEntityService(EntityService):
-#     def _select_all(self, cls: type[T]) -> list[T]:
-#         if isinstance(cls, )
+class RemoteEntityService(EntityService):
+
+    def __init__(self, endpoint: str = "https://minmod.isi.edu/"):
+        super().__init__()
+        self.endpoint = endpoint
+
+    def _select_all(self, cls: type[T]) -> list[T]:
+        if cls is Unit:
+            data = self._download_data("/api/v1/units")
+            return [
+                Unit(
+                    id=NS_MR.id(x["uri"]),
+                    name=x["name"],
+                    aliases=x["aliases"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is Commodity:
+            data = self._download_data("/api/v1/commodities")
+            return [
+                Commodity(
+                    id=x["id"],
+                    name=x["name"],
+                    aliases=x["aliases"],
+                    parent=x["parent"],
+                    is_critical=x["is_critical"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is DepositType:
+            data = self._download_data("/api/v1/deposit-types")
+            return [
+                DepositType(
+                    id=NS_MR.id(x["uri"]),
+                    name=x["name"],
+                    environment=x["environment"],
+                    group=x["group"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is Category:
+            data = self._download_data("/api/v1/categories")
+            return [
+                Category(
+                    id=x["id"],
+                    name=x["name"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is Country:
+            data = self._download_data("/api/v1/countries")
+            return [
+                Country(id=NS_MR.id(x["uri"]), name=x["name"], aliases=x["aliases"])
+                for x in data
+            ]  # type: ignore
+        if cls is StateOrProvince:
+            data = self._download_data("/api/v1/states-or-provinces")
+            return [
+                StateOrProvince(
+                    id=NS_MR.id(x["uri"]),
+                    name=x["name"],
+                    country=x["country"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is CommodityForm:
+            data = self._download_data("/api/v1/commodity-forms")
+            return [
+                CommodityForm(
+                    id=x["id"],
+                    name=x["name"],
+                    formula=x["formula"],
+                    conversion=x["conversion"],
+                    commodity=x["commodity"],
+                )
+                for x in data
+            ]  # type: ignore
+        if cls is DataSource:
+            data = self._download_data("/api/v1/data-sources")
+            return [
+                DataSource(
+                    id=x["uri"],
+                    name=x["name"],
+                    type=x["type"],
+                    created_by="",
+                    description="",
+                    score=x["score"],
+                    connection=x["connection"],
+                )
+                for x in data
+            ]  # type: ignore
+        raise NotImplementedError(f"Remote fetching not implemented for {cls.__name__}")
+
+    def _download_data(self, url: str) -> list[dict]:
+        response = httpx.get(urljoin(self.endpoint, url), verify=False, timeout=30)
+        if response.status_code == 200:
+            return response.json()
+
+        error_msg = f"Failed to download data from {url}. Status code: {response.status_code}, Response: {response.text}"
+        raise Exception(error_msg)

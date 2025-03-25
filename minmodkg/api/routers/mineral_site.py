@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, HTTPException, Query, Request, Response, status
 from minmodkg.api.dependencies import (
     CurrentUserDep,
     MineralSiteServiceDep,
@@ -13,16 +14,19 @@ from minmodkg.api.models.public_mineral_site import (
 )
 from minmodkg.models.kg.base import NS_MR
 from minmodkg.models.kgrel.mineral_site import MineralSite
+from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import (
     ExpiredSnapshotIdError,
     UnsupportOperationError,
 )
 from minmodkg.transformations import make_site_id
 from minmodkg.typing import InternalID
+from minmodkg.validators import validate_mineral_site
 from pydantic import BaseModel
 from sqlalchemy import select
 
 router = APIRouter(tags=["mineral_sites"])
+
 
 class UpdateDedupLink(BaseModel):
     """A class represents the latest dedup links"""
@@ -105,6 +109,8 @@ def create_site(
     mineral_site_service: MineralSiteServiceDep,
     user: CurrentUserDep,
 ):
+    _validate_site(create_site)
+
     new_msi = create_site.to_kgrel(user.get_uri())
     site_db_id = mineral_site_service.get_site_db_id(new_msi.ms.site_id)
     if site_db_id is not None:
@@ -125,6 +131,8 @@ def update_site(
     user: CurrentUserDep,
     snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
+    _validate_site(update_site)
+
     upd_msi = update_site.to_kgrel(user.get_uri())
 
     if site_id != upd_msi.ms.site_id:
@@ -156,3 +164,24 @@ def update_site(
         )
 
     return OutputPublicMineralSite.from_kgrel(upd_msi).to_dict()
+
+
+@router.post("/mineral-sites/validate")
+def validate_site(mineral_site: Annotated[dict, Body()]):
+    """
+    Validate the mineral site data structure and properties submitted in the request body.
+    Returns validation errors if any are found.
+    """
+    _validate_site(mineral_site)
+    return {"message": "Validation successful"}
+
+
+def _validate_site(ms: dict | InputPublicMineralSite):
+    try:
+        validate_mineral_site([ms], EntityService.get_instance())  # type: ignore
+    except ValueError as e:
+        cause_str = f". Caused by: {str(e.__cause__)}" if e.__cause__ else ""
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e) + cause_str,
+        )
