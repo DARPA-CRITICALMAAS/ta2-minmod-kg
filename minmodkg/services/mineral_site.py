@@ -222,6 +222,50 @@ class MineralSiteService:
             # step 3: commit data
             session.commit()
 
+    def batch_create(self, lst_site_and_inv: list[MineralSiteAndInventory]):
+        """Create multiple mineral sites. This is usually done through an API call, so users won't provide
+        the dedup mineral site.
+        """
+        with Session(self.engine, expire_on_commit=False) as session:
+            session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
+
+            # **ALGO**
+            # Handle Axiom 1: All sites that have the same source id and record id must be
+            # linked automatically
+            sites_auto_linked_via_source_and_records = self._read_mineral_sites(
+                session,
+                self._select_mineral_site().where(
+                    MineralSite.source_id.in_(
+                        [site.ms.source_id for site in lst_site_and_inv],
+                    ),
+                    MineralSite.record_id.in_(
+                        [site.ms.record_id for site in lst_site_and_inv],
+                    ),
+                ),
+            )
+            # Note that they must belong to the same dedup site because the data in our
+            # relational database is consistent.
+
+            # **ALGO**
+            # mark that the new site is linked to the same dedup site
+
+            # **ALGO**
+            # update the dedup mineral site in the database -- we can do better by using update_site function
+            # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
+            dedup_site = DedupMineralSite.from_sites(
+                existing_sites + [site_and_inv],
+                dedup_site_id=site_and_inv.ms.dedup_site_id,
+            )
+
+            # **ALGO**
+            # insert the new site and its inventories into the database
+
+            # **ALGO**
+            # update the inventory for dedup site in the database
+
+            # step 3: commit data
+            session.commit()
+
     def update(
         self,
         site_and_inv: MineralSiteAndInventory,
