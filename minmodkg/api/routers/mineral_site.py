@@ -123,6 +123,20 @@ def create_site(
     return OutputPublicMineralSite.from_kgrel(new_msi).to_dict()
 
 
+@router.post("/mineral-sites/batch-upsert")
+def upsert_sites(
+    sites: Annotated[list[InputPublicMineralSite], Body()],
+    mineral_site_service: MineralSiteServiceDep,
+    user: CurrentUserDep,
+):
+    for site in sites:
+        _validate_site(site)
+
+    new_msi = [site.to_kgrel(user.get_uri()) for site in sites]
+    mineral_site_service.upsert(new_msi)
+    return [OutputPublicMineralSite.from_kgrel(site).to_dict() for site in new_msi]
+
+
 @router.put("/mineral-sites/{site_id}")
 def update_site(
     site_id: str,

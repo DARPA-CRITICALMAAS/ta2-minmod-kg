@@ -138,6 +138,24 @@ class TestCreateMineralSite(TestMSData):
         )
 
 
+class TestUpsertMineralSite(TestMSData):
+
+    def test_upsert_mineral_site_first(
+        self, user1: User, kg: TripleStore, kgrel: Engine
+    ):
+        service = MineralSiteService(kgrel)
+        service.upsert([self.site1.to_kgrel(user1.get_uri())])
+
+        out_ms = OutputPublicMineralSite.from_kgrel(
+            assert_not_none(service.find_by_id(self.site1.id))
+        )
+        assert out_ms.to_dict() == dict(
+            self.site1_output.to_dict(),
+            modified_at=out_ms.modified_at,
+            snapshot_id=out_ms.snapshot_id,
+        )
+
+
 class TestLinkMineralSite(TestMSData):
     def test_update_same_as(self, resource_dir: Path, user1: User, kgrel: Engine):
         time.sleep(1.0)  # to ensure the modified_at is different

@@ -105,6 +105,23 @@ class MineralSiteService:
                 msi.ms.site_id: msi for msi in self._read_mineral_sites(session, query)
             }
 
+    def upsert(self, lst_site_and_inv: list[MineralSiteAndInventory]):
+        with Session(self.engine, expire_on_commit=False) as session:
+            session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
+            created_msis, updated_msis = self.fn__split_upsert(
+                session, lst_site_and_inv
+            )
+            dedup_sites = self.fn__update_dedup_mineral_sites_info(
+                session, created_msis + updated_msis
+            )
+            if len(created_msis) > 0:
+                self.fn__create_mineral_sites(session, created_msis)
+                self.fn__save_add_events(session, created_msis, dedup_sites)
+            if len(updated_msis) > 0:
+                self.fn__update_mineral_sites(session, updated_msis)
+                self.fn__save_update_events(session, updated_msis)
+            session.commit()
+
     def create(self, site_and_inv: MineralSiteAndInventory):
         """Create a mineral site."""
         with Session(self.engine, expire_on_commit=False) as session:
@@ -228,50 +245,6 @@ class MineralSiteService:
                     site_and_inv, [ms.ms.site_id for ms in existing_sites]
                 )
             )
-
-            # step 3: commit data
-            session.commit()
-
-    def batch_create(self, lst_site_and_inv: list[MineralSiteAndInventory]):
-        """Create multiple mineral sites. This is usually done through an API call, so users won't provide
-        the dedup mineral site.
-        """
-        with Session(self.engine, expire_on_commit=False) as session:
-            session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
-
-            # **ALGO**
-            # Handle Axiom 1: All sites that have the same source id and record id must be
-            # linked automatically
-            sites_auto_linked_via_source_and_records = self._read_mineral_sites(
-                session,
-                self._select_mineral_site().where(
-                    MineralSite.source_id.in_(
-                        [site.ms.source_id for site in lst_site_and_inv],
-                    ),
-                    MineralSite.record_id.in_(
-                        [site.ms.record_id for site in lst_site_and_inv],
-                    ),
-                ),
-            )
-            # Note that they must belong to the same dedup site because the data in our
-            # relational database is consistent.
-
-            # **ALGO**
-            # mark that the new site is linked to the same dedup site
-
-            # **ALGO**
-            # update the dedup mineral site in the database -- we can do better by using update_site function
-            # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
-            dedup_site = DedupMineralSite.from_sites(
-                existing_sites + [site_and_inv],
-                dedup_site_id=site_and_inv.ms.dedup_site_id,
-            )
-
-            # **ALGO**
-            # insert the new site and its inventories into the database
-
-            # **ALGO**
-            # update the inventory for dedup site in the database
 
             # step 3: commit data
             session.commit()
@@ -662,12 +635,19 @@ class MineralSiteService:
         )
 
     def fn__update_dedup_mineral_sites_info(
-        self, lst_msi: list[MineralSiteAndInventory], session: Session
+        self, session: Session, lst_msi: list[MineralSiteAndInventory]
     ):
         """Update the dedup mineral site information in the database as if the list of mineral sites
-        and their inventories are inserted into the database.
+        and their inventories are already in or will be inserted into the database.
 
-        However, since lst_msis are not persisted in the database yet, we do not need to issue the save command again.
+        This function works in the following order:
+
+        1. First fetching the existing same-as mineral sites from the database based on
+        (source id & record id). This will work for updating mineral sites as long as they do
+        not change the dedup mineral site id.
+        2. Then, we will recalculate the dedup mineral site information
+        3. Then, we persist the dedup mineral site in the database, and update necessary information
+        of lst_msi so that they are consistent with the dedup mineral site.
         """
         same_as_msis = self._read_mineral_sites(
             session,
@@ -681,29 +661,41 @@ class MineralSiteService:
             ),
         )
 
-        record_key_to_dedup = {}
-        dedup_groups = defaultdict(list)
+        id2new_msi = {msi.ms.site_id: msi for msi in lst_msi}
 
-        new_record_keys = defaultdict(list)
+        record_key_to_dedup = {}
+        dedup_groups: dict[InternalID, dict[InternalID, MineralSiteAndInventory]] = (
+            defaultdict(dict)
+        )
+        new_record_keys: dict[tuple[str, str], list[MineralSiteAndInventory]] = (
+            defaultdict(list)
+        )
 
         for msi in same_as_msis:
             key = (msi.ms.source_id, msi.ms.record_id)
-            dedup_groups[msi.ms.dedup_site_id].append(msi)
+            if msi.ms.site_id in id2new_msi:
+                # they must have the same dedup site id
+                dedup_groups[msi.ms.dedup_site_id][msi.ms.site_id] = id2new_msi[
+                    msi.ms.site_id
+                ]
+            else:
+                dedup_groups[msi.ms.dedup_site_id][msi.ms.site_id] = msi
             record_key_to_dedup[key] = msi.ms.dedup_site_id
 
         for msi in lst_msi:
             key = (msi.ms.source_id, msi.ms.record_id)
             if key in record_key_to_dedup:
                 msi.ms.dedup_site_id = record_key_to_dedup[key]
-                dedup_groups[msi.ms.dedup_site_id].append(msi)
+                dedup_groups[msi.ms.dedup_site_id][msi.ms.site_id] = msi
             else:
                 new_record_keys[key].append(msi)
 
         # now, we are going to update & insert the dedup mineral site
+        output_dedup_sites = {}
         if len(dedup_groups) > 0:
             dedup_sites = {
                 dms_id: DedupMineralSite.from_sites(
-                    msis,
+                    list(msis.values()),
                     dedup_site_id=dms_id,
                 )
                 for dms_id, msis in dedup_groups.items()
@@ -727,21 +719,25 @@ class MineralSiteService:
                     for inv in ms.invs
                 ],
             )
+            output_dedup_sites = dedup_sites
+
         if len(new_record_keys) > 0:
             new_dedup_sites = []
             for msis in new_record_keys.values():
                 dms_id = MineralSite.get_dedup_id((msi.ms.site_id for msi in msis))
                 for msi in msis:
                     msi.ms.dedup_site_id = dms_id
-                new_dedup_sites.append(
-                    DedupMineralSite.from_sites(
-                        msis,
-                        dedup_site_id=dms_id,
-                    ).get_update_args()
+                dms = DedupMineralSite.from_sites(
+                    msis,
+                    dedup_site_id=dms_id,
                 )
+                new_dedup_sites.append(dms.get_update_args())
+                output_dedup_sites[dms_id] = dms
 
             session.execute(insert(DedupMineralSite), new_dedup_sites)
             session.flush()
+
+        return output_dedup_sites
 
     def fn__create_mineral_sites(
         self, session: Session, lst_msi: list[MineralSiteAndInventory]
@@ -754,7 +750,118 @@ class MineralSiteService:
             [msi.ms.get_update_args() for msi in lst_msi],
         )
         for msi, inserted_ms in zip(lst_msi, inserted_lst_ms):
-            msi.ms.id = inserted_ms[0].id
+            msi.ms.id = inserted_ms[0]
             msi.ms.site_id = inserted_ms[1]
             for inv in msi.invs:
                 inv.site_id = msi.ms.id
+
+    def fn__update_mineral_sites(
+        self, session: Session, lst_msi: list[MineralSiteAndInventory]
+    ):
+        """Update the mineral sites in the database. This does not update the dedup mineral sites. Therefore, even if the dedup site id change,
+        the dedup site id of this mineral site in the database will not be updated."""
+        session.execute(
+            update(MineralSite),
+            [
+                remove_key(msi.ms.get_update_args(), "dedup_site_id")
+                for msi in lst_msi
+                if msi.ms.id is not None
+            ],
+        )
+        session.execute(
+            delete(MineralInventoryView).where(
+                MineralInventoryView.site_id.in_(msi.ms.id for msi in lst_msi)
+            )
+        )
+        session.execute(
+            insert(MineralInventoryView),
+            [inv.get_update_args() for msi in lst_msi for inv in msi.invs],
+        )
+
+    def fn__split_upsert(
+        self,
+        session: Session,
+        lst_msi: list[MineralSiteAndInventory],
+    ):
+        """Check if the mineral sites exist in the database. If they do, update them. Otherwise, create them."""
+        # First, we need to check which sites already exist in the database
+        site_id_to_msi = {
+            msi.ms.site_id: msi for msi in lst_msi if msi.ms.site_id is not None
+        }
+        updated_msis = []
+        created_msis = []
+
+        for id, site_id, source_id, record_id, created_by in session.execute(
+            select(
+                MineralSite.id,
+                MineralSite.site_id,
+                MineralSite.source_id,
+                MineralSite.record_id,
+                MineralSite.created_by,
+            ).where(
+                MineralSite.site_id.in_(
+                    [msi.ms.site_id for msi in lst_msi if msi.ms.site_id]
+                ),
+            )
+        ):
+            if site_id in site_id_to_msi:
+                msi = site_id_to_msi.pop(site_id)
+                assert (
+                    msi.ms.source_id == source_id
+                    and msi.ms.record_id == record_id
+                    and msi.ms.created_by == created_by
+                )
+                msi.ms.id = id
+                updated_msis.append(msi)
+
+        # now the remaining sites are the new ones
+        created_msis = list(site_id_to_msi.values())
+        for msi in created_msis:
+            msi.ms.id = None  # type: ignore
+
+        return created_msis, updated_msis
+
+    def fn__save_add_events(
+        self,
+        session: Session,
+        lst_msi: list[MineralSiteAndInventory],
+        dedup_sites: dict[str, DedupMineralSite],
+    ):
+        """Log events for adding mineral sites from the database."""
+        session.execute(
+            insert(EventLog),
+            [
+                EventLog.from_site_add(
+                    msi,
+                    [
+                        rms_score.site_id
+                        for rms_score in dedup_sites[msi.ms.dedup_site_id].ranked_sites
+                        if rms_score.site_id != msi.ms.site_id
+                    ],
+                ).get_update_args()
+                for msi in lst_msi
+            ],
+        )
+
+    def fn__save_update_events(
+        self,
+        session: Session,
+        lst_msi: list[MineralSiteAndInventory],
+    ):
+        """Log events for updating mineral sites in the database."""
+        session.execute(
+            insert(EventLog),
+            [
+                EventLog.from_site_update(
+                    msi,
+                ).get_update_args()
+                for msi in lst_msi
+            ],
+        )
+
+
+def remove_key(d: dict, remove_key: str):
+    """Remove a key from a dictionary and return the modified dictionary."""
+    del d[remove_key]
+    # d.pop(remove_key, None)
+    return d
