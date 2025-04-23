@@ -46,5 +46,23 @@ def upload(
         api.upsert_mineral_site(site, replace_site, verbose=False)
 
 
+@app.command(
+    "repo-import-ms",
+    help="Import mineral sites dataset into MinMod data repository directly",
+)
+def repo_import_ms(
+    file: Annotated[Path, typer.Argument(help="File to import")],
+    repo_dir: Annotated[Path, typer.Option("-o", help="The ta2 data repository")],
+):
+    from minmodkg.services.kgrel_entity import FileEntityService
+    from minmodkg.services.sync.backup_listener import PartitionFn
+    from minmodkg.validators import validate_mineral_site
+
+    ent_service = FileEntityService(repo_dir / "data/entities")
+    validate_mineral_site(file, ent_service, verbose=True)
+
+    # repo_dir / "data"
+
+
 if __name__ == "__main__":
     app()
