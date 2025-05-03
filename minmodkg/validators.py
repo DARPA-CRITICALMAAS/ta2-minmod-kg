@@ -331,6 +331,10 @@ def validate_mineral_site(
                 raise ValueError(
                     f"Invalid site data at record {i}: expect 1 reference but got {len(norm_site.reference)}"
                 )
+            if isinstance(site, dict) and "modified_at" not in site:
+                raise ValueError(
+                    f"Invalid site data at record {i}: missing modified_at field"
+                )
             norm_sites.append(norm_site)
     else:
         for i, site in enumerate(sites):
