@@ -346,16 +346,19 @@ def get_dataclass_deserializer(
 
         output = {}
         for field, deserialize in field2deserializer.items():
-            try:
-                if field in value:
+            if field in value:
+                try:
                     output[field] = deserialize(value[field])
-                elif not field2optional[field]:
-                    # not optional field but missing
-                    raise ValueError(f"expect the field {field} but it's missing")
-            except ValueError as e:
+                except ValueError as e:
+                    raise ValueError(
+                        f"error deserializing field {field} of {CLS.__name__}"
+                    ) from e
+            elif not field2optional[field]:
+                # not optional field but missing
                 raise ValueError(
-                    f"error deserializing field {field} of {CLS.__name__}"
-                ) from e
+                    f"expect the field {field} of {CLS.__name__} but it's missing"
+                )
+
         return CLS(**output)
 
     # assign first to support recursive type in the field
