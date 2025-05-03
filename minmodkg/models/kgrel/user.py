@@ -71,4 +71,6 @@ def is_valid_user_uri(uri: str):
 
 
 def get_username(uri: str):
-    return uri.rsplit("/", 1)[1]
+    if is_valid_user_uri(uri):
+        return uri.rsplit("/", 1)[1]
+    return uri

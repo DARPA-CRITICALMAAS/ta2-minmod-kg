@@ -45,9 +45,12 @@ def login(
     return PublicUser.from_kgrel(user)
 
 
-@router.get("/users/find_by_ids")
+@router.post("/users/find_by_ids")
 def get_users_by_ids(
-    user_uris: Annotated[list[str], Body(embed=True)],
+    user_uris: Annotated[
+        list[str],
+        Body(embed=True, alias="ids", description="Accept both username and user"),
+    ],
     session: RelSessionDep,
 ) -> list[PublicUser]:
     statement = select(User).where(
