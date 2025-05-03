@@ -200,9 +200,14 @@ class URLDeser(Deserializer):
         return isinstance(s, str) and is_valid_url(s)
 
 
-class NonNegMax1Float(Deserializer):
+class NonNegMax1FloatDeser(Deserializer):
     def __call__(self, s: Any) -> bool:
         return isinstance(s, float) and 0.0 <= s <= 1.0
+
+
+class NotEmptyListDeser(Deserializer):
+    def __call__(self, s: Any) -> bool:
+        return isinstance(s, list) and len(s) > 0
 
 
 class makedict:
