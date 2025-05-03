@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Optional
 from minmodkg.libraries.rdf.rdf_model import P, RDFModel, Subject
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.misc.utils import (
+    NotEmptyListDeser,
     extend_unique,
     format_datetime,
     format_nanoseconds,

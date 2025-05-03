@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minmodkg"
-version = "2.7.1"
+version = "2.7.2"
 description = "code repository for TA2 Knowledge Graph (MinMod) construction & deployment"
 authors = ["Binh Vu <bvu687@gmail.com>"]
 license = "MIT"

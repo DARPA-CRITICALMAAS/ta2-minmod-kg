@@ -17,17 +17,19 @@ from drepr.main import convert
 from joblib import Parallel, delayed
 from loguru import logger
 from minmodkg.api.models.public_mineral_site import IRI, InputPublicMineralSite
+from minmodkg.config import MINMOD_DEBUG
 from minmodkg.misc.deserializer import get_dataclass_deserializer
 from minmodkg.models.kg.candidate_entity import CandidateEntity
 from minmodkg.models.kg.geology_info import RockType
 from minmodkg.models.kg.measure import Measure
 from minmodkg.services.kgrel_entity import EntityService
 from rdflib import RDF, SH, Graph
+from tqdm.auto import tqdm
+
 from statickg.helper import CacheProcess, import_func
 from statickg.models.file_and_path import BaseType, RelPath
 from statickg.models.prelude import ETLOutput, RelPath, Repository
 from statickg.services.interface import BaseFileService
-from tqdm.auto import tqdm
 
 
 class FilenameValidatorServiceConstructArgs(TypedDict):
@@ -322,9 +324,14 @@ def validate_mineral_site(
             disable=not verbose,
         ):
             try:
-                norm_sites.append(TempMineralSiteValidator(site))
+                norm_site: InputPublicMineralSite = TempMineralSiteValidator(site)
             except Exception as e:
                 raise ValueError(f"Invalid site data at record {i}") from e
+            if len(norm_site.reference) != 1:
+                raise ValueError(
+                    f"Invalid site data at record {i}: expect 1 reference but got {len(norm_site.reference)}"
+                )
+            norm_sites.append(norm_site)
     else:
         for i, site in enumerate(sites):
             try:
