@@ -1,8 +1,24 @@
 # Overview
 
-Code for TA2 Knowledge Graph and other related services such as its API, CDR integration, data browser, etc.
+The following repositories contain all of the code and data for building and running the KG:
 
-## Repository Structure
+- This repository for populating and publishing the knowledge graph (KG):
+  https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg
+- Repository for loading new databases and reconciling mining sites:
+  https://github.com/DARPA-CRITICALMAAS/umn-ta2-mineral-site-linkage
+- Repository for extracting data from mining reports:
+  https://github.com/DARPA-CRITICALMAAS/ta2-extraction
+- Repository for table understanding:
+  https://github.com/DARPA-CRITICALMAAS/ta2-table-understanding
+- Repository for the minmod editor:
+  https://github.com/DARPA-CRITICALMAAS/ta2-minmod-editor
+- Repository where each component publishes the data (we then use that data to automatically populate the KG):
+  https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data
+- Repository for deployment of the data browser:
+  https://github.com/DARPA-CRITICALMAAS/minmod-dashboard
+- Live application that wraps the KG: https://minmod.isi.edu/
+
+## TA2-MinMod-KG Repository Structure
 
 - [containers](/containers): scripts to build docker images to deploy TA2 KG and other related services.
 - [extractors](/extractors): [d-repr](https://github.com/usc-isi-i2/d-repr) models to convert [TA2 data](https://github.com/DARPA-CRITICALMAAS/ta2-minmod-data/) in to RDF to import into TA2 KG.
