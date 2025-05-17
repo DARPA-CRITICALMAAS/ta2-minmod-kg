@@ -10,6 +10,8 @@ The following repositories contain all of the code and data for building and run
   https://github.com/DARPA-CRITICALMAAS/ta2-extraction
 - Repository for table understanding:
   https://github.com/DARPA-CRITICALMAAS/ta2-table-understanding
+- Repository for the Deposit Type Classification:
+  https://github.com/DARPA-CRITICALMAAS/sri-ta2
 - Repository for the minmod editor:
   https://github.com/DARPA-CRITICALMAAS/ta2-minmod-editor
 - Repository where each component publishes the data (we then use that data to automatically populate the KG):
