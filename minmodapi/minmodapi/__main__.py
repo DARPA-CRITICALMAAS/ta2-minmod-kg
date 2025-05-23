@@ -84,7 +84,7 @@ def repo_import_ms(
 
     source_id = source_id_values.pop()
     if source_id in data_sources:
-        source_name = data_sources[source_id_values.pop()].slug_name
+        source_name = data_sources[source_id].slug_name
     else:
         if source_id.startswith("https://doi.org/"):
             source_name = "doi-" + slugify(source_id[len("https://doi.org/") :])
