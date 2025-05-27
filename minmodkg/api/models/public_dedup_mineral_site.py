@@ -117,6 +117,7 @@ class DedupMineralSitePublic:
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: list[GradeTonnage]
     modified_at: str
+    trace: dict[str, str] = field(default_factory=dict)
 
     @cached_property
     def uri(self):
@@ -134,6 +135,20 @@ class DedupMineralSitePublic:
 
         if loc.is_empty():
             loc = None
+
+        trace = {}
+        if dms.name is not None:
+            trace["name"] = dms.name.refid
+        if dms.type is not None:
+            trace["type"] = dms.type.refid
+        if dms.rank is not None:
+            trace["rank"] = dms.rank.refid
+        if dms.coordinates is not None:
+            trace["coordinates"] = dms.coordinates.refid
+        if len(dms.country.value) > 0:
+            trace["country"] = dms.country.refid
+        if len(dms.state_or_province.value) > 0:
+            trace["state_or_province"] = dms.state_or_province.refid
 
         return DedupMineralSitePublic(
             id=dms.id,
@@ -162,6 +177,7 @@ class DedupMineralSitePublic:
                 for site in dms.ranked_sites
             ],
             modified_at=format_nanoseconds(dms.modified_at),
+            trace=trace,
         )
 
     def to_dict(self):
@@ -174,6 +190,7 @@ class DedupMineralSitePublic:
             "deposit_types": [dt.to_dict() for dt in self.deposit_types],
             "grade_tonnage": [gt.to_dict() for gt in self.grade_tonnage],
             "modified_at": self.modified_at,
+            "trace": self.trace,
         }
         if self.location is not None:
             out["location"] = self.location.to_dict()
@@ -197,4 +214,5 @@ class DedupMineralSitePublic:
             ),
             grade_tonnage=[GradeTonnage.from_dict(gt) for gt in d["grade_tonnage"]],
             modified_at=d["modified_at"],
+            trace=d["trace"],
         )
