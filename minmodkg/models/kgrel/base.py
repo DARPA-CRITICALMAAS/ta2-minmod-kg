@@ -18,6 +18,7 @@ from minmodkg.models.kgrel.custom_types import (
     RefValue,
     SiteAndScore,
 )
+from minmodkg.models.kgrel.custom_types.ref_value import RefDepositType
 from sqlalchemy import create_engine, update
 from sqlalchemy.orm import DeclarativeBase, Session
 
@@ -39,6 +40,7 @@ class Base(DeclarativeBase):
         list[CandidateEntity]: ListDataclassType(CandidateEntity),
         list[MineralInventory]: ListDataclassType(MineralInventory),
         list[Reference]: ListDataclassType(Reference),
+        list[RefDepositType]: ListDataclassType(RefDepositType),
         GeologyInfo: DataclassType(GeologyInfo),
     }
 

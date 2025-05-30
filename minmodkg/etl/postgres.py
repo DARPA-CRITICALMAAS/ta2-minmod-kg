@@ -18,7 +18,10 @@ from minmodkg.models.kgrel.entities.deposit_type import DepositType
 from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
 from minmodkg.models.kgrel.entities.unit import Unit
 from minmodkg.models.kgrel.mineral_site import MineralSite
-from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.kgrel.views.mineral_inventory_view import (
+    DedupMineralInventoryView,
+    MineralInventoryView,
+)
 from sqlalchemy import Engine, create_engine, insert
 from sqlalchemy.orm import Session
 from tqdm import tqdm
@@ -157,5 +160,17 @@ class PostgresLoaderService(DataLoaderService):
                             batch3.append(inv)
                     if len(batch3) > 0:
                         session.execute(insert(MineralInventoryView), batch3)
+
+            table = "DedupMineralInventoryView"
+            if table in tables:
+                records = tables[table]
+                for i in tqdm(
+                    list(range(0, len(records), batch_size)), desc=f"Saving {table}"
+                ):
+                    batch1 = records[i : i + batch_size]
+                    batch1 = [DedupMineralInventoryView.from_dict(r) for r in batch1]
+                    # can't use the newer API because I haven't figured out how to make SqlAlchemy
+                    # automatically handle the custom types (TypeDecorator) yet.
+                    session.bulk_save_objects(batch1)
 
             session.commit()

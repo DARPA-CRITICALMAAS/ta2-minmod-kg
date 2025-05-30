@@ -13,7 +13,10 @@ from minmodkg.models.kgrel.dedup_mineral_site import (
 )
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models.kgrel.views.mineral_inventory_view import MineralInventoryView
+from minmodkg.models.kgrel.views.mineral_inventory_view import (
+    DedupMineralInventoryView,
+    MineralInventoryView,
+)
 from minmodkg.typing import InternalID
 from sqlalchemy import (
     Engine,
@@ -29,6 +32,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 
 RawMineralInventoryView = dict
+RawDedupMineralInventoryView = dict
 FindDedupMineralSiteResult = TypedDict(
     "FindDedupMineralSiteResult",
     {
@@ -80,10 +84,10 @@ class MineralSiteService:
         self, dedup_site_id: InternalID
     ) -> Optional[DedupMineralSiteAndInventory]:
         query = (
-            select(DedupMineralSite, self.inv_agg)
+            select(DedupMineralSite, self.dedup_inv_agg)
             .join(
-                MineralInventoryView,
-                MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                DedupMineralInventoryView,
+                DedupMineralInventoryView.dedup_site_id == DedupMineralSite.id,
                 isouter=True,
             )
             .group_by(DedupMineralSite.id)
@@ -203,6 +207,14 @@ class MineralSiteService:
 
                 existing_sites = sites_with_same_dedup_id
 
+            # write the mineral site first, so that we have its id to update
+            # the inventories for dedup site as well
+            session.add(site_and_inv.ms)
+            session.flush()
+            session.refresh(site_and_inv.ms)
+            for inv in site_and_inv.invs:
+                inv.site_id = site_and_inv.ms.id
+
             # **ALGO**
             # update the dedup mineral site in the database -- we can do better by using update_site function
             # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
@@ -212,34 +224,23 @@ class MineralSiteService:
             )
 
             if len(existing_sites) == 0:
-                session.add(dedup_site)
+                session.add(dedup_site.dms)
+                session.add_all(dedup_site.invs)
                 session.flush()
             else:
-                session.execute(dedup_site.get_update_query())
+                session.execute(dedup_site.dms.get_update_query())
+                # delete existing inventories and add them back...
+                # TODO: this is quite inefficient we can do better.
+                session.execute(
+                    delete(DedupMineralInventoryView).where(
+                        DedupMineralInventoryView.dedup_site_id == dedup_site.dms.id
+                    )
+                )
+                session.add_all(dedup_site.invs)
 
             # **ALGO**
             # insert the new site and its inventories into the database
-            session.add(site_and_inv.ms)
-            session.flush()
-            session.refresh(site_and_inv.ms)
-            for inv in site_and_inv.invs:
-                inv.site_id = site_and_inv.ms.id
             session.add_all(site_and_inv.invs)
-
-            # **ALGO**
-            # update the inventory for dedup site in the database
-            session.execute(
-                update(MineralInventoryView),
-                [
-                    {
-                        "id": inv.id,
-                        "dedup_site_id": inv.dedup_site_id,
-                    }
-                    for ms in existing_sites
-                    for inv in ms.invs
-                ],
-            )
-
             session.add(
                 EventLog.from_site_add(
                     site_and_inv, [ms.ms.site_id for ms in existing_sites]
@@ -305,19 +306,19 @@ class MineralSiteService:
             )
 
             # step 2: write data
-            session.execute(dms.get_update_query())
-            session.execute(site_and_inv.ms.get_update_query())
+            # write the dedup mineral site first
+            session.execute(dms.dms.get_update_query())
+            # delete existing inventories and add them back...
+            # TODO: this is quite inefficient we can do better.
             session.execute(
-                update(MineralInventoryView),
-                [
-                    {
-                        "id": inv.id,
-                        "dedup_site_id": inv.dedup_site_id,
-                    }
-                    for ms in all_sites[:-1]
-                    for inv in ms.invs
-                ],
+                delete(DedupMineralInventoryView).where(
+                    DedupMineralInventoryView.dedup_site_id == dms.dms.id
+                )
             )
+            session.add_all(dms.invs)
+
+            # write the mineral site and its inventories
+            session.execute(site_and_inv.ms.get_update_query())
             update_invs = []
             for inv in site_and_inv.invs:
                 if inv.id is not None:
@@ -417,10 +418,19 @@ class MineralSiteService:
                     group_msi, dedup_site_id=dedup_site_id
                 )
                 if dedup_site_id not in affected_dedup_ids:
-                    session.add(dedup_site)
+                    session.add(dedup_site.dms)
+                    session.add_all(dedup_site.invs)
                     session.flush()
                 else:
-                    session.execute(dedup_site.get_update_query())
+                    session.execute(dedup_site.dms.get_update_query())
+                    # delete existing inventories and add them back...
+                    # TODO: this is quite inefficient we can do better.
+                    session.execute(
+                        delete(DedupMineralInventoryView).where(
+                            DedupMineralInventoryView.dedup_site_id == dedup_site.dms.id
+                        )
+                    )
+                    session.add_all(dedup_site.invs)
 
                 # **ALGO**
                 # update the mineral sites and their inventories
@@ -429,18 +439,6 @@ class MineralSiteService:
                     .where(MineralSite.site_id.in_(group))
                     .values(dedup_site_id=dedup_site_id)
                 )
-                session.execute(
-                    update(MineralInventoryView),
-                    [
-                        {
-                            "id": inv.id,
-                            "dedup_site_id": inv.dedup_site_id,
-                        }
-                        for msi in group_msi
-                        for inv in msi.invs
-                    ],
-                )
-
                 output.append(dedup_site_id)
 
             session.execute(
@@ -468,11 +466,11 @@ class MineralSiteService:
         query = (
             select(
                 DedupMineralSite,
-                self.inv_agg,
+                self.dedup_inv_agg,
             )
             .join(
-                MineralInventoryView,
-                MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                DedupMineralInventoryView,
+                DedupMineralInventoryView.dedup_site_id == DedupMineralSite.id,
                 isouter=commodity is not None,
             )
             .group_by(DedupMineralSite.id)
@@ -485,13 +483,13 @@ class MineralSiteService:
             )
 
         if commodity is not None:
-            query = query.where(MineralInventoryView.commodity == commodity)
+            query = query.where(DedupMineralInventoryView.commodity == commodity)
             if count_query is not None:
                 count_query = count_query.join(
-                    MineralInventoryView,
-                    MineralInventoryView.dedup_site_id == DedupMineralSite.id,
+                    DedupMineralInventoryView,
+                    DedupMineralInventoryView.dedup_site_id == DedupMineralSite.id,
                     isouter=True,
-                ).where(MineralInventoryView.commodity == commodity)
+                ).where(DedupMineralInventoryView.commodity == commodity)
 
         if deposit_type is not None:
             query = query.where(DedupMineralSite.top1_deposit_type == deposit_type)
@@ -526,16 +524,18 @@ class MineralSiteService:
 
         if has_grade_tonnage is not None:
             if has_grade_tonnage:
-                query = query.where(MineralInventoryView.contained_metal.isnot(None))
+                query = query.where(
+                    DedupMineralInventoryView.contained_metal.isnot(None)
+                )
                 if count_query is not None:
                     count_query = count_query.where(
-                        MineralInventoryView.contained_metal.isnot(None)
+                        DedupMineralInventoryView.contained_metal.isnot(None)
                     )
             else:
-                query = query.where(MineralInventoryView.contained_metal.is_(None))
+                query = query.where(DedupMineralInventoryView.contained_metal.is_(None))
                 if count_query is not None:
                     count_query = count_query.where(
-                        MineralInventoryView.contained_metal.is_(None)
+                        DedupMineralInventoryView.contained_metal.is_(None)
                     )
 
         if dedup_site_ids is not None:
@@ -601,12 +601,12 @@ class MineralSiteService:
         return out
 
     def _norm_dedup_mineral_site(
-        self, row: Row[tuple[DedupMineralSite, list[RawMineralInventoryView]]]
+        self, row: Row[tuple[DedupMineralSite, list[RawDedupMineralInventoryView]]]
     ) -> DedupMineralSiteAndInventory:
         dms: DedupMineralSite = row[0]
         invs = []
         for rawinv in row[1]:
-            inv = MineralInventoryView.from_dict(rawinv)
+            inv = DedupMineralInventoryView.from_dict(rawinv)
             inv.dedup_site_id = dms.id
             if inv.commodity is None:
                 continue
@@ -629,8 +629,29 @@ class MineralSiteService:
                 MineralInventoryView.grade,
                 "date",
                 MineralInventoryView.date,
+            ),
+        )
+
+    @property
+    def dedup_inv_agg(self):
+        return func.jsonb_agg(
+            func.jsonb_build_object(
+                "id",
+                DedupMineralInventoryView.id,
+                "commodity",
+                DedupMineralInventoryView.commodity,
+                "contained_metal",
+                DedupMineralInventoryView.contained_metal,
+                "tonnage",
+                DedupMineralInventoryView.tonnage,
+                "grade",
+                DedupMineralInventoryView.grade,
+                "date",
+                DedupMineralInventoryView.date,
+                "site_id",
+                DedupMineralInventoryView.site_id,
                 "dedup_site_id",
-                MineralInventoryView.dedup_site_id,
+                DedupMineralInventoryView.dedup_site_id,
             ),
         )
 

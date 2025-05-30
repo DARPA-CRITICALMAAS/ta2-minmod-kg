@@ -326,6 +326,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 id2site[msi.ms.site_id] = msi
 
         output_dedup_sites = []
+        output_dedup_inventories = []
         output_sites = []
         output_inventories = []
         for lst in tqdm(
@@ -339,7 +340,8 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 [id2site[rms.site_id] for dms in lst for rms in dms.ranked_sites],
                 is_site_ranked=True,
             )
-            output_dedup_sites.append(dedup_site.to_dict())
+            output_dedup_sites.append(dedup_site.dms.to_dict())
+            output_dedup_inventories.extend([inv.to_dict() for inv in dedup_site.invs])
 
         for msi in tqdm(
             id2site.values(),
@@ -357,6 +359,7 @@ class MineralSiteETLService(BaseFileService[MineralSiteETLServiceConstructArgs])
                 "DedupMineralSite": output_dedup_sites,
                 "MineralSite": output_sites,
                 "MineralInventoryView": output_inventories,
+                "DedupMineralInventoryView": output_dedup_inventories,
             },
             kgrel_outdir / ("dedup_sites.json" + COMPRESSION),
         )
@@ -438,7 +441,7 @@ class MergeFn:
         serde.json.ser(
             {
                 "MineralSiteAndInventory": [msi.to_dict() for msi in lst_msi],
-                "DedupMineralSite": [dms.to_dict() for dms in lst_dms],
+                "DedupMineralSite": [dms.dms.to_dict() for dms in lst_dms],
             },
             outfile,
         )

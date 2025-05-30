@@ -149,6 +149,11 @@ class DedupMineralSitePublic:
             trace["country"] = dms.country.refid
         if len(dms.state_or_province.value) > 0:
             trace["state_or_province"] = dms.state_or_province.refid
+        if len(dms.ranked_deposit_types) > 0:
+            trace["deposit_types"] = [dt.refid for dt in dms.ranked_deposit_types]
+        trace["grade_tonnage"] = [
+            {"commodity": inv.commodity, "site_id": inv.site_id} for inv in dmsi.invs
+        ]
 
         return DedupMineralSitePublic(
             id=dms.id,
@@ -158,7 +163,9 @@ class DedupMineralSitePublic:
             location=loc,
             deposit_types=[
                 DedupMineralSiteDepositType(
-                    id=dt.id, source=dt.source, confidence=dt.confidence
+                    id=dt.value.id,
+                    source=dt.value.source,
+                    confidence=dt.value.confidence,
                 )
                 for dt in dms.ranked_deposit_types
             ],

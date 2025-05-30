@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic
 
+from minmodkg.models.kgrel.custom_types import DedupMineralSiteDepositType
 from minmodkg.models.kgrel.custom_types.location import GeoCoordinate
 from minmodkg.typing import InternalID, T
 
@@ -57,3 +58,13 @@ class RefGeoCoordinate(RefValue[GeoCoordinate]):
     @classmethod
     def from_dict(cls, d):
         return cls(GeoCoordinate.from_dict(d["value"]), d["refid"])
+
+
+@dataclass
+class RefDepositType(RefValue[DedupMineralSiteDepositType]):
+    def to_dict(self):
+        return {"value": self.value.to_dict(), "refid": self.refid}
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(DedupMineralSiteDepositType.from_dict(d["value"]), d["refid"])
