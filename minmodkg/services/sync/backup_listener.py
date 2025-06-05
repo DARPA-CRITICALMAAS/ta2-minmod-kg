@@ -16,7 +16,6 @@ from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import InternalID
 from slugify import slugify
-
 from statickg.models.repository import GitRepository
 
 
@@ -135,7 +134,11 @@ class BackupListener(Listener):
         # determine the bucket that we are going to write the data to.
         # (username, data source, bucket number)
         bucket_no = PartitionFn.get_bucket_no(site.ms.record_id)
-        key = (username, data_sources[source_id].slug_name, bucket_no)
+        if source_id not in data_sources:
+            source_name = "unknown"
+        else:
+            source_name = data_sources[source_id].slug_name
+        key = (username, source_name, bucket_no)
 
         self.site_journal[key].append((action, site.ms.to_kg().to_dict()))
 
