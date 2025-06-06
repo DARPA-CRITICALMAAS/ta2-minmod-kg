@@ -16,6 +16,7 @@ from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import InternalID
 from slugify import slugify
+
 from statickg.models.repository import GitRepository
 
 
@@ -41,7 +42,7 @@ class BackupListener(Listener):
         self._upsert_site("add", site)
         self._update_same_as(
             site.ms.created_by,
-            [[site.ms.record_id] + same_site_ids],
+            [[site.ms.site_id] + same_site_ids],
             {},
             site.ms.modified_at,
         )
@@ -92,6 +93,10 @@ class BackupListener(Listener):
             outfile = self.data_repo_dir / f"data/same-as/{username}/same_as.csv"
             if outfile.exists():
                 records = serde.csv.deser(outfile)
+                assert records[0] == ["ms_1", "ms_2", "time_ns", "is_same"]
+                if len(records) > 1:
+                    assert records[1] != ["ms_1", "ms_2", "time_ns", "is_same"]
+                records = records[1:]  # skip header
                 key2idx = {(r[0], r[1]): i for i, r in enumerate(records)}
             else:
                 records = []
