@@ -110,7 +110,7 @@ pipeline:
   - service: kg.data.same_as
     args:
       input: ::REPO::data/same-as/umn/*.csv
-      curated_input: ::REPO::data/curated-same-as/*/*.json
+      curated_input: ::REPO::data/same-as/*/*.csv
       mineral_site_dir: ::REPO::data/mineral-sites
       output:
         base: ::DATA_DIR::same-as/

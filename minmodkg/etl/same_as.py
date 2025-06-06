@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping, NotRequired, TypedDict
@@ -82,7 +83,7 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
             graphlink = self.step2_resolve_final_group(subgroup_files, args)
 
         with timer.watch("[same-as] update dedup group"):
-            graphlink = self.step3_update_group(graphlink, args)
+            graphlink = self.step3_update_group(repo, graphlink, args)
 
         with timer.watch("[same-as] save dedup group"):
             # finally, we save the group and generate same-as link.
@@ -254,8 +255,62 @@ class SameAsService(BaseFileService[SameAsServiceConstructArgs]):
         }
         return GraphLink(site2groups, id2groups)
 
-    def step3_update_group(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
-        return graph_link
+    def step3_update_group(
+        self, repo: Repository, graph_link: GraphLink, args: SameAsServiceInvokeArgs
+    ):
+        system_files = {
+            infile.path
+            for infile in self.list_files(
+                repo,
+                args["input"],
+                unique_filepath=True,
+                optional=args.get("optional", False),
+                compute_missing_file_key=args.get("compute_missing_file_key", True),
+            )
+        }
+        infiles = [
+            infile
+            for infile in self.list_files(
+                repo,
+                args["curated_input"],
+                unique_filepath=True,
+                optional=args.get("optional", False),
+                compute_missing_file_key=args.get("compute_missing_file_key", True),
+            )
+            if infile.path not in system_files
+        ]
+
+        edges = []
+        neg_edges = []
+        for infile in infiles:
+            lst = serde.csv.deser(infile.path)
+            if len(lst[0]) != 4:
+                continue
+            assert lst[0] == ["ms_1", "ms_2", "time_ns", "is_same"], (lst[0], infile)
+
+            for row in lst[1:]:
+                assert row[-1] in {"0", "1"}
+                if row[-1] == "1":
+                    edges.append((row[0], row[1], {"time_ns": int(row[2])}))
+                else:
+                    neg_edges.append((row[0], row[1], {"time_ns": int(row[2])}))
+
+        G = nx.Graph()
+        G.add_edges_from(edges)
+
+        print(f"Loaded {len(G.edges)} edges from same-as files")
+        for source, target, data in neg_edges:
+            if not G.has_edge(source, target):
+                continue
+            if G[source][target]["time_ns"] < data["time_ns"]:
+                continue
+            G.remove_edge(source, target)
+        print(f"Removed {len(neg_edges)} negative edges, now have {len(G.edges)} edges")
+
+        gold_groups = [sorted(grp) for grp in nx.connected_components(G)]
+        new_graph_link = deepcopy(graph_link)
+        new_graph_link.replace_group(gold_groups)
+        return new_graph_link
 
     def step4_save(self, graph_link: GraphLink, args: SameAsServiceInvokeArgs):
         output_fmter = FormatOutputPathModel.init(args["output"])
@@ -301,16 +356,20 @@ class GraphLink:
         for grp in new_groups:
             for u in grp:
                 affected_nodes.add(u)
+                if u not in self.node2group:
+                    continue
                 grp_id = self.node2group[u]
                 affected_groups[grp_id] = self.groups[grp_id]
 
         # the affected groups need to be updated -- first step is to remove all of them.
         for grp_id in affected_groups.keys():
+            # print("Remove group", grp_id, "with nodes", self.groups[grp_id])
             del self.groups[grp_id]
 
         for grp in affected_groups.values():
             new_nodes = [u for u in grp if u not in affected_nodes]
             if len(new_nodes) > 0:
+                # print("Adding new splitted group", grp, "with nodes", new_nodes)
                 new_groups.append(new_nodes)
 
         # then we add new groups
@@ -319,6 +378,7 @@ class GraphLink:
             for u in grp:
                 self.node2group[u] = grp_id
             self.groups[grp_id] = grp
+            # print("Adding group", grp_id, "with nodes", grp)
 
     @staticmethod
     def get_group_id(nodes: list[str]) -> str:
@@ -336,7 +396,7 @@ class Step1ComputingSubGroupFn(Fn[Path]):
     def invoke(self, prefix: str, infile: InputFile, outfile: Path) -> Path:
         lst = serde.csv.deser(infile.path)
         it = iter(lst)
-        next(it)
+        assert next(it) == ["ms_1", "ms_2"], infile.path
         edges = []
         for uid, vid in it:
             assert not uid.startswith("http")
