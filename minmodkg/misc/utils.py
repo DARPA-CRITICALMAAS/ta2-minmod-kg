@@ -207,7 +207,7 @@ class URLDeser(Deserializer):
 
 class NonNegMax1FloatDeser(Deserializer):
     def validate(self, s: Any) -> bool:
-        return isinstance(s, float) and 0.0 <= s <= 1.0
+        return isinstance(s, (int, float)) and 0.0 <= s <= 1.0
 
 
 class NotEmptyListDeser(Deserializer):

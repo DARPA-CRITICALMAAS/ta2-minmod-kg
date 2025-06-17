@@ -88,6 +88,8 @@ def repo_import_ms(
     else:
         if source_id.startswith("https://doi.org/"):
             source_name = "doi-" + slugify(source_id[len("https://doi.org/") :])
+        elif source_id.startswith("https://minmod.isi.edu/users/u/"):
+            source_name = "unknown"
         else:
             raise ValueError(
                 f"Source ID {source_id} not found in data sources. Please add it to the data sources first."
