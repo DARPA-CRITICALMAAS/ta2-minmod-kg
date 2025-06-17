@@ -181,32 +181,37 @@ def exclude_none_or_empty_list(obj: dict):
 
 class Deserializer:
 
-    def __call__(self, value: Any) -> Any:
+    def __call__(self, value: Any) -> None:
+        if not self.validate(value):
+            raise ValueError(value)
+        return value
+
+    def validate(self, value: Any) -> bool:
         raise NotImplementedError()
 
 
 class NotEmptyStr(Deserializer):
-    def __call__(self, s: Any) -> bool:
+    def validate(self, s: Any) -> bool:
         return isinstance(s, str) and len(s.strip()) > 0
 
 
 class CleanedNotEmptyStr(Deserializer):
-    def __call__(self, s: Any) -> bool:
+    def validate(self, s: Any) -> bool:
         return isinstance(s, str) and len(s) > 0 and s.strip() == s
 
 
 class URLDeser(Deserializer):
-    def __call__(self, s: Any) -> bool:
+    def validate(self, s: Any) -> bool:
         return isinstance(s, str) and is_valid_url(s)
 
 
 class NonNegMax1FloatDeser(Deserializer):
-    def __call__(self, s: Any) -> bool:
+    def validate(self, s: Any) -> bool:
         return isinstance(s, float) and 0.0 <= s <= 1.0
 
 
 class NotEmptyListDeser(Deserializer):
-    def __call__(self, s: Any) -> bool:
+    def validate(self, s: Any) -> bool:
         return isinstance(s, list) and len(s) > 0
 
 

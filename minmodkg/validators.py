@@ -44,6 +44,16 @@ class FilenameValidatorServiceInvokeArgs(TypedDict):
 TempMineralSiteValidator = get_dataclass_deserializer(InputPublicMineralSite)
 
 
+def mineral_site_deser(site: InputPublicMineralSite | dict) -> InputPublicMineralSite:
+    if not isinstance(site, InputPublicMineralSite):
+        norm_site: InputPublicMineralSite = TempMineralSiteValidator(site)
+    else:
+        norm_site = site
+    if len(norm_site.reference) != 1:
+        raise ValueError(f"Expect 1 reference but got {len(norm_site.reference)}")
+    return norm_site
+
+
 class FilenameValidatorService(BaseFileService[FilenameValidatorServiceConstructArgs]):
 
     def forward(
@@ -323,23 +333,20 @@ def validate_mineral_site(
             desc="Validate data format",
             disable=not verbose,
         ):
-            try:
-                norm_site: InputPublicMineralSite = TempMineralSiteValidator(site)
-            except Exception as e:
-                raise ValueError(f"Invalid site data at record {i}") from e
-            if len(norm_site.reference) != 1:
-                raise ValueError(
-                    f"Invalid site data at record {i}: expect 1 reference but got {len(norm_site.reference)}"
-                )
             if isinstance(site, dict) and "modified_at" not in site:
                 raise ValueError(
                     f"Invalid site data at record {i}: missing modified_at field"
                 )
+            try:
+                norm_site: InputPublicMineralSite = mineral_site_deser(site)
+            except Exception as e:
+                raise ValueError(f"Invalid site data at record {i}") from e
             norm_sites.append(norm_site)
     else:
         for i, site in enumerate(sites):
             try:
                 assert isinstance(site, InputPublicMineralSite)
+                mineral_site_deser(site.to_dict())
             except Exception as e:
                 raise ValueError(f"Invalid site data at record {i}") from e
             norm_sites.append(site)

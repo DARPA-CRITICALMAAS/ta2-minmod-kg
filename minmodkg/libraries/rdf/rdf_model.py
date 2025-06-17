@@ -59,7 +59,7 @@ class DataProp:
     is_list: bool
 
 
-@dataclass
+@dataclass(frozen=True)
 class P:
     """Constructor for Obj/Data Property"""
 

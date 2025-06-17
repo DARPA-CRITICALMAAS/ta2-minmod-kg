@@ -10,7 +10,7 @@ from rdflib import OWL, RDF, RDFS, SKOS, XSD, Graph, URIRef
 from rdflib.namespace import NamespaceManager
 
 
-@dataclass
+@dataclass(frozen=True)
 class SingleNS:
     alias: str
     namespace: str
@@ -61,7 +61,7 @@ class NoRelSingleNS(SingleNS):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class Term:
     ns: SingleNS
     name: str
@@ -69,8 +69,8 @@ class Term:
     uri: URIRef = field(init=False)
 
     def __post_init__(self):
-        self.reluri = self.ns[self.name]
-        self.uri = self.ns.uri(self.name)
+        object.__setattr__(self, "reluri", self.ns[self.name])
+        object.__setattr__(self, "uri", self.ns.uri(self.name))
 
 
 class Namespace:

@@ -17,6 +17,7 @@ from typing import (
     is_typeddict,
 )
 
+from minmodkg.libraries.rdf.rdf_model import P
 from minmodkg.misc.utils import Deserializer as AnnDeserializer
 
 Deserializer = Callable[[Any], Any]
@@ -173,6 +174,8 @@ def get_deserializer_from_type(
 ) -> Deserializer:
     if annotated_type in known_type_deserializers:
         return known_type_deserializers[annotated_type]
+    if isinstance(annotated_type, AnnDeserializer):
+        return annotated_type
     if annotated_type is str:
         return deserialize_str
     if annotated_type is int:
@@ -216,15 +219,23 @@ def get_deserializer_from_type(
 
         return deserialize_literal
 
-    # handle annotated
+    # handle annotated.
     if origin is Annotated:
-        # we expect the second argument to be the type deserializer
-        fn = next(iter(a for a in args[1:] if isinstance(a, AnnDeserializer)), None)
-        if fn is None:
-            raise Exception(
-                "invalid annotation of annotated type. expect one deserializer instanceof Deserializer"
-            )
-        return fn
+        non_meta_args = [arg for arg in args if not isinstance(arg, (P, str))]
+
+        # handle case where the first one is the type, and the second one is the AnnDeserializer
+        if (
+            len(non_meta_args) == 2
+            and get_origin(non_meta_args[0]) is None
+            and isinstance(non_meta_args[1], AnnDeserializer)
+        ):
+            return non_meta_args[1]
+
+        # handle nested annotated types
+        assert (
+            len(non_meta_args) == 1
+        ), "We expect only one non-meta argument in Annotated to generate deserializer"
+        return get_deserializer_from_type(non_meta_args[0], known_type_deserializers)
 
     # handle a special case of variable-length tuple of homogeneous type
     # https://docs.python.org/3/library/typing.html#typing.Tuple
@@ -338,7 +349,7 @@ def get_dataclass_deserializer(
     # extract deserialize for each field
     field2deserializer: dict[str, Deserializer] = {}
     field2optional: dict[str, bool] = {}
-    field_types = get_type_hints(CLS)
+    field_types = get_type_hints(CLS, include_extras=True)
 
     def deserialize_dataclass(value):
         if not isinstance(value, dict):
