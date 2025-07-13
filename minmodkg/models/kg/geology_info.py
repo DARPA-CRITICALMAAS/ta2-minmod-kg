@@ -35,7 +35,7 @@ class RockType(RDFModel):
 class GeologyInfo(RDFModel):
     __subj__ = Subject(type=NS_MO.term("GeologyInfo"), key_ns=NS_MR)
 
-    alternation: Annotated[Optional[CleanedNotEmptyStr], P()] = None
+    alteration: Annotated[Optional[CleanedNotEmptyStr], P()] = None
     concentration_process: Annotated[Optional[CleanedNotEmptyStr], P()] = None
     ore_control: Annotated[Optional[CleanedNotEmptyStr], P()] = None
     host_rock: Annotated[Optional[RockType], P()] = None
@@ -46,7 +46,7 @@ class GeologyInfo(RDFModel):
     def to_dict(self):
         return makedict.without_none(
             (
-                ("alternation", self.alternation),
+                ("alteration", self.alteration),
                 ("concentration_process", self.concentration_process),
                 ("ore_control", self.ore_control),
                 (
@@ -69,7 +69,7 @@ class GeologyInfo(RDFModel):
     @classmethod
     def from_dict(cls, d: dict):
         return cls(
-            alternation=d.get("alternation"),
+            alteration=d.get("alteration"),
             concentration_process=d.get("concentration_process"),
             ore_control=d.get("ore_control"),
             host_rock=(

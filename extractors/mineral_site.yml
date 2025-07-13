@@ -21,7 +21,7 @@ attributes:
   site_discovered_year: [.., ["discovered_year"]]
   site_mineral_form: [.., ["mineral_form"], ..]
   site_geology_id: [.., ["geology_info"], "id"]
-  site_alternation: [.., ["geology_info"], ["alteration"]]
+  site_alteration: [.., ["geology_info"], ["alteration"]]
   site_concentration_process: [.., ["geology_info"], ["concentration_process"]]
   site_ore_control: [.., ["geology_info"], ["ore_control"]]
   site_structure: [.., ["geology_info"], ["structure"]]
@@ -184,7 +184,7 @@ semantic_model:
   mo:GeologyInfo:1:
     properties:
       - [drepr:uri, site_geology_id]
-      - [mo:alternation, site_alternation]
+      - [mo:alteration, site_alteration]
       - [mo:concentration_process, site_concentration_process]
       - [mo:ore_control, site_ore_control]
       - [mo:structure, site_structure]
