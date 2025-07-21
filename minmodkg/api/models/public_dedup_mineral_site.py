@@ -6,6 +6,7 @@ from typing import Optional
 
 from minmodkg.misc.utils import format_nanoseconds, makedict
 from minmodkg.models.kg.base import NS_MD
+from minmodkg.models.kg.geology_info import GeologyInfo
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSiteAndInventory
 from minmodkg.typing import InternalID
 
@@ -116,6 +117,9 @@ class DedupMineralSitePublic:
     deposit_types: list[DedupMineralSiteDepositType]
     location: Optional[DedupMineralSiteLocation]
     grade_tonnage: list[GradeTonnage]
+    mineral_form: list[str]
+    geology_info: Optional[GeologyInfo]
+    discovered_year: Optional[int]
     modified_at: str
     trace: dict[str, str] = field(default_factory=dict)
 
@@ -151,10 +155,56 @@ class DedupMineralSitePublic:
             trace["state_or_province"] = dms.state_or_province.refid
         if len(dms.ranked_deposit_types) > 0:
             trace["deposit_types"] = [dt.refid for dt in dms.ranked_deposit_types]
+
         trace["grade_tonnage"] = [
             {"commodity": inv.commodity, "site_id": inv.site_id} for inv in dmsi.invs
         ]
-
+        if len(dms.mineral_form.value) > 0:
+            trace["mineral_form"] = dms.mineral_form.refid
+        if not dms.geology_info.is_empty():
+            trace["geology_info"] = {}
+            if dms.geology_info.alteration is not None:
+                trace["geology_info"]["alteration"] = dms.geology_info.alteration.refid
+            if dms.geology_info.concentration_process is not None:
+                trace["geology_info"][
+                    "concentration_process"
+                ] = dms.geology_info.concentration_process.refid
+            if dms.geology_info.ore_control is not None:
+                trace["geology_info"][
+                    "ore_control"
+                ] = dms.geology_info.ore_control.refid
+            if dms.geology_info.host_rock is not None:
+                trace["geology_info"]["host_rock"] = {
+                    "unit": (
+                        dms.geology_info.host_rock.unit.refid
+                        if dms.geology_info.host_rock.unit is not None
+                        else None
+                    ),
+                    "type": (
+                        dms.geology_info.host_rock.type.refid
+                        if dms.geology_info.host_rock.type is not None
+                        else None
+                    ),
+                }
+            if dms.geology_info.associated_rock is not None:
+                trace["geology_info"]["associated_rock"] = {
+                    "unit": (
+                        dms.geology_info.associated_rock.unit.refid
+                        if dms.geology_info.associated_rock.unit is not None
+                        else None
+                    ),
+                    "type": (
+                        dms.geology_info.associated_rock.type.refid
+                        if dms.geology_info.associated_rock.type is not None
+                        else None
+                    ),
+                }
+            if dms.geology_info.structure is not None:
+                trace["geology_info"]["structure"] = dms.geology_info.structure.refid
+            if dms.geology_info.tectonic is not None:
+                trace["geology_info"]["tectonic"] = dms.geology_info.tectonic.refid
+        if dms.discovered_year is not None:
+            trace["discovered_year"] = dms.discovered_year.refid
         return DedupMineralSitePublic(
             id=dms.id,
             name=dms.name.value if dms.name is not None else "",
@@ -183,6 +233,11 @@ class DedupMineralSitePublic:
                 DedupMineralSiteIdAndScore(id=site.site_id, score=site.score.score)
                 for site in dms.ranked_sites
             ],
+            mineral_form=dms.mineral_form.value,
+            geology_info=dms.geology_info.to_geology_info(),
+            discovered_year=(
+                dms.discovered_year.value if dms.discovered_year is not None else None
+            ),
             modified_at=format_nanoseconds(dms.modified_at),
             trace=trace,
         )
@@ -196,9 +251,13 @@ class DedupMineralSitePublic:
             "sites": [s.to_dict() for s in self.sites],
             "deposit_types": [dt.to_dict() for dt in self.deposit_types],
             "grade_tonnage": [gt.to_dict() for gt in self.grade_tonnage],
+            "mineral_form": self.mineral_form,
+            "discovered_year": self.discovered_year,
             "modified_at": self.modified_at,
             "trace": self.trace,
         }
+        if self.geology_info is not None:
+            out["geology_info"] = self.geology_info.to_dict()
         if self.location is not None:
             out["location"] = self.location.to_dict()
         return out
@@ -220,6 +279,13 @@ class DedupMineralSitePublic:
                 else None
             ),
             grade_tonnage=[GradeTonnage.from_dict(gt) for gt in d["grade_tonnage"]],
+            mineral_form=d["mineral_form"],
+            geology_info=(
+                GeologyInfo.from_dict(d["geology_info"])
+                if "geology_info" in d
+                else None
+            ),
+            discovered_year=d["discovered_year"],
             modified_at=d["modified_at"],
             trace=d["trace"],
         )

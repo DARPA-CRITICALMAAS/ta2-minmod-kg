@@ -6,7 +6,7 @@ from typing import Optional, Sequence, TypedDict
 
 from minmodkg.misc.utils import makedict
 from minmodkg.models.kg.base import MINMOD_NS
-from minmodkg.models.kgrel.base import Base
+from minmodkg.models.kgrel.base import Base, GeologyInfo
 from minmodkg.models.kgrel.custom_types import (
     DedupMineralSiteDepositType,
     GeoCoordinate,
@@ -16,7 +16,11 @@ from minmodkg.models.kgrel.custom_types import (
     SiteAndScore,
     SiteScore,
 )
-from minmodkg.models.kgrel.custom_types.ref_value import RefDepositType
+from minmodkg.models.kgrel.custom_types.ref_value import (
+    RefDepositType,
+    RefGeologyInfo,
+    RefListStr,
+)
 from minmodkg.models.kgrel.mineral_site import (
     MineralInventoryView,
     MineralSite,
@@ -24,7 +28,7 @@ from minmodkg.models.kgrel.mineral_site import (
 )
 from minmodkg.models.kgrel.views.mineral_inventory_view import DedupMineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import VARCHAR, BigInteger, String
+from sqlalchemy import TEXT, VARCHAR, BigInteger, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, MappedAsDataclass, composite, mapped_column
 
@@ -75,6 +79,9 @@ class DedupMineralSite(MappedAsDataclass, Base):
             String,
         ),
     )
+    mineral_form: Mapped[RefListStr] = mapped_column()
+    geology_info: Mapped[RefGeologyInfo] = mapped_column()
+    discovered_year: Mapped[Optional[RefValue[int]]] = mapped_column()
 
     ranked_sites: Mapped[list[SiteAndScore]] = mapped_column()
     modified_at: Mapped[int] = mapped_column(BigInteger)
@@ -164,6 +171,23 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ),
                 dedup_sites[0].state_or_province,
             ),
+            mineral_form=next(
+                (
+                    site.mineral_form
+                    for site, _ in rank_dedup_sites
+                    if len(site.mineral_form.value) > 0
+                ),
+                dedup_sites[0].mineral_form,
+            ),
+            geology_info=RefGeologyInfo.from_dedup_sites(dedup_sites),
+            discovered_year=next(
+                (
+                    site.discovered_year
+                    for site, _ in rank_dedup_sites
+                    if site.discovered_year is not None
+                ),
+                dedup_sites[0].discovered_year,
+            ),
             ranked_sites=sorted(
                 (ms for dms in dedup_sites for ms in dms.ranked_sites),
                 key=lambda x: x.score,
@@ -249,6 +273,18 @@ class DedupMineralSite(MappedAsDataclass, Base):
             coordinates=coordinates,
             country=country,
             state_or_province=state_or_province,
+            mineral_form=next(
+                (
+                    RefListStr(site.mineral_form, site.site_id)
+                    for site in rank_sites
+                    if len(site.mineral_form) > 0
+                ),
+                RefListStr([], rank_sites[0].site_id),
+            ),
+            geology_info=RefGeologyInfo.from_sites(rank_sites),
+            discovered_year=RefValue.from_sites(
+                rank_sites, lambda site: site.discovered_year
+            ),
             ranked_sites=rank_site_scores,
             modified_at=max(msi.ms.modified_at for msi in sites),
         )
@@ -367,6 +403,16 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 ),
                 ("country", self.country.to_dict()),
                 ("state_or_province", self.state_or_province.to_dict()),
+                ("mineral_form", self.mineral_form.to_dict()),
+                ("geology_info", self.geology_info.to_dict()),
+                (
+                    "discovered_year",
+                    (
+                        self.discovered_year.to_dict()
+                        if self.discovered_year is not None
+                        else None
+                    ),
+                ),
                 ("ranked_sites", [site.to_dict() for site in self.ranked_sites]),
                 ("modified_at", self.modified_at),
             )
@@ -394,8 +440,15 @@ class DedupMineralSite(MappedAsDataclass, Base):
                 if d.get("coordinates") is not None
                 else None
             ),
-            country=RefListID.from_dict(d.get("country", [])),
-            state_or_province=RefListID.from_dict(d.get("state_or_province", [])),
+            country=RefListID.from_dict(d["country"]),
+            state_or_province=RefListID.from_dict(d["state_or_province"]),
+            mineral_form=RefListStr.from_dict(d["mineral_form"]),
+            geology_info=RefGeologyInfo.from_dict(d["geology_info"]),
+            discovered_year=(
+                RefValue.from_dict(d["discovered_year"])
+                if d.get("discovered_year") is not None
+                else None
+            ),
             ranked_sites=[
                 SiteAndScore.from_dict(site) for site in d.get("ranked_sites", [])
             ],

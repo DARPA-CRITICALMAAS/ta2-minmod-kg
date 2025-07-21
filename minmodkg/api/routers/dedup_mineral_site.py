@@ -162,7 +162,19 @@ def format_csv(
         [
             "Tonnage (Mt)",
             "Grade (%)",
+            "Contained Metal (tonnes)",
             "Inventory Date",
+            "Mineral Form",
+            "Alteration",
+            "Concentration Process",
+            "Ore Control",
+            "Host Rock Unit",
+            "Host Rock Type",
+            "Associated Rock Unit",
+            "Associated Rock Type",
+            "Structure",
+            "Tectonic",
+            "Discovery Year",
             "Updated at",
         ]
     )
@@ -200,7 +212,6 @@ def format_csv(
 
         row[name2idx["Updated at"]] = dms.modified_at
 
-        has_commodity = False
         for gt in dms.grade_tonnage:
             newrow = row.copy()
             comm = commodity_map[gt.commodity]
@@ -211,9 +222,36 @@ def format_csv(
                 newrow[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
             if gt.total_grade is not None:
                 newrow[name2idx["Grade (%)"]] = str(gt.total_grade)
+            if gt.total_contained_metal is not None:
+                newrow[name2idx["Contained Metal (tonnes)"]] = str(
+                    gt.total_contained_metal * 1000000  # Convert Mt to tonnes
+                )
             if gt.date is not None:
                 newrow[name2idx["Inventory Date"]] = gt.date
             rows.append(newrow)
+
+        row[name2idx["Mineral Form"]] = ", ".join(dms.mineral_form)
+        if dms.geology_info is not None:
+            row[name2idx["Alteration"]] = dms.geology_info.alteration or ""
+            row[name2idx["Concentration Process"]] = (
+                dms.geology_info.concentration_process or ""
+            )
+            row[name2idx["Ore Control"]] = dms.geology_info.ore_control or ""
+            if dms.geology_info.host_rock is not None:
+                row[name2idx["Host Rock Unit"]] = dms.geology_info.host_rock.unit or ""
+                row[name2idx["Host Rock Type"]] = dms.geology_info.host_rock.type or ""
+            if dms.geology_info.associated_rock is not None:
+                row[name2idx["Associated Rock Unit"]] = (
+                    dms.geology_info.associated_rock.unit or ""
+                )
+                row[name2idx["Associated Rock Type"]] = (
+                    dms.geology_info.associated_rock.type or ""
+                )
+            row[name2idx["Structure"]] = dms.geology_info.structure or ""
+            row[name2idx["Tectonic"]] = dms.geology_info.tectonic or ""
+        if dms.discovered_year is not None:
+            row[name2idx["Discovery Year"]] = str(dms.discovered_year)
+
     out = serde.csv.StringIO()
     serde.csv.ser(rows, out)
     return out.getvalue()

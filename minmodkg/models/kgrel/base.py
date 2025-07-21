@@ -18,7 +18,11 @@ from minmodkg.models.kgrel.custom_types import (
     RefValue,
     SiteAndScore,
 )
-from minmodkg.models.kgrel.custom_types.ref_value import RefDepositType
+from minmodkg.models.kgrel.custom_types.ref_value import (
+    RefDepositType,
+    RefGeologyInfo,
+    RefListStr,
+)
 from sqlalchemy import create_engine, update
 from sqlalchemy.orm import DeclarativeBase, Session
 
@@ -30,8 +34,11 @@ class Base(DeclarativeBase):
         LocationView: DataclassType(LocationView),
         RefValue: DataclassType(RefValue),
         RefValue[str]: DataclassType(RefValue[str]),
+        RefValue[int]: DataclassType(RefValue[int]),
         RefGeoCoordinate: DataclassType(RefGeoCoordinate),
         RefListID: DataclassType(RefListID),
+        RefListStr: DataclassType(RefListStr),
+        RefGeologyInfo: DataclassType(RefGeologyInfo),
         SiteAndScore: DataclassType(SiteAndScore),
         list[SiteAndScore]: ListDataclassType(SiteAndScore),
         list[DedupMineralSiteDepositType]: ListDataclassType(
