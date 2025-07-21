@@ -151,7 +151,12 @@ class MinModAPI:
             raise ConflictError(
                 "The site has been added by someone else. You need to fetch and apply your changes."
             )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise Exception(
+                f"Failed to add the site {site_id}. Reason: {e.response.text}"
+            ) from e
         resp_data = resp.json()
         return SiteIdentification(
             resp_data["id"], resp_data["snapshot_id"], self.endpoint

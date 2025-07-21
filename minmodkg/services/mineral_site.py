@@ -207,6 +207,18 @@ class MineralSiteService:
 
                 existing_sites = sites_with_same_dedup_id
 
+            # **ALGO**
+            # update the dedup mineral site in the database -- we can do better by using update_site function
+            # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
+            dedup_site = DedupMineralSite.from_sites(
+                existing_sites + [site_and_inv],
+                dedup_site_id=site_and_inv.ms.dedup_site_id,
+            )
+            if len(existing_sites) == 0:
+                session.add(dedup_site.dms)
+                session.add_all(dedup_site.invs)
+                session.flush()
+
             # write the mineral site first, so that we have its id to update
             # the inventories for dedup site as well
             session.add(site_and_inv.ms)
@@ -215,19 +227,7 @@ class MineralSiteService:
             for inv in site_and_inv.invs:
                 inv.site_id = site_and_inv.ms.id
 
-            # **ALGO**
-            # update the dedup mineral site in the database -- we can do better by using update_site function
-            # we do this first so that the dedup_site_id in MineralInventoryView is updated correctly
-            dedup_site = DedupMineralSite.from_sites(
-                existing_sites + [site_and_inv],
-                dedup_site_id=site_and_inv.ms.dedup_site_id,
-            )
-
-            if len(existing_sites) == 0:
-                session.add(dedup_site.dms)
-                session.add_all(dedup_site.invs)
-                session.flush()
-            else:
+            if len(existing_sites) > 0:
                 session.execute(dedup_site.dms.get_update_query())
                 # delete existing inventories and add them back...
                 # TODO: this is quite inefficient we can do better.
