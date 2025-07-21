@@ -212,24 +212,6 @@ def format_csv(
 
         row[name2idx["Updated at"]] = dms.modified_at
 
-        for gt in dms.grade_tonnage:
-            newrow = row.copy()
-            comm = commodity_map[gt.commodity]
-            newrow[name2idx["Commodity"]] = comm.name
-            if commodity is None:
-                newrow[name2idx["Is Critical Commodity"]] = str(int(comm.is_critical))
-            if gt.total_tonnage is not None:
-                newrow[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
-            if gt.total_grade is not None:
-                newrow[name2idx["Grade (%)"]] = str(gt.total_grade)
-            if gt.total_contained_metal is not None:
-                newrow[name2idx["Contained Metal (tonnes)"]] = str(
-                    gt.total_contained_metal * 1000000  # Convert Mt to tonnes
-                )
-            if gt.date is not None:
-                newrow[name2idx["Inventory Date"]] = gt.date
-            rows.append(newrow)
-
         row[name2idx["Mineral Form"]] = ", ".join(dms.mineral_form)
         if dms.geology_info is not None:
             row[name2idx["Alteration"]] = dms.geology_info.alteration or ""
@@ -251,6 +233,24 @@ def format_csv(
             row[name2idx["Tectonic"]] = dms.geology_info.tectonic or ""
         if dms.discovered_year is not None:
             row[name2idx["Discovery Year"]] = str(dms.discovered_year)
+
+        for gt in dms.grade_tonnage:
+            newrow = row.copy()
+            comm = commodity_map[gt.commodity]
+            newrow[name2idx["Commodity"]] = comm.name
+            if commodity is None:
+                newrow[name2idx["Is Critical Commodity"]] = str(int(comm.is_critical))
+            if gt.total_tonnage is not None:
+                newrow[name2idx["Tonnage (Mt)"]] = str(gt.total_tonnage)
+            if gt.total_grade is not None:
+                newrow[name2idx["Grade (%)"]] = str(gt.total_grade)
+            if gt.total_contained_metal is not None:
+                newrow[name2idx["Contained Metal (tonnes)"]] = str(
+                    gt.total_contained_metal * 1000000  # Convert Mt to tonnes
+                )
+            if gt.date is not None:
+                newrow[name2idx["Inventory Date"]] = gt.date
+            rows.append(newrow)
 
     out = serde.csv.StringIO()
     serde.csv.ser(rows, out)
