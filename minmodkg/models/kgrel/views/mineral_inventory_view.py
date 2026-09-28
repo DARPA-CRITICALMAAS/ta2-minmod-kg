@@ -5,12 +5,16 @@ from typing import TYPE_CHECKING, Optional
 from minmodkg.misc.utils import makedict
 from minmodkg.models.kgrel.base import Base
 from minmodkg.typing import InternalID
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column, relationship
 
 
 class MineralInventoryView(MappedAsDataclass, Base):
     __tablename__ = "mineral_inventory_view"
+    # "does this site have this commodity", for searches that start from sites
+    __table_args__ = (
+        Index("ix_mineral_inventory_view_site_id_commodity", "site_id", "commodity"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, init=False)
     commodity: Mapped[InternalID] = mapped_column(String(30), index=True)

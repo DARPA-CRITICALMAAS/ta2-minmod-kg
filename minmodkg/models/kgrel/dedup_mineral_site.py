@@ -28,7 +28,7 @@ from minmodkg.models.kgrel.mineral_site import (
 )
 from minmodkg.models.kgrel.views.mineral_inventory_view import DedupMineralInventoryView
 from minmodkg.typing import InternalID
-from sqlalchemy import TEXT, VARCHAR, BigInteger, String
+from sqlalchemy import TEXT, VARCHAR, BigInteger, ColumnElement, Index, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, MappedAsDataclass, composite, mapped_column
 
@@ -41,6 +41,19 @@ class DedupMineralSiteAndInventory:
 
 class DedupMineralSite(MappedAsDataclass, Base):
     __tablename__ = "dedup_mineral_site"
+    # GIN, so the array containment filters below can use an index
+    __table_args__ = (
+        Index(
+            "ix_dedup_mineral_site_country_val_gin",
+            "country_val",
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_dedup_mineral_site_state_or_province_val_gin",
+            "state_or_province_val",
+            postgresql_using="gin",
+        ),
+    )
 
     id: Mapped[InternalID] = mapped_column(primary_key=True)
     name: Mapped[Optional[RefValue[str]]] = composite(
@@ -85,6 +98,16 @@ class DedupMineralSite(MappedAsDataclass, Base):
 
     ranked_sites: Mapped[list[SiteAndScore]] = mapped_column()
     modified_at: Mapped[int] = mapped_column(BigInteger)
+
+    @staticmethod
+    def has_country(country: InternalID) -> ColumnElement[bool]:
+        return DedupMineralSite.country._comparable_elements[0].contains([country])
+
+    @staticmethod
+    def has_state_or_province(state: InternalID) -> ColumnElement[bool]:
+        return DedupMineralSite.state_or_province._comparable_elements[0].contains(
+            [state]
+        )
 
     @staticmethod
     def from_dedup_sites(

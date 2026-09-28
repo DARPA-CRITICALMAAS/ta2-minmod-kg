@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
-from minmodkg.api.dependencies import PaperServiceDep, norm_commodity
+from minmodkg.api.dependencies import (
+    PaperServiceDep,
+    norm_commodity,
+    norm_country,
+    norm_deposit_type,
+    norm_state_or_province,
+)
 from minmodkg.api.models.public_mineral_site import OutputPublicMineralSite
 from minmodkg.api.models.public_sample import OutputPublicSample
 from minmodkg.models.kgrel.paper import Paper
@@ -33,21 +39,35 @@ def get_paper_or_404(paper_service: PaperService, paper_id: str) -> Paper:
 def list_papers(
     paper_service: PaperServiceDep,
     commodity: Optional[str] = None,
+    deposit_type: Optional[str] = None,
+    country: Optional[str] = None,
+    state_or_province: Optional[str] = None,
     dedup_site_id: Optional[InternalID] = None,
     site_id: Optional[InternalID] = None,
     limit: Annotated[int, Query(ge=0)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
+    return_count: Annotated[bool, Query()] = False,
 ):
-    """Papers mentioning a commodity and/or a (dedup) mineral site, each with
-    its matching sites."""
-    results = paper_service.find_papers(
+    """Search papers: those with a site matching every filter, each with its
+    matching sites. Entity filters take a name or a MinMod id."""
+    results, total = paper_service.find_papers(
         commodity=norm_commodity(commodity) if commodity is not None else None,
+        deposit_type=(
+            norm_deposit_type(deposit_type) if deposit_type is not None else None
+        ),
+        country=norm_country(country) if country is not None else None,
+        state_or_province=(
+            norm_state_or_province(state_or_province)
+            if state_or_province is not None
+            else None
+        ),
         dedup_site_id=dedup_site_id,
         site_id=site_id,
         limit=limit,
         offset=offset,
+        return_count=return_count,
     )
-    return [
+    items = [
         {
             **paper_dict(paper),
             "sites": [
@@ -62,6 +82,9 @@ def list_papers(
         }
         for paper, sites in results
     ]
+    if return_count:
+        return {"items": items, "total": total}
+    return items
 
 
 @router.get("/papers/{paper_id}")
