@@ -17,6 +17,7 @@ from typing import Annotated, Iterable, Optional
 
 import serde.json
 import typer
+from minmodkg.etl.kgrel_entity import EntityDeserFn
 from minmodkg.etl.geochem_jsonld import (
     USER_URI,
     USERNAME,
@@ -29,7 +30,16 @@ from minmodkg.etl.geochem_jsonld import (
 from minmodkg.models.kg.base import MINMOD_KG, NS_GCO, NS_GCR, NS_MR
 from minmodkg.models.kg.mineral_site import MineralSite as KGMineralSite
 from minmodkg.models.kgrel.base import create_db_and_tables, engine
+from minmodkg.models.kgrel.data_source import DataSource
 from minmodkg.models.kgrel.dedup_mineral_site import DedupMineralSite
+from minmodkg.models.kgrel.entities.category import Category
+from minmodkg.models.kgrel.entities.commodity import Commodity
+from minmodkg.models.kgrel.entities.commodity_form import CommodityForm
+from minmodkg.models.kgrel.entities.country import Country
+from minmodkg.models.kgrel.entities.crs import CRS
+from minmodkg.models.kgrel.entities.deposit_type import DepositType
+from minmodkg.models.kgrel.entities.state_or_province import StateOrProvince
+from minmodkg.models.kgrel.entities.unit import Unit
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
 from minmodkg.models.kgrel.paper import Paper
@@ -45,6 +55,18 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 from tqdm import tqdm
 
+# in foreign-key order
+ENTITY_TABLES = [
+    (Commodity, "commodity"),
+    (CommodityForm, "commodity_form"),
+    (CRS, "crs"),
+    (DataSource, "data_source"),
+    (Unit, "unit"),
+    (Category, "category"),
+    (DepositType, "deposit_type"),
+    (Country, "country"),
+    (StateOrProvince, "state_or_province"),
+]
 DELETE_QUERY = Template(
     (Path(__file__).parent / "queries/delete_resources.rq").read_text()
 )
@@ -231,6 +253,23 @@ def colliding_files(files: list[Path]) -> dict[Path, str]:
     return out
 
 
+def fill_empty_entity_tables(entity_dir: Path) -> list[str]:
+    """Fill entity tables that are empty from ta2-minmod-data's CSVs, the way
+    the MinMod ETL does; a database it built is never touched."""
+    filled = []
+    with Session(engine) as session:
+        for cls, name in ENTITY_TABLES:
+            if session.execute(select(func.count()).select_from(cls)).scalar_one():
+                continue
+            session.bulk_save_objects(
+                EntityDeserFn.read_file(entity_dir / f"{name}.csv")
+            )
+            session.flush()
+            filled.append(name)
+        session.commit()
+    return filled
+
+
 def load_paper(
     doc: dict, file: str, resolver: EntityResolver, skip_kg: bool, batch_size: int
 ) -> PaperContent:
@@ -260,7 +299,10 @@ def main(
     ],
     entity_dir: Annotated[
         Optional[Path],
-        typer.Option(help="ta2-minmod-data/data/entities, for ISO country codes"),
+        typer.Option(
+            help="ta2-minmod-data/data/entities: ISO country codes, and fills "
+            "entity tables that are empty"
+        ),
     ] = None,
     paper: Annotated[
         Optional[list[str]], typer.Option(help="Only load these paper ids")
@@ -274,6 +316,9 @@ def main(
     # adds tables this code introduced (e.g. paper); columns on existing
     # tables still come from migrations/
     create_db_and_tables()
+    if entity_dir is not None:
+        for name in fill_empty_entity_tables(entity_dir):
+            typer.echo(f"Filled empty entity table {name} from {entity_dir}")
     files = sorted(jsonld_dir.rglob("*.jsonld"))
     if not files:
         raise typer.BadParameter(f"no *.jsonld files in {jsonld_dir}")

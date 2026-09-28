@@ -158,7 +158,7 @@ python -m minmodkg.etl.geochem_loader <jsonld_dir> --entity-dir ta2-minmod-data/
 
 - Each paper becomes a `paper` row and a `:MineralResourcePaper` node. Each of its deposits becomes a mineral site owned by the `geochem-hmi` system user, with `source_id` `https://doi.org/<doi>`, so site ids match what the GeoChem HMI computes. Papers without a DOI are skipped and listed.
 - Every run replaces each paper's sites and samples, in Postgres and the triple store, with what its file says. Deposits and samples removed from a file are removed from MinMod. Same-as links made by curators are kept.
-- `--entity-dir` resolves ISO country codes. `--paper <paper_id>` reloads selected papers, and `--skip-kg` loads Postgres only.
+- `--entity-dir` resolves ISO country codes, and fills any empty entity table (commodities, units, countries…) from those CSVs, the way the MinMod ETL does. A database the ETL built already has them and is left alone. `--paper <paper_id>` reloads selected papers, and `--skip-kg` loads Postgres only.
 - Step 1 creates fresh database versions on every full rebuild, so run the loader again after each rebuild.
 - Fuseki's TDB2 storage never gives space back, and every reload rewrites the papers, so compact the dataset after a load (a full reload of the current corpus adds several GB). The admin endpoint only answers from inside the Fuseki container:
 
