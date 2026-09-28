@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from collections import defaultdict
 from pathlib import Path
 from typing import Literal, Optional, Sequence
@@ -32,6 +33,20 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from statickg.models.repository import GitRepository
+
+
+def commit_and_push(repo_dir: Path, message: str) -> None:
+    """Commit and push all changes; nothing to do when nothing changed, e.g.
+    when every edit in the batch went to the GeoChem JSON-LD instead."""
+    changes = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo_dir,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    if changes.strip():
+        GitRepository(repo_dir).commit_all(message).push()
 
 
 class BackupListener(Listener):
@@ -70,7 +85,7 @@ class BackupListener(Listener):
         site: MineralSiteAndInventory,
         same_site_ids: list[InternalID],
     ):
-        if not self._journal_paper_site(site):
+        if not self.journal_paper_site(site):
             self._upsert_site("add", site)
         self._update_same_as(
             site.ms.created_by,
@@ -80,7 +95,7 @@ class BackupListener(Listener):
         )
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
-        if not self._journal_paper_site(site):
+        if not self.journal_paper_site(site):
             self._upsert_site("update", site)
 
     def handle_same_as_update(
@@ -95,11 +110,11 @@ class BackupListener(Listener):
         self._update_same_as(user_uri, groups, diff_groups, event.timestamp)
 
     def handle_sample_add(self, event: EventLog, sample: Sample):
-        if not self._journal_paper_sample(sample):
+        if not self.journal_paper_sample(sample):
             self._upsert_sample("add", sample)
 
     def handle_sample_update(self, event: EventLog, sample: Sample):
-        if not self._journal_paper_sample(sample):
+        if not self.journal_paper_sample(sample):
             self._upsert_sample("update", sample)
 
     def handle_end(self, events: Sequence[EventLog]):
@@ -199,26 +214,28 @@ class BackupListener(Listener):
             and self.jsonld_dir is not None
             and (self.jsonld_dir / ".git").exists()
         ):
-            GitRepository(self.jsonld_dir).commit_all(
-                f"Backup edits as of {format_nanoseconds(events[-1].timestamp)}"
-            ).push()
+            commit_and_push(
+                self.jsonld_dir,
+                f"Backup edits as of {format_nanoseconds(events[-1].timestamp)}",
+            )
 
         if len(events) > 0:
             # after updating the files, we need to commit the changes to the git repo
-            GitRepository(self.data_repo_dir).commit_all(
-                f"Backup data as of {format_nanoseconds(events[-1].timestamp)}"
-            ).push()
+            commit_and_push(
+                self.data_repo_dir,
+                f"Backup data as of {format_nanoseconds(events[-1].timestamp)}",
+            )
 
-    def _journal_paper_site(self, site: MineralSiteAndInventory) -> bool:
+    def journal_paper_site(self, site: MineralSiteAndInventory) -> bool:
         """Journal a site that belongs to a GeoChem paper; False otherwise."""
         if site.ms.created_by != USER_URI or site.ms.source_id not in self.papers:
             return False
-        self._require_jsonld_dir()
+        self.require_jsonld_dir()
         self.site_papers[site.ms.site_id] = site.ms.source_id
         self.paper_journal[site.ms.source_id].append(site.ms.to_kg())
         return True
 
-    def _journal_paper_sample(self, sample: Sample) -> bool:
+    def journal_paper_sample(self, sample: Sample) -> bool:
         """Journal a sample whose site belongs to a GeoChem paper; False otherwise."""
         site_id = sample.mineral_site_id
         if site_id not in self.site_papers:
@@ -236,11 +253,11 @@ class BackupListener(Listener):
         source_id = self.site_papers[site_id]
         if source_id is None:
             return False
-        self._require_jsonld_dir()
+        self.require_jsonld_dir()
         self.paper_journal[source_id].append(sample.to_kg())
         return True
 
-    def _require_jsonld_dir(self) -> None:
+    def require_jsonld_dir(self) -> None:
         if self.jsonld_dir is None:
             raise ValueError(
                 "GeoChem paper edits need the JSON-LD directory (--jsonld-dir)"
