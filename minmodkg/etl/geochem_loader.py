@@ -329,11 +329,14 @@ def main(
         pending = session.execute(
             select(func.count())
             .select_from(EventLog)
-            .where(EventLog.geochem_synced.is_(False))
+            .where(
+                EventLog.geochem_kg_synced.is_(False)
+                | EventLog.geochem_synced.is_(False)
+            )
         ).scalar_one()
         if pending and not force:
             raise typer.BadParameter(
-                f"{pending} edits have not been written back to the JSON-LD yet; "
+                f"{pending} edits have not been synced to the JSON-LD yet; "
                 "let the GeoChem sync catch up, or pass --force"
             )
         if session.get(User, USERNAME) is None:

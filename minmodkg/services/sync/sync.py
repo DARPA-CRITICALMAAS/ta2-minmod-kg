@@ -17,7 +17,9 @@ def process_pending_events(
     verbose: bool = False,
 ):
     if isinstance(listener, KGSyncListener):
-        listener_field = "kg_synced"
+        listener_field = (
+            "kg_synced" if listener.lane == "minmod" else "geochem_kg_synced"
+        )
     elif isinstance(listener, GeoChemBackupListener):
         listener_field = "geochem_synced"
     else:
@@ -55,6 +57,7 @@ def process_pending_events(
                 EventLog.id.in_([e.id for e in events]),
                 EventLog.kg_synced == True,
                 EventLog.backup_synced == True,
+                EventLog.geochem_kg_synced == True,
                 EventLog.geochem_synced == True,
             )
         )

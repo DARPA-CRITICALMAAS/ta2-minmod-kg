@@ -12,6 +12,12 @@ from sqlalchemy import JSON, BigInteger
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
+def geochem_flags(maybe_geochem: bool) -> dict:
+    """Events that may belong to a GeoChem paper start unsynced in the
+    GeoChem lanes; the GeoChem sync decides which ones really do."""
+    return {"geochem_kg_synced": not maybe_geochem, "geochem_synced": not maybe_geochem}
+
+
 class EventLog(MappedAsDataclass, Base):
     __tablename__ = "event_log"
 
@@ -28,8 +34,9 @@ class EventLog(MappedAsDataclass, Base):
     data: Mapped[dict] = mapped_column(JSON)
     kg_synced: Mapped[bool] = mapped_column(default=False, index=True)
     backup_synced: Mapped[bool] = mapped_column(default=False, index=True)
-    # written back to a GeoChem paper's JSON-LD by the GeoChem sync; true from
-    # the start for events that can't belong to a paper
+    # the GeoChem sync's KG update and JSON-LD write-back; true from the start
+    # for events that can't belong to a GeoChem paper
+    geochem_kg_synced: Mapped[bool] = mapped_column(default=True, index=True)
     geochem_synced: Mapped[bool] = mapped_column(default=True, index=True)
     timestamp: Mapped[int] = mapped_column(BigInteger, default_factory=time.time_ns)
 
@@ -43,7 +50,7 @@ class EventLog(MappedAsDataclass, Base):
                 "site": site.to_dict(),
                 "same_site_ids": same_site_ids,
             },
-            geochem_synced=site.ms.created_by != GEOCHEM_USER_URI,
+            **geochem_flags(site.ms.created_by == GEOCHEM_USER_URI),
         )
 
     @classmethod
@@ -53,7 +60,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "site": site.to_dict(),
             },
-            geochem_synced=site.ms.created_by != GEOCHEM_USER_URI,
+            **geochem_flags(site.ms.created_by == GEOCHEM_USER_URI),
         )
 
     @classmethod
@@ -63,7 +70,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "sample": sample.to_dict(),
             },
-            geochem_synced=False,
+            **geochem_flags(True),
         )
 
     @classmethod
@@ -73,7 +80,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "sample": sample.to_dict(),
             },
-            geochem_synced=False,
+            **geochem_flags(True),
         )
 
     @classmethod

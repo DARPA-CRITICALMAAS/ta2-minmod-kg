@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Literal, Optional, Sequence
 
-from minmodkg.etl.geochem_jsonld import USER_URI
 from minmodkg.misc.utils import norm_literal
 from minmodkg.models.kg.base import MINMOD_KG, MINMOD_NS, NS_GCO, NS_GCR, NS_MR
 from minmodkg.models.kg.mineral_site import MineralSite
-from minmodkg.models.kgrel.base import engine
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.paper import Paper
 from minmodkg.models.kgrel.sample import Sample
+from minmodkg.services.sync.geochem_routing import GeoChemRouting
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import IRI, InternalID
 from rdflib import Graph, URIRef
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 
 class KGSyncListener(Listener):
@@ -24,34 +21,46 @@ class KGSyncListener(Listener):
     mo_normalized_uri = MINMOD_NS.mo.normalized_uri
     gco_has_sample = f"<{NS_GCO.uristr('has_sample')}>"
 
+    def __init__(self, lane: Literal["minmod", "geochem"] = "minmod"):
+        """`minmod` syncs every edit except those of GeoChem papers, which the
+        GeoChem sync process handles with its own `geochem` lane."""
+        super().__init__()
+        self.lane = lane
+
+    def handle_begin(self, events: Sequence[EventLog]):
+        self.routing = GeoChemRouting()
+
+    def owns(self, paper: Optional[Paper]) -> bool:
+        return (paper is not None) == (self.lane == "geochem")
+
     def handle_site_add(
         self,
         event: EventLog,
         site: MineralSiteAndInventory,
         same_site_ids: list[InternalID],
     ):
+        paper = self.routing.site_paper(site)
+        if not self.owns(paper):
+            return
         key_ns = MineralSite.__subj__.key_ns
         triples = site.ms.to_kg().to_triples()
         for same_site_id in same_site_ids:
             triples.append(
                 (key_ns[site.ms.site_id], self.owl_same_as, key_ns[same_site_id])
             )
-        if site.ms.created_by == USER_URI:
-            with Session(engine) as session:
-                paper = session.execute(
-                    select(Paper).where(Paper.source_id == site.ms.source_id)
-                ).scalar_one_or_none()
-            if paper is not None:
-                triples.append(
-                    (
-                        f"<{paper.to_kg([]).uri}>",
-                        f"<{NS_GCO.uristr('has_mineral_site')}>",
-                        f"<{NS_MR.uristr(site.ms.site_id)}>",
-                    )
+        if paper is not None:
+            triples.append(
+                (
+                    f"<{paper.to_kg([]).uri}>",
+                    f"<{NS_GCO.uristr('has_mineral_site')}>",
+                    f"<{NS_MR.uristr(site.ms.site_id)}>",
                 )
+            )
         MINMOD_KG.insert(triples)
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
+        if not self.owns(self.routing.site_paper(site)):
+            return
         kgms = site.ms.to_kg()
         ng = kgms.to_graph()
         og = self._get_mineral_site_graph_by_uri(kgms.uri)
@@ -79,6 +88,8 @@ class KGSyncListener(Listener):
         groups: list[list[InternalID]],
         diff_groups: dict[InternalID, list[InternalID]],
     ):
+        if self.lane != "minmod":
+            return
         key_ns = MineralSite.__subj__.key_ns
         # potential_existing_links = self._get_all_same_as_links(
         #     {id for group in groups for id in group}
@@ -102,6 +113,8 @@ class KGSyncListener(Listener):
         )
 
     def handle_sample_add(self, event: EventLog, sample: Sample):
+        if not self.owns(self.routing.sample_paper(sample)):
+            return
         triples = sample.to_kg().to_triples()
         triples.append(
             (
@@ -113,6 +126,8 @@ class KGSyncListener(Listener):
         MINMOD_KG.insert(triples)
 
     def handle_sample_update(self, event: EventLog, sample: Sample):
+        if not self.owns(self.routing.sample_paper(sample)):
+            return
         kgsample = sample.to_kg()
         ng = kgsample.to_graph()
         og = self._get_sample_graph_by_uri(kgsample.uri)
