@@ -174,6 +174,16 @@ python -m minmodkg.services.sync.geochem <jsonld_dir>
 
 Apply `migrations/003_geochem_sync.up.sql` first on an existing database; it adds the event-log flags the GeoChem sync uses.
 
+Papers can also be registered one at a time through the API, which the GeoChem HMI calls on every upload: `POST /api/v1/papers` with the canonical JSON-LD as the body. A paper MinMod doesn't have is written to the JSON-LD directory and loaded; one it already has is left exactly as it is, and the response says so. Either way it returns the site and sample ids MinMod uses. The API needs to know where the files go, in `config.yml`:
+
+```yaml
+geochem:
+  jsonld_dir: /path/to/geochem-jsonld
+  entity_dir: /path/to/ta2-minmod-data/data/entities
+```
+
+Apply `migrations/004_paper_registered_by.up.sql` on an existing database; it records who registered each paper. The largest papers are ~80 MB, so the proxy in front of `/api/` must allow request bodies that big (nginx `client_max_body_size`).
+
 The `geochem-hmi` user must exist with the `system` role for the HMI to edit these sites. The `user` command only creates `user`-role accounts, so use `add-user`, set `"role": "system"` in the resulting file, then `load-user` it.
 
 **2. Starting other services**

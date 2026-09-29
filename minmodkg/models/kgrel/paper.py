@@ -30,6 +30,9 @@ class Paper(MappedAsDataclass, Base):
     # path of the source JSON-LD, relative to the JSON-LD directory
     file: Mapped[str] = mapped_column()
     modified_at: Mapped[int] = mapped_column(BigInteger)
+    # user who registered the paper through the API; none when it came from
+    # the loader
+    registered_by: Mapped[str | None] = mapped_column(default=None)
 
     def to_kg(self, site_ids: list[InternalID]) -> KGPaper:
         return KGPaper(
@@ -56,5 +59,6 @@ class Paper(MappedAsDataclass, Base):
                 ("url", self.url),
                 ("file", self.file),
                 ("modified_at", self.modified_at),
+                ("registered_by", self.registered_by),
             )
         )

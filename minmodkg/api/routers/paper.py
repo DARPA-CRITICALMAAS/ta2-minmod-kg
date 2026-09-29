@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.api.dependencies import (
+    CurrentUserDep,
     PaperServiceDep,
     norm_commodity,
     norm_country,
@@ -13,7 +14,8 @@ from minmodkg.api.dependencies import (
 from minmodkg.api.models.public_mineral_site import OutputPublicMineralSite
 from minmodkg.api.models.public_sample import OutputPublicSample
 from minmodkg.models.kgrel.paper import Paper
-from minmodkg.services.paper import PaperService
+from minmodkg.config import GEOCHEM_ENTITY_DIR, GEOCHEM_JSONLD_DIR
+from minmodkg.services.paper import PaperConflictError, PaperService
 from minmodkg.typing import InternalID
 
 router = APIRouter(tags=["papers"])
@@ -85,6 +87,47 @@ def list_papers(
     if return_count:
         return {"items": items, "total": total}
     return items
+
+
+@router.post("/papers")
+def register_paper(
+    doc: Annotated[dict, Body()],
+    paper_service: PaperServiceDep,
+    user: CurrentUserDep,
+    response: Response,
+):
+    """Register a GeoChem paper from its canonical JSON-LD. Call it on every
+    upload: a new paper is added to MinMod; one MinMod already has is left
+    exactly as it is. Returns the site and sample ids to use from then on."""
+    if GEOCHEM_JSONLD_DIR is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="This server is not configured to register GeoChem papers.",
+        )
+    try:
+        reg = paper_service.register(
+            doc, user.get_uri(), GEOCHEM_JSONLD_DIR, GEOCHEM_ENTITY_DIR
+        )
+    except PaperConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    response.status_code = (
+        status.HTTP_201_CREATED if reg.created else status.HTTP_200_OK
+    )
+    return {
+        "created": reg.created,
+        "message": (
+            "The paper was added to MinMod."
+            if reg.created
+            else "This paper already exists in MinMod; nothing was changed. "
+            "Use the ids below."
+        ),
+        "paper": paper_dict(reg.paper),
+        "sites": reg.sites,
+        "samples": reg.samples,
+    }
 
 
 @router.get("/papers/{paper_id}")

@@ -10,6 +10,10 @@ namespace:
   mo-derived: https://minmod.isi.edu/derived/
   gco: https://geochemistry.isi.edu/ontology/
   gcr: https://geochemistry.isi.edu/resource/
+# Needed only for POST /api/v1/papers (registering GeoChem papers)
+# geochem:
+#   jsonld_dir: /path/to/geochem-jsonld
+#   entity_dir: /path/to/ta2-minmod-data/data/entities
 api_prefix: /api/v1
 lod_prefix: ""
 # openssl rand -hex 32

@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE paper DROP COLUMN IF EXISTS registered_by;
+
+COMMIT;

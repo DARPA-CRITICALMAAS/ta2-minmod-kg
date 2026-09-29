@@ -121,6 +121,8 @@ def save_postgres(
     site ids the paper had before."""
     entser = EntityService.get_instance()
     service = MineralSiteService(engine)
+    if (existing := session.get(Paper, paper.paper_id)) is not None:
+        paper.registered_by = existing.registered_by
     session.merge(paper)
 
     old = {
