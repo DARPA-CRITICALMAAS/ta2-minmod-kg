@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from collections import defaultdict
 from pathlib import Path
 from typing import Literal, Sequence
@@ -14,11 +15,26 @@ from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.sample import Sample
 from minmodkg.models.kgrel.user import get_username
 from minmodkg.services.kgrel_entity import EntityService
+from minmodkg.services.sync.geochem_routing import GeoChemRouting
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import InternalID
 from slugify import slugify
 
 from statickg.models.repository import GitRepository
+
+
+def commit_and_push(repo_dir: Path, message: str) -> None:
+    """Commit and push all changes; nothing to do when nothing changed, e.g.
+    when every event in the batch belonged to the GeoChem sync."""
+    changes = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo_dir,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    if changes.strip():
+        GitRepository(repo_dir).commit_all(message).push()
 
 
 class BackupListener(Listener):
@@ -39,6 +55,8 @@ class BackupListener(Listener):
         self.sample_journal: dict[
             InternalID, list[tuple[Literal["add", "update"], dict]]
         ] = defaultdict(list)
+        # edits of GeoChem papers are written back by the GeoChem sync instead
+        self.geochem = GeoChemRouting()
 
     def handle_site_add(
         self,
@@ -46,7 +64,8 @@ class BackupListener(Listener):
         site: MineralSiteAndInventory,
         same_site_ids: list[InternalID],
     ):
-        self._upsert_site("add", site)
+        if self.geochem.site_paper(site) is None:
+            self._upsert_site("add", site)
         self._update_same_as(
             site.ms.created_by,
             [[site.ms.site_id] + same_site_ids],
@@ -55,7 +74,8 @@ class BackupListener(Listener):
         )
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
-        self._upsert_site("update", site)
+        if self.geochem.site_paper(site) is None:
+            self._upsert_site("update", site)
 
     def handle_same_as_update(
         self,
@@ -69,10 +89,12 @@ class BackupListener(Listener):
         self._update_same_as(user_uri, groups, diff_groups, event.timestamp)
 
     def handle_sample_add(self, event: EventLog, sample: Sample):
-        self._upsert_sample("add", sample)
+        if self.geochem.sample_paper(sample) is None:
+            self._upsert_sample("add", sample)
 
     def handle_sample_update(self, event: EventLog, sample: Sample):
-        self._upsert_sample("update", sample)
+        if self.geochem.sample_paper(sample) is None:
+            self._upsert_sample("update", sample)
 
     def handle_end(self, events: Sequence[EventLog]):
         for (username, source_name, bucket_no), actions in self.site_journal.items():
@@ -89,8 +111,8 @@ class BackupListener(Listener):
 
             for action, site in actions:
                 if site["record_id"] not in id2index:
-                    id2index[site["record_id"]] = len(sites) - 1
                     sites.append(site)
+                    id2index[site["record_id"]] = len(sites) - 1
 
                 if action == "add":
                     # do nothing
@@ -103,7 +125,9 @@ class BackupListener(Listener):
             serde.json.ser(sites, outfile, indent=2)
 
         for mineral_site_id, actions in self.sample_journal.items():
-            outfile = self.data_repo_dir / f"data/geochem-samples/{mineral_site_id}.json"
+            outfile = (
+                self.data_repo_dir / f"data/geochem-samples/{mineral_site_id}.json"
+            )
             if outfile.exists():
                 samples = serde.json.deser(outfile)
                 id2index = {r["id"]: i for i, r in enumerate(samples)}
@@ -113,8 +137,8 @@ class BackupListener(Listener):
 
             for action, sample in actions:
                 if sample["id"] not in id2index:
-                    id2index[sample["id"]] = len(samples) - 1
                     samples.append(sample)
+                    id2index[sample["id"]] = len(samples) - 1
 
                 if action == "add":
                     # do nothing
@@ -155,9 +179,10 @@ class BackupListener(Listener):
 
         if len(events) > 0:
             # after updating the files, we need to commit the changes to the git repo
-            GitRepository(self.data_repo_dir).commit_all(
-                f"Backup data as of {format_nanoseconds(events[-1].timestamp)}"
-            ).push()
+            commit_and_push(
+                self.data_repo_dir,
+                f"Backup data as of {format_nanoseconds(events[-1].timestamp)}",
+            )
 
     def _upsert_site(
         self, action: Literal["add", "update"], site: MineralSiteAndInventory

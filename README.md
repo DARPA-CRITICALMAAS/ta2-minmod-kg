@@ -147,6 +147,45 @@ python -m statickg ta2-minmod-kg/etl.yml ./kgdata ta2-minmod-data --overwrite-co
 
 Note that this process will continue running to monitor for new changes. Hence, it will not terminate unless a terminating signal is received explicitly.
 
+**1a. Loading GeoChem data**
+
+GeoChem papers are not part of the build above. Their source of truth is a directory of canonical JSON-LD files, one per paper. Load it with a separate loader once the stores from step 1 are up:
+
+```bash
+export CFG_FILE=<CFG_DIR>/config.yml   # kgrel and triplestore must point at the stores built in step 1
+python -m minmodkg.etl.geochem_loader <jsonld_dir> --entity-dir ta2-minmod-data/data/entities
+```
+
+- Each paper becomes a `paper` row and a `:MineralResourcePaper` node. Each of its deposits becomes a mineral site owned by the `geochem-hmi` system user, with `source_id` `https://doi.org/<doi>`, so site ids match what the GeoChem HMI computes. Papers without a DOI are skipped and listed.
+- Every run replaces each paper's sites and samples, in Postgres and the triple store, with what its file says. Deposits and samples removed from a file are removed from MinMod. Same-as links made by curators are kept.
+- `--entity-dir` resolves ISO country codes, and fills any empty entity table (commodities, units, countries…) from those CSVs, the way the MinMod ETL does. A database the ETL built already has them and is left alone. `--paper <paper_id>` reloads selected papers, and `--skip-kg` loads Postgres only.
+- Step 1 creates fresh database versions on every full rebuild, so run the loader again after each rebuild.
+- Fuseki's TDB2 storage never gives space back, and every reload rewrites the papers, so compact the dataset after a load (a full reload of the current corpus adds several GB). The admin endpoint only answers from inside the Fuseki container:
+
+  ```bash
+  docker exec <fuseki_container> curl -s -X POST 'http://localhost:3030/$/compact/minmod?deleteOld=true'
+  ```
+
+Edits to GeoChem samples and deposits made through the API are synced by a separate GeoChem sync: to the triple store within seconds, and back into the paper's JSON-LD so they survive a reload. It runs apart from MinMod's sync (`python -m minmodkg.services.sync`), which keeps its usual arguments and skips GeoChem papers' edits; a GeoChem failure can't hold up MinMod's sync. If the directory is a git repository, its changes are committed and pushed like the data repository's:
+
+```bash
+python -m minmodkg.services.sync.geochem <jsonld_dir>
+```
+
+Apply `migrations/003_geochem_sync.up.sql` first on an existing database; it adds the event-log flags the GeoChem sync uses.
+
+Papers can also be registered one at a time through the API, which the GeoChem HMI calls on every upload: `POST /api/v1/papers` with the canonical JSON-LD as the body. A paper MinMod doesn't have is written to the JSON-LD directory and loaded; one it already has is left exactly as it is, and the response says so. Either way it returns the site and sample ids MinMod uses. The API needs to know where the files go, in `config.yml`:
+
+```yaml
+geochem:
+  jsonld_dir: /path/to/geochem-jsonld
+  entity_dir: /path/to/ta2-minmod-data/data/entities
+```
+
+Apply `migrations/004_paper_registered_by.up.sql` on an existing database; it records who registered each paper. The largest papers are ~80 MB, so the proxy in front of `/api/` must allow request bodies that big (nginx `client_max_body_size`).
+
+The `geochem-hmi` user must exist with the `system` role for the HMI to edit these sites. The `user` command only creates `user`-role accounts, so use `add-user`, set `"role": "system"` in the resulting file, then `load-user` it.
+
 **2. Starting other services**
 
 ```bash

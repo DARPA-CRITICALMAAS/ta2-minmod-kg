@@ -24,6 +24,16 @@ MINMOD_NS_CFG = cfg["namespace"]
 MINMOD_KGREL_DB = cfg["kgrel"]
 MINMOD_DEBUG = os.environ.get("MINMOD_DEBUG", "0") == "1"
 
+# GeoChem papers registered through the API: written to the JSON-LD directory
+# (their source of truth), with ta2-minmod-data's entity CSVs for ISO codes
+GEOCHEM_CFG = cfg.get("geochem") or {}
+GEOCHEM_JSONLD_DIR = (
+    Path(GEOCHEM_CFG["jsonld_dir"]) if GEOCHEM_CFG.get("jsonld_dir") else None
+)
+GEOCHEM_ENTITY_DIR = (
+    Path(GEOCHEM_CFG["entity_dir"]) if GEOCHEM_CFG.get("entity_dir") else None
+)
+
 # for dedup algorithm
 DEFAULT_SOURCE_SCORE = 0.5
 
