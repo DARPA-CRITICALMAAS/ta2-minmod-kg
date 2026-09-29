@@ -12,6 +12,7 @@ from minmodkg.etl.geochem_jsonld import (
     read_paper,
     sample_key,
 )
+from minmodkg.models.kg.sample import EditEvent
 from minmodkg.transformations import make_sample_id, make_site_id
 
 RES = "https://geochemistry.isi.edu/resource/"
@@ -144,6 +145,24 @@ def test_write_back_unchanged_is_identity():
     for sample in content.samples:
         apply_sample(out, sample)
     assert out["deposits"][0]["samples"] == paper["deposits"][0]["samples"]
+
+
+def test_site_edit_is_recorded():
+    paper = make_paper()
+    site = read_paper(paper, resolver()).sites[0]
+    edit = EditEvent(
+        updated_by="https://minmod.isi.edu/users/u/curator",
+        updated_at="2026-09-29T00:00:00.000000Z",
+        changed_properties=["name"],
+    )
+    apply_site(paper, site)
+    assert "edit_history" not in paper["deposits"][0]
+
+    apply_site(paper, replace(site, name="Suttsu (edited)"), edit)
+    apply_site(paper, replace(site, name="Suttsu (edited)"), edit)
+    history = paper["deposits"][0]["edit_history"]
+    assert history == [edit.to_dict(), edit.to_dict()]
+    assert read_paper(paper, resolver()).sites[0].name == "Suttsu (edited)"
 
 
 def test_sample_edits_survive_reload():

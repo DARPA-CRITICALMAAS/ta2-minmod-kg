@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from typing import Annotated, Optional, Union
 
-from fastapi import HTTPException, status
 from minmodkg.misc.utils import (
     format_datetime,
     format_nanoseconds,
-    is_valid_url,
     makedict,
 )
 from minmodkg.models.kg.base import MINMOD_NS
@@ -19,8 +17,7 @@ from minmodkg.models.kg.location_info import LocationInfo
 from minmodkg.models.kg.mineral_inventory import MineralInventory
 from minmodkg.models.kg.mineral_site import MineralSite as InputMineralSite
 from minmodkg.models.kg.reference import Reference
-from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models.kgrel.user import User
+from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.typing import IRI, InternalID
 from pydantic import BaseModel, Field
@@ -181,12 +178,15 @@ class InputPublicMineralSite(InputMineralSite):
     dedup_site_uri: Optional[IRI] = None
 
     def to_kgrel(
-        self,
-        user_uri: str,
+        self, owner_uri: str, editor_uri: Optional[str] = None
     ) -> MineralSiteAndInventory:
+        """`owner_uri` owns the site, and its id is derived from it -- never from
+        the request's own `created_by`. `editor_uri` (default: the owner) is who
+        made this change."""
+        editor_uri = editor_uri or owner_uri
         entser = EntityService.get_instance()
         site = MineralSiteAndInventory.from_raw_site(
-            self,
+            replace(self, created_by=owner_uri),
             commodity_form_conversion=entser.get_commodity_form_conversion(),
             crs_names=entser.get_crs_name(),
             source_score=entser.get_data_source_score(),
@@ -197,13 +197,13 @@ class InputPublicMineralSite(InputMineralSite):
             ),
         )
         site.ms.modified_at = time.time_ns()
-        site.ms.created_by = user_uri
+        site.ms.created_by = owner_uri
         # deleted_by/deleted_at are server-derived, never trusted from the
         # caller -- same overwrite-every-write convention as created_by above
         # (MineralSite has no edit_history to check "did is_deleted actually
         # change" against, unlike Sample's more careful patch()).
         if site.ms.is_deleted:
-            site.ms.deleted_by = user_uri
+            site.ms.deleted_by = editor_uri
             site.ms.deleted_at = format_datetime(datetime.now(timezone.utc))
         else:
             site.ms.deleted_by = None

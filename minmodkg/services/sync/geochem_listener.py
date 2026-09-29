@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Sequence
+from typing import Optional, Sequence
 
 from minmodkg.etl.geochem_jsonld import (
     apply_sample,
@@ -10,8 +11,9 @@ from minmodkg.etl.geochem_jsonld import (
     read_paper_file,
     write_paper_file,
 )
-from minmodkg.misc.utils import format_nanoseconds
+from minmodkg.misc.utils import format_datetime, format_nanoseconds
 from minmodkg.models.kg.mineral_site import MineralSite as KGMineralSite
+from minmodkg.models.kg.sample import EditEvent
 from minmodkg.models.kg.sample import Sample as KGSample
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
@@ -34,11 +36,18 @@ class GeoChemBackupListener(Listener):
 
     def handle_begin(self, events: Sequence[EventLog]):
         self.routing = GeoChemRouting()
-        self.journal: dict[str, list[KGMineralSite | KGSample]] = defaultdict(list)
+        self.journal: dict[
+            str, list[tuple[KGMineralSite | KGSample, Optional[EditEvent]]]
+        ] = defaultdict(list)
 
-    def add(self, paper: Paper | None, item: KGMineralSite | KGSample) -> None:
+    def add(
+        self,
+        paper: Paper | None,
+        item: KGMineralSite | KGSample,
+        edit: Optional[EditEvent] = None,
+    ) -> None:
         if paper is not None:
-            self.journal[paper.paper_id].append(item)
+            self.journal[paper.paper_id].append((item, edit))
 
     def handle_site_add(
         self,
@@ -49,7 +58,19 @@ class GeoChemBackupListener(Listener):
         self.add(self.routing.site_paper(site), site.ms.to_kg())
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
-        self.add(self.routing.site_paper(site), site.ms.to_kg())
+        # a sample keeps its own edit_history; a site's editor and the fields
+        # they changed are on the event
+        edit = None
+        editor = event.data.get("edited_by")
+        if editor is not None and event.data.get("changed_fields"):
+            edit = EditEvent(
+                updated_by=editor,
+                updated_at=format_datetime(
+                    datetime.fromtimestamp(event.timestamp / 1e9, tz=timezone.utc)
+                ),
+                changed_properties=event.data["changed_fields"],
+            )
+        self.add(self.routing.site_paper(site), site.ms.to_kg(), edit)
 
     def handle_same_as_update(
         self,
@@ -72,11 +93,11 @@ class GeoChemBackupListener(Listener):
         for paper_id, items in self.journal.items():
             path = self.jsonld_dir / papers[paper_id].file
             doc = read_paper_file(path)
-            for item in items:
+            for item, edit in items:
                 if isinstance(item, KGSample):
                     apply_sample(doc, item)
                 else:
-                    apply_site(doc, item)
+                    apply_site(doc, item, edit)
             write_paper_file(path, doc)
 
         if self.journal and (self.jsonld_dir / ".git").exists():

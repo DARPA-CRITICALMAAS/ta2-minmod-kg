@@ -56,12 +56,22 @@ class FilenameValidatorServiceInvokeArgs(TypedDict):
 TempMineralSiteValidator = get_dataclass_deserializer(InputPublicMineralSite)
 
 
-def mineral_site_deser(site: InputPublicMineralSite | dict) -> InputPublicMineralSite:
+def mineral_site_deser(
+    site: InputPublicMineralSite | dict, one_document: bool = False
+) -> InputPublicMineralSite:
+    """With `one_document`, a site may have several references as long as they
+    all cite one document: a GeoChem paper's site keeps one per evidence quote."""
     if not isinstance(site, InputPublicMineralSite):
         norm_site: InputPublicMineralSite = TempMineralSiteValidator(site)
     else:
         norm_site = site
-    if len(norm_site.reference) != 1:
+    if one_document:
+        docs = {ref.document.get_key() for ref in norm_site.reference}
+        if len(docs) != 1:
+            raise ValueError(
+                f"Expect references to 1 document but got {len(docs)} documents"
+            )
+    elif len(norm_site.reference) != 1:
         raise ValueError(f"Expect 1 reference but got {len(norm_site.reference)}")
     return norm_site
 
@@ -327,6 +337,7 @@ def validate_mineral_site(
     data: str | Path | Sequence[dict] | Sequence[InputPublicMineralSite],
     ent_service: EntityService,
     verbose: bool = False,
+    one_document: bool = False,
 ):
     if isinstance(data, (str, Path)):
         sites = orjson.loads(Path(data).read_bytes())
@@ -350,7 +361,9 @@ def validate_mineral_site(
                     f"Invalid site data at record {i}: missing modified_at field"
                 )
             try:
-                norm_site: InputPublicMineralSite = mineral_site_deser(site)
+                norm_site: InputPublicMineralSite = mineral_site_deser(
+                    site, one_document
+                )
             except Exception as e:
                 raise ValueError(f"Invalid site data at record {i}") from e
             norm_sites.append(norm_site)
@@ -358,7 +371,7 @@ def validate_mineral_site(
         for i, site in enumerate(sites):
             try:
                 assert isinstance(site, InputPublicMineralSite)
-                mineral_site_deser(site.to_dict())
+                mineral_site_deser(site.to_dict(), one_document)
             except Exception as e:
                 raise ValueError(f"Invalid site data at record {i}") from e
             norm_sites.append(site)

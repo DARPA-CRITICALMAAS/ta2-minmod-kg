@@ -503,8 +503,11 @@ def find_deposit(paper: dict, site_id: str) -> Optional[dict]:
     return next((d for sid, d in deposit_sites(paper) if sid == site_id), None)
 
 
-def apply_site(paper: dict, site: KGMineralSite) -> None:
-    """Write a site onto its deposit node, appending one for a new site."""
+def apply_site(
+    paper: dict, site: KGMineralSite, edit: Optional[EditEvent] = None
+) -> None:
+    """Write a site onto its deposit node, appending one for a new site. An
+    `edit` is appended to the deposit's edit_history."""
     deposit = find_deposit(paper, site.id)
     if deposit is None:
         doi_slug = slugify(str(clean(paper.get("paper_doi"))))
@@ -546,6 +549,9 @@ def apply_site(paper: dict, site: KGMineralSite) -> None:
         else:
             deposit.pop("commodity", None)
     put_deletion(deposit, site)
+
+    if edit is not None:
+        deposit.setdefault("edit_history", []).append(edit.to_dict())
 
 
 def apply_sample(paper: dict, sample: KGSample) -> None:

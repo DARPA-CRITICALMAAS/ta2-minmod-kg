@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import time
 from collections import defaultdict
-from functools import cmp_to_key
 from typing import NamedTuple, Optional, Sequence, Tuple, TypedDict
 
-from minmodkg.misc.utils import group_by, makedict
+from minmodkg.misc.utils import makedict
 from minmodkg.models.kgrel.base import engine
 from minmodkg.models.kgrel.dedup_mineral_site import (
     DedupMineralSite,
@@ -62,8 +60,21 @@ class ArgumentError(Exception):
     pass
 
 
-class MineralSiteService:
+# bookkeeping a write always changes, so not an edit
+UNEDITABLE_FIELDS = {"created_by", "modified_at", "deleted_by", "deleted_at"}
 
+
+def changed_fields(
+    prev: MineralSiteAndInventory, new: MineralSiteAndInventory
+) -> list[str]:
+    """The site fields an update changes."""
+    a, b = prev.ms.to_kg().to_dict(), new.ms.to_kg().to_dict()
+    return sorted(
+        k for k in (a.keys() | b.keys()) - UNEDITABLE_FIELDS if a.get(k) != b.get(k)
+    )
+
+
+class MineralSiteService:
     def __init__(self, _engine: Optional[Engine] = None):
         self.engine = _engine or engine
 
@@ -71,6 +82,12 @@ class MineralSiteService:
         q = select(MineralSite.id).where(MineralSite.site_id == site_id)
         with Session(self.engine) as session:
             return session.execute(q).scalar_one_or_none()
+
+    def get_site_owner(self, site_id: InternalID) -> Optional[str]:
+        with Session(self.engine) as session:
+            return session.execute(
+                select(MineralSite.created_by).where(MineralSite.site_id == site_id)
+            ).scalar_one_or_none()
 
     def find_by_id(self, site_id: InternalID) -> Optional[MineralSiteAndInventory]:
         query = self._select_mineral_site().where(MineralSite.site_id == site_id)
@@ -254,6 +271,7 @@ class MineralSiteService:
         self,
         site_and_inv: MineralSiteAndInventory,
         site_snapshot_id: Optional[int] = None,
+        edited_by: Optional[str] = None,
     ):
         with Session(self.engine, expire_on_commit=False) as session:
             session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
@@ -278,10 +296,12 @@ class MineralSiteService:
                     f"The new snapshot of the site is {prev_snapshot_id}"
                 )
 
-            self._read_mineral_sites(
+            (prev_site,) = self._read_mineral_sites(
                 session,
                 self._select_mineral_site().where(MineralSite.id == site_and_inv.ms.id),
             )
+            # before any write: the update below also refreshes prev_site
+            changed = changed_fields(prev_site, site_and_inv)
 
             # step 0: we clean up the mineral inventory views of the site
             session.execute(
@@ -327,7 +347,7 @@ class MineralSiteService:
                     session.add(inv)
             if len(update_invs) > 0:
                 session.execute(update(MineralInventoryView), update_invs)
-            session.add(EventLog.from_site_update(site_and_inv))
+            session.add(EventLog.from_site_update(site_and_inv, edited_by, changed))
 
             # step 3: commit data
             session.commit()

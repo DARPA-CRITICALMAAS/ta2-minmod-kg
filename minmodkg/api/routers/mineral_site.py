@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 from minmodkg.api.dependencies import (
     CurrentUserDep,
     MineralSiteServiceDep,
-    RelSessionDep,
 )
 from minmodkg.api.models.public_mineral_site import (
     InputPublicMineralSite,
     OutputPublicMineralSite,
 )
 from minmodkg.models.kg.base import NS_MR
-from minmodkg.models.kgrel.mineral_site import MineralSite
+from minmodkg.models.kgrel.paper import GEOCHEM_USER_URI
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.services.mineral_site import (
     ExpiredSnapshotIdError,
@@ -23,7 +22,6 @@ from minmodkg.transformations import make_site_id
 from minmodkg.typing import InternalID
 from minmodkg.validators import validate_mineral_site
 from pydantic import BaseModel
-from sqlalchemy import select
 
 router = APIRouter(tags=["mineral_sites"])
 
@@ -145,26 +143,35 @@ def update_site(
     user: CurrentUserDep,
     snapshot_id: Annotated[Optional[int], Query()] = None,
 ):
-    _validate_site(update_site)
-
-    upd_msi = update_site.to_kgrel(user.get_uri())
-
-    if site_id != upd_msi.ms.site_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The site_id in the request body does not match the site_id in the URL.",
-        )
-
+    owner = mineral_site_service.get_site_owner(site_id)
     site_db_id = mineral_site_service.get_site_db_id(site_id)
-    if site_db_id is None:
+    if owner is None or site_db_id is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The site doesn't exist",
         )
+    # a GeoChem paper's sites are edited in place by any curator and stay
+    # geochem-hmi's; any other site can only be edited by its owner
+    is_geochem = owner == GEOCHEM_USER_URI
+    _validate_site(update_site, one_document=is_geochem)
+    if not is_geochem:
+        owner = user.get_uri()
+    upd_msi = update_site.to_kgrel(owner, editor_uri=user.get_uri())
+
+    if site_id != upd_msi.ms.site_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "The site_id in the URL does not match the site's source_id, "
+                "record_id and owner; you can only edit your own sites."
+            ),
+        )
 
     try:
         mineral_site_service.update(
-            upd_msi.set_id(site_db_id), site_snapshot_id=snapshot_id
+            upd_msi.set_id(site_db_id),
+            site_snapshot_id=snapshot_id,
+            edited_by=user.get_uri(),
         )
     except ExpiredSnapshotIdError as e:
         raise HTTPException(
@@ -190,9 +197,13 @@ def validate_site(mineral_site: Annotated[dict, Body()]):
     return {"message": "Validation successful"}
 
 
-def _validate_site(ms: dict | InputPublicMineralSite):
+def _validate_site(ms: dict | InputPublicMineralSite, one_document: bool = False):
     try:
-        validate_mineral_site([ms], EntityService.get_instance())  # type: ignore
+        validate_mineral_site(
+            [ms],  # type: ignore
+            EntityService.get_instance(),
+            one_document=one_document,
+        )
     except ValueError as e:
         cause_str = f". Caused by: {str(e.__cause__)}" if e.__cause__ else ""
         raise HTTPException(
