@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Literal
+from typing import Literal, Optional
 
 from minmodkg.models.kgrel.base import Base
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
@@ -54,12 +54,21 @@ class EventLog(MappedAsDataclass, Base):
         )
 
     @classmethod
-    def from_site_update(cls, site: MineralSiteAndInventory) -> EventLog:
+    def from_site_update(
+        cls,
+        site: MineralSiteAndInventory,
+        edited_by: Optional[str] = None,
+        changed_fields: Optional[list[str]] = None,
+    ) -> EventLog:
+        data: dict = {"site": site.to_dict()}
+        if edited_by is not None:
+            # the owner isn't always the editor: GeoChem paper sites stay
+            # geochem-hmi's while curators edit them
+            data["edited_by"] = edited_by
+            data["changed_fields"] = changed_fields or []
         return EventLog(
             type="site:update",
-            data={
-                "site": site.to_dict(),
-            },
+            data=data,
             **geochem_flags(site.ms.created_by == GEOCHEM_USER_URI),
         )
 

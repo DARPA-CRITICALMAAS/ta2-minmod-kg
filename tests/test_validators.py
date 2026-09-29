@@ -96,6 +96,29 @@ class TestMineralSiteParser:
         with pytest.raises(ValueError):
             mineral_site_deser(raw)
 
+    def test_references_to_one_document(self):
+        def ref(doi: str, quote: str) -> dict:
+            return {"document": {"doi": doi}, "comment": quote}
+
+        raw = {
+            "source_id": "https://doi.org/10.1000/x",
+            "record_id": "suttsu",
+            "created_by": "https://minmod.isi.edu/users/s/geochem-hmi",
+            "name": "Suttsu",
+            "reference": [ref("10.1000/x", "p. 3"), ref("10.1000/x", "p. 5")],
+        }
+
+        # one reference per site, unless they may all cite one document
+        with pytest.raises(ValueError):
+            mineral_site_deser(raw)
+        assert len(mineral_site_deser(raw, one_document=True).reference) == 2
+
+        raw["reference"].append(ref("10.1000/y", "p. 1"))
+        with pytest.raises(ValueError):
+            mineral_site_deser(raw, one_document=True)
+        with pytest.raises(ValueError):
+            mineral_site_deser({**raw, "reference": []}, one_document=True)
+
 
 class TestValidateSampleShacl:
     """validate_sample_shacl() (ta2-table-understanding issue #18's SHACL gate)

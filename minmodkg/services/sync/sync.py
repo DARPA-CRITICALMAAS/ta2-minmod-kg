@@ -38,8 +38,12 @@ def process_pending_events(
             .all()
         )
 
-        # make sure that these events are contiguously
-        assert all(events[i - 1].id == events[i].id - 1 for i in range(1, len(events)))
+        # make sure that these events are contiguously; MinMod's events start
+        # out done for the GeoChem lane, so gaps there are expected
+        if not listener_field.startswith("geochem_"):
+            assert all(
+                events[i - 1].id == events[i].id - 1 for i in range(1, len(events))
+            )
 
         # handle the events
         listener.handle(events)
