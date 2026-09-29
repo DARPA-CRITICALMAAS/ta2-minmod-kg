@@ -5,6 +5,7 @@ from typing import Literal
 from minmodkg.models.kgrel.base import get_rel_session
 from minmodkg.models.kgrel.event import EventLog
 from minmodkg.services.sync.backup_listener import BackupListener
+from minmodkg.services.sync.geochem_listener import GeoChemBackupListener
 from minmodkg.services.sync.kgsync_listener import KGSyncListener
 from minmodkg.services.sync.listener import Listener
 from sqlalchemy import delete, select, update
@@ -17,6 +18,8 @@ def process_pending_events(
 ):
     if isinstance(listener, KGSyncListener):
         listener_field = "kg_synced"
+    elif isinstance(listener, GeoChemBackupListener):
+        listener_field = "geochem_synced"
     else:
         assert isinstance(listener, BackupListener)
         listener_field = "backup_synced"
@@ -52,6 +55,7 @@ def process_pending_events(
                 EventLog.id.in_([e.id for e in events]),
                 EventLog.kg_synced == True,
                 EventLog.backup_synced == True,
+                EventLog.geochem_synced == True,
             )
         )
 

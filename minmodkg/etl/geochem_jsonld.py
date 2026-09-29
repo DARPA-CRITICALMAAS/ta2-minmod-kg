@@ -23,13 +23,13 @@ from minmodkg.models.kg.mineral_site import MineralSite as KGMineralSite
 from minmodkg.models.kg.reference import BoundingBox, Document, PageInfo, Reference
 from minmodkg.models.kg.sample import Analysis, EditEvent, Element
 from minmodkg.models.kg.sample import Sample as KGSample
-from minmodkg.models.kgrel.paper import Paper
+from minmodkg.models.kgrel.paper import GEOCHEM_USER_URI, GEOCHEM_USERNAME, Paper
 from minmodkg.services.kgrel_entity import EntityService
 from minmodkg.transformations import make_site_id
 from slugify import slugify
 
-USERNAME = "geochem-hmi"
-USER_URI = f"https://minmod.isi.edu/users/s/{USERNAME}"
+USERNAME = GEOCHEM_USERNAME
+USER_URI = GEOCHEM_USER_URI
 SOURCE = "GeoChem JSON-LD loader"
 WGS84 = "EPSG:4326"
 

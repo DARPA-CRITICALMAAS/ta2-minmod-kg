@@ -5,6 +5,7 @@ from typing import Literal
 
 from minmodkg.models.kgrel.base import Base
 from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
+from minmodkg.models.kgrel.paper import GEOCHEM_USER_URI
 from minmodkg.models.kgrel.sample import Sample
 from minmodkg.typing import InternalID
 from sqlalchemy import JSON, BigInteger
@@ -27,6 +28,9 @@ class EventLog(MappedAsDataclass, Base):
     data: Mapped[dict] = mapped_column(JSON)
     kg_synced: Mapped[bool] = mapped_column(default=False, index=True)
     backup_synced: Mapped[bool] = mapped_column(default=False, index=True)
+    # written back to a GeoChem paper's JSON-LD by the GeoChem sync; true from
+    # the start for events that can't belong to a paper
+    geochem_synced: Mapped[bool] = mapped_column(default=True, index=True)
     timestamp: Mapped[int] = mapped_column(BigInteger, default_factory=time.time_ns)
 
     @classmethod
@@ -39,6 +43,7 @@ class EventLog(MappedAsDataclass, Base):
                 "site": site.to_dict(),
                 "same_site_ids": same_site_ids,
             },
+            geochem_synced=site.ms.created_by != GEOCHEM_USER_URI,
         )
 
     @classmethod
@@ -48,6 +53,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "site": site.to_dict(),
             },
+            geochem_synced=site.ms.created_by != GEOCHEM_USER_URI,
         )
 
     @classmethod
@@ -57,6 +63,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "sample": sample.to_dict(),
             },
+            geochem_synced=False,
         )
 
     @classmethod
@@ -66,6 +73,7 @@ class EventLog(MappedAsDataclass, Base):
             data={
                 "sample": sample.to_dict(),
             },
+            geochem_synced=False,
         )
 
     @classmethod

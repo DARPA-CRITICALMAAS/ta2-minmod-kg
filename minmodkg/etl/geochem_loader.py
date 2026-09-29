@@ -329,12 +329,12 @@ def main(
         pending = session.execute(
             select(func.count())
             .select_from(EventLog)
-            .where(EventLog.backup_synced.is_(False))
+            .where(EventLog.geochem_synced.is_(False))
         ).scalar_one()
         if pending and not force:
             raise typer.BadParameter(
                 f"{pending} edits have not been written back to the JSON-LD yet; "
-                "let the sync service catch up, or pass --force"
+                "let the GeoChem sync catch up, or pass --force"
             )
         if session.get(User, USERNAME) is None:
             typer.secho(

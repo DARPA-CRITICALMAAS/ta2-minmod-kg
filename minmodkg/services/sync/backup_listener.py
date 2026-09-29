@@ -3,41 +3,29 @@ from __future__ import annotations
 import subprocess
 from collections import defaultdict
 from pathlib import Path
-from typing import Literal, Optional, Sequence
+from typing import Literal, Sequence
 
 import serde.csv
 import serde.json
 import xxhash
-from minmodkg.etl.geochem_jsonld import (
-    USER_URI,
-    apply_sample,
-    apply_site,
-    read_paper_file,
-    write_paper_file,
-)
 from minmodkg.misc.utils import format_nanoseconds
-from minmodkg.models.kg.mineral_site import MineralSite as KGMineralSite
-from minmodkg.models.kg.sample import Sample as KGSample
-from minmodkg.models.kgrel.base import engine
 from minmodkg.models.kgrel.data_source import DataSource
 from minmodkg.models.kgrel.event import EventLog
-from minmodkg.models.kgrel.mineral_site import MineralSite, MineralSiteAndInventory
-from minmodkg.models.kgrel.paper import Paper
+from minmodkg.models.kgrel.mineral_site import MineralSiteAndInventory
 from minmodkg.models.kgrel.sample import Sample
 from minmodkg.models.kgrel.user import get_username
 from minmodkg.services.kgrel_entity import EntityService
+from minmodkg.services.sync.geochem_routing import GeoChemRouting
 from minmodkg.services.sync.listener import Listener
 from minmodkg.typing import InternalID
 from slugify import slugify
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from statickg.models.repository import GitRepository
 
 
 def commit_and_push(repo_dir: Path, message: str) -> None:
     """Commit and push all changes; nothing to do when nothing changed, e.g.
-    when every edit in the batch went to the GeoChem JSON-LD instead."""
+    when every event in the batch belonged to the GeoChem sync."""
     changes = subprocess.run(
         ["git", "status", "--porcelain"],
         cwd=repo_dir,
@@ -50,12 +38,9 @@ def commit_and_push(repo_dir: Path, message: str) -> None:
 
 
 class BackupListener(Listener):
-    def __init__(self, data_repo_dir: Path, jsonld_dir: Optional[Path] = None):
+    def __init__(self, data_repo_dir: Path):
         super().__init__()
         self.data_repo_dir = data_repo_dir
-        # GeoChem papers are backed up into their own JSON-LD files, which are
-        # the source of truth for the GeoChem loader
-        self.jsonld_dir = jsonld_dir
 
     def handle_begin(self, events: Sequence[EventLog]):
         self.site_journal: dict[tuple, list[tuple[Literal["add", "update"], dict]]] = (
@@ -70,14 +55,8 @@ class BackupListener(Listener):
         self.sample_journal: dict[
             InternalID, list[tuple[Literal["add", "update"], dict]]
         ] = defaultdict(list)
-        self.paper_journal: dict[str, list[KGMineralSite | KGSample]] = defaultdict(
-            list
-        )
-        with Session(engine) as session:
-            self.papers = {
-                p.source_id: p for p in session.execute(select(Paper)).scalars()
-            }
-        self.site_papers: dict[InternalID, Optional[str]] = {}
+        # edits of GeoChem papers are written back by the GeoChem sync instead
+        self.geochem = GeoChemRouting()
 
     def handle_site_add(
         self,
@@ -85,7 +64,7 @@ class BackupListener(Listener):
         site: MineralSiteAndInventory,
         same_site_ids: list[InternalID],
     ):
-        if not self.journal_paper_site(site):
+        if self.geochem.site_paper(site) is None:
             self._upsert_site("add", site)
         self._update_same_as(
             site.ms.created_by,
@@ -95,7 +74,7 @@ class BackupListener(Listener):
         )
 
     def handle_site_update(self, event: EventLog, site: MineralSiteAndInventory):
-        if not self.journal_paper_site(site):
+        if self.geochem.site_paper(site) is None:
             self._upsert_site("update", site)
 
     def handle_same_as_update(
@@ -110,11 +89,11 @@ class BackupListener(Listener):
         self._update_same_as(user_uri, groups, diff_groups, event.timestamp)
 
     def handle_sample_add(self, event: EventLog, sample: Sample):
-        if not self.journal_paper_sample(sample):
+        if self.geochem.sample_paper(sample) is None:
             self._upsert_sample("add", sample)
 
     def handle_sample_update(self, event: EventLog, sample: Sample):
-        if not self.journal_paper_sample(sample):
+        if self.geochem.sample_paper(sample) is None:
             self._upsert_sample("update", sample)
 
     def handle_end(self, events: Sequence[EventLog]):
@@ -198,69 +177,11 @@ class BackupListener(Listener):
             if len(output) > 1:
                 serde.csv.ser(output, outfile)
 
-        for source_id, items in self.paper_journal.items():
-            assert self.jsonld_dir is not None
-            path = self.jsonld_dir / self.papers[source_id].file
-            doc = read_paper_file(path)
-            for item in items:
-                if isinstance(item, KGSample):
-                    apply_sample(doc, item)
-                else:
-                    apply_site(doc, item)
-            write_paper_file(path, doc)
-
-        if (
-            len(self.paper_journal) > 0
-            and self.jsonld_dir is not None
-            and (self.jsonld_dir / ".git").exists()
-        ):
-            commit_and_push(
-                self.jsonld_dir,
-                f"Backup edits as of {format_nanoseconds(events[-1].timestamp)}",
-            )
-
         if len(events) > 0:
             # after updating the files, we need to commit the changes to the git repo
             commit_and_push(
                 self.data_repo_dir,
                 f"Backup data as of {format_nanoseconds(events[-1].timestamp)}",
-            )
-
-    def journal_paper_site(self, site: MineralSiteAndInventory) -> bool:
-        """Journal a site that belongs to a GeoChem paper; False otherwise."""
-        if site.ms.created_by != USER_URI or site.ms.source_id not in self.papers:
-            return False
-        self.require_jsonld_dir()
-        self.site_papers[site.ms.site_id] = site.ms.source_id
-        self.paper_journal[site.ms.source_id].append(site.ms.to_kg())
-        return True
-
-    def journal_paper_sample(self, sample: Sample) -> bool:
-        """Journal a sample whose site belongs to a GeoChem paper; False otherwise."""
-        site_id = sample.mineral_site_id
-        if site_id not in self.site_papers:
-            with Session(engine) as session:
-                row = session.execute(
-                    select(MineralSite.source_id, MineralSite.created_by).where(
-                        MineralSite.site_id == site_id
-                    )
-                ).one_or_none()
-            self.site_papers[site_id] = (
-                row[0]
-                if row is not None and row[1] == USER_URI and row[0] in self.papers
-                else None
-            )
-        source_id = self.site_papers[site_id]
-        if source_id is None:
-            return False
-        self.require_jsonld_dir()
-        self.paper_journal[source_id].append(sample.to_kg())
-        return True
-
-    def require_jsonld_dir(self) -> None:
-        if self.jsonld_dir is None:
-            raise ValueError(
-                "GeoChem paper edits need the JSON-LD directory (--jsonld-dir)"
             )
 
     def _upsert_site(

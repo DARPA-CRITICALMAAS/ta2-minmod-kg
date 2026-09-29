@@ -166,11 +166,13 @@ python -m minmodkg.etl.geochem_loader <jsonld_dir> --entity-dir ta2-minmod-data/
   docker exec <fuseki_container> curl -s -X POST 'http://localhost:3030/$/compact/minmod?deleteOld=true'
   ```
 
-Edits to GeoChem samples and deposits made through the API are written back into the paper's JSON-LD by the sync service, so they survive a reload. Pass it the directory with `--jsonld-dir`; if the directory is a git repository, the changes are committed and pushed like the data repository's:
+Edits to GeoChem samples and deposits made through the API are written back into the paper's JSON-LD by a separate GeoChem sync, so they survive a reload. It runs apart from MinMod's sync (`python -m minmodkg.services.sync`), which keeps its usual arguments and never touches the JSON-LD; a GeoChem failure can't hold up MinMod's backups. If the directory is a git repository, its changes are committed and pushed like the data repository's:
 
 ```bash
-python -m minmodkg.services.sync <ta2-minmod-data> --jsonld-dir <jsonld_dir>
+python -m minmodkg.services.sync.geochem <jsonld_dir>
 ```
+
+Apply `migrations/003_geochem_sync.up.sql` first on an existing database; it adds the event-log flag the GeoChem sync uses.
 
 The `geochem-hmi` user must exist with the `system` role for the HMI to edit these sites. The `user` command only creates `user`-role accounts, so use `add-user`, set `"role": "system"` in the resulting file, then `load-user` it.
 

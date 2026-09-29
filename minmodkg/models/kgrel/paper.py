@@ -9,6 +9,11 @@ from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 
+# the system account that owns every GeoChem paper's mineral sites
+GEOCHEM_USERNAME = "geochem-hmi"
+GEOCHEM_USER_URI = f"https://minmod.isi.edu/users/s/{GEOCHEM_USERNAME}"
+
+
 class Paper(MappedAsDataclass, Base):
     """A GeoChem paper. Its sites are the mineral sites sharing its source_id."""
 

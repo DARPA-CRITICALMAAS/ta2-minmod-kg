@@ -63,7 +63,7 @@ python -m minmodkg.etl.geochem_loader <jsonld_dir> --entity-dir ../ta2-minmod-da
 
 With a Fuseki available, point `triplestore` in the config at it and drop `--skip-kg`. Each run replaces every paper from its file; see the README's "Loading GeoChem data". The papers are then served at `GET /api/v1/papers` (filter by `commodity`, `site_id` or `dedup_site_id`), `GET /api/v1/papers/{paper_id}` and `GET /api/v1/papers/{paper_id}/samples`.
 
-To have edits written back into the JSON-LD, run the sync service with `--jsonld-dir <jsonld_dir>`. Point it at a copy, not your only checkout: when the directory is a git repository it commits and pushes.
+To have edits written back into the JSON-LD, run the GeoChem sync next to MinMod's: `python -m minmodkg.services.sync.geochem <jsonld_dir>`. Point it at a copy, not your only checkout: when the directory is a git repository it commits and pushes.
 
 ## 3. Test user
 
