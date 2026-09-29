@@ -219,6 +219,22 @@ class PaperService:
                 )
             return Registration(False, same_id, *self.id_mapping(doc))
 
+        # a site id taken by another owner means someone published this paper's
+        # deposits outside it; loading would collide with them
+        site_ids = [site_id for site_id, _ in deposit_sites(doc)]
+        with Session(self.engine) as session:
+            taken = session.execute(
+                select(MineralSite.site_id, MineralSite.created_by).where(
+                    MineralSite.site_id.in_(site_ids),
+                    MineralSite.created_by != USER_URI,
+                )
+            ).first()
+        if taken is not None:
+            raise PaperConflictError(
+                f"site {taken[0]!r} already exists, owned by {taken[1]!r}, "
+                "outside this paper; resolve it before registering the paper"
+            )
+
         file = f"geochem_{paper_id}.canonical.jsonld"
         path = jsonld_dir / file
         if path.exists():
