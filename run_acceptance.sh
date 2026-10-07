@@ -54,6 +54,7 @@ psql_ro() {
 }
 
 find_container() {
+  [[ -n "${DATABASE_URL:-}" ]] && return 0
   [[ -n "$PG_CONTAINER" ]] && return 0
   PG_CONTAINER="$(docker ps --format '{{.Names}}' | grep -E '^kgrel-version-[0-9]+$' | head -1 || true)"
   if [[ -z "$PG_CONTAINER" ]]; then
