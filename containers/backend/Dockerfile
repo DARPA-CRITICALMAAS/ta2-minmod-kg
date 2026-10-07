@@ -41,8 +41,8 @@ RUN cd /home/criticalmaas/kg && pip install .
 # NAD27 records with the grid instead of a Helmert shift or a no-op. Kept
 # before the code is added, so this layer is rebuilt only when the
 # dependencies change.
-RUN python -m pyproj sync --system-directory --file us_noaa_alaska.tif && \
-    python -m pyproj sync --system-directory --file ca_nrc_ntv2_0.tif
+RUN python -m pyproj sync --file us_noaa_alaska.tif && \
+    python -m pyproj sync --file ca_nrc_ntv2_0.tif
 
 ADD --chown=criticalmaas:criticalmaas minmodkg /home/criticalmaas/kg/minmodkg
 ADD --chown=criticalmaas:criticalmaas extractors /home/criticalmaas/kg/extractors
