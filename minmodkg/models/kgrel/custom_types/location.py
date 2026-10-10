@@ -120,6 +120,7 @@ class LocationView(GeoCoordinate):
         state_index: Optional[StateCountryIndex] = None,
     ) -> LocationView:
         view = LocationView()
+        crs = None
         if location.coordinates is not None:
             if location.crs is None or location.crs.normalized_uri is None:
                 crs = "EPSG:4326"
@@ -159,7 +160,8 @@ class LocationView(GeoCoordinate):
             # A dropped state that names a listed dependency of a recorded
             # country ("Greenland" under Denmark) moves the record to that
             # dependency's country instead; all decided against the recorded
-            # countries, then applied.
+            # countries, then applied. A dropped "Katanga" in DR Congo takes
+            # the successor province that contains the record's point.
             states = []
             moves = {}
             for ent in location.state_or_province:
@@ -173,6 +175,16 @@ class LocationView(GeoCoordinate):
                 move = state_index.dependency(state_id, ent.observed_name, view.country)
                 if move is not None:
                     moves[move[0]] = move[1]
+                    continue
+                state = state_index.katanga(
+                    state_id,
+                    ent.observed_name,
+                    view.country,
+                    location.coordinates,
+                    crs,
+                )
+                if state is not None and state not in states:
+                    states.append(state)
             view.state_or_province = states
             if moves:
                 view.country = list(
